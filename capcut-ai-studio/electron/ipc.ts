@@ -1,0 +1,560 @@
+import { ipcMain, BrowserWindow, dialog, shell, app } from 'electron'
+import { join, basename } from 'path'
+import { existsSync, mkdirSync, copyFileSync } from 'fs'
+import { homedir } from 'os'
+import { runDoctor, fixCheck, autoFix, autoFixStatus, DoctorCheck } from './services/doctor'
+import {
+  startCodexLogin,
+  openAgyLogin,
+  openClaudeLogin,
+  startClaudeUpdate,
+  startCliInstall,
+  cancelCliTask,
+  CLI_PACKAGES,
+  CliLoginMode
+} from './services/cli-login'
+import {
+  maskedProviders,
+  saveProviders,
+  providersConfigured,
+  ProvidersMap
+} from './services/secrets'
+import {
+  startSidecar,
+  sidecarRequest,
+  sidecarInfo,
+  pushConfig,
+  sidecarLog
+} from './services/sidecar'
+import { ENGINE_HOME } from './services/paths'
+import { readState, writeState, planProviderOf, PlanProvider } from './services/state'
+import { mediaBase, mediaUrl } from './services/media-server'
+import { startRender, cancelRender, renderStatus, browserInstalled } from './services/remotion'
+import { readRunLog, appendRunLog, clearRunLog, runDir } from './services/runlog'
+import {
+  fetchLinks as miFetchLinks,
+  openBrowser as miOpenBrowser,
+  closeBrowser as miCloseBrowser,
+  discardStaged as miDiscardStaged
+} from './services/myinstants'
+import { importMedia, missingFiles, insideDir, MediaKind } from './services/project-media'
+import {
+  listProjects,
+  getProject,
+  saveProject,
+  deleteProject,
+  projectDiskInfo,
+  getCurrent,
+  setCurrent,
+  Project
+} from './services/projects'
+
+// Lap plan / phan tich video mau goi GPT nhieu luot lien tiep; muc suy nghi cao (Cai dat API)
+// lam moi luot lau hon; hieu video nguon dai thi nen + cat + nhieu luot Gemini -> cho toi 2 gio
+// thay vi 30 phut mac dinh.
+const LONG_AI_MS = 2 * 60 * 60 * 1000
+
+function slugify(s: string): string {
+  return (
+    s
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-zA-Z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .toLowerCase()
+      .slice(0, 40) || 'project'
+  )
+}
+
+export function ensureWorkDir(name: string): string {
+  const dir = join(ENGINE_HOME, 'projects', slugify(name) + '-' + Date.now().toString(36))
+  mkdirSync(dir, { recursive: true })
+  return dir
+}
+
+export function registerIpc(getWindow: () => BrowserWindow | null) {
+  // ---- App / system ----
+  ipcMain.handle('app:info', () => ({
+    version: app.getVersion(),
+    name: 'Agent Edit',
+    engineHome: ENGINE_HOME
+  }))
+
+  // ---- Doctor ----
+  // Chi dung khi tu kiem giao dien (chay kem --user-data-dir tam): coi moi dieu kien
+  // la dat de mo khoa cac trang, KHONG doc Keychain, KHONG cai gi.
+  const fakeChecks = (): DoctorCheck[] =>
+    (['system', 'media', 'python', 'ai'] as const).map((group) => ({
+      id: 'test_' + group,
+      label: 'Tu kiem giao dien',
+      status: 'ok',
+      detail: 'STUDIO_FAKE_READY',
+      purpose: 'STUDIO_FAKE_READY',
+      fixable: false,
+      group
+    }))
+  ipcMain.handle('doctor:run', async () => {
+    if (process.env.STUDIO_FAKE_READY) return fakeChecks()
+    return runDoctor(providersConfigured())
+  })
+  // Mo app: tu cai moi cong cu con thieu / sai phien ban (theo thu tu phu thuoc), bao tien trinh qua su kien
+  ipcMain.handle('doctor:autoFix', async () => {
+    if (process.env.STUDIO_FAKE_READY) return { checks: fakeChecks(), progress: autoFixStatus() }
+    const win = getWindow()
+    return autoFix(
+      () => providersConfigured(),
+      (id, line) => win?.webContents.send('doctor:log', { id, line }),
+      (p) => win?.webContents.send('doctor:progress', p)
+    )
+  })
+  ipcMain.handle('doctor:status', () => autoFixStatus())
+
+  ipcMain.handle('doctor:fix', async (_e, id: string) => {
+    const win = getWindow()
+    const res = await fixCheck(id, (line) => {
+      win?.webContents.send('doctor:log', { id, line })
+    })
+    return res
+  })
+
+  // ---- Settings / providers ----
+  ipcMain.handle('settings:get', () => maskedProviders())
+  ipcMain.handle('settings:save', async (_e, providers: ProvidersMap) => {
+    saveProviders(providers)
+    if (sidecarInfo().ready) await pushConfig()
+    return maskedProviders()
+  })
+  // AI lap ke hoach (GPT / Claude) — luu state.json, sidecar doc lai moi lan lap plan
+  ipcMain.handle('settings:getPlanner', () => planProviderOf(readState()))
+  ipcMain.handle('settings:setPlanner', (_e, v: PlanProvider) => {
+    writeState({ plan_provider: v === 'claude' ? 'claude' : 'gpt' })
+    return planProviderOf(readState())
+  })
+  // Trang thai CLI chinh chu (Claude Code / Codex) cho che do goi subscription
+  ipcMain.handle('settings:cliStatus', async (_e, name?: string) => {
+    if (!sidecarInfo().ready) {
+      const s = await startSidecar()
+      if (!s.ok) return { ok: false, error: 'Sidecar chua san sang: ' + s.error }
+    }
+    return sidecarRequest('/cli_status', name ? { name } : {}, 120000)
+  })
+
+  ipcMain.handle('settings:test', async (_e, name: string, providers?: ProvidersMap) => {
+    // luu tam neu co (de test gia tri chua save) + push
+    if (providers) {
+      saveProviders(providers)
+      if (sidecarInfo().ready) await pushConfig()
+    }
+    if (!sidecarInfo().ready) {
+      const s = await startSidecar()
+      if (!s.ok) return { ok: false, error: 'Sidecar chua san sang: ' + s.error }
+    }
+    return sidecarRequest('/test_connection', { name })
+  })
+
+  // Dang nhap CLI ngay trong app (xem services/cli-login.ts): Codex (`codex login`) hoac Antigravity
+  // CLI cho Gemini (mo Terminal chay `agy`; UI tu hoi lai trang thai). Duong dan binary + thu muc lam
+  // viec luon lay tu sidecar (cli_status), khong nhan tu renderer.
+  const cliStatusOf = async (id: string) => {
+    if (!sidecarInfo().ready) {
+      const s = await startSidecar()
+      if (!s.ok) return { error: 'Sidecar chua san sang: ' + s.error }
+    }
+    const r = await sidecarRequest('/cli_status', { name: id }, 120000).catch(() => null)
+    return { st: r?.status?.[id] }
+  }
+  ipcMain.handle('settings:cliLogin', async (_e, mode?: CliLoginMode, name?: string) => {
+    const id = name === 'gemini' || name === 'claude' ? name : 'gpt'
+    const label = CLI_PACKAGES[id].label
+    const cur = await cliStatusOf(id)
+    if (cur.error) return { ok: false, error: cur.error }
+    const st = cur.st
+    if (!st?.installed || !st?.path) return { ok: false, error: `Chưa cài ${label} trên máy.` }
+    if (st.logged_in) return { ok: true, already: true }
+    if (id === 'gemini' || id === 'claude') {
+      // Dang nhap dien ra trong cua so Terminal -> tra ngay; renderer hoi lai cli_status den khi xong
+      const r = id === 'gemini' ? await openAgyLogin(st.path, st.workdir) : await openClaudeLogin(st.path)
+      return r.ok ? { ok: true, terminal: true } : r
+    }
+    const win = getWindow()
+    const send = (line: string) => win?.webContents.send('settings:cliLoginLog', line)
+    const res = await startCodexLogin(st.path, mode === 'device' ? 'device' : 'browser', send)
+    if (!res.ok) return res
+    // Chi bao thanh cong khi trang thai that xac nhan da dang nhap (khong tin rieng ma thoat)
+    const now = (await cliStatusOf(id)).st
+    if (now?.logged_in) return { ok: true }
+    return { ok: false, error: now?.detail || `${label} chưa ghi nhận đăng nhập. Thử lại hoặc đăng nhập trong Terminal.` }
+  })
+  ipcMain.handle('settings:cliLoginCancel', () => {
+    cancelCliTask()
+    return { ok: true }
+  })
+  // Cap nhat Claude Code (`claude update`) — model moi (Opus 5.5 / Fable 5.1) can ban CLI moi hon
+  ipcMain.handle('settings:cliUpdate', async (_e, name: string) => {
+    if (name !== 'claude') return { ok: false, error: 'Chỉ cập nhật được Claude Code trong app.' }
+    const cur = await cliStatusOf('claude')
+    if (cur.error) return { ok: false, error: cur.error }
+    if (!cur.st?.installed || !cur.st?.path) return { ok: false, error: 'Chưa cài Claude Code CLI trên máy.' }
+    const before = cur.st.version
+    const win = getWindow()
+    const res = await startClaudeUpdate(cur.st.path, (line) => win?.webContents.send('settings:cliLoginLog', line))
+    if (!res.ok) return res
+    const now = (await cliStatusOf('claude')).st
+    return { ok: true, version: now?.version, changed: !!now?.version && now.version !== before }
+  })
+  // Cai CLI chinh chu (Codex / Claude Code: bo cai cua Doctor, dung ban ghim; agy: trinh cai cua Google)
+  ipcMain.handle('settings:cliInstall', async (_e, name: string) => {
+    if (!CLI_PACKAGES[name]) return { ok: false, error: 'Không có gói CLI cho ' + name }
+    const win = getWindow()
+    const res = await startCliInstall(name, (line) => win?.webContents.send('settings:cliLoginLog', line))
+    if (!res.ok) return res
+    const now = (await cliStatusOf(name)).st
+    if (now?.installed) return { ok: true, version: now.version }
+    return {
+      ok: false,
+      error: 'Trình cài đã chạy xong nhưng app chưa tìm thấy lệnh ' + CLI_PACKAGES[name].bin + ' — bấm “Kiểm tra lại”.'
+    }
+  })
+  // Chi mo link dang nhap chinh chu (CLI in ra khi trinh duyet khong tu mo)
+  ipcMain.handle('settings:openLoginUrl', (_e, url: string) => {
+    try {
+      const u = new URL(String(url))
+      if (u.protocol === 'https:' && ['auth.openai.com', 'chatgpt.com', 'accounts.google.com'].includes(u.hostname)) {
+        return shell.openExternal(u.toString())
+      }
+    } catch {
+      /* url hong -> bo qua */
+    }
+    return false
+  })
+
+  // ---- Sidecar ----
+  ipcMain.handle('sidecar:start', async () => {
+    const win = getWindow()
+    return startSidecar((l) => win?.webContents.send('sidecar:log', l))
+  })
+  ipcMain.handle('sidecar:status', () => sidecarInfo())
+  ipcMain.handle('sidecar:log', () => sidecarLog())
+
+  // ---- File dialog ----
+  ipcMain.handle('dialog:pickVideo', async () => {
+    const win = getWindow()
+    if (!win) return { canceled: true }
+    const res = await dialog.showOpenDialog(win, {
+      title: 'Chon cac video nguon',
+      properties: ['openFile', 'multiSelections'],
+      filters: [{ name: 'Video', extensions: ['mp4', 'mov', 'm4v', 'avi', 'mkv', 'webm'] }]
+    })
+    return res
+  })
+  ipcMain.handle('dialog:pickReferenceVideo', async () => {
+    const win = getWindow()
+    if (!win) return { canceled: true }
+    return dialog.showOpenDialog(win, {
+      title: 'Chon video mau tham khao',
+      properties: ['openFile'],
+      filters: [{ name: 'Video', extensions: ['mp4', 'mov', 'm4v', 'avi', 'mkv', 'webm'] }]
+    })
+  })
+
+  // Tu lieu cua nguoi dung: anh + video de chen LEN video dang edit
+  ipcMain.handle('dialog:pickInsertMedia', async () => {
+    const win = getWindow()
+    if (!win) return { canceled: true }
+    return dialog.showOpenDialog(win, {
+      title: 'Chon anh / video muon chen len video',
+      properties: ['openFile', 'multiSelections'],
+      filters: [
+        {
+          name: 'Anh / video',
+          extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif', 'heic', 'heif', 'tif', 'tiff', 'bmp', 'avif', 'mp4', 'mov', 'm4v', 'webm', 'mkv', 'avi']
+        }
+      ]
+    })
+  })
+
+  ipcMain.handle('dialog:pickOneVideo', async (_e, title?: string) => {
+    const win = getWindow()
+    if (!win) return { canceled: true }
+    return dialog.showOpenDialog(win, {
+      title: title || 'Chon video',
+      properties: ['openFile'],
+      filters: [{ name: 'Video', extensions: ['mp4', 'mov', 'm4v', 'avi', 'mkv', 'webm'] }]
+    })
+  })
+
+  // ---- Video cua du an: chep vao thu muc du an (project-media.ts) ----
+  ipcMain.handle(
+    'media:import',
+    async (_e, workDir: string, paths: string[], kind: MediaKind, names?: (string | undefined)[]) => {
+      // chi ghi vao thu muc du an cua app (~/.capcut-studio/projects/...)
+      if (!workDir || !insideDir(workDir, join(ENGINE_HOME, 'projects')) || workDir === join(ENGINE_HOME, 'projects'))
+        return { ok: false, items: [], error: 'Thư mục dự án không hợp lệ: ' + workDir }
+      if (kind !== 'source' && kind !== 'reference' && kind !== 'insert')
+        return { ok: false, items: [], error: 'Loại tệp không hợp lệ' }
+      mkdirSync(workDir, { recursive: true })
+      const items = await importMedia(workDir, Array.isArray(paths) ? paths : [], kind, names)
+      return { ok: items.every((it) => !!it.path), items }
+    }
+  )
+  ipcMain.handle('media:missing', (_e, paths: string[]) => missingFiles(Array.isArray(paths) ? paths : []))
+
+  // ---- SFX ----
+  ipcMain.handle('sfx:find', async (_e, params: unknown) => {
+    if (!sidecarInfo().ready) await startSidecar()
+    return sidecarRequest('/find_sfx', params)
+  })
+
+  // ---- Thu muc lam viec + hieu video nguon (Gemini) ----
+  ipcMain.handle('pipeline:newWorkDir', (_e, name: string) => ensureWorkDir(name))
+  ipcMain.handle('pipeline:understandSources', async (_e, payload: unknown) => {
+    if (!sidecarInfo().ready) await startSidecar()
+    // Video dai: nen 720p + cat nhieu phan + nhieu luot Gemini + buoc ghep -> co the qua 30 phut
+    return sidecarRequest('/understand_sources', payload, LONG_AI_MS)
+  })
+
+  ipcMain.handle('shell:openPath', (_e, p: string) => shell.openPath(p))
+
+  // ---- Nhat ky xu ly theo tung lan tao video (xem services/runlog.ts) ----
+  ipcMain.handle('runlog:read', (_e, runId: string, offset?: number) => readRunLog(runId, offset || 0))
+  ipcMain.handle('runlog:append', (_e, runId: string, ev: { title: string; [k: string]: unknown }) => {
+    try {
+      appendRunLog(runId, ev)
+    } catch {
+      /* log khong bao gio duoc lam hong pipeline */
+    }
+  })
+  ipcMain.handle('runlog:clear', (_e, runId: string) => clearRunLog(runId))
+  ipcMain.handle('runlog:openDir', (_e, runId: string) => {
+    const d = runDir(runId)
+    if (!existsSync(d)) mkdirSync(d, { recursive: true })
+    return shell.openPath(d)
+  })
+
+  // ---- Prompt & quy tac (xem sidecar/prompt_store.py) ----
+  // Loi kiem tra (400) tra ve {ok:false,error} de UI hien nguyen cau, khong boc "Error invoking..."
+  const promptsCall = async (path: string, payload: unknown) => {
+    if (!sidecarInfo().ready) await startSidecar()
+    try {
+      return await sidecarRequest(path, payload ?? {})
+    } catch (e) {
+      return { ok: false, error: e instanceof Error ? e.message : String(e) }
+    }
+  }
+  ipcMain.handle('prompts:list', () => promptsCall('/prompts/list', {}))
+  ipcMain.handle('prompts:save', (_e, payload: unknown) => promptsCall('/prompts/save', payload))
+  ipcMain.handle('prompts:reset', (_e, payload: unknown) => promptsCall('/prompts/reset', payload))
+
+  // ---- Kho meme (b-roll chen) ----
+  ipcMain.handle('meme:list', async () => {
+    if (!sidecarInfo().ready) await startSidecar()
+    return sidecarRequest('/meme/list')
+  })
+  ipcMain.handle('meme:fetch', async (_e, payload: unknown) => {
+    if (!sidecarInfo().ready) await startSidecar()
+    return sidecarRequest('/meme/fetch', payload)
+  })
+  ipcMain.handle('meme:import', async (_e, payload: unknown) => {
+    if (!sidecarInfo().ready) await startSidecar()
+    return sidecarRequest('/meme/import', payload)
+  })
+  ipcMain.handle('meme:label', async (_e, id: string) => {
+    if (!sidecarInfo().ready) await startSidecar()
+    return sidecarRequest('/meme/label', { id })
+  })
+  ipcMain.handle('meme:update', async (_e, payload: unknown) => {
+    if (!sidecarInfo().ready) await startSidecar()
+    return sidecarRequest('/meme/update', payload)
+  })
+  ipcMain.handle('meme:delete', async (_e, id: string) => {
+    if (!sidecarInfo().ready) await startSidecar()
+    return sidecarRequest('/meme/delete', { id })
+  })
+
+  // ---- Kho am thanh (SFX) ----
+  ipcMain.handle('sfx:list', async () => {
+    if (!sidecarInfo().ready) await startSidecar()
+    return sidecarRequest('/sfx/list')
+  })
+  ipcMain.handle('sfx:searchOnline', async (_e, query: string) => {
+    if (!sidecarInfo().ready) await startSidecar()
+    return sidecarRequest('/sfx/search_online', { query })
+  })
+  ipcMain.handle('sfx:addOnline', async (_e, payload: unknown) => {
+    if (!sidecarInfo().ready) await startSidecar()
+    return sidecarRequest('/sfx/add_online', payload)
+  })
+  ipcMain.handle('sfx:importLocal', async (_e, payload: unknown) => {
+    if (!sidecarInfo().ready) await startSidecar()
+    return sidecarRequest('/sfx/import_local', payload)
+  })
+  ipcMain.handle('sfx:update', async (_e, payload: unknown) => {
+    if (!sidecarInfo().ready) await startSidecar()
+    return sidecarRequest('/sfx/update', payload)
+  })
+  ipcMain.handle('sfx:label', async (_e, ids: string[]) => {
+    if (!sidecarInfo().ready) await startSidecar()
+    return sidecarRequest('/sfx/label', { ids })
+  })
+  ipcMain.handle('sfx:delete', async (_e, id: string) => {
+    if (!sidecarInfo().ready) await startSidecar()
+    return sidecarRequest('/sfx/delete', { id })
+  })
+  // ---- Myinstants: tai bang tang trinh duyet that (Cloudflare chan curl/python) ----
+  ipcMain.handle('sfx:fetchLinks', async (_e, links: string[]) => {
+    try {
+      return await miFetchLinks(Array.isArray(links) ? links : [])
+    } catch (err) {
+      return { ok: false, items: [], failed: [{ url: '', reason: String(err) }] }
+    }
+  })
+  ipcMain.handle('sfx:openMyinstants', () => {
+    const win = getWindow()
+    miOpenBrowser((item) => win?.webContents.send('sfx:staged', item))
+    return { ok: true }
+  })
+  ipcMain.handle('sfx:discardStaged', (_e, paths: string[]) =>
+    miDiscardStaged(Array.isArray(paths) ? paths : [])
+  )
+  ipcMain.handle('sfx:closeMyinstants', () => {
+    miCloseBrowser()
+    return { ok: true }
+  })
+
+  ipcMain.handle('dialog:pickAudio', async () => {
+    const win = getWindow()
+    if (!win) return { canceled: true }
+    return dialog.showOpenDialog(win, {
+      title: 'Chọn file âm thanh',
+      properties: ['openFile', 'multiSelections'],
+      filters: [{ name: 'Audio', extensions: ['mp3', 'wav', 'm4a', 'aac', 'ogg'] }]
+    })
+  })
+
+  // ---- Thu vien phan tich (video nguon / video mau da phan tich) ----
+  const libCall = async (path: string, payload?: unknown) => {
+    if (!sidecarInfo().ready) await startSidecar()
+    return sidecarRequest(path, payload)
+  }
+  ipcMain.handle('library:list', () => libCall('/library/list'))
+  ipcMain.handle('library:lookup', (_e, paths: string[]) => libCall('/library/lookup', { paths }))
+  ipcMain.handle('library:delete', (_e, fp: string, part?: string) => libCall('/library/delete', { fp, part }))
+
+  // ---- Projects (luu/khoi phuc du an) ----
+  ipcMain.handle('projects:list', () => listProjects())
+  ipcMain.handle('projects:get', (_e, id: string) => getProject(id))
+  ipcMain.handle('projects:save', (_e, p: Project) => saveProject(p))
+  ipcMain.handle('projects:diskInfo', (_e, id: string) => projectDiskInfo(id))
+  ipcMain.handle('projects:delete', async (_e, id: string, withFiles?: boolean) => {
+    if (withFiles) {
+      // Dang render vao thu muc du an -> khong dua thu muc vao Thung rac giua chung
+      const r = renderStatus() as { running: boolean; output?: string }
+      const wd = getProject(id)?.workDir
+      if (r.running && r.output && wd && insideDir(r.output, wd)) {
+        return { ok: false, trashed: [], error: 'Dự án đang render — đợi render xong (hoặc huỷ) rồi xoá.' }
+      }
+    }
+    return deleteProject(id, { withFiles: !!withFiles })
+  })
+  // mode: 'remotion' -> con tro "dang lam" rieng cua menu Video Remotion
+  ipcMain.handle('projects:current', (_e, mode?: string) => getCurrent(mode))
+  ipcMain.handle('projects:setCurrent', (_e, id: string | null, mode?: string) => setCurrent(id, mode))
+
+  // ---- Video Remotion ----
+  const rmCall = async (path: string, payload?: unknown, timeoutMs?: number) => {
+    if (!sidecarInfo().ready) await startSidecar()
+    return sidecarRequest(path, payload, timeoutMs)
+  }
+  ipcMain.handle('remotion:understandReference', (_e, payload: unknown) =>
+    rmCall('/remotion/understand_reference', payload, LONG_AI_MS)
+  )
+  // Tu lieu cua nguoi dung: Gemini doc tung anh / video + may do kich thuoc (moi tu lieu vai chuc giay)
+  ipcMain.handle('remotion:understandMedia', (_e, payload: unknown) =>
+    rmCall('/remotion/understand_media', payload, LONG_AI_MS)
+  )
+  ipcMain.handle('remotion:autoplan', (_e, payload: unknown) => rmCall('/remotion/autoplan', payload, LONG_AI_MS))
+  ipcMain.handle('remotion:spec', (_e, payload: unknown) => rmCall('/remotion/spec', payload))
+  ipcMain.handle('remotion:catalog', () => rmCall('/remotion/catalog'))
+  // Goc URL may chu media cuc bo — Player trong app tai video nguon qua day
+  ipcMain.handle('remotion:mediaBase', () => mediaBase())
+  ipcMain.handle('remotion:mediaUrl', (_e, path: string) => mediaUrl(path))
+  ipcMain.handle(
+    'remotion:render',
+    async (
+      _e,
+      payload: { spec: Record<string, unknown>; workDir?: string; name?: string; _run?: { id: string } }
+    ) => {
+      const dir =
+        payload.workDir && existsSync(payload.workDir) ? payload.workDir : ensureWorkDir(payload.name || 'remotion')
+      const d = new Date()
+      const stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}-${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}${String(d.getSeconds()).padStart(2, '0')}`
+      const out = join(dir, `${slugify(payload.name || 'video')}-${stamp}.mp4`)
+      const win = getWindow()
+      // Render chay trong app (khong qua sidecar) -> tu ghi nhat ky xu ly cua project
+      const runId = payload._run?.id
+      const log = (title: string, level = 'info', extra: Record<string, unknown> = {}) => {
+        if (!runId) return
+        try {
+          appendRunLog(runId, { kind: 'note', step: 'render', title, level, ...extra })
+        } catch {
+          /* log khong bao gio duoc lam hong render */
+        }
+      }
+      const spec = payload.spec as { duration?: number; clips?: unknown[]; captions?: unknown[]; effects?: unknown[]; audio?: unknown[] }
+      log(`Bắt đầu render MP4 bằng Remotion (${Math.round(spec.duration || 0)}s video)`, 'info', {
+        output: out,
+        so_doan: spec.clips?.length,
+        so_caption: spec.captions?.length,
+        so_hieu_ung: spec.effects?.length,
+        so_sfx: spec.audio?.length
+      })
+      let lastStage = ''
+      let lastMoc = -1
+      const t0 = Date.now()
+      const res = await startRender(payload.spec, out, (ev) => {
+        win?.webContents.send('remotion:progress', ev)
+        if (ev.type === 'log' && ev.message) log(ev.message)
+        if (ev.type !== 'progress') return
+        if (ev.stage && ev.stage !== lastStage) {
+          lastStage = ev.stage
+          const ten: Record<string, string> = {
+            browser: 'Tải trình render Chrome Headless (chỉ lần đầu)',
+            prepare: 'Chuẩn bị bản dựng (nạp composition, font, media)',
+            render: 'Đang vẽ từng khung hình',
+            encode: 'Đang ghép khung hình + âm thanh thành MP4'
+          }
+          log(ten[ev.stage] || ev.stage)
+        }
+        const moc = Math.floor(((ev.progress || 0) * 100) / 25) * 25
+        if (ev.stage === 'render' && moc > lastMoc && moc > 0 && moc < 100) {
+          lastMoc = moc
+          log(`Render ${moc}% (khung ${ev.renderedFrames ?? 0}/${ev.totalFrames ?? '?'})`)
+        }
+      })
+      const giay = Math.round((Date.now() - t0) / 1000)
+      if (res.type === 'done') {
+        log(`Render xong sau ${giay}s — ${((res.size || 0) / 1e6).toFixed(1)} MB`, 'ok', { output: res.output })
+      } else if (res.type === 'cancelled') {
+        log(`Đã huỷ render sau ${giay}s`, 'warn')
+      } else {
+        log('Render lỗi', 'error', { error: res.message })
+      }
+      return res
+    }
+  )
+  ipcMain.handle('remotion:cancel', () => cancelRender())
+  ipcMain.handle('remotion:status', () => ({ ...renderStatus(), browserInstalled: browserInstalled() }))
+  ipcMain.handle('remotion:saveAs', async (_e, src: string, name?: string) => {
+    const win = getWindow()
+    if (!win || !src || !existsSync(src)) return { ok: false, error: 'Không thấy file video' }
+    const res = await dialog.showSaveDialog(win, {
+      title: 'Lưu video',
+      defaultPath: join(homedir(), 'Movies', name ? `${slugify(name)}.mp4` : basename(src)),
+      filters: [{ name: 'Video MP4', extensions: ['mp4'] }]
+    })
+    if (res.canceled || !res.filePath) return { ok: false, canceled: true }
+    copyFileSync(src, res.filePath)
+    return { ok: true, path: res.filePath }
+  })
+  ipcMain.handle('shell:showItem', (_e, p: string) => shell.showItemInFolder(p))
+}

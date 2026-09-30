@@ -1,0 +1,56 @@
+{
+  "name": "auto-capcut",
+  "version": "1.0.0",
+  "description": "Agent Edit - AI video editing rendered with Remotion",
+  "author": {
+    "name": "Auto CapCut",
+    "email": "support@autocapcut.app"
+  },
+  "main": "out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build && node scripts/bundle-remotion.mjs",
+    "start": "electron-vite preview",
+    "dist": "electron-vite build && node scripts/bundle-remotion.mjs && electron-builder --mac --arm64",
+    "dist:dir": "electron-vite build && node scripts/bundle-remotion.mjs && electron-builder --mac --arm64 --dir",
+    "bundle:remotion": "node scripts/bundle-remotion.mjs"
+  },
+  "devDependencies": {
+    "@fontsource/anton": "5.3.0",
+    "@fontsource/baloo-2": "5.3.0",
+    "@fontsource/barlow-condensed": "^5.3.0",
+    "@fontsource/be-vietnam-pro": "5.3.0",
+    "@fontsource/bungee": "5.3.0",
+    "@fontsource/dancing-script": "5.3.0",
+    "@fontsource/great-vibes": "^5.3.0",
+    "@fontsource/lexend": "5.3.0",
+    "@fontsource/montserrat": "5.3.0",
+    "@fontsource/oswald": "5.3.0",
+    "@fontsource/playfair-display": "^5.3.0",
+    "@fontsource/roboto-condensed": "5.3.0",
+    "@remotion/bundler": "4.0.528",
+    "@types/node": "^22.10.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "electron-vite": "^2.3.0",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11"
+  },
+  "dependencies": {
+    "@remotion/player": "4.0.528",
+    "@remotion/renderer": "4.0.528",
+    "clsx": "^2.1.1",
+    "framer-motion": "^11.15.0",
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "4.0.528",
+    "tailwind-merge": "^2.6.0"
+  }
+}

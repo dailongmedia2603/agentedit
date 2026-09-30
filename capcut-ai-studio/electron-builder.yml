@@ -1,0 +1,63 @@
+appId: app.autocapcut.desktop
+# Ten hien thi (goi .app, Dock, menu). Ten NOI BO `name` trong package.json giu "auto-capcut": Electron
+# dung no cho thu muc du lieu (~/Library/Application Support/auto-capcut: khoa API da ma hoa) va muc
+# Keychain "auto-capcut Safe Storage" — doi thi mat khoa API da luu.
+productName: Agent Edit
+copyright: Copyright © 2026 Agent Edit
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - out/**/*
+  - "!out/remotion-bundle/**"
+  - package.json
+
+# Sidecar Python (chay bang venv cua user) + scripts da chung minh chay duoc
+extraResources:
+  - from: sidecar
+    to: sidecar
+    filter:
+      - "**/*"
+      - "!**/__pycache__/**"
+      - "!**/*.pyc"
+
+  # Trang web Remotion da dong goi san (npm run build -> out/remotion-bundle). Nam NGOAI
+  # app.asar vi trinh duyet headless doc no qua may chu http cua Remotion.
+  - from: out/remotion-bundle
+    to: remotion-bundle
+
+asar: true
+# Binary cua Remotion (compositor + ffmpeg + dylib) phai nam ngoai asar moi chay duoc;
+# electron/remotion-worker.ts tro `binariesDirectory` vao app.asar.unpacked.
+asarUnpack:
+  - node_modules/@remotion/compositor-*/**
+
+mac:
+  category: public.app-category.video
+  target:
+    - target: dmg
+      arch:
+        - arm64
+  artifactName: ${productName}-${version}-${arch}.${ext}
+  darkModeSupport: true
+  # Khong co Apple Developer cert -> build unsigned (khach mo lan dau: chuot phai > Open)
+  identity: null
+  hardenedRuntime: false
+  gatekeeperAssess: false
+  extendInfo:
+    NSMicrophoneUsageDescription: Khong su dung microphone.
+    NSCameraUsageDescription: Khong su dung camera.
+
+dmg:
+  title: ${productName}
+  artifactName: ${productName}-${version}-${arch}.${ext}
+  contents:
+    - x: 130
+      y: 220
+      type: file
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications

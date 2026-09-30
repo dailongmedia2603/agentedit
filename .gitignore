@@ -1,0 +1,43 @@
+# OS
+.DS_Store
+
+# Dependencies and generated application output
+node_modules/
+.venv/
+venv/
+out/
+dist/
+build/
+# ...but the Electron app's build resources (icon.icns, logos) are source
+!capcut-ai-studio/build/
+release/
+__pycache__/
+*.pyc
+
+# Local CodeGraph database (the nested .codegraph/.gitignore also protects it)
+.codegraph/*
+!.codegraph/.gitignore
+
+# Historical agent skills duplicated by the current studio implementation
+.claude/
+
+# Generated media and experiment workspaces
+work/
+work_ref/
+work_run/
+work_video-test-new/
+*.mp4
+*.wav
+*.jpg
+*.png
+# App images are source, not generated media
+!capcut-ai-studio/build/**/*.png
+!capcut-ai-studio/src/assets/**/*.png
+
+# Legacy CapCut engine: separate upstream clone (sun-guannan/CapCutAPI) with its
+# own .git; the app no longer imports it. Its .venv must stay on disk locally.
+CapCutAPI/
+
+# Secrets
+.env
+.env.*

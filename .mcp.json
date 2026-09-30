@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "codegraph": {
+      "command": "/Users/macbook/.local/bin/codegraph",
+      "args": [
+        "serve",
+        "--mcp"
+      ]
+    },
+    "capcut-api": {
+      "command": "/Users/macbook/Documents/Antigravity/Tool-Edit-Capcut/CapCutAPI/.venv/bin/python",
+      "args": [
+        "/Users/macbook/Documents/Antigravity/Tool-Edit-Capcut/CapCutAPI/mcp_server.py"
+      ],
+      "cwd": "/Users/macbook/Documents/Antigravity/Tool-Edit-Capcut/CapCutAPI",
+      "env": {
+        "PYTHONPATH": "/Users/macbook/Documents/Antigravity/Tool-Edit-Capcut/CapCutAPI",
+        "PATH": "/Users/macbook/.local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+        "DEBUG": "0"
+      }
+    }
+  }
+}

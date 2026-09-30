@@ -1,0 +1,729 @@
+# Agent Edit (truoc la Auto CapCut) - Tong quan source code
+
+Tai lieu nay mo ta trang thai source ngay 2026-09-26 (sau khi GO luong CapCut), de lam moc khi
+tiep tuc phat trien.
+
+## 0. Thay doi 2026-09-26: go toan bo luong CapCut
+
+Theo yeu cau nguoi dung, app chi con dung video bang Remotion. Da go:
+
+- UI: menu "Tao video" (Pipeline dung draft CapCut), "Kho transition", "Kho hieu ung"
+  (hieu ung canh / filter / font CapCut), cong tac "Buoc Review", provider Claude trong Cai dat
+  (2026-09-27 dua lai Claude lam AI LAP KE HOACH — muc 11g),
+  cac the CapCut trong Doctor (phien ban CapCut, dong bo compat, font swatch, CapCut Engine
+  memory + skill), phan draft CapCut trong "Video da tao".
+- Electron: services capcut/compat/probe/profile/fonts, IPC capcut:* fonts:* engine:* prefs:*
+  transition:* kho:* pipeline:(understand|understandReference|plan|review|autoplan|build|deploy|
+  export|selftest|revise), che do debug STUDIO_FULLRUN / STUDIO_TESTPLAN / STUDIO_UPDATE / STUDIO_E2E.
+- Sidecar: route /doctor /find_effect /understand /understand_reference /plan /review /autoplan
+  /revise /build /deploy /export /selftest /transition/* /kho/* /engine/*; module transition_lib,
+  effect_lib, kho_draft, engine_manager, memory_store; script build_draft, deploy_draft,
+  auto_export, find_effect, harvest_effects, probe_capcut, dump_resource_map, verify_kho,
+  verify_fonts; asset effects_index.json, compat.json; references capability-map/plan-schema/
+  edit-thinking; phan CapCut trong providers.py / engine.py / plan_guard.py / prompt_store.py.
+- Test chi cua CapCut (effect_lib, transition_lib, transitions, engine_manager, skip_review,
+  revision_loop). test_info_flow / test_run_log / test_plan_guard duoc viet lai cho luong Remotion.
+
+Giu nguyen co chu dich:
+
+- Ten NOI BO: `name: "auto-capcut"` trong package.json (Electron lay lam app.name -> userData
+  `~/Library/Application Support/auto-capcut` chua `secrets.enc` + muc Keychain "auto-capcut Safe
+  Storage"), `appId: app.autocapcut.desktop`, thu muc du lieu `~/.capcut-studio`. Doi = mat khoa API /
+  du lieu. Ten HIEN THI (2026-09-26): "Agent Edit" = `productName` (electron-builder.yml), tieu de cua so,
+  thanh tren cung (src/assets/logo.png), menu macOS (electron/main.ts `APP_DISPLAY_NAME`). Icon:
+  `build/make_icon.py` (logo-agent-edit.png -> icon.icns, than icon 824/1024). Header `X-Title` /
+  `User-Agent` gui API proxy van la AutoCapCut (proxy nhan dien client) — co y khong doi.
+- Thu muc `CapCutAPI/`: venv Python cua sidecar hien nam o `CapCutAPI/.venv` (state.json ->
+  venv_python). Doctor chi con kiem venv nay; may moi thi Doctor tao venv o
+  `~/.capcut-studio/sidecar-venv`.
+- Du lieu nguoi dung: projects.json (du an CapCut cu chi bi AN khoi "Video da tao"),
+  prompt_overrides.json (muc CapCut cu nam im, van tinh vao fingerprint -> cache buoc AI khong
+  bi mat), thu vien phan tich (phan `ref_gemini` cu chi con doc/xoa), kho transition/hieu ung
+  cu trong `~/.capcut-studio` (khong con dung).
+- Ban ma nguon truoc khi go: `~/.capcut-studio/source-backup-20260926-before-remove-capcut/`.
+
+Kiem chung khi go: build + tsc (0 loi, ca --noUnusedLocals) + 9 bo test Python PASS; build_spec
+tren plan Remotion that cho RenderSpec giong het tung byte truoc/sau (chi khac 1 dong bao cao:
+"+ transition White Flash" -> "+ chuyen canh flash"); render MP4 qua Electron PASS; soat 7 trang
+UI qua CDP khong co loi console.
+
+## 1. Muc tieu san pham
+
+Ung dung macOS nhan video goc, dung AI de phan tich va lap ke hoach edit, sau do dung video
+HOAN TOAN bang code (Remotion 4.0.528), xem truoc va xuat MP4 1080x1920 ngay trong app.
+
+Pipeline:
+
+1. Nguoi dung chon mot hoac nhieu video nguon; moi video duoc nen 720p (muc 11b), Gemini xem cac
+   source (vua 20 MB thi 1 request nhu cu; qua thi cat theo dung luong + ghep) va tao `sourceBrief`
+   voi phan tich rieng theo `source_id`; Whisper can lai gio loi noi (muc 11a).
+2. (Tuy chon) video mau: Gemini xem + nghe video mau, roi dai khung day -> bo phong cach (muc 11o; truoc 2026-09-28
+   la GPT qua Codex CLI).
+   (Tuy chon) TU LIEU CUA NGUOI DUNG: anh / video chen LEN video + muc dich, Gemini doc tung tu lieu (muc 11p).
+3. AI lap ke hoach (GPT hoac Claude — muc 11g) lap plan qua cac buoc (`server.remotion_autoplan_route`): B1 chon chat lieu + cau chuyen
+   -> B2 timeline -> code keo diem cat ve ranh gioi cau + noi lien timeline -> B3 hook ->
+   R4 thiet ke (bo cuc + lop do hoa + chuyen canh + mau) -> tao anh -> R5 phu de -> B6 meme ->
+   B7 SFX. Cau chuyen cua B1 va phan video mau lien quan (`providers.phong_cach_cho_buoc`) di vao
+   moi buoc. Test luong: `tests/test_info_flow.py`.
+4. `remotion_plan.build_spec(plan)` -> RenderSpec (dung lai lop cau truc cua plan_guard).
+5. Xem truoc bang @remotion/player -> Render MP4 bang @remotion/renderer.
+
+## 2. Cau truc repository
+
+### `capcut-ai-studio/`
+
+Ung dung desktop chinh: Renderer React + TypeScript + Tailwind; main process Electron; bridge
+preload + IPC; sidecar Flask/Python; composition Remotion o `remotion-src/`; build electron-vite +
+electron-builder, macOS arm64.
+
+### `CapCutAPI/`
+
+Engine CapCut cu. App KHONG con import/goi code nay; chi dung venv `CapCutAPI/.venv` lam Python
+cho sidecar (co the chuyen sang venv rieng bang Doctor neu muon bo han thu muc nay).
+
+### Root scripts va data
+
+`build_*.py`, `render_final.py`, `deploy_to_capcut.py`, `export_capcut.py`, `gen_index.py`,
+`gen_report.py`, `BAO_CAO_KHO_CAPCUT.md` la script/tai lieu nghien cuu cua giai doan CapCut, khong
+phai code runtime. Cac thu muc `work*`, video `.mp4`, release la artifact.
+
+## 3. Kien truc runtime
+
+```text
+React renderer
+  -> window.studio (preload contextBridge)
+  -> Electron ipcMain
+  -> sidecar Flask tai 127.0.0.1:<random-port>   (AI, kho SFX/meme, thu vien, build_spec)
+  -> electron/services/remotion.ts -> utilityProcess remotion-worker.ts -> MP4
+  -> electron/services/media-server.ts (http 127.0.0.1 + token) cho Player + render
+```
+
+Bao mat noi bo:
+
+- `contextIsolation=true`, `nodeIntegration=false`.
+- Electron sinh token ngau nhien moi lan khoi dong sidecar.
+- Cac endpoint sidecar nghiep vu yeu cau header `X-Studio-Token`.
+- API key duoc Electron luu bang `safeStorage` (macOS Keychain), sau do day vao RAM
+  cua sidecar qua `/config`.
+
+## 4. Module ownership
+
+### Electron
+
+- `electron/main.ts`: tao window, dang ky IPC, che do tu kiem (STUDIO_DOCTOR, STUDIO_TESTCONN,
+  STUDIO_RAWGPT, STUDIO_REMOTION_RENDER, STUDIO_DUMPCFG).
+- `electron/ipc.ts`: toan bo contract renderer -> main -> sidecar.
+- `electron/services/doctor.ts` + `toolchain.ts`: kiem + TU CAI toan bo cong cu khi mo app (muc 11n).
+- `electron/services/sidecar.ts`: spawn Flask, random port/token, health check, HTTP client.
+- `electron/services/secrets.ts`: provider config va API key (van giu cau hinh claude neu co).
+- `electron/services/projects.ts`: luu project vao `~/.capcut-studio/projects.json`.
+- `electron/services/remotion.ts`, `electron/remotion-worker.ts`: render MP4.
+- `electron/services/media-server.ts`, `runlog.ts`, `myinstants.ts`, `state.ts`, `env.ts`, `paths.ts`.
+
+### Renderer
+
+- `src/App.tsx`: shell, sidebar, readiness gate (moi truong + Gemini + GPT).
+- `src/pages/Doctor.tsx`, `Settings.tsx` (Gemini, GPT, Claude + chon AI lap ke hoach), `Sfx.tsx`, `Memes.tsx`, `Prompts.tsx`.
+- `src/pages/RemotionStudio.tsx`: menu "Video Remotion" (xem muc 11).
+- `src/pages/Projects.tsx`: danh sach + chi tiet project Remotion (an du an CapCut cu).
+
+### Sidecar
+
+- `sidecar/server.py`: Flask routes va orchestration (`/understand_sources`, `/remotion/*`,
+  `/library/*`, `/prompts/*`, `/sfx/*`, `/meme/*`, `/config`, `/test_connection`, `/cli_status`).
+- `sidecar/providers.py`: Gemini (hieu nguon: nen/cat/goi song song/ghep; gan nhan meme; 3 duong
+  API goc / proxy / Antigravity CLI `agy`), cac buoc chung B1/B2/B3/B6/B7, ngu canh dung chung, `_chat`
+  (API key hoac CLI subscription; Claude key goc -> `_anthropic_chat` /messages), `plan_chat` (AI lap
+  ke hoach dang chon), `_safe_json`.
+- `sidecar/gemini_media.py`: nen 720p + cat theo dung luong + ghep ket qua cac phan (muc 11b).
+- `sidecar/remotion_plan.py`, `motion_design.py`, `reference_video.py`, `asset_gen.py`,
+  `media_vision.py`, `sfx_kit.py`: luong Remotion (muc 11). `user_media.py`: tu lieu cua nguoi dung (muc 11p).
+- `sidecar/plan_guard.py`: lop cau truc dung chung cho build_spec (quy doi gio, hook, meme cat vao,
+  can SFX, chu tranh meme) + thong so nguoi dung chinh.
+- `sidecar/engine.py` (kho SFX + resolve sfx_id/meme_id), `meme_lib.py`, `analysis_library.py`,
+  `speech_align.py`, `prompt_store.py`, `step_cache.py`, `run_log.py`, `debug_log.py`,
+  `cli_providers.py`, `config.py`.
+
+## 5. Du lieu va file runtime
+
+- Engine state: `~/.capcut-studio/state.json` (venv_python, remotion_concurrency, remotion_license_key).
+- Project metadata: `~/.capcut-studio/projects.json` (`mode: "remotion"`, con tro `currentRemotion`).
+- Work directories: `~/.capcut-studio/projects/<slug>-<timestamp>/` (MP4 render ra nam o day).
+- SFX: `~/.capcut-studio/sfx/` + `sfx_library.json`. Meme: `~/.capcut-studio/memes/` + `meme_library.json`.
+- Thu vien phan tich: `~/.capcut-studio/library/`. Cache buoc AI: `~/.capcut-studio/cache/steps/`.
+- Prompt/quy tac nguoi dung sua: `~/.capcut-studio/prompt_overrides.json`.
+- API secrets: Electron userData `secrets.enc`.
+
+## 6. Plan Remotion (xem them muc 11)
+
+`plan` (ban THO, gio than video): `source_videos[]`, `segments[]` (source_id, start/end nguon,
+target_start, beat, `rm_transition`), `hook`, `captions`, `caption_theme`, `scene_effects`, `grade`,
+`scenes`, `layers`, `assets`, `style_kit`, `faces`, `inserts`, `audio`, `speech`, `asr_words`,
+`_pipeline`. `build_spec` tu dung cau truc (hook len dau, meme cat vao) va quy doi gio.
+
+## 7. State machine UI (Video Remotion)
+
+Stage: `upload` -> `reference` -> `preview` -> `done`. Dang chay duoc persist thanh
+`understanding` / `analyzing_reference` / `planning` / `rendering`; mo lai app thi bao gian doan
+va co nut chay lai dung buoc. Trang luon mounted khi doi tab nen render khong mat tien do.
+
+## 8. Diem can uu tien sua
+
+1. Nhieu IPC goi `startSidecar()` cung luc luc mo app co the spawn 2 sidecar (race, co tu truoc).
+2. Chua co test tu dong cho renderer/IPC contract; hien co tsc + soat UI qua CDP thu cong.
+3. venv sidecar van nam trong `CapCutAPI/.venv`; muon bo han CapCutAPI thi cho Doctor tao venv moi.
+
+## 9. Trang thai xac minh 2026-09-26
+
+- `npm run build`: PASS. `tsc --noEmit` (ca --noUnusedLocals): 0 loi.
+- `python3 -m compileall -q capcut-ai-studio/sidecar`: PASS.
+- 9 bo test Python (`capcut-ai-studio/tests/test_*.py`, HOME tam): PASS.
+- Render MP4 qua Electron (STUDIO_REMOTION_RENDER): PASS. Doctor (STUDIO_DOCTOR): uv + venv OK.
+
+## 10. Nguyen tac khi phat trien tiep
+
+- Moi field moi trong plan phai duoc cap nhat dong bo: prompt, build_spec, TypeScript type
+  (`remotion-src/types.ts`, `src/global.d.ts`), composition va UI preview.
+- Them danh muc Remotion = sua `sidecar/assets/remotion_catalog.json` + cach ve trong `remotion-src/`
+  (test `tests/test_remotion_plan.py` muc [7] bat thieu).
+- Moi buoc dai can persist trang thai cu the va co resume dung buoc.
+- Them dau vao moi cho buoc AI thi phai them vao khoa `_step(...)` cua buoc do.
+
+
+## 11a. Can gio loi noi (sidecar/speech_align.py, them 2026-09-25)
+
+Gemini ghi gio cau trong transcript TRE 0.5-2.5s (do tren "test 1.mp4": trung vi +1.55s,
+cac moc cach deu ~1.25s — Gemini "rai deu" chu khong do). Sau `/understand_sources` (va o
+`/autoplan`, `/remotion/autoplan` cho brief cu), sidecar chay faster-whisper `small` (CPU,
+int8, chi dung model DA CO trong ~/.cache/huggingface, khong tu tai) lay gio TUNG CHU, ghep
+voi chu Gemini (difflib, bo dau) -> giu CHU Gemini, lay GIO that; emotion_map/key_moments
+co gian theo cung ham quy doi. Ket qua ghi `sources[].timing` (`asr-align` | `gemini` + ly_do),
+gio cu giu o `start_gemini`, chu Whisper o `asr_words`. Cache: ~/.capcut-studio/cache/asr/.
+Luong Remotion con bam tung caption vao chu Whisper (karaoke dung chu). Do lai tren MP4 xuat
+ra: caption lech loi noi trung vi -0.04s. Test: `tests/test_speech_align.py`.
+
+## 11b. Video gui Gemini: nen 720p + cat THEO DUNG LUONG (sidecar/gemini_media.py, 2026-09-26)
+
+Ly do: gui file goc (vd 138 MB HEVC 1080p) qua proxy = 1 request base64 ~184 MB -> timeout / 502;
+Gemini CLI tung chan file > 20 MiB. Gemini chi lay ~1 khung/giay va tu thu nho khung -> 720p gan nhu
+khong mat thong tin. Do that IMG_3839.MOV: 138 MB -> 10.8 MB, nen ~18-24s.
+
+- `compress`: canh ngan <= 720 (tinh ca rotation), khong phong to, fps <= 30, H.264 CRF 28, AAC
+  mono 64k. Cache `~/.capcut-studio/cache/gemini-media/` (khoa = duong dan + kich thuoc + mtime file
+  goc), don file khong dung > 7 ngay. Nen hong -> gui file goc (hanh vi cu) + canh bao.
+- `split` (chi khi ban nen > `PIECE_LIMIT_BYTES` = 20 MB thap phan, duoi muc 20 MiB cua CLI): diem
+  cat tinh tu TONG BYTE goi tin (ffprobe), lui ve giua khoang im lang gan nhat (silencedetect, cua so
+  <= 20s / 25% phan), phan sau bat dau o keyframe truoc diem cat ~5s (chong lan) va cat bang stream
+  copy (khong nen lai, gio chinh xac). Diem bat dau khong phai keyframe (GOP dai hon 1 phan) -> nen
+  lai rieng phan do. KHONG ep keyframe day khi nen: do that ton them 18-40% dung luong.
+- Goi (`providers.gemini_understand_sources`): video nguyen gom chung 1 lan goi mien tong <= 20 MB
+  (vua het -> y nhu cu, khong ghep); moi phan cat 1 lan kem ghi chu "PHAN k/n, giay A-B". Song song
+  toi da 3; ket qua tung lan luu `step_cache` ("gemini_sources", 48h) -> loi 1 lan chi gui lai lan do;
+  `fresh` bo qua cache nay. Luong phu phai `run_log.set_run` lai (nhat ky theo luong).
+  Khoa cache cua file trong cache nen dung TEN + kich thuoc (khong dung mtime: file duoc "cham" moi
+  lan dung lai -> mtime doi -> cache khong bao gio trung — loi da gap khi test).
+- Ghep (`merge_parts`): cong gio bat dau phan; ranh giua 2 phan = giua doan chong lan, muc thuoc
+  phan nao theo `start`; quality lay muc te nhat; roi 1 luot AI chi chu (`_GEMINI_MERGE_PROMPT`,
+  sua duoc trong menu Prompt) viet lai tom tat + xep hang lai key_moments theo chi so, KHONG doi gio.
+  Luot ghep hong -> giu ban ghep co hoc + canh bao.
+- Test: `tests/test_gemini_media.py` (can ffmpeg).
+
+## 11c. Gemini bang tai khoan Google qua Antigravity CLI `agy` — cli_providers.py, 2026-09-26
+
+Gemini CLI (`gemini`) KHONG dung duoc cho tai khoan ca nhan (free / Google AI Pro / Ultra) tu
+18/06/2026: dang nhap van thanh cong nhung moi yeu cau bi Google tra `IneligibleTierError: This client
+is no longer supported...` (do that tren may user). Thay bang Antigravity CLI `agy` (da chay that 1.2.11
+bang tai khoan Pro cua user):
+- `agy -p <prompt> --output-format json --disable-slash-commands --print-timeout <n>s --model <m>`,
+  thu muc lam viec `~/.capcut-studio/agy-work/`. JSON: `conversation_id`, `status` (SUCCESS|ERROR…),
+  `response`, `error`, `usage`. Model: `agy models` (app chi lay model `gemini-*`, Pro dung dau);
+  mac dinh `gemini-3.1-pro-high`. Ten model cu cua Gemini CLI da luu -> `agy_model()` doi ten.
+- agy la AGENT: video den model qua cong cu `view_file` (image/pdf/video/audio, <= 100 MB) -> inlineData
+  video/mp4 (ca hinh + tieng). Prompt liet ke duong dan TUYET DOI tung video (hard link vao
+  `jobs/<id>/`). Do that: video thu 12s (so tren man hinh, vat chuyen dong, loi noi tieng Viet) -> dung
+  het; IMG_3839 2 phut voi prompt Hieu nguon -> 160s, 62 cum loi thoai, cam xuc co bang chung tu net mat.
+- agy luu MOI luot 2 ban sao video: `~/.gemini/antigravity-cli/conversations/<id>.db` va
+  `brain/<id>/.tempmediaStorage/*.mp4` -> xoa theo conversation_id sau moi luot. So file trong
+  `.tempmediaStorage` = so video model DA MO -> it hon so video gui -> bao loi (khong dung ket qua doan).
+- Dang nhap: giao dien toan man hinh -> can Terminal that. Electron ghi `~/.capcut-studio/agy-login/
+  dang-nhap-agy.command` (dat SSH_CONNECTION/SSH_CLIENT/SSH_TTY -> agy IN LINK + nhan ma, khong tu mo
+  trinh duyet mac dinh -> user dan link vao dung trinh duyet co tai khoan Pro) roi `shell.openPath`;
+  renderer hoi lai `cli_status` moi 4s. Phien luu `~/.gemini/antigravity-cli/antigravity-oauth-token`
+  (app chi kiem tra CO file) — nam trong HOME that nen KHONG chay agy voi HOME rieng duoc.
+- Cai: nut trong app chay trinh cai chinh chu `curl -fsSL https://antigravity.google/cli/install.sh | bash`
+  (kiem SHA-512, dat `~/.local/bin/agy`, THEM dong PATH vao `~/.zprofile`). agy tu cap nhat nen.
+- agy nhan MCP cua IDE (`codegraph` trong ~/.gemini/config) nhung do that luot headless khong bat no.
+- Google (dien dan chinh thuc): goi binary agy chinh chu headless tu app khac tren tai khoan AI Pro ca
+  nhan duoc phep neu khong lay token; chay dong thoi / lien tuc de cham gioi han RPM/TPM -> app chay
+  toi da 2 luot agy cung luc (`GEMINI_PARALLEL_AGY`), API thi 3.
+- Chua dung duoc: `agy` in ra loi dang nhap / het han muc -> `_auth_hint` / `_quota_hint` tieng Viet.
+- Test: `tests/test_gemini_agy.py` (chuong trinh `agy` gia, HOME tam).
+- Kiem thu tu dong: KHONG chay giao dien `agy` trong pty de do — lan dau chay no tu mo trinh duyet that
+  cua user (lenh `open` gia trong PATH khong chan duoc).
+
+## 11d. Video HDR (iPhone) -> ban lam viec SDR; lop tach nguoi khop khung (2026-09-26)
+
+Su co that (IMG_3839.MOV = HEVC 10-bit, BT.2020, HLG + Dolby Vision): nguoi trong video da dung bac mau /
+chay sang, lop tach nguoi lech khi cu dong. Do bang so:
+- Moi cho doc video bang ffmpeg KHONG chuyen HDR->SDR (tach nguoi, anh chup tu nguon, anh thu nho, ban
+  nen gui Gemini) ra khung sang hon ban chuan cua Apple ~27 muc + nhat mau. Lop tach nguoi lay RGB tu cac
+  khung do -> nguoi de len video nen bac/chay. Xem truoc (Chrome) phat thang HLG + CSS filter (grade) ->
+  chay sang; render (Remotion `toneMapped` mac dinh) ra mau khac.
+- `sidecar/media_sdr.py`: `working_path(path)` — video HDR (transfer HLG/PQ) -> ban SDR BT.709 tao 1 LAN
+  (cache `~/.capcut-studio/cache/media-sdr/`, xoa neu 60 ngay khong dung) bang `avconvert` (AVFoundation,
+  mau dung nhu Anh/QuickTime, 2 phut video = ~20s); ket qua phai THAT SU la SDR (avconvert gap H.264 8-bit
+  gan nhan HLG thi giu nguyen HLG) -> khong thi ffmpeg zscale+tonemap hable npl=203 (gan Apple nhat trong
+  cac phuong an ffmpeg da do); hong het -> file goc. Video SDR: tra nguyen, khong ton gi.
+- Noi vao: `build_spec` (`working_sources` -> path = ban SDR, orig_path = goc; meme / overlay qua
+  `working_path`), `/remotion/autoplan` SAU B1-B3 (du lieu vao cac buoc AI giu duong dan goc -> cache
+  dung lai), `media_vision.face_box/subject_matte`, `asset_gen.source_still`, `gemini_media.prepare`
+  (nen tu ban SDR), `reference_video.analyze_reference`, anh thu nho thu vien (`sdr_vf`, ten `_v2.jpg`).
+- Spec co `media: 2` (`remotion_plan.SPEC_MEDIA_VERSION`). RemotionStudio mo du an co spec cu (media < 2)
+  -> tu dung lai spec tu plan (khong goi AI) + thong bao.
+- Lop tach nguoi cham 1 khung: ffmpeg `-ss A` lay khung DAU TIEN tu A tro di, A giua 2 khung (85.61s =
+  khung 2568.3) -> bat dau khung 2569 nhung spec ghi 85.61. Sua: `matte_grid_start` lam tron XUONG khung
+  nguon (fps danh nghia) + ghi dung moc do vao spec. Do bang render Remotion (chu sau nguoi): cach cu 3.5%
+  diem lech trong vung nguoi, dung khung 0.00%. (Do bang ffmpeg `-ss` KHONG dung duoc — quy uoc chon khung
+  cua Remotion khac.) Cache matte `v2`.
+- Xem truoc: video nen + lop tach nguoi la 2 the video, Remotion mac dinh cho lech 0.45s -> clip co lop
+  tach nguoi dat `acceptableTimeShiftInSeconds` 0.15s (`SUBJECT_SYNC_SEC`). Do that khi phat: lech 0.013s.
+- Test: `tests/test_media_sdr.py`.
+
+## 11e. Cat an toan theo tieng noi + lop chu khop loi (sidecar/speech_cut.py, 2026-09-26)
+
+Su co that (IMG_3839, du an r_muhwdi9idyzqlb): "cat canh khi tieng chua noi het" va "chu / anh nhay ra
+kem am thanh di truoc vai giay". Nguyen nhan: diem cat lay theo "cum tu" Gemini (cum noi lien van bi coi
+la khoang lang -> cat giua cau), cat dung moc het chu cua Whisper (Whisper bao het chu SOM hon am that,
+va hay nuot khoang lang vao chu); lop chu R4 neo o dau cau thay vi luc noi tu khoa (som toi 1.58s).
+- Chi dung toi cho NHAY DOAN (hai doan lien nhau tren timeline ma khong noi tiep trong nguon).
+- Cuoi doan: khong cat giua chu / giua cau (dau cau, lang >= 0.25s, dau phay + lang >= 0.12s, hoac lang
+  THAT >= 0.18s trong am thanh). Thu tu: noi cho het cau (<= 1.2s) -> noi lien sang doan ke tiep cung
+  nguon -> lui ve cho ngat truoc (<= 1.2s) -> noi toi 2.5s -> giu nguyen. Diem cat = het tieng that (do to
+  10ms, nguong = nen + 35% khoang dong, lang >= 40ms o vung duoi am) + 30ms; duoi am duoc vuot moc Whisper
+  cua chu sau toi 0.1s; noi lien khong co lang -> cat o cho nho tieng nhat.
+- Dau doan: lui ve dau cau (<= 1.2s) / bo chu bi cat do; vao truoc tieng dau 30ms; khong tu cat bot lang.
+- Khong keo vao doan nguon da dung cho doan khac. Meme / SFX neo DUNG mep doan vua bi thu vao -> theo mep
+  moi (`follow_anchors`). `plan_guard.source_to_timeline` du phong = cuoi doan GAN NHAT truoc gio nguon
+  (truoc day lay doan dau tien -> meme giay 109 bi chen len giay 1.3).
+- Lop chu (`snap_layers`): tim chu Whisper khop phan chu CHINH cua lop (khong dau, gan dung, >= 60% chu
+  khoa theo thu tu) trong [src_start-0.6, src_end+1]; Whisper nghe sai -> dung chu phu de (moc noi suy);
+  tu da bi cat khoi video -> bo qua. Lop hien 0.12s truoc tu (`LAYER_LEAD`); hinh cung `group` doi theo;
+  SFX rieng cua plan trung gio bat dau cu cua lop (<= 0.15s) doi theo; SFX cua lop di theo lop san.
+- Noi vao: `build_spec` (sau chuan_hoa_segments; loi -> bo qua, giu diem cat cu), `plan_guard._hook_segment`
+  (`fix_range`), `/remotion/autoplan` ngay sau B2 (B3..B7 thay dung timeline se dung). Moi ham on dinh:
+  chay lai khong doi. Do to cache `~/.capcut-studio/cache/speech-energy/` (file goc mat -> dung ban SDR).
+- Spec `media: 3` -> RemotionStudio mo du an cu tu dung lai spec tu plan.
+- File video nguon bi chuyen / xoa -> `build_spec` tra loi "Khong tim thay file video nguon" (truoc day ra
+  spec khong clip ma van ok) -> UI giu spec cu, hien ly do, lan mo sau thu lai.
+- Do tren du an that (spec cu -> moi): cho nhay canh cat khi con tieng 7 -> 0, giua chu 1 -> 0, giua cau
+  1 -> 0 (render that: 13/13 diem cat nam trong lang); lop chu hien som > 0.5s: 7 -> 0 (lech lon nhat
+  1.58s -> 0.20s); video dai 64.7s -> 65.9s.
+- Kem theo: `media_sdr` KHONG cham gio sua ban SDR nua (file `.used` danh dau con dung) — truoc do moi lan
+  dung spec deu tach nguoi lai (~100s) vi khoa cache matte theo gio sua. Sidecar: `startSidecar` dung chung
+  1 lan khoi dong (truoc day mo app spawn 2-3 sidecar, tat app chi tat 1 -> sidecar mo coi) + sidecar tu
+  thoat khi app me mat (`_theo_doi_app_me`).
+- Test: `tests/test_speech_cut.py`. Luu y tu kiem render trong terminal VSCode: phai `env -u
+  ELECTRON_RUN_AS_NODE` (VSCode dat bien nay -> binary app chay nhu node va thoat ngay, khong log).
+
+## 11f. Video cua du an duoc chep vao thu muc du an (2026-09-26)
+
+Su co that: IMG_3839.MOV + tiktok_video.mp4 bi chuyen khoi Downloads -> du an mat video (du an luu duong
+dan tuyet doi toi file goc o videos, sourceBrief, referenceAnalysis, rmPlan, rmSpec).
+- Them video nguon / video mau (chon file, keo-tha, chon tu thu vien) -> `electron/services/project-media.ts`
+  chep vao `<workDir>/video-nguon/` | `<workDir>/video-mau/` (workDir = `~/.capcut-studio/projects/...`, tao
+  ngay luc them video). `copyFile(COPYFILE_FICLONE)`: cung o APFS = clone (tuc thi, khong ton them dung
+  luong, file goc giu nguyen); khac o -> chep that, kiem dung luong trong (+512MB). Chep ra `.dang-chep` roi
+  doi ten, giu ngay sua goc. Cung noi dung da co -> dung lai; khac noi dung cung ten -> `ten-2`. IPC
+  `media:import` chi ghi trong `~/.capcut-studio/projects/`. Moi buoc sau dung ban trong du an; video luu
+  `origPath` (noi chon file, de hien thi / nhan trung).
+- Mo du an cu (`src/lib/projectMedia.ts` `adoptProjectMedia`): video con nam ngoai -> chep vao + thay duong
+  dan o MOI noi trong du an (`replacePaths`, thay chuoi trung khop hoan toan) + luu. Video nguon da mat +
+  spec con ban lam viec SDR (`cache/media-sdr`) DUNG do dai (+-0.6s, dung 1 ung vien) -> chep ban do vao du
+  an (`<ten>-ban-sdr.mov`, `recovered: true`) va dung no; con lai -> banner "Chon lai file" (kiem do dai
+  lech <= 1s, chep vao du an, thay duong dan, dung lai spec). Nguon doi duong dan / file cua spec mat ->
+  dung lai spec tu plan (`staleTick`).
+- Thu vien phan tich nhan video theo NOI DUNG nen ban chep van dung lai phan tich cu; file thu vien tro
+  toi bi mat -> tro sang ban chep cung noi dung (`analysis_library._refresh_path`).
+- Keo-tha: Electron 32+ bo `File.path` -> keo-tha video truoc day KHONG them duoc gi; nay dung
+  `webUtils.getPathForFile` (preload `pathForFile`).
+- Test: `node tests/test_project_media.mts` (Node >= 23), `tests/test_analysis_library.py`. Tu kiem UI: HOME
+  tam + du an gia lap; keo-tha qua CDP phai tao File that bang `DOM.setFileInputFiles` roi phat `drop` vao
+  dung o `.border-dashed` (`Input.dispatchDragEvent` khong toi trang).
+- Xoa du an trong app KHONG xoa thu muc du an (co ban render + video chep) — giu nguyen quy tac cu.
+
+## 11g. AI lap ke hoach: GPT hoac Claude (2026-09-27)
+
+- Chon trong Cai dat API -> muc "AI lap ke hoach"; luu `state.json` -> `plan_provider` ("gpt" mac dinh,
+  "claude"). Sidecar doc lai moi lan (`config.plan_provider()`), khong can khoi dong lai.
+- MOI buoc ke hoach (B1, B2, B3, B6, B7 trong providers.py; R4 motion_design/remotion_plan; R5) goi
+  `providers.plan_chat(...)`. Buoc ke hoach moi PHAI goi `plan_chat`, dung goi thang `_chat("gpt")`.
+- Van GPT (Codex CLI): tao anh AI (`asset_gen`) + chu anh AI (`text_art`). Phan tich video mau: Gemini tu
+  2026-09-28 (muc 11o).
+- Khoa cache buoc: `config.provider_fingerprint(plan_provider())`; van tay GPT giu dang cu (cache cu
+  van dung), doi sang Claude thi chay lai that. Plan ghi `_pipeline.ai` (UI hien "Ke hoach ... (Claude)").
+- Claude CLI: `claude -p --output-format json --model <id> --max-turns 1 --tools "" --no-session-persistence
+  --setting-sources "" --strict-mcp-config ... [--effort low|medium|high|xhigh|max]`. Dang nhap: app mo
+  Terminal chay `claude auth login --claudeai` (file .command, giong agy), UI hoi lai `cli_status` 4s/lan.
+  Nut "Cap nhat Claude Code" chay `claude update`.
+- Model (`cli_providers.SPEC["claude"]`) da goi that 2026-09-27 voi Claude Code 2.1.186: opus-5, fable-5,
+  sonnet-5, haiku-4-5 chay; opus-5-5 can CLI >= 2.1.280, fable-5-1 >= 2.1.251 (`min_cli` -> UI ghi
+  "can cap nhat", loi API "does not support this model; version X" -> `_outdated_hint`).
+- Do that B1/B2/B3 bang claude-opus-5 (du an quang cao 37s): 32s / 47s / 12s, JSON hop le.
+- Test: `tests/test_claude_planner.py`.
+
+## 11h. Xoa du an o "Video da tao" (2026-09-27)
+
+- Nut Xoa mo hop xac nhan (`Projects.tsx` DeleteDialog). Mac dinh CHI go khoi danh sach (projects.json).
+  Tick "Chuyen ca file tren may vao Thung rac" -> `shell.trashItem` thu muc du an (ban chep video nguon/mau,
+  video da render) + `runs/<id>` (nhat ky). Thung rac hong -> KHONG go khoi danh sach.
+- Chan dua vao Thung rac (`projects.ts` trashBlock): thu muc ngoai `~/.capcut-studio/projects/`, chinh
+  thu muc projects/, dung chung voi du an hop le khac, dang render vao thu muc do (ipc). Video goc ngoai du
+  an, thu vien phan tich va cache buoc AI khong bao gio bi dung.
+- Trang Video Remotion luon mounted va tu luu du an -> App truyen `deletedReq` (du an dang mo bi xoa ->
+  reset, khong luu nguoc lai) va nhan `onBusy` (dang chay buoc / chep video -> nut Xoa bi khoa).
+- Test: `HOME=$(mktemp -d) node tests/test_project_delete.mts` (gia lap 'electron' qua
+  `tests/helpers/electron-mock-loader.mjs` — dung lai cho test service Electron khac).
+
+## 11i. Noi dung + chu + anh AI: luat cung bang code (2026-09-27)
+
+- Noi dung: B1/B2 KHONG dao thu tu, chi bo im lang / tieng dem / cau lap; hook la BAN SAO dat len dau.
+  `providers.giu_thu_tu_nguon` (sau B1 + B2), nhieu video: B1 tra `thu_tu_video` theo noi dung,
+  `providers.thu_tu_video` kiem, `bo_trung_giua_video` bo doan noi lai giua 2 video. Test `test_content_order.py`.
+- Khoa cache (`prompt_store.fingerprint`) tinh prompt DANG CO HIEU LUC (ca mac dinh) — truoc chi tinh phan user sua.
+- Quy tac chu (`motion_design.py` muc QUY TAC CHU; goi trong `remotion_plan.build_spec`):
+  1 khong emoji: lop `emoji` + `emoji_pop` + ky tu emoji trong chu/caption bi bo (catalog khong con emoji_pop);
+  2 `reading_order` (gio nguon, sau `snap_layers`): tang/lop cung group NOI TRUOC len tren/trai — moc lay tu
+  CUNG mot nguon (Whisper hoac chu phu de), cum ngan khop du tu, chon to hop moc gan nhau nhat;
+  3 `text_rules` (moi lop text) chu dac, glow <= 0.3 co chu, thu vua 94% khung + `ensure_legible` do do sang
+  NEN THAT sau khoi chu (khung video / anh panel / gradient) -> tuong phan < 4.5 hoac nen nhieu chi tiet thi
+  them vien + bong; 5 `_behind_clear` (trong `attach_subject_mattes`): mat na tach nguoi that
+  (`media_vision.matte_mask`) — che <= 22% khoi chu va <= 10% nua tren, khong dat thi nang/thu nho, cuoi cung
+  dua chu ra truoc nguoi tren dau; 6 chu de len nhau: dy >= -0.3em, doi mau TANG PHU + vien tach; hai TO HOP
+  khac nhau chong nhau -> khoi truoc tat khi khoi sau hien (`separate_group_overlaps`); 7 phan cap theo co
+  NHIN THAY (chu viet tay x0.62): tang phu khac font <= 75%, <= 2 font, to hop nhieu font tang chinh >= 84px.
+- Anh AI: `asset_gen._ASSET_IMAGE_PROMPT` (sua duoc trong menu, template {prompt}{context}{out}) +
+  `motion_design.asset_contexts` (cau dang noi luc anh hien, vai tro tren man hinh, chu cung luc, chu de) —
+  boi canh nam trong khoa cache anh. R4 viet prompt 7 phan + `illustrates`.
+- Do dac tren khung hinh (neo dinh dau, do che, do nen, ne mat) quy doi qua `motion_design.clip_map` / `_zoom_at`
+  — giu KHOP `AutoEdit.tsx` (cover + object-position theo mat + jump-cut zoom `scale`).
+- `SPEC_MEDIA_VERSION` 4 -> du an cu mo lai tu dung lai spec tu plan (ap quy tac chu); anh cu giu nguyen
+  (muon anh theo prompt moi thi lap plan lai). `DESIGN_VERSION` 4. Test: `tests/test_text_rules.py`.
+
+## 11j. Phong cach: CHI tu video mau, khong mac dinh, khong luu chung (2026-09-27)
+
+- User: app edit NHIEU loai video -> khong duoc co phong cach mac dinh. Truoc do bo "mac dinh" chinh la
+  phong cach mau1 (chu do phat sang sau dau + chu viet tay, the cam, vong tron cuoi) nen moi video khong
+  video mau deu giong nhau; bo cua video mau con bi tron phan thieu tu mau1; R4 prompt + `audit_design`
+  ep chi tieu mau1 (>= 3 bo cuc, to hop nhieu tang moi 12s, hook fisheye, CTA Follow).
+- Co video mau: `motion_design.style_kit_for` tra NGUYEN style_kit boc tu video mau do (luot 2
+  `reference_gpt`), luu kem phan tich video mau trong thu vien (`analysis_library` ref_gpt) -> chon lai
+  video mau tu thu vien la dung lai. `audit_design` dem chi tieu theo CHINH bo do (share bo cuc,
+  motion.density, recipes, broll_style).
+- Khong video mau: style_kit = None. R4 tu thiet ke theo noi dung + tone + edit_request va ghi `style`
+  (mood, palette, fonts, image_style, density) -> `motion_design.session_style` kiem -> `plan.style_kit`
+  (_nguon "phien_nay") — chi nam trong plan du an do. `audit_design` chi kiem loi cau truc.
+- Gia tri cai san da go: nen the/graphic khong ghi mau -> mau lay tu khung video (`_video_colors`),
+  hoa van mac dinh "none", pop-out khong mac dinh; DSL muc 7 chi con vi du CU PHAP (cho trong `<...>`);
+  vi du schema R4/R5 la placeholder. Quy tac chu (11i) van ap cho moi phong cach.
+- Test: `test_remotion_plan.py` [12][13], `test_info_flow.py` (co video mau -> R4 nhan dung bo cua no;
+  khong -> style_kit null, plan khong luu bo nao).
+
+## 11k. LUONG EDIT MOI — hieu ung tu de xuat theo boi canh + tu viet code (2026-09-27)
+
+- 2026-09-28: LA LUONG DUY NHAT. Da go nut "Luong Edit moi" + luong cu (v1): IPC settings:getEditFlow /
+  setEditFlow, `config.edit_flow_v2`, `EditFlow` (state.ts), tham so `edit_flow` cua autoplan (client cu gui
+  "v1" -> bi bo qua), nhanh R4 v1 (`hook_rule.luat("R4")` trong R4 thiet ke + giu effects / speedlines kho).
+  GIU (dung chung): kho hieu ung Remotion + cach ve (Hook-FX chon trong kho la du phong khi Hook-FX-plan hong,
+  `fallback_effect`, R4-visual du phong van co `luat("R4")`), cach ve speedlines / scene_effects (du an cu).
+  Khoa cache R4 giu `"flow": "v2"`, prompt `_NEW_FLOW_NOTE` giu nguyen chu, `_pipeline.luong` = "v2" ("v1" = du
+  an lap khi con luong cu). Kiem: autoplan (AI gia, 6 kich ban) code moi vs code cu + edit_flow v2 GIONG HET:
+  thu tu buoc, system prompt + payload tung buoc, khoa cache, plan, spec. state.json van con khoa `edit_flow` (bo qua).
+  Ban nguon truoc khi go: `~/.capcut-studio/source-backup-20260928-before-remove-edit-v1/`.
+- (Lich su) Bat / tat: nut "Luong Edit moi" tren trang Video Remotion -> state.json `edit_flow` = "v2" | "v1" (IPC
+  settings:getEditFlow / setEditFlow); autoplan nhan kem `edit_flow`. TAT = luong cu y nguyen (khong buoc nao
+  moi chay, khoa cache R4 khong doi).
+- Bat: R4 khong khai effects / speedlines (`motion_design._NEW_FLOW_NOTE` + code go); sau R5 chay
+  `fx_flow`: `fx_moments` (boi canh TUNG segment: loi noi, cam xuc, su kien, bo cuc, chu tren man hinh, mat,
+  hook) -> FX-plan (`_FX_PLAN_SYSTEM`: context -> goal -> why_fit -> visual, khong co muc tieu thi khong dat;
+  `sanitize_plan` bo hieu ung thieu ly do / ngoai khoanh khac / 2 transform chong) -> FX-code
+  (`_FX_CODE_SYSTEM`, tu kiem lan 2 `fit_check`) -> hop cach ly `sidecar/fx_runtime.mjs` kiem -> loi thi FX-fix
+  1 luot -> van loi thi bo. `plan.fx` giu code + boi canh (hien trong "Ket qua: Ke hoach").
+- HOP CACH LY: Node `vm` context rong, API dinh nghia BEN TRONG context, chi chuoi JSON qua bien gioi,
+  `codeGeneration.strings = false` (chan Function('...')), tu cam (constructor, require, Math.random, Date...),
+  timeout 250ms / lan goi, the / thuoc tinh cho phep (khong text / image / url ngoai). Chay bang binary
+  Electron (`STUDIO_NODE_BIN` = process.execPath, ELECTRON_RUN_AS_NODE) hoac `node` (dev / test).
+- Dung: `fx_flow.fx_to_spec` (trong build_spec) ve SAN tung khung -> `~/.capcut-studio/cache/fx/<hash>.json`
+  (khoa: code + do dai + fps + khung + vi tri mat + tham so); spec.fx (lop phu front / behind) + spec.fxTransforms
+  (so tung khung). Remotion `FxLayer.tsx` chi hien chuoi SVG da loc (may chu media cho phep .json CHI trong
+  cache/fx); transform ap vao khung video (ban goc + ban tach nguoi). Code AI KHONG chay trong app / trinh render.
+- Test: `tests/test_fx_flow.py`, `tests/test_info_flow.py` [11].
+
+## 11l. Luong Edit moi — CHU ANH AI cho moi cum chu noi bat (2026-09-27)
+
+- Ap cho MOI cum chu noi bat (lop chu R4, chu hero R5, chu hook); KHONG ap phu de karaoke, the trich dan
+  (reveal), cum > 48 ky tu, bo dem so. Luon chay (sau R5), song song voi FX (thread).
+- `sidecar/text_art.py`: `lockups_from` (lop cung group gop 1 cum -> phan cap chinh / phu dung ca to hop) ->
+  `_pack` (<= 3 cum, <= 5 hang / tam) -> `gen_sheet` (Codex image_generation, prompt `_TEXT_ART_PROMPT`, NEN
+  TRONG SUOT, tam dau lam MAU phong cach cho cac tam sau qua `-i`) -> `slice_sheet`: `segment_rows` (tach moi khe
+  roi gop khe hep nhat toi dung so hang; hang dinh nhau -> tach o cho mong nhat), OCR Vision vi-VT kiem chinh ta
+  (bo dau, >= 0.72) + khung TUNG TU (`boundingBoxForRange`), cat PNG vao `~/.capcut-studio/cache/textart/`.
+  Cum loi -> tao lai 1 lan -> van loi thi giu chu code. plan["text_art"]["items"].
+- Dung: `motion_design.art_index` (tra theo chu cua TANG) + `_attach_art` (sau text_rules: co chu = khop BE NGANG
+  phan chu dac voi be ngang chu thiet ke, chan 0.75-1.9 co; tang sau chong nhe phan dem; vao theo TUNG TU
+  `words_rise` neu R4 chi khai vao ca khoi), `hero_captions_to_art` (chu hero/hook -> lop chu anh). _text_width /
+  _text_height doc kich thuoc anh -> ne mat / phu de / chu sau nguoi van dung. Remotion `Layers.tsx` ArtText:
+  moi tu la cung anh, clip-path theo khoang x, vao lech nhau.
+- Do that (video 1:49): 18 cum / 6 tam, ~4 phut; 18/18 dat sau khi sua cach tach hang. Test `tests/test_text_art.py`.
+
+## 11m. Gio chu, cat noi lai, luat hook (2026-09-27, ca 2 luong)
+
+- GIO CHU (`speech_cut.snap_layers`): cau phu de (loi Gemini) CHUA cum chu lam MOC — chi tim tieng noi trong cau
+  do +-0.8s (Whisper bo sot cau dau 'mình là Mr Vi Coding' tung lam chu nhay 2.7s sang 'mình sẽ'). Cum ngan chi con
+  <= 1 chu khoa -> khop NGUYEN CUM (cho chen <= 2 chu dem: 'rất LÀ quan trọng'). Diem khop tru 0.25/giay lech (cho
+  day du hon o xa khong thang cho vua du tai gio AI); diem < 0.25 bo; khong moc cau + doi > 1.5s chi khi >= 2 chu khoa
+  khop het. Hinh / chu khong khop trong nhom theo lop khop GAN no nhat. SFX anchor hook chi theo lop cua hook, kep
+  trong khoang hook (truoc day tieng dam mo hook bi keo ra ngoai -> hook mat tieng). Player tai truoc anh chu AI 2.5s.
+- NOI LAI (`providers.bo_lap_trong_video`, sau B1): o CHO VAP (B1 bo cau giua / khoang >= 0.8s / cau '...' / cau bat
+  dau 'ờ') so cau truoc vs sau (quy hoach dong, >= 2 cau khop theo thu tu, >= 5 chu mang y, moi cap co chu RIENG) ->
+  bo lan truoc tu cau lap dau toi cho vap, ghi `removed`. Sau B2: `ton_trong_da_bo` (B2 khong dua lai), `gioi_han_cat`
+  (segment ke phan da bo -> hard_lo/hard_hi; `safe_start` locked: dang co tieng thi TIEN toi khoang lang, khong lui
+  vao 'Ví dụ như là' da bo), `speech_cut.trim_filler_edges` (dau/cuoi doan >= 0.6/0.8s khong co chu Whisper ma loi
+  Gemini xac nhan chi la 'ờ' / lang -> cat sat). Prompt B1/B2 them muc DOAN NOI LAI.
+- LUAT HOOK (`sidecar/hook_rule.py`): hook (ban sao dau video; khong co hook = 3.5s dau) BAT BUOC co hieu ung HINH +
+  AM THANH gay chu y, KHONG ep loai, MUC DO THEO TONE (user: "ke chuyen nhe nhang thi hieu ung phu hop"): nhe (ro nhung
+  em, khong rung/loe/glitch) / vua (dut khoat) / manh (manh tay, chong lop). B3 ghi hook.attention.muc_do (+ ly do);
+  khong co -> `muc_do()` doan theo tone B1 + edit_request + mood. Code NOI luat vao prompt B3 / R4-visual (du phong) / FX-plan /
+  B7 (khong nam trong prompt user sua). `ensure()` sau build_spec DO tren SPEC that (`measure`): chuyen dong khung
+  (bien do + toc do len dinh; rung = giat DOI CHIEU, dich tam khi zoom khong tinh), lop hinh tu viet (ve khung SVG bang
+  NSImage -> do phu + do dong; khung trong = 0), hieu ung kho (bang loai x cuong do). Nguong: nhe >= 0.45 cham <= 0.8s,
+  khong gat; vua >= 0.8 / manh >= 1.1 cham <= 0.5s; va >= 0.75 x hieu ung manh nhat than video (tran 1.5 x muc). SFX vao
+  <= 1s (nhe 1.5s), am luong >= 0.3. Thieu / yeu / muon / gat -> AI lam lai kem so do (v2: Hook-FX-plan tu viet code, bo
+  transform cu; con lai Hook-FX chon trong kho; Hook-SFX), van khong dat -> du phong theo muc + du nguong (nhe focus;
+  vua zoom_punch (+focus); manh zoom_punch + flash), ghi `_pipeline.luat_hook`. Prompt `_HOOK_FIX_SFX_PROMPT`,
+  `_HOOK_FIX_VISUAL_PROMPT`. Do that video IMG_3839: hook cu (fx5 day may 10%, cham 0.96s) = 0.55 -> YEU.
+- 2026-09-28 (user: "hook van khong du manh, van khong cat khoang nghi, tach nguoi khi chuyen dong khong chuan"):
+  - HOOK do theo NHIP (`hook_rule.measure` -> events): thay doi so voi 0.2s truoc (giu zoom KHONG tinh), lop hinh ve
+    khung -> thay doi alpha, chu / hinh vao = nhip nho, cut = nhip toan khung. BAT BUOC hieu ung TOAN KHUNG (chuyen dong
+    khung / hieu ung kho / lop phu >= 35% khung; icon nho khong tinh) + so nhip (nhe 1 / vua 2 / manh 3) + khong dung im
+    (vua 2s / manh 1.5s). Muc do: YEU CAU EDIT (style / purpose) > B3 > tone. Du phong du nhip theo muc.
+    Do video 09-28: 2 nhip, dung im 1.7s o muc manh -> CHUA DAT (luat cu bao 2.20 "dat" vi lay zoom dang giu).
+  - `speech_cut.tighten_pauses` (sau B2, ca 2 luong): lang THAT (dB) > `pause_limit` (nhanh 0.30 / thuong 0.45 / nhe 0.75s)
+    giua doan -> tach doan (+0.08 scale jump-cut); cho noi 2 doan (duoi + dau) -> cat; chi o doan CO chu Whisper, khong
+    cat qua chu dau / cuoi. Mep cat danh dau quiet_start / quiet_end -> fix_segment_cuts giu nguyen (on dinh).
+  - Tach nguoi (`media_vision.subject_matte`, key v3): moi khung DOC LAP bang VNGenerateForegroundInstanceMaskRequest,
+    chi giu vat the trung >= 40% mat na nguoi, trung vi 3 khung (bo nhap nhay, khong tre). Truoc: VNSequenceRequestHandler
+    keo mang nen canh dau khi gio tay (thua ~1.6% khung), hut tay vung nhanh. May khong co API -> cach cu.
+- SPEC_MEDIA_VERSION 7 (tach nguoi moi); 6: du an cu mo lai tu dung spec (gio chu + SFX hook moi, khong goi AI). Cat noi lai + luat
+  hook (AI bo sung) chi co khi LAP KE HOACH LAI.
+- Test `tests/test_cut_hook_rules.py` (+ test_info_flow [0]/[11]).
+
+## 11n. DOCTOR: kiem + TU CAI toan bo cong cu khi mo app (2026-09-28)
+
+User: "may nguoi khac cai app ve phai co day du toan bo cong cu (dung phien ban) de edit chuan nhat".
+- Moc phien ban + nguon tai + SHA-256 o MOT file `sidecar/assets/toolchain.json` (Electron + Python cung doc);
+  thu vien Python khoa 47 goi trong `sidecar/requirements.lock` (tao tu venv dang chay tot, `uv pip compile`, macOS 14).
+- Danh sach (nhom trong Doctor): He thong — macOS >= 14 Apple Silicon (onnxruntime cua faster-whisper chi co ban
+  macOS 14+), avconvert (co san), bo dung Remotion + fx_runtime (trong app). Xu ly video & am thanh — FFmpeg/FFprobe
+  7.0 tinh (zackees/ffmpeg_bins GHIM MA COMMIT + SHA-256, chinh la ban dang chay tren may user), Whisper small
+  (Systran/faster-whisper-small revision 536b066 + SHA-256 tung file), Chrome Headless Shell 149.0.7790.0 (ban
+  @remotion/renderer 4.0.528 kiem — test so voi TESTED_VERSION). Python — uv (cai ban 0.11.18), Python 3.12 venv,
+  47 goi dung ban, Vision (tach nguoi + OCR vi-VT). AI — Gemini (agy >= 1.2.11 hoac API key), AI lap ke hoach
+  (Claude Code >= 2.1.283 hoac API key / GPT), Codex >= 0.156.1 (anh AI + chu anh AI; ban GitHub openai/codex ghim
+  SHA-256, KHONG can Node/npm).
+- CLI AI: tu cap nhat + may chu bo ban cu -> luat "khong thap hon ban da kiem chung" (cai moi thi dung ban ghim).
+  Con lai (ffmpeg, Whisper, Chrome, Python + goi): DUNG ban ghim.
+- Cai o thu muc nguoi dung, khong sudo: `~/.capcut-studio/tools/bin` (ffmpeg, ffprobe, codex — tim TRUOC moi noi:
+  env.ts, `remotion_plan._ffbin`, `cli_providers._EXTRA_DIRS`), ~/.local/bin (uv / Claude / agy — trinh cai chinh chu),
+  venv `~/.capcut-studio/sidecar-venv` (hoac venv cu trong state.json neu dung Python 3.12), cache Hugging Face.
+  Tai ve sai SHA-256 -> xoa, bao loi. May da co DUNG ban ffmpeg (hash khop) -> chep, khong tai (Doctor bao ro "chep,
+  khong tai"). Mang chap chon (do that: 1/3 luot tai 42 MB bi ngat "terminated", 1 luot ra sai ma) -> `download` tai
+  TIEP bang HTTP Range (toi 6 lan), sai kich thuoc / sai ma -> tai lai tu dau (toi 3 luot) roi moi bao loi.
+- Do that may moi (HOME tam, PATH Finder): tu cai 281s (uv, Python + 47 goi, ffmpeg, Whisper, Chrome, Codex) + Claude
+  2.1.283 + agy 1.2.12; sau do Whisper nghe dung loi, OCR vi, VP9 alpha, hop cach ly FX, sidecar /health deu chay; render
+  MP4 GIONG HET TUNG BYTE ban render tren may user. May user: chi can chep ffmpeg (1s).
+- Mo app: `src/lib/useDoctor.ts` (App luon mounted) -> doctor:run (~1s) -> con muc `auto` chua dat -> doctor:autoFix
+  (main process, thu tu uv -> Python + goi -> ffmpeg -> Whisper -> Chrome -> CLI; moi muc 1 lan / luot; bao tien trinh
+  su kien doctor:progress + doctor:log) -> kiem lai. Doi tab khong ngat. San sang = khong con muc "fail" (warn = mat 1
+  phan, vd Codex chua dang nhap -> khong anh AI). Dang nhap tai khoan / API key van o Cai dat API.
+- Python-side: `sidecar/scripts/toolchain.py probe` (Python, tung goi, Vision, Whisper) / `whisper-install` (tai theo
+  revision, GHI refs/main — tai theo ma commit thi huggingface_hub khong ghi, faster-whisper local_files_only lai doc no).
+- Nut "Cai" o Cai dat API cho Codex / Claude dung chung bo cai nay (bo nhanh npm).
+- Tu kiem: `STUDIO_DOCTOR=1 <app>` (in bao cao), `+ STUDIO_DOCTOR_FIX=1` (tu cai nhu luc mo app), `STUDIO_DOCTOR_FIX_ONLY=
+  claude,agy`. May moi: `env -i HOME=<tam> PATH=/usr/bin:/bin:/usr/sbin:/sbin <app> --user-data-dir=<tam>/ud` (PATH nhu app
+  mo tu Finder — PATH terminal co ~/.local/bin that se lam test "may moi" tim thay cong cu cua may that). LUON kem
+  --user-data-dir tam: tren macOS thu muc userData cua Electron KHONG theo $HOME -> thieu no thi test mo thu muc that
+  (secrets.enc) va co the hoi Keychain (da dinh 2026-09-28).
+- Test: `tests/test_toolchain.py`, `node tests/test_toolchain.mts`.
+
+## 11o. Video mau bang GEMINI (2026-09-28, user: bo Codex cho viec nay; Codex chi con tao anh AI + chu anh AI)
+
+- `sidecar/reference_video.py` (thay reference_gpt.py): may do (ffmpeg) moc cat + do to; luot 1 Gemini xem + NGHE
+  ban nen 720p (`gemini_media.prepare(allow_split=False)`, HDR -> SDR) kem so do (tin so do hon gio Gemini uoc); luot 2
+  dai khung day (~6 khung/s, anh) -> style_kit (Gemini chi lay ~1 khung/s khi xem video). `providers.gemini_files`:
+  gui file bat ky (video / anh) qua 3 cach ket noi (API goc: anh inline, video Files API; proxy: data URI; agy: file —
+  da thu that agy mo + dem ca anh).
+- Thu vien: kind moi `ref_video` (nguon `gemini-ref:`); ban GPT cu `ref_gpt` (cung schema) van dung lai khi chua co ban
+  Gemini; `ref_gemini` (luong CapCut) khong bao gio dung cho Remotion. Khong dung lai id `_GEMINI_REFERENCE_PROMPT`
+  (prompt_overrides.json con ban sua cu cua luong CapCut).
+- Do that mau1.mp4 (215s, agy gemini-3.1-pro-high): 220s, nen 12.8 MB, du schema, audio nghe that (whoosh/pop/go
+  phim), style_kit 5 recipe (co "chu khong lo sau lung"), font deu trong danh muc.
+- Sua chu 2 prompt video mau -> van tay prompt_store doi 1 lan -> cache buoc AI (48h) chay lai 1 lan.
+- Test: `tests/test_reference_video.py`, `tests/test_analysis_library.py` [5].
+
+## 11p. TU LIEU CUA NGUOI DUNG — anh / video chen LEN video (sidecar/user_media.py, 2026-09-28)
+
+User: upload anh / video cua minh (anh san pham, logo, anh chup man hinh, bang gia, clip demo) de HIEN THI LEN video
+dang edit (khong noi vao mach A-roll); dat MUC DICH cho tung tu lieu; Gemini doc hieu; AI lap ke hoach chen dung luc
+noi toi, vi tri + co hop; anh AI co the lay anh san pham that lam mau.
+- UI (`src/components/UserMediaPanel.tsx`, trong RemotionStudio o buoc Hieu nguon + Video mau + Xem truoc): chon /
+  keo-tha -> `media:import` kind `insert` chep vao `<workDir>/tu-lieu-chen/` -> Gemini doc NGAY (`remotion:understandMedia`
+  -> `/remotion/understand_media`). Moi tu lieu: "Dung de" (show = chen / ai_ref = chi lam mau anh AI / both), "Cach hien
+  thi" (auto / overlay khung noi / cutout sticker / split nua tren / fullscreen), o "Muc dich" (la gi, chen khi nao). Luu
+  `Project.userMedia` (khong luu `analyzing`). Doi tu lieu sau khi co plan -> banner "Cap nhat ke hoach" (runPlan khong
+  fresh: B1-B3 dung lai cache, R4 tro di chay lai vi khoa R4 doi). runPlan doi cac luot Gemini dang chay.
+- Gemini (`_USER_MEDIA_PROMPT`, sua duoc trong menu, tieng Viet CO DAU vi hien thang cho user): mo ta KHACH QUAN (loai,
+  chu_the, dac_diem_nhan_dien, chu_trong_anh, can_doc_chu, nen, tach_nen_duoc, tu_khoa, hop_khi_noi_ve, goi_y_hien_thi;
+  video: canh / doan_dep). May do (khong phai AI): kich thuoc, ti le, `cao_khi_rong_1`, nen trong suot THAT (>= 3% diem
+  trong suot), do dai / tieng video. Luu `~/.capcut-studio/cache/user-media/<van tay noi dung>_v1.json` (cung anh o du an
+  khac -> dung lai); "Doc lai" = fresh. Loi: che `?key=` + token trong chuoi loi (truoc day URL Files API lo khoa API).
+  Da goi that (agy gemini-3.1-pro-high): anh 1254px ~35-41s, dung schema.
+- Ban lam viec anh (`working_image`): HEIC/HEIF/TIFF/BMP/AVIF -> PNG/JPG (sips + PIL), xoay theo EXIF, canh dai <= 2400;
+  video HDR -> ban SDR (media_sdr). `refresh_assets` tao lai khi cache mat (build_spec).
+- R4: payload `tu_lieu_nguoi_dung` (planner_view: muc dich + gemini + do_dac) + luat `_USER_MEDIA_NOTE` noi cuoi prompt
+  (sua duoc trong menu) — CHI khi co tu lieu (khong co -> prompt / payload / khoa cache y nhu cu). Khoa R4 them `"um"`
+  (key_view: id, muc dich, van tay file, hash phan tich + so do + hash luat). 2 prompt moi co `own_key` ->
+  `prompt_store.fingerprint` bo qua (them / sua chung KHONG lam cache B1..B7 moi du an chay lai). Tu lieu = tai nguyen
+  DANG KY SAN (`kind` user_image / user_video, R4 dung thang id); ai_image `ref_media` -> `asset_gen` gui anh qua Codex
+  `-i` (SAU "-") + boi canh "ANH MAU DINH KEM" (khoa anh AI chi doi khi co anh mau). `audit` (trong audit_design) -> 1
+  vong R4 tu sua; `finalize_design` (ham thuan, chay ca khi R4 lay tu cache): bo khai trung id, loc ref_media, dung loai
+  lop anh <-> video, bo hien anh goc cua tu lieu chi 'lam mau', DU PHONG tu lieu 'chen' con thieu vao cau loi noi khop
+  nhat (cum trong ghi chu user trong so 1.0 — cat tai tu dem, KHONG loc do dai chu vi tieng Viet ngan 'gia'; tu_khoa
+  Gemini 1 tieng 0.6; 'cuoi video' / 'dau video' -> cau cuoi / dau; tai lieu DOC co chu can doc -> scene broll contain),
+  khong khop -> canh bao (kem ly do R4), khong doan bua.
+- Dung spec (motion_design + user_media): lop `image` / `video` (LAYER_TYPES them "video", chi tu lieu video) co `um`,
+  h = w x ti le THAT, w toi thieu (co chu can doc 0.72 / logo 0.22 / video 0.45 / anh 0.30), cao <= 0.62 khung, trong
+  vung an toan 0.06..0.82, `place_layers` ne mat (tren dau / duoi cam / canh ben / thu nho); PNG trong suot / cutout ->
+  sticker (khong khung, khong box-shadow); video: `mediaStart`, cat theo phan con lai; mat do 8 nhip/10s KHONG bo tu
+  lieu; phu de ne khung tu lieu (`_layer_band`). Panel scene tu lieu (`panel_media`): video -> RSMedia video; co chu can
+  doc / lech ti le > 1.5x -> fit contain (Remotion lot ban mo cua anh); video panel ngan scene theo do dai. FX-plan thay
+  `tu_lieu_dang_hien`; meme B6 trung luc tu lieu hien -> bo (`drop_conflicting_inserts`).
+- Sticker tu anh nguoi dung: Vision tach nen (`prepare_cutouts`); ban tach < 15% dien tich anh goc (`_cutout_ok`) = chi
+  lay 1 manh (do that: chai trang nen xam -> chi con nap xanh) -> bo, dung khung anh nguyen ven.
+- Do that R4 (Claude opus-5-5 effort high, du an Scion 35s, 3 tu lieu): 316s, dat du 3 tu lieu dung cau noi ngay luot dau
+  (sticker luc nhac ten san pham, nhan chai split contain luc noi chu tieng Nhat, clip cua hang Nhat luc noi 'cua hang
+  ben Nhat' tu doan_dep), 1 ai_image ref_media ta dung chai mau; audit / du phong khong can chay. Render that: khong de
+  mat, chu doc duoc.
+- Remotion: `Layers.tsx` lop video trong <Sequence premountFor> rieng (khung OffthreadVideo tinh tu luc lop bat dau);
+  `Scenes.tsx` PanelMedia contain = ban mo phia sau (anh) / nen toi (video). Render that PASS (sticker, video noi, menu
+  contain, logo trong suot).
+- Bao cao: `plan._pipeline.tu_lieu` (usage_report: gio timeline + cach hien + ly do R4 + du phong + so anh AI dung mau),
+  `plan.user_media`, `summary.tu_lieu`; UI hien trong panel + "Ket qua: Ke hoach".
+- Test: `tests/test_user_media.py` (chuan hoa, ban lam viec, Gemini + cache + route, luong thong tin toi R4 / FX / B6,
+  du phong, lop bao ve, anh mau Codex, khoa cache).
+
+## 10b. Thu vien phan tich video (sidecar/analysis_library.py, them 2026-09-26)
+
+Luu ket qua "Hieu nguon" (Gemini + gio loi noi Whisper) va "Video mau" (GPT/Codex) de lan sau
+dung lai, khong goi lai AI. Phan `ref_gemini` (video mau bang Gemini cua luong CapCut cu) chi con
+doc/xoa, khong tao moi.
+
+- Luu tai `~/.capcut-studio/library/items/<fp>.json` (+ `thumbs/<fp>.jpg`). `fp` = van tay NOI DUNG
+  file (kich thuoc + 3 doan 1MB dau/giua/cuoi) -> doi ten / chuyen thu muc van nhan ra.
+- Tu luu sau moi lan `/understand_sources`, `/remotion/understand_reference` thanh cong. Lan sau cung video -> tra ban da luu (`reused` / `analysis._library`). `fresh: true` =
+  phan tich lai. Nhieu video tron: chi gui Gemini video chua luu, ghep brief bang `compose_brief`.
+- Route: `/library/list` (lan dau nhap phan tich tu projects.json cu), `/library/lookup`,
+  `/library/delete`. UI: `src/components/LibraryPicker.tsx` (hop chon + `useLibraryLookup` + nhan
+  "Da phan tich") dung o RemotionStudio.tsx.
+- Luu y: sua prompt Gemini/GPT KHONG tu lam cu ban da luu — nguoi dung bam "Phan tich lai".
+- Test: `HOME=$(mktemp -d) <venv> tests/test_analysis_library.py`.
+
+## 11. Luong Video Remotion (menu "Video Remotion", them 2026-09-25)
+
+Luong duy nhat cua app (tu 2026-09-26): dung video HOAN TOAN bang code (Remotion 4.0.528), xem
+truoc va xem MP4 hoan chinh ngay trong app.
+
+```text
+Hieu nguon: /understand_sources (nen 720p + cat theo dung luong -> Gemini API / agy -> ghep, + can gio Whisper)
+Video mau:  /remotion/understand_reference -> reference_video.py (2 luot, Gemini — muc 11o)
+            luot 1: ffmpeg do moc cat + do to; Gemini XEM + NGHE ban nen 720p -> phan tich (schema chung)
+            luot 2: DAI KHUNG DAY 6 khung/s (hook, 4 cho cat, outro) dang anh -> style_kit + recipes
+            (_RM_STYLE_KIT_PROMPT)
+Plan:       /remotion/autoplan: B1/B2/B3/B6/B7 (prompt chung trong providers.py),
+            mat nguoi (media_vision.face_box) + style_kit (motion_design.style_kit_for),
+            R4-design (_RM_DESIGN_SYSTEM, motion_design.py): scenes + layers + assets +
+              effects + transitions + grade; hong -> R4-visual cu (_RM_VISUAL_SYSTEM)
+            assets: anh AI qua Codex image_generation (asset_gen.py, song song, cache)
+              + khung nguon + tach nen (Vision)
+            R5 (_RM_CAPTION_SYSTEM + ghi chu che do do hoa): phu de theo style_kit.subtitle
+Spec:       remotion_plan.build_spec(plan) -> RenderSpec (gio timeline, da quy doi)
+            dung lai plan_guard: hook cold-open, meme CAT vao, can SFX, clear_over_inserts
+Xem truoc:  @remotion/player trong renderer (remotion-src/AutoEdit.tsx)
+Render:     electron/services/remotion.ts -> utilityProcess electron/remotion-worker.ts
+            -> @remotion/renderer renderMedia (bundle dung san o out/remotion-bundle)
+Media:      electron/services/media-server.ts (http 127.0.0.1 + token, ho tro Range)
+            cho ca Player lan Chrome headless luc render
+```
+
+- THIET KE CHUYEN DONG (them 2026-09-26, `sidecar/motion_design.py`):
+  - Ngon ngu dung GPT duoc dung: `sidecar/references/remotion-dsl.md` (dang ky trong menu Prompt
+    & quy tac, sua duoc) + 55 thuat ngu edit `references/edit-glossary.md`. KHONG co bo phong cach mac
+    dinh (da xoa remotion_style_default.json 2026-09-27) — xem muc 11j.
+  - scenes (bo cuc A-roll): full / split / card / circle / broll / graphic, `morph` giua bo cuc.
+    Khoang trong giua scene = full. POP-OUT (dau troi khoi the) chi khi scene / bo video mau khai.
+  - layers: chu nhieu tang (spans: font, co, mau, gradient, glow, vien, nghieng), box, vong tu
+    ve, mui ten, anh, emoji, huy hieu, so chay, vet toc do; enter/exit/loop + keyframe;
+    `group` (to hop di chung), `behind_subject` (chu SAU nguoi), `replaces_subtitle`.
+  - Lop bao ve bang code (layers_to_spec / attach_subject_mattes / dodge_subtitles): quy doi gio
+    nguon, ne mat theo KHOI (duoi cam -> tren dau -> sau nguoi -> thu nho), neo chu sau nguoi
+    ngang DINH DAU do tu ban tach nen, phu de ne lop chu, bo hero trung lop chu, gioi han 8
+    nhip / 10s, tu gan SFX tu bo tieng tong hop `sfx_kit.py` (kit-whoosh/pop/boom/...).
+  - Tach nguoi: `media_vision.subject_matte` (VNGeneratePersonSegmentationRequest ->
+    WebM VP9 alpha, cache `~/.capcut-studio/cache/vision/`, ~4s xu ly / 1s video). Renderer ve
+    A-roll 2 lan: ban goc -> lop `behind` -> ban "chi nguoi" (cung camera/fisheye/tint) -> lop
+    truoc. Can pyobjc-framework-Vision (macOS 12+); thieu -> tat behind/pop-out, video van dung.
+  - Hieu ung `focus` ve TRONG khung A-roll (chu phia tren van net). `fisheye` = feDisplacementMap.
+- Transition / hieu ung / mau / kieu chu / font chi lay trong danh muc Remotion. Kho SFX va kho
+  meme (file ngoai) dung nguyen. Them muc danh muc moi = sua `remotion_catalog.json` + cach ve
+  trong `remotion-src/` (test `tests/test_remotion_plan.py` muc [7] bat thieu).
+- `remotion_plan.map_range`: quy doi gio nguon theo CHUOI DOAN LIEN TIEP, khong dung
+  `source_to_timeline` cho tung dau mut (giay nam dung ranh gioi hai doan bi quy nham).
+  Caption KHONG BAO GIO bi doi gio de tranh chong — chi cat duoi / bo trung lap.
+- Transition can chat lieu hai ben (crossfade, slide, wipe, iris, blur) duoc build_spec kiem
+  "tay cam" trong file nguon; thieu thi doi sang kieu cat (TRANSITION_FALLBACK). Timeline khong
+  bi rut ngan boi transition.
+- Dong goi: `npm run build` chay them `scripts/bundle-remotion.mjs`. electron-builder dua
+  `out/remotion-bundle` ra `Resources/remotion-bundle`, `asarUnpack` compositor Remotion
+  (worker tro `binariesDirectory` vao `app.asar.unpacked`). Chrome Headless Shell (~90MB) tai lan
+  dau vao `~/.capcut-studio/remotion/node_modules/.remotion` (cwd cua worker).
+- Project Remotion luu cung `projects.json` voi `mode: "remotion"`, con tro rieng
+  `currentRemotion`; truong `rmPlan`, `rmSpec`, `rmSummary`, `rmRender`.
+- Tuy chon `state.json`: `remotion_concurrency`, `remotion_license_key` (Remotion mien phi cho
+  ca nhan / cong ty <= 3 nguoi; lon hon can license cua remotion.pro).
+- Tu kiem:
+  - `HOME=$(mktemp -d) <venv> tests/test_remotion_plan.py` (can ffmpeg).
+  - `STUDIO_REMOTION_RENDER=<spec.json> STUDIO_REMOTION_OUT=<out.mp4> <app binary>` render qua
+    chinh stack Electron (dev hoac ban dong goi).
+  - `STUDIO_FAKE_READY=1 <electron> . --user-data-dir=<tam>`: mo khoa trang de soat giao dien
+    ma khong doc Keychain.
+
+## 12. CodeGraph
+
+CodeGraph `0.9.9` da duoc cai va index tai root workspace:
+
+- Local index: `.codegraph/codegraph.db`.
+- Project MCP config: `.mcp.json`.
+- Codex MCP config: `~/.codex/config.toml`.
+- Antigravity MCP config: `~/.gemini/config/mcp_config.json`.
+- Persistent agent instructions: `AGENTS.md`.
+
+Chat/agent moi nen dung `codegraph_explore` cho cau hoi kien truc va call flow,
+`codegraph_impact` truoc thay doi co blast radius lon, va `codegraph_status` de
+kiem tra index. Sidecar MCP tu dong sync khi source thay doi.
+
+CLI fallback:
+
+```bash
+codegraph status
+codegraph sync
+codegraph index --force
+```

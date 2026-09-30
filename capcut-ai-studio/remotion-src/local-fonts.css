@@ -1,0 +1,19 @@
+/* Font nam trong du an (khong co tren fontsource). Cung ten ho voi src/index.css. */
+@font-face {
+  font-family: 'SVN-Gilroy';
+  src: url('../src/assets/fonts/SVN-Gilroy-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'SVN-Gilroy';
+  src: url('../src/assets/fonts/SVN-Gilroy-SemiBold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'SVN-Gilroy';
+  src: url('../src/assets/fonts/SVN-Gilroy-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}

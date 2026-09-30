@@ -1,0 +1,812 @@
+{
+  "_note": "DANH MUC DUNG CHUNG cho luong Video Remotion. GPT (sidecar/remotion_plan.py) chi duoc chon id trong file nay; bo dung Remotion (remotion-src/*.tsx) ve dung cac id nay. Them muc moi thi phai them CA hai phia: mo ta o day + cach ve trong remotion-src/. Khong co emoji_pop: icon emoji tho bi cam tu 2026-09-27.",
+  "version": 1,
+  "transitions": [
+    {
+      "id": "cut",
+      "label": "Cắt thẳng",
+      "look": "khong co hieu ung, doi canh ngay lap tuc",
+      "energy": "low",
+      "overlap": false,
+      "use_when": "mac dinh cho jump-cut trong cung mot mach noi",
+      "avoid_when": "",
+      "duration": [
+        0,
+        0
+      ],
+      "default": 0
+    },
+    {
+      "id": "crossfade",
+      "label": "Hoà tan",
+      "look": "canh cu mo dan, canh moi hien dan chong len nhau",
+      "energy": "low",
+      "overlap": true,
+      "use_when": "chuyen y nhe nhang, ke chuyen cam xuc, doi boi canh cham",
+      "avoid_when": "video nhip nhanh, hai hoac hype",
+      "duration": [
+        0.3,
+        0.8
+      ],
+      "default": 0.45
+    },
+    {
+      "id": "fade_black",
+      "label": "Tối rồi sáng",
+      "look": "canh cu toi han ve den roi canh moi sang len",
+      "energy": "low",
+      "overlap": false,
+      "use_when": "ket thuc mot chuong, chuyen sang phan hoan toan khac, truoc CTA trang trong",
+      "avoid_when": "giua mot cau chuyen dang lien mach",
+      "duration": [
+        0.4,
+        0.9
+      ],
+      "default": 0.6
+    },
+    {
+      "id": "flash",
+      "label": "Loé trắng",
+      "look": "loe sang trang mot nhip ngay diem cat",
+      "energy": "high",
+      "overlap": false,
+      "use_when": "hook -> than video, tiet lo bat ngo, twist, chuyen sang con so gay soc",
+      "avoid_when": "tone buon, nghiem tuc",
+      "duration": [
+        0.2,
+        0.4
+      ],
+      "default": 0.3
+    },
+    {
+      "id": "zoom_in",
+      "label": "Zoom xuyên",
+      "look": "canh cu phong to lao vao kem nhoe, canh moi bung ra tu gan",
+      "energy": "high",
+      "overlap": false,
+      "use_when": "tang toc, vao phan quan trong, nhan manh buoc tiep theo",
+      "avoid_when": "doan cham, cam dong",
+      "duration": [
+        0.25,
+        0.5
+      ],
+      "default": 0.35
+    },
+    {
+      "id": "zoom_out",
+      "label": "Zoom lùi",
+      "look": "canh cu thu nho lui ra xa, canh moi tu gan ve binh thuong",
+      "energy": "medium",
+      "overlap": false,
+      "use_when": "tong ket, nhin lai toan canh, chuyen tu chi tiet ra tong the",
+      "avoid_when": "",
+      "duration": [
+        0.3,
+        0.6
+      ],
+      "default": 0.4
+    },
+    {
+      "id": "whip_left",
+      "label": "Lia ngang trái",
+      "look": "hai canh bi keo vut sang trai kem nhoe chuyen dong",
+      "energy": "high",
+      "overlap": false,
+      "use_when": "liet ke y tiep theo, doi goc nhanh, nhip trend",
+      "avoid_when": "tone tram, cam dong",
+      "duration": [
+        0.2,
+        0.4
+      ],
+      "default": 0.3
+    },
+    {
+      "id": "whip_right",
+      "label": "Lia ngang phải",
+      "look": "hai canh bi keo vut sang phai kem nhoe chuyen dong",
+      "energy": "high",
+      "overlap": false,
+      "use_when": "quay lai y truoc, doi ben, nhip trend",
+      "avoid_when": "tone tram, cam dong",
+      "duration": [
+        0.2,
+        0.4
+      ],
+      "default": 0.3
+    },
+    {
+      "id": "slide_up",
+      "label": "Đẩy lên",
+      "look": "canh moi day canh cu troi len tren (nhu luot TikTok)",
+      "energy": "medium",
+      "overlap": true,
+      "use_when": "sang muc tiep theo trong danh sach, 'tiep theo la...'",
+      "avoid_when": "giua mot cau dang noi do",
+      "duration": [
+        0.3,
+        0.6
+      ],
+      "default": 0.4
+    },
+    {
+      "id": "slide_left",
+      "label": "Đẩy ngang",
+      "look": "canh moi day canh cu sang trai",
+      "energy": "medium",
+      "overlap": true,
+      "use_when": "so sanh truoc/sau, chuyen buoc trong huong dan",
+      "avoid_when": "",
+      "duration": [
+        0.3,
+        0.6
+      ],
+      "default": 0.4
+    },
+    {
+      "id": "wipe",
+      "label": "Gạt màn",
+      "look": "mot duong gat cheo quet qua de lo canh moi",
+      "energy": "medium",
+      "overlap": true,
+      "use_when": "truoc/sau, doi boi canh ro rang",
+      "avoid_when": "",
+      "duration": [
+        0.3,
+        0.7
+      ],
+      "default": 0.45
+    },
+    {
+      "id": "iris",
+      "label": "Mở vòng tròn",
+      "look": "canh moi no ra tu vong tron giua khung",
+      "energy": "medium",
+      "overlap": true,
+      "use_when": "tiet lo ket qua, 'va day la...', mo dau phan moi vui ve",
+      "avoid_when": "tone nghiem tuc",
+      "duration": [
+        0.35,
+        0.7
+      ],
+      "default": 0.5
+    },
+    {
+      "id": "glitch",
+      "label": "Nhiễu glitch",
+      "look": "tach mau RGB, rung giat ky thuat so ngay diem cat",
+      "energy": "high",
+      "overlap": false,
+      "use_when": "cong nghe, bat ngo, phu dinh ('sai!'), meme vibe",
+      "avoid_when": "cam dong, sang trong",
+      "duration": [
+        0.2,
+        0.45
+      ],
+      "default": 0.3
+    },
+    {
+      "id": "spin",
+      "label": "Xoay",
+      "look": "canh cu xoay kem phong to roi canh moi xoay ve",
+      "energy": "high",
+      "overlap": false,
+      "use_when": "doi mood dot ngot, hai huoc, 'nhung khoan da'",
+      "avoid_when": "tone nghiem tuc, dung nhieu lan",
+      "duration": [
+        0.3,
+        0.5
+      ],
+      "default": 0.4
+    },
+    {
+      "id": "blur",
+      "label": "Mờ chuyển",
+      "look": "canh cu nhoe dan, canh moi tu nhoe ro dan",
+      "energy": "low",
+      "overlap": true,
+      "use_when": "hoi tuong, chuyen thoi gian, mo mong",
+      "avoid_when": "nhip nhanh",
+      "duration": [
+        0.35,
+        0.8
+      ],
+      "default": 0.5
+    }
+  ],
+  "effects": [
+    {
+      "id": "zoom_punch",
+      "label": "Punch zoom",
+      "look": "phong to giat nhanh roi giu, nhu camera dap vao",
+      "covers_face": false,
+      "use_when": "dung cau chot, tu khoa, con so, cu dam",
+      "avoid_when": "doan dai binh lang",
+      "duration": [
+        0.4,
+        2.5
+      ],
+      "intensity": [
+        0.3,
+        1.0
+      ]
+    },
+    {
+      "id": "ken_burns",
+      "label": "Đẩy máy chậm",
+      "look": "phong to rat cham suot doan (push-in)",
+      "covers_face": false,
+      "use_when": "doan noi dai 3s+ can giu nhip, ke chuyen, cam xuc lang",
+      "avoid_when": "",
+      "duration": [
+        2.0,
+        8.0
+      ],
+      "intensity": [
+        0.3,
+        1.0
+      ]
+    },
+    {
+      "id": "zoom_out_reveal",
+      "label": "Lùi máy lộ cảnh",
+      "look": "bat dau gan roi lui ve khung binh thuong",
+      "covers_face": false,
+      "use_when": "tiet lo toan canh, ket qua sau khi giau",
+      "avoid_when": "",
+      "duration": [
+        0.6,
+        2.5
+      ],
+      "intensity": [
+        0.3,
+        1.0
+      ]
+    },
+    {
+      "id": "shake",
+      "label": "Rung máy",
+      "look": "khung hinh rung lac manh ngan",
+      "covers_face": false,
+      "use_when": "soc, gian, bung no, meme hai, nhan phu dinh",
+      "avoid_when": "tone nhe nhang, dung qua 2 lan",
+      "duration": [
+        0.3,
+        1.2
+      ],
+      "intensity": [
+        0.3,
+        1.0
+      ]
+    },
+    {
+      "id": "flash",
+      "label": "Loé sáng",
+      "look": "man hinh loe trang mot nhip roi tat",
+      "covers_face": false,
+      "use_when": "khoanh khac 'a ha', tiet lo, beat drop",
+      "avoid_when": "",
+      "duration": [
+        0.2,
+        0.5
+      ],
+      "intensity": [
+        0.3,
+        1.0
+      ]
+    },
+    {
+      "id": "rgb_split",
+      "label": "Tách màu RGB",
+      "look": "vien do/xanh lech nhau nhu glitch",
+      "covers_face": false,
+      "use_when": "cong nghe, bat ngo, nhan manh gay gat",
+      "avoid_when": "cam dong, sang trong",
+      "duration": [
+        0.3,
+        1.2
+      ],
+      "intensity": [
+        0.3,
+        1.0
+      ]
+    },
+    {
+      "id": "bw",
+      "label": "Đen trắng",
+      "look": "khung hinh mat mau thanh den trang",
+      "covers_face": false,
+      "use_when": "hoi tuong, noi dau, 'truoc kia', drama",
+      "avoid_when": "doan vui, doan khoe san pham mau sac",
+      "duration": [
+        1.0,
+        8.0
+      ],
+      "intensity": [
+        0.5,
+        1.0
+      ]
+    },
+    {
+      "id": "vignette",
+      "label": "Tối viền",
+      "look": "bon goc toi lai don mat vao giua",
+      "covers_face": false,
+      "use_when": "tam su, bi mat, tap trung vao nguoi noi",
+      "avoid_when": "",
+      "duration": [
+        1.0,
+        10.0
+      ],
+      "intensity": [
+        0.3,
+        1.0
+      ]
+    },
+    {
+      "id": "blur_focus",
+      "label": "Lấy nét",
+      "look": "bat dau nhoe roi net dan",
+      "covers_face": true,
+      "use_when": "mo dau doan moi, 'tinh day di', tu mo mong ve thuc te",
+      "avoid_when": "dang noi cau quan trong",
+      "duration": [
+        0.4,
+        1.2
+      ],
+      "intensity": [
+        0.3,
+        1.0
+      ]
+    },
+    {
+      "id": "light_leak",
+      "label": "Vệt sáng ấm",
+      "look": "vet sang cam/vang troi qua khung",
+      "covers_face": false,
+      "use_when": "cam xuc am ap, ky niem, san pham sang trong",
+      "avoid_when": "tone nghiem tuc, cong nghe lanh",
+      "duration": [
+        0.8,
+        3.0
+      ],
+      "intensity": [
+        0.3,
+        1.0
+      ]
+    },
+    {
+      "id": "letterbox",
+      "label": "Viền điện ảnh",
+      "look": "hai dai den tren duoi nhu phim",
+      "covers_face": false,
+      "use_when": "khoanh khac tram, ke chuyen dien anh, truoc cu twist",
+      "avoid_when": "khi co caption o sat tren/duoi",
+      "duration": [
+        1.5,
+        8.0
+      ],
+      "intensity": [
+        0.5,
+        1.0
+      ]
+    },
+    {
+      "id": "pulse",
+      "label": "Nhịp tim",
+      "look": "khung hinh phap phong theo nhip",
+      "covers_face": false,
+      "use_when": "hoi hop, dem nguoc, cang thang truoc tiet lo",
+      "avoid_when": "",
+      "duration": [
+        1.0,
+        4.0
+      ],
+      "intensity": [
+        0.3,
+        1.0
+      ]
+    },
+    {
+      "id": "film_grain",
+      "label": "Hạt phim",
+      "look": "hat nhieu nhe nhu phim cu",
+      "covers_face": false,
+      "use_when": "hoai niem, vintage, ke chuyen xua",
+      "avoid_when": "video san pham can net",
+      "duration": [
+        1.0,
+        10.0
+      ],
+      "intensity": [
+        0.3,
+        1.0
+      ]
+    },
+    {
+      "id": "fisheye",
+      "label": "Mắt cá (fisheye)",
+      "look": "ong kinh mat ca: giua phinh to, vien cong + vien den tron, nhu camera hanh dong ap sat",
+      "covers_face": false,
+      "use_when": "hook 0.5-2s dau, khoanh khac soc / hai / nang luong cao",
+      "avoid_when": "doan tram, cam xuc lang, doan dai",
+      "duration": [
+        0.4,
+        2.5
+      ],
+      "intensity": [
+        0.4,
+        1.0
+      ]
+    },
+    {
+      "id": "focus",
+      "label": "Tập trung (radial blur)",
+      "look": "nhoe + toi dan ra 4 goc, giu net vung giua mat — keo mat nguoi xem vao chu the",
+      "covers_face": false,
+      "use_when": "hook, cau chot quan trong, khi chu nhan hien giua khung",
+      "avoid_when": "canh can thay ca khung",
+      "duration": [
+        0.4,
+        3.0
+      ],
+      "intensity": [
+        0.4,
+        1.0
+      ]
+    },
+    {
+      "id": "pan_left",
+      "label": "Lia trái",
+      "look": "khung truot cham sang trai (pan) co phong nhe",
+      "covers_face": false,
+      "use_when": "canh noi dai, B-roll tinh, ke chuyen",
+      "avoid_when": "doan cat nhanh",
+      "duration": [
+        1.5,
+        6.0
+      ],
+      "intensity": [
+        0.3,
+        1.0
+      ]
+    },
+    {
+      "id": "pan_right",
+      "label": "Lia phải",
+      "look": "khung truot cham sang phai (pan) co phong nhe",
+      "covers_face": false,
+      "use_when": "canh noi dai, B-roll tinh, ke chuyen",
+      "avoid_when": "doan cat nhanh",
+      "duration": [
+        1.5,
+        6.0
+      ],
+      "intensity": [
+        0.3,
+        1.0
+      ]
+    }
+  ],
+  "grades": [
+    {
+      "id": "none",
+      "label": "Giữ màu gốc",
+      "look": "khong chinh mau",
+      "use_when": "video da dep san, hoac muon tu nhien nhat"
+    },
+    {
+      "id": "warm",
+      "label": "Ấm",
+      "look": "am, hoi cam vang, da nguoi dep",
+      "use_when": "vlog, ke chuyen, lam dep, do an"
+    },
+    {
+      "id": "cool",
+      "label": "Lạnh",
+      "look": "xanh lanh, sach",
+      "use_when": "cong nghe, chuyen nghiep, mua he mat"
+    },
+    {
+      "id": "vivid",
+      "label": "Rực rỡ",
+      "look": "tang bao hoa + tuong phan, mau no",
+      "use_when": "hype, trend, san pham nhieu mau"
+    },
+    {
+      "id": "cinematic",
+      "label": "Điện ảnh",
+      "look": "tuong phan cao, bong xanh ngoc - da cam",
+      "use_when": "ke chuyen drama, quang cao cao cap"
+    },
+    {
+      "id": "vintage",
+      "label": "Hoài cổ",
+      "look": "bac mau, am vang, hoi nhat",
+      "use_when": "hoai niem, ky niem, ke chuyen xua"
+    },
+    {
+      "id": "moody",
+      "label": "Trầm",
+      "look": "toi, it bao hoa, tuong phan manh",
+      "use_when": "tam su, chu de nang ne, bi an"
+    },
+    {
+      "id": "clean_bright",
+      "label": "Sáng trong",
+      "look": "sang, trong, it tuong phan",
+      "use_when": "lam dep, huong dan, tuoi tan"
+    },
+    {
+      "id": "bw",
+      "label": "Đen trắng",
+      "look": "den trang ca video",
+      "use_when": "phong cach nghe thuat, chu de nghiem tuc"
+    },
+    {
+      "id": "pastel",
+      "label": "Pastel",
+      "look": "mem, sang, mau nhat ngot",
+      "use_when": "de thuong, lifestyle nu tinh"
+    }
+  ],
+  "caption_styles": [
+    {
+      "id": "tiktok_box",
+      "label": "Hộp TikTok",
+      "look": "chu tren nen hop bo tron dac (trang nen den chu hoac nguoc lai)",
+      "roles": [
+        "hero",
+        "support"
+      ],
+      "use_when": "de doc tren moi nen, kieu TikTok native",
+      "karaoke": false
+    },
+    {
+      "id": "outline_bold",
+      "label": "Viền đậm",
+      "look": "chu trang day, vien den day, bong do",
+      "roles": [
+        "hero",
+        "support"
+      ],
+      "use_when": "caption loi noi tieu chuan, de doc",
+      "karaoke": false
+    },
+    {
+      "id": "karaoke",
+      "label": "Karaoke từng chữ",
+      "look": "ca cau hien, chu DANG NOI doi mau nhan va nay nhe",
+      "roles": [
+        "hero",
+        "support"
+      ],
+      "use_when": "phu de loi noi lien tuc, video talking-head nhip nhanh",
+      "karaoke": true
+    },
+    {
+      "id": "pop_words",
+      "label": "Bật từng chữ",
+      "look": "tung chu bat ra lan luot theo giong noi",
+      "roles": [
+        "hero",
+        "support"
+      ],
+      "use_when": "cau ngan dat, nhip nhanh, trend",
+      "karaoke": true
+    },
+    {
+      "id": "hero_title",
+      "label": "Tiêu đề lớn",
+      "look": "chu RAT to, dam, mau nhan, nay vao",
+      "roles": [
+        "hero"
+      ],
+      "use_when": "hook, con so, tu khoa chot, 1-4 tu",
+      "karaoke": false
+    },
+    {
+      "id": "neon",
+      "label": "Neon",
+      "look": "chu phat sang vien mau",
+      "roles": [
+        "hero"
+      ],
+      "use_when": "dem, cong nghe, party, nhan manh vui",
+      "karaoke": false
+    },
+    {
+      "id": "typewriter",
+      "label": "Đánh máy",
+      "look": "chu hien dan tung ky tu",
+      "roles": [
+        "hero",
+        "support"
+      ],
+      "use_when": "bi an, tiet lo tung chut, trich dan",
+      "karaoke": false
+    },
+    {
+      "id": "highlight_marker",
+      "label": "Bút dạ quang",
+      "look": "chu den tren vet but da quang mau nhan chay qua",
+      "roles": [
+        "hero",
+        "support"
+      ],
+      "use_when": "nhan tu khoa trong cau giai thich, huong dan",
+      "karaoke": false
+    },
+    {
+      "id": "lower_third",
+      "label": "Chú thích dưới",
+      "look": "thanh chu nho goc duoi kem vach mau",
+      "roles": [
+        "micro"
+      ],
+      "use_when": "ten, chuc danh, nguon, ten san pham",
+      "karaoke": false
+    },
+    {
+      "id": "minimal",
+      "label": "Tối giản",
+      "look": "chu trang vua, bong mo, mo vao nhe",
+      "roles": [
+        "support",
+        "micro"
+      ],
+      "use_when": "chu phu, tone sang trong, nhe nhang",
+      "karaoke": false
+    }
+  ],
+  "fonts": [
+    {
+      "id": "be_vietnam_pro",
+      "family": "Be Vietnam Pro",
+      "label": "Be Vietnam Pro",
+      "look": "sans hien dai, rat de doc, thiet ke cho tieng Viet",
+      "roles": [
+        "hero",
+        "support",
+        "micro"
+      ],
+      "heavy": true
+    },
+    {
+      "id": "montserrat",
+      "family": "Montserrat",
+      "label": "Montserrat",
+      "look": "sans hinh hoc, dam, hien dai",
+      "roles": [
+        "hero",
+        "support"
+      ],
+      "heavy": true
+    },
+    {
+      "id": "anton",
+      "family": "Anton",
+      "label": "Anton",
+      "look": "chu cao hep rat dam, kieu poster/tieu de",
+      "roles": [
+        "hero"
+      ],
+      "heavy": true
+    },
+    {
+      "id": "oswald",
+      "family": "Oswald",
+      "label": "Oswald",
+      "look": "hep, dam vua, chua duoc nhieu chu",
+      "roles": [
+        "hero",
+        "support"
+      ],
+      "heavy": true
+    },
+    {
+      "id": "baloo_2",
+      "family": "Baloo 2",
+      "label": "Baloo 2",
+      "look": "tron, mum mim, vui ve",
+      "roles": [
+        "hero",
+        "support"
+      ],
+      "heavy": true
+    },
+    {
+      "id": "lexend",
+      "family": "Lexend",
+      "label": "Lexend",
+      "look": "sans rong, sach, cuc de doc",
+      "roles": [
+        "support",
+        "micro"
+      ],
+      "heavy": false
+    },
+    {
+      "id": "bungee",
+      "family": "Bungee",
+      "label": "Bungee",
+      "look": "chu hoa khoi vuong kieu bien hieu, rat noi",
+      "roles": [
+        "hero"
+      ],
+      "heavy": true
+    },
+    {
+      "id": "dancing_script",
+      "family": "Dancing Script",
+      "label": "Dancing Script",
+      "look": "chu viet tay mem mai",
+      "roles": [
+        "hero"
+      ],
+      "heavy": false
+    },
+    {
+      "id": "roboto_condensed",
+      "family": "Roboto Condensed",
+      "label": "Roboto Condensed",
+      "look": "hep, trung tinh, chua nhieu chu",
+      "roles": [
+        "support",
+        "micro"
+      ],
+      "heavy": true
+    },
+    {
+      "id": "gilroy",
+      "family": "SVN-Gilroy",
+      "label": "Gilroy (SVN)",
+      "look": "sans hinh hoc gon, dam vua — phu de nho kieu TikTok hien dai",
+      "roles": [
+        "support",
+        "micro"
+      ],
+      "heavy": true
+    },
+    {
+      "id": "great_vibes",
+      "family": "Great Vibes",
+      "label": "Great Vibes",
+      "look": "chu viet tay thu phap mem mai — tang phu cua to hop chu (tren/duoi chu nhan)",
+      "roles": [
+        "hero",
+        "support"
+      ],
+      "heavy": false
+    },
+    {
+      "id": "playfair_display",
+      "family": "Playfair Display",
+      "label": "Playfair Display",
+      "look": "serif sang trong, nghieng dep — con so lon, tieu de tap chi",
+      "roles": [
+        "hero",
+        "support"
+      ],
+      "heavy": true
+    },
+    {
+      "id": "barlow_condensed",
+      "family": "Barlow Condensed",
+      "label": "Barlow Condensed",
+      "look": "sans hep cao, dam, nghieng dong — chu nhan the thao / tieu de nhanh",
+      "roles": [
+        "hero",
+        "support"
+      ],
+      "heavy": true
+    }
+  ],
+  "accent_colors": [
+    "#FFD600",
+    "#FF3B5C",
+    "#22D17B",
+    "#29B6F6",
+    "#FF8A00",
+    "#B388FF"
+  ]
+}

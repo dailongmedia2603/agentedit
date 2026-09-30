@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---- Font thuong hieu: SVN-Gilroy (ho tro day du tieng Viet) ---- */
+@font-face {
+  font-family: 'SVN-Gilroy';
+  src: url('./assets/fonts/SVN-Gilroy-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'SVN-Gilroy';
+  src: url('./assets/fonts/SVN-Gilroy-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'SVN-Gilroy';
+  src: url('./assets/fonts/SVN-Gilroy-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'SVN-Gilroy';
+  src: url('./assets/fonts/SVN-Gilroy-SemiBold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'SVN-Gilroy';
+  src: url('./assets/fonts/SVN-Gilroy-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'SVN-Gilroy';
+  src: url('./assets/fonts/SVN-Gilroy-Bold.otf') format('opentype');
+  font-weight: 800 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: radial-gradient(900px 420px at 75% -8%, rgba(255, 150, 70, 0.16), transparent 62%),
+    radial-gradient(700px 380px at -5% 105%, rgba(255, 122, 26, 0.08), transparent 58%), #fdf6ef;
+  color: #1a1c22;
+  font-family: 'SVN-Gilroy', -apple-system, BlinkMacSystemFont, 'SF Pro Display', Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+.drag {
+  -webkit-app-region: drag;
+}
+.no-drag {
+  -webkit-app-region: no-drag;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 122, 26, 0.45);
+  background-clip: content-box;
+}
+
+/* Card sang */
+.card-surface {
+  background: #ffffff;
+  border: 1px solid rgba(20, 20, 30, 0.06);
+  box-shadow: 0 1px 2px rgba(20, 20, 40, 0.04), 0 8px 24px -16px rgba(20, 20, 40, 0.18);
+}
+
+.brand-gradient {
+  background: linear-gradient(135deg, #ff9a3c 0%, #ff7a1a 48%, #f2620a 100%);
+}
+.brand-text {
+  background: linear-gradient(135deg, #ff8a2a, #f2620a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.sidebar-surface {
+  background: rgba(255, 255, 255, 0.66);
+  backdrop-filter: blur(14px);
+  border-right: 1px solid rgba(20, 20, 30, 0.06);
+}
+
+/* Form control khong tu ke thua font cua body -> ep dung chung 1 font */
+button,
+input,
+select,
+textarea,
+optgroup,
+option {
+  font-family: inherit;
+  font-size: inherit;
+}
