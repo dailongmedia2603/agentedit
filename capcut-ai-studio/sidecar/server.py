@@ -38,6 +38,9 @@ import time
 
 from flask import Flask, request, jsonify, g
 
+import winsupport
+winsupport.install()          # Windows: tien trinh con khong bat console, UTF-8, HEIC (macOS: khong lam gi)
+
 import config
 import providers
 import analysis_library
@@ -577,6 +580,21 @@ def meme_list_route():
         emotion=b.get("emotion"), search=b.get("search"), limit=int(b.get("limit", 200)))})
 
 
+@app.route("/library/sync", methods=["POST"])
+@require_token
+def library_sync_route():
+    """Dong bo kho SFX + Meme tu R2 (cong khai, chi tai). Gop theo id, khong xoa muc local."""
+    import library_sync
+    lines = []
+    try:
+        res = library_sync.pull(log=lambda s: lines.append(s))
+        res["log"] = lines
+        return jsonify(res)
+    except Exception as e:
+        logger.exception("library sync failed")
+        return err("Dong bo kho loi: %s" % (str(e)[:200]), 500)
+
+
 @app.route("/meme/fetch", methods=["POST"])
 @require_token
 def meme_fetch_route():
@@ -776,6 +794,7 @@ def remotion_autoplan_route():
                      step=name, level="ok", cached=hit, output=res)
         return res
 
+    _nen = None      # viec Codex chay nen (tao anh AI, chu anh AI) — tao sau R4
     try:
         source_videos, transcript_data, emotion_map_data, faces_regions, key_moments_data = _du_lieu_nguon(brief)
         sfx_catalog = engine.sfx_catalog_for_plan()
@@ -950,11 +969,21 @@ def remotion_autoplan_route():
             for c in um_notes:
                 run_log.emit("note", "Tư liệu: %s" % c, step="R4-design", level="warn" if "du phong" in c else "info")
 
-        # Tai nguyen hinh: anh AI (Codex, song song) + khung cat tu video nguon (+ tach nen) + tu lieu nguoi dung
+        # VIEC CHAY NEN (2026-09-30): chi viec CODEX (tao anh AI, chu anh AI) chay song song voi cac buoc Claude;
+        # cho ket qua ngay truoc khi GHEP PLAN. Moi viec giu nhat ky cua lan chay nay (run_log.carry).
+        # KHONG goi Claude CLI dong thoi: do that 09-30, 3 luot `claude -p` cung luc -> 2 luot bi chan dung ~900s
+        # roi moi chay (104 luot tuan tu truoc do: 0 lan) -> moi buoc Claude van chay lan luot o luong chinh.
+        from concurrent.futures import ThreadPoolExecutor
+        _nen = ThreadPoolExecutor(max_workers=2, thread_name_prefix="autoplan-nen")
+        _nen_nhan = lambda fn: _nen.submit(run_log.carry(fn))  # noqa: E731
+
+        # Tai nguyen hinh: anh AI (Codex, song song) + khung cat tu video nguon (+ tach nen) + tu lieu nguoi dung.
+        # Chay NEN: R5 / chu anh / FX / B6 / B7 khong dung file anh -> khong phai cho Codex (~1-4 phut).
         assets = motion_design.normalize_assets(design.get("assets"), source_videos,
                                                 user_assets=user_media.as_assets(um_items))
         if um_items:
             user_media.prepare_cutouts(assets, design, log=logger.info)
+        assets_job = None
         if [a for a in assets if not a.get("user_media")]:
             n_ai = sum(1 for a in assets if a["kind"] == "ai_image")
             n_ref = sum(1 for a in assets if a["kind"] == "ai_image" and a.get("ref_media"))
@@ -966,14 +995,10 @@ def remotion_autoplan_route():
                 design, transcript_data=transcript_data, story=story,
                 sources=[{"summary": sv.get("summary")} for sv in brief.get("sources") or [] if isinstance(sv, dict)],
                 user_media=um_items)
-            motion_design.resolve_assets(assets, source_videos, style=(style_phien or {}).get("broll_style") or "",
-                                         log=logger.info, contexts=ctxs)
-            bad = [a for a in assets if a.get("error")]
-            for a in bad:
-                warnings.append("Ảnh '%s' không tạo được (%s) — bỏ các lớp dùng ảnh này." % (a["id"], a["error"][:120]))
-            run_log.emit("result", "Tài nguyên hình: %d/%d xong" % (len(assets) - len(bad), len(assets)),
-                         step="assets", level="warn" if bad else "ok",
-                         output=[{k: a.get(k) for k in ("id", "kind", "path", "cutout_path", "error")} for a in assets])
+            assets_job = _nen_nhan(lambda: motion_design.resolve_assets(
+                assets, source_videos, style=(style_phien or {}).get("broll_style") or "",
+                log=logger.info, contexts=ctxs))
+            _cho_canh_bao_anh = len(warnings)   # canh bao anh loi giu dung cho cu (truoc canh bao R5..B7)
 
         # R5: phu de (theo bo phong cach) — biet truoc cac lop chu do hoa de khong viet trung
         layer_texts = motion_design.layer_texts(design.get("layers"))
@@ -991,20 +1016,18 @@ def remotion_autoplan_route():
 
         # HIEU UNG TU VIET: AI tu de xuat theo BOI CANH tung khoanh khac + tu viet code (kiem trong hop cach ly)
         art_future, art_res = None, None
-        # CHU ANH AI (song song voi FX: mot ben GPT tao anh, mot ben Claude viet code)
+        # CHU ANH AI (chay nen, song song voi FX / B6 / B7: mot ben Codex tao anh, mot ben Claude viet code)
         import text_art
-        from concurrent.futures import ThreadPoolExecutor
         lockups = text_art.lockups_from(design.get("layers"), captions.get("captions", []),
                                         (hook_info or {}).get("caption"))
         if lockups:
             run_log.emit("note", "Chữ ảnh AI: %d cụm chữ nổi bật (không gồm phụ đề karaoke) -> tạo ảnh chữ theo "
                          "phong cách video, cắt từng tầng + vị trí từng từ" % len(lockups), step="TXT-art",
                          output=[{"key": lk["key"], "tang": [(t["role"], t["text"]) for t in lk["tiers"]]} for lk in lockups])
-            _art_pool = ThreadPoolExecutor(max_workers=1)
-            art_future = _art_pool.submit(
-                _step, "TXT-art", {"lk": lockups, "style": style_phien, "story": story, "v": text_art.ART_VERSION},
+            art_future = _nen_nhan(lambda: _step(
+                "TXT-art", {"lk": lockups, "style": style_phien, "story": story, "v": text_art.ART_VERSION},
                 lambda: text_art.make_text_art(lockups, style=style_phien, story=story, log=logger.info,
-                                               emit=lambda m: run_log.emit("note", m, step="TXT-art")), True)
+                                               emit=lambda m: run_log.emit("note", m, step="TXT-art")), True))
         import fx_flow
         if visual is not design:
             visual["effects"] = []          # R4 du phong (kho mau) -> khong dung hieu ung mau
@@ -1037,21 +1060,7 @@ def remotion_autoplan_route():
                      output=[{k: e.get(k) for k in ("id", "kind", "layer", "src_start", "src_end", "context", "goal",
                                                     "why_fit", "visual", "fit_reason")} for e in fx_list])
 
-        if art_future is not None:
-            try:
-                art_res = art_future.result() or {}
-            except Exception as ex:
-                art_res = {}
-                warnings.append("Chữ ảnh AI lỗi (%s) — dùng chữ vẽ bằng code." % str(ex)[:160])
-            n_ok = len(art_res.get("items") or {})
-            for f in art_res.get("failed") or []:
-                run_log.emit("note", "Chữ ảnh AI bỏ cụm '%s': %s — dùng chữ vẽ bằng code" % (f.get("text"), f.get("ly_do")),
-                             step="TXT-art", level="warn")
-            run_log.emit("result", "Chữ ảnh AI: %d cụm đạt, %d cụm dùng chữ code" % (n_ok, len(art_res.get("failed") or [])),
-                         step="TXT-art", level="ok" if n_ok else "warn",
-                         output={k: [t.get("file") for t in v.get("tiers") or []] for k, v in (art_res.get("items") or {}).items()})
-
-        # B6: meme (kho meme la file ngoai)
+        # B6: meme (kho meme la file ngoai). Khong cho chu anh AI (khong can) -> B6 / B7 chay trong luc Codex tao chu.
         _emos = {e.get("emotion") for maps in emotion_map_data.values() for e in maps if e.get("emotion")}
         meme_catalog = meme_lib.meme_catalog_for_plan(emotions=_emos)
         inserts = _step("B6-inserts", {
@@ -1085,6 +1094,29 @@ def remotion_autoplan_route():
             transitions=visual.get("transitions", []),
             captions=captions.get("captions", []) + motion_design.layers_as_heroes(design.get("layers")),
             inserts=inserts.get("inserts", []), log=logger.info, hook_visuals=_hook_hinh), optional=True) or {}
+
+        # ----- CHO VIEC CHAY NEN (chu anh AI + anh AI) roi moi ghep plan -----
+        if art_future is not None:
+            try:
+                art_res = art_future.result() or {}
+            except Exception as ex:
+                art_res = {}
+                warnings.append("Chữ ảnh AI lỗi (%s) — dùng chữ vẽ bằng code." % str(ex)[:160])
+            n_ok = len(art_res.get("items") or {})
+            for f in art_res.get("failed") or []:
+                run_log.emit("note", "Chữ ảnh AI bỏ cụm '%s': %s — dùng chữ vẽ bằng code" % (f.get("text"), f.get("ly_do")),
+                             step="TXT-art", level="warn")
+            run_log.emit("result", "Chữ ảnh AI: %d cụm đạt, %d cụm dùng chữ code" % (n_ok, len(art_res.get("failed") or [])),
+                         step="TXT-art", level="ok" if n_ok else "warn",
+                         output={k: [t.get("file") for t in v.get("tiers") or []] for k, v in (art_res.get("items") or {}).items()})
+        if assets_job is not None:
+            assets_job.result()             # loi ngoai du kien -> vut len nhu khi chay tuan tu (tra loi ke hoach)
+            bad = [a for a in assets if a.get("error")]
+            warnings[_cho_canh_bao_anh:_cho_canh_bao_anh] = [
+                "Ảnh '%s' không tạo được (%s) — bỏ các lớp dùng ảnh này." % (a["id"], a["error"][:120]) for a in bad]
+            run_log.emit("result", "Tài nguyên hình: %d/%d xong" % (len(assets) - len(bad), len(assets)),
+                         step="assets", level="warn" if bad else "ok",
+                         output=[{k: a.get(k) for k in ("id", "kind", "path", "cutout_path", "error")} for a in assets])
 
         # ----- GHEP PLAN (ban THO: gio than video; cau truc hook/meme do build_spec dung) -----
         segs = json.loads(json.dumps(segs_b2))
@@ -1178,6 +1210,10 @@ def remotion_autoplan_route():
     except Exception as e:
         logger.error("Remotion autoplan that bai: %s", str(e), exc_info=True)
         return err(e)
+    finally:
+        if _nen is not None:
+            # thanh cong: moi viec nen da xong. Loi giua chung: khong bat nguoi dung cho viec nen chay not.
+            _nen.shutdown(wait=False)
 
 
 @app.route("/remotion/spec", methods=["POST"])
@@ -1254,7 +1290,8 @@ def _theo_doi_app_me():
     def _canh():
         while True:
             time.sleep(3)
-            if os.getppid() != ppid:
+            # Windows khong doi ppid khi me chet -> hoi he dieu hanh me con song khong
+            if (winsupport.IS_WIN and not winsupport.parent_alive(ppid)) or (not winsupport.IS_WIN and os.getppid() != ppid):
                 logger.info("App me (pid %d) da tat -> sidecar thoat", ppid)
                 os._exit(0)
 

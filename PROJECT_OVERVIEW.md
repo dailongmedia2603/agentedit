@@ -461,7 +461,7 @@ dan tuyet doi toi file goc o videos, sourceBrief, referenceAnalysis, rmPlan, rmS
 ## 11l. Luong Edit moi — CHU ANH AI cho moi cum chu noi bat (2026-09-27)
 
 - Ap cho MOI cum chu noi bat (lop chu R4, chu hero R5, chu hook); KHONG ap phu de karaoke, the trich dan
-  (reveal), cum > 48 ky tu, bo dem so. Luon chay (sau R5), song song voi FX (thread).
+  (reveal), cum > 48 ky tu, bo dem so. Luon chay (sau R5), chay nen song song voi FX / B6 / B7 (muc 11q).
 - `sidecar/text_art.py`: `lockups_from` (lop cung group gop 1 cum -> phan cap chinh / phu dung ca to hop) ->
   `_pack` (<= 3 cum, <= 5 hang / tam) -> `gen_sheet` (Codex image_generation, prompt `_TEXT_ART_PROMPT`, NEN
   TRONG SUOT, tam dau lam MAU phong cach cho cac tam sau qua `-i`) -> `slice_sheet`: `segment_rows` (tach moi khe
@@ -621,6 +621,37 @@ noi toi, vi tri + co hop; anh AI co the lay anh san pham that lam mau.
 - Test: `tests/test_user_media.py` (chuan hoa, ban lam viec, Gemini + cache + route, luong thong tin toi R4 / FX / B6,
   du phong, lop bao ve, anh mau Codex, khoa cache).
 
+## 11q. Viec Codex chay nen trong /remotion/autoplan (2026-09-30)
+
+Chi doi LICH chay, khong doi dau vao / prompt / khoa cache / thu tu cac buoc Claude. Phu thuoc that:
+B1 -> B2 -> B3 -> R4 -> R5 -> FX-plan -> FX-code -> B6 -> B7; anh AI chi can R4; chu anh AI can R4 + R5; chi GHEP PLAN
+moi can file anh + chu anh.
+
+- `server.remotion_autoplan_route`: sau R4 tao `ThreadPoolExecutor` `_nen` (2 luong "autoplan-nen"), CHI cho viec CODEX:
+  - anh AI (`motion_design.resolve_assets`, ~1-4 phut) chay NEN; truoc day R5 / FX / B6 / B7 phai dung cho no.
+    Cho ket qua ngay truoc khi ghep plan; canh bao anh loi chen DUNG CHO CU (`_cho_canh_bao_anh`).
+  - TXT-art (chu anh AI) van chay nen tu sau R5, nhung gio cho o buoc ghep plan (truoc: cho truoc B6).
+  - `finally: _nen.shutdown(wait=False)` — loi giua chung thi tra loi ngay, khong cho viec nen.
+- KHONG GOI CLAUDE CLI DONG THOI (moi buoc Claude chay lan luot o luong chinh, nhu cu). Da thu roi bo 09-30: FX-code
+  3 lo cung luc + B6 song song FX. Do that video 111s: 3 luot `claude -p` khoi dong cung giay -> 1 luot xong 80s, 2 luot
+  bi CHAN DUNG ~900s roi cung luc moi chay (CLI tu bao duration_ms 185s / 242s, dong ho that 1086s / 1143s); API luc do
+  van tra loi luot nho trong 5s. 104 luot tuan tu truoc do: 0 lan. Chua ro nguyen nhan (khoa / hang doi dung chung
+  giua cac tien trinh claude?) — muon song song lai phai tim ra truoc; neu chan > gioi han 1200s buoc FX bi bo.
+  Codex (tao anh) chay song song voi Claude thi on (chu anh AI da lam vay tu 09-27).
+- NHAT KY THEO LUONG: `run_log` luu run hien hanh theo thread -> viec o luong phu phai boc `run_log.carry(fn)`,
+  khong thi su kien / luot goi AI trong luong do bi mat (truoc 09-30 luong TXT-art bi mat nhat ky vi ly do nay).
+- Kiem hoi quy: harness AI gia (10 kich ban: day du, dung cache, khong video mau, B6 / FX-code / R5 / B7 / R4 loi,
+  moi anh loi, FX-fix) code cu vs moi: luot goi AI (hash system + payload), khoa cache, plan, spec, guard, canh bao (ca
+  thu tu), buoc dung lai GIONG HET. Bay: so khoa R4/R5 giua 2 ban chep phai `os.utime(ns=...)` file `sidecar/assets/*`
+  (fingerprint = mtime danh muc).
+- DO THAT A/B 09-30 (Claude opus-5-5 high, cung du an, cache co lap, chi khau lap plan): video 28s cu 698s / moi 708s;
+  video 111s cu 1097s / moi 1077s. Khong ro tren dong ho vi AI dao dong lon (R4 +55..+107s, FX-plan +40s o lan moi).
+  Mo phong cheo (cung thoi gian tung buoc, chi doi lich): nhanh 11-17% (~120-160s) = dung thoi gian cho anh AI; chu anh
+  AI chua lan nao la nut that. Chat luong 2 ban nhu nhau (anh du, chu anh du, luat hook dat, 0 canh bao).
+- Test: `tests/test_info_flow.py` [12] (anh / chu anh chay nen, R5 khong cho anh, B6 / B7 khong cho chu anh, KHONG co 2
+  luot Claude chong thoi gian, nhat ky luong nen, canh bao anh loi).
+- Ban nguon truoc khi sua: `~/.capcut-studio/source-backup-20260930-before-parallel/`.
+
 ## 10b. Thu vien phan tich video (sidecar/analysis_library.py, them 2026-09-26)
 
 Luu ket qua "Hieu nguon" (Gemini + gio loi noi Whisper) va "Video mau" (GPT/Codex) de lan sau
@@ -705,6 +736,145 @@ Media:      electron/services/media-server.ts (http 127.0.0.1 + token, ho tro Ra
     chinh stack Electron (dev hoac ban dong goi).
   - `STUDIO_FAKE_READY=1 <electron> . --user-data-dir=<tam>`: mo khoa trang de soat giao dien
     ma khong doc Keychain.
+
+## 13. Nhung Python + bao ve ma nguon (2026-09-30)
+
+Muc tieu: (1) nguoi dung KHONG cai Python moi truong rieng; (2) bao ve ma Python sidecar;
+(3) bao ve ma Electron phia BE (IPC). Chi ap dung o ban DONG GOI (`npm run dist`); `npm run dev`
+va `npm run build` van chay source thuan (lap nhanh, khong bao ve). Nen tang: macOS arm64 truoc,
+manifest chua san khoa cho Windows (python_embed[win-x64] = null, ext_suffix.win32 = ".pyd").
+
+### 13a. Python NHUNG (thay uv/venv) — resources/python
+
+- `scripts/bundle-python.mjs`: tai **python-build-standalone** (Astral, "install_only") CPython 3.12
+  theo URL + SHA-256 GHIM o `sidecar/assets/toolchain.json` -> `python_embed`, giai nen vao
+  `resources/python`, roi `pip install -r sidecar/requirements.lock` vao chinh no (ABI cp312 khop).
+  Interpreter + .so/.dylib deu adhoc linker-signed san (arm64 chay duoc; electron-builder identity=null
+  KHONG ky lai -> chu ky nôi bo con nguyen). Ket qua ship qua `extraResources` (-> Contents/Resources/python).
+- `electron/services/paths.ts`: `embeddedPython()` (prod: <resources>/python/bin/python3.12; dev:
+  <project>/resources/python/...). `sidecar.ts` + `doctor.ts` UU TIEN python nhung; chi fallback
+  `state.json.venv_python` (may cu). Doctor: khi co python nhung -> KHONG auto-cai uv/venv
+  (nam trong app read-only); Whisper model + Chrome VAN tai qua Doctor (trong so ML/trinh duyet,
+  khong phai "moi truong Python").
+- **Pham vi "khong cai Python"**: dung cho *runtime Python*; Whisper (~486MB) + Chrome (~90MB) van tai 1 lan.
+
+### 13b. Sidecar bien dich Cython -> .so — resources/sidecar-dist
+
+- `scripts/compile-sidecar.mjs`: bien dich MOI `sidecar/*.py` (tru `server_launch.py`) thanh
+  `<mod>.cpython-312-darwin.so` (Cython, cai TAM roi go khoi python nhung -> ship sach), lap
+  `resources/sidecar-dist/` = .so + `server_launch.py` + moi file top-level khong .py (requirements.lock,
+  fx_runtime.mjs) + `scripts/*.py` (goi bang duong dan, giu source) + assets/ + references/. KY adhoc moi .so.
+- **Launcher**: `server.py` -> `server.so`; khong the co `server.py` cung ten (loader uu tien .so) ->
+  `server_launch.py` (`import server; server.main()`). `paths.sidecarServer()` tra launcher neu co, else server.py.
+- Prod ship `resources/sidecar-dist` -> `sidecar` (thay source). Dev van chay `sidecar/*.py` (co ca
+  server_launch.py, import server.py source). KHONG con "3 ban copy sidecar" cu — hot-fix = sua source .py
+  roi `npm run dist` (khong sua truc tiep .so trong .app).
+
+### 13c. Electron BE (main/preload/remotion-worker): obfuscate + bytenode
+
+- `scripts/protect-electron.mjs` (sau `electron-vite build`): moi file trong `out/main/index.js`,
+  `out/main/remotion-worker.js`, `out/preload/index.js` -> LAM ROI (`javascript-obfuscator`: stringArray
+  base64 + doi ten + control-flow 0.5; TAT selfDefending/debugProtection/renameGlobals) -> BIEN DICH
+  bytecode V8 `.jsc` (`bytenode`, chay duoi `ELECTRON_RUN_AS_NODE=1 <electron>` de khop V8 dang ship) ->
+  thay .js bang STUB `require('bytenode'); module.exports=require('./<ten>.jsc')`. Helper: `scripts/bytenode-compile.cjs`.
+- **BAT BUOC** (`electron.vite.config.ts`): `output.dynamicImportInCjs: false` cho main+preload — bytenode
+  KHONG chay `import()` dong (`ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING`); rollup doi sang require. `bytenode`
+  o `dependencies` (co trong asar). `.jsc` khoa theo V8 -> nang Electron thi build lai.
+
+### 13d. Pipeline & kiem chung
+
+- `npm run dist` = electron-vite build -> bundle-remotion -> **bundle-python -> compile-sidecar ->
+  protect-electron** -> electron-builder. Script rieng: `bundle:python`, `compile:sidecar`, `protect:electron`.
+- Da kiem tren ban `dist:dir` DONG GOI: STUDIO_DOCTOR (python nhung 47/47, Vision, Whisper OK, khong can uv);
+  STUDIO_REMOTION_RENDER = PASS (main.jsc + remotion-worker.jsc fork tu asar + bytenode + render MP4);
+  mo GUI -> preload.jsc nap, sidecar (.so) spawn bang python nhung; may sach (env -i, khong python/uv he thong)
+  van xanh nhom Python. 23 test Python + 3 test .mts + tsc + compileall PASS.
+- Test: `tests/test_toolchain.py` [1] python_embed; `tests/test_toolchain.mts` [5] platformKey/pyEmbedTarget/pyExtSuffix.
+
+### 13e. Dong bo kho SFX + Meme qua Cloudflare R2 (2026-09-30)
+
+Muc tieu: tac gia them/gan nhan (Gemini) kho 1 lan -> may khac TU TAI ve ca media LAN nhan
+(emotion/use_when/tags/summary) -> khong goi Gemini lai; them meme moi sau nay chi upload R2, khong
+phai phat hanh app moi.
+
+- **Config** `sidecar/assets/library_sync.json`: `base_url` (R2 cong khai, ship trong app) + `manifest`.
+  Bucket hien tai: `agent-edit`, `https://pub-e69822cf5f4d4111a131f7d13e08dc6c.r2.dev`.
+- **Pull (may nguoi dung)** `sidecar/library_sync.py` -> route `POST /library/sync` (server.py):
+  GET `{base}/library-manifest.json` -> tai file THIEU / SAI SHA-256 (`{base}/sfx/<ten>`, `/memes/<ten>`)
+  -> GOP theo `id` (muc R2 ghi de muc cung id; muc nguoi dung tu them GIU NGUYEN). An toan: sao luu
+  `*_library.json.bak` truoc khi ghi; `file` viet lai duong dan tuyet doi theo may (manifest chi giu ten);
+  manifest loi/rong -> khong xoa gi. Dung `engine._load_lib/_save_lib` + `meme_lib.load_lib/save_lib`
+  (giu dung schema). Chi `requests` (da co trong sidecar).
+- **Electron/UI**: IPC `library:sync` (ipc.ts) -> preload `syncLibrary` -> nut "Dong bo kho" o
+  `Sfx.tsx` + `Memes.tsx`; TU sync nen 1 lan khi app san sang (`App.tsx`, loi im lang).
+- **Publish (may tac gia)** `scripts/publish-library.mjs` (`npm run publish:library`; `--dry-run` de thu):
+  doc `~/.capcut-studio/{sfx,memes}` + `*_library.json`, tinh SHA-256, tao manifest (file=ten co ban),
+  upload file MOI/DOI (so voi manifest R2) + manifest. Token R2 o `~/.capcut-studio/r2-publish.json`
+  (account_id/access_key_id/secret_access_key/bucket/public_base_url) hoac env `R2_*` — CHI o may tac gia,
+  KHONG nhung vao app, `.gitignore` chan `r2-publish.json`. Dung `@aws-sdk/client-s3` (devDependency).
+- **Da verify**: unit test merge (giu local-only, cap nhat nhan R2, viet lai path, kiem SHA, backup);
+  test tich hop qua HTTP `/library/sync` voi mock R2 (HOME tam); `--dry-run` tren kho that (51 SFX + 18 meme).
+
+### 13f. May moi: ffmpeg nhung + mac dinh AI = CLI subscription (2026-10-01)
+
+- **ffmpeg nhung**: `scripts/bundle-ffmpeg.mjs` chep NGUYEN zip ghim (`toolchain.json -> ffmpeg`, kiem SHA)
+  vao `resources/ffmpeg/` -> `Contents/Resources/ffmpeg/`. `toolchain.installFfmpeg`: may da co dung ban ->
+  chep; else **ban nhung trong app** (`bundledFfmpeg()`, SHA zip khop) -> giai nen; chi khi thieu moi tai
+  GitHub. Ly do: may khac tai GitHub bi "SHA-256 khong khop" (mang tra noi dung khac). Giu dang ZIP vi
+  ad-hoc ky sau app co the ky lai Mach-O -> lech SHA ghim. Codex CLI (~95MB) CHUA nhung (van tai GitHub).
+- **Mac dinh AI cho may moi** (khop cach tac gia dung): `plan_provider` thieu/la -> **claude**
+  (`state.planProviderOf`, `config.DEFAULT_PLAN_PROVIDER`, Settings); `auth_mode` mac dinh **subscription**
+  cho gemini/gpt/claude (`secrets.ts DEFAULTS`, `config.DEFAULT_PROVIDERS`) -> Doctor may moi hien
+  "Gemini — Antigravity CLI", "Claude — Claude Code CLI (lap ke hoach)", "Codex CLI". Cau hinh da luu
+  (secrets.enc / state.json) van thang mac dinh. Test: test_claude_planner [1], test_run_log chon RO gpt+api_key.
+- **Ky + icon**: `afterPack: scripts/adhoc-sign.cjs` (ad-hoc ky sau -> het loi "bi hong" tren may tai ve);
+  `afterAllArtifactBuild: scripts/dmg-seticon.cjs` (icon logo cho file .dmg). App chua notarize -> may tai
+  ve lan dau: `xattr -dr com.apple.quarantine "/Applications/Agent Edit.app"` hoac System Settings > Open Anyway.
+
+## 14. Ban WINDOWS x64 (2026-10-01)
+
+Build TREN may Windows 10/11 x64 (`capcut-ai-studio/build-windows.ps1` -> `npm run dist:win`; huong dan nguoi dung:
+`capcut-ai-studio/BUILD-WINDOWS.md`). Khong build cheo tu macOS: bytenode `.jsc` khoa theo V8 + CPU, Cython `.pyd` can MSVC.
+macOS giu nguyen hanh vi (moi nhanh Windows deu co dieu kien nen tang); da kiem lai ban mac `dist:dir` = 19/19 PASS.
+
+- Manifest `sidecar/assets/toolchain.json`: truong ngoai = macOS arm64; `platforms.win-x64` ghi de (os min build 17763,
+  ffmpeg `zackees/ffmpeg_bins@df95abc v8.0/win32.zip` co zimg/vpx/x264, codex = GOI `codex-package-x86_64-pc-windows-msvc`
+  (bin/codex.exe + codex-resources sandbox) -> `~/.capcut-studio/tools/codex`, trinh cai `install.ps1` cho claude / agy / uv);
+  `python_embed.win-x64` = python-build-standalone 3.12.14 install_only (python.exe, co pip + include + libs/python312.lib);
+  `vision_models` (5 model ONNX ghim SHA). Electron doc qua `toolchain.ts` ffSpec()/codexSpec()/installerOf()/osReq().
+- `requirements.lock` co dieu kien PEP 508: pyobjc `; sys_platform == "darwin"`; Windows them colorama, pillow-heif, resvg-py
+  (giai bang `uv pip compile --python-platform x86_64-pc-windows-msvc`, moi wheel cp312 win_amd64 da kiem tren PyPI).
+  `scripts/toolchain.py _marker_ok` loc theo may.
+- THI GIAC MAY KHONG CO VISION -> `sidecar/vision_onnx.py` (onnxruntime CPU, khong OpenCV): RVM tach nguoi (IoU 0.97-0.99
+  so Vision tren video that), BiRefNet-lite tach nen anh (IoU trung vi 0.958; isnet 0.856), YuNet mat (hieu chinh khung ve
+  quy uoc Vision: w/0.862, h/1.17, tam +0.093h), PP-OCR CTC 1 dong (chu = latin_PP-OCRv5, khung tung tu = PP-OCRv6_small;
+  rapidocr co bo do bo sot chu Viet -> tu viet), resvg (SVG do hook), pillow-heif (HEIC thay sips). `media_vision` /
+  `text_art._ocr` / `hook_rule._raster` tu chuyen khi khong import duoc Vision; `STUDIO_VISION=onnx` ep ONNX tren macOS
+  (kiem thu). Khoa cache rieng (`|onnx-rvm`, `onnx-yunet`). Model nho NHUNG (`scripts/bundle-models.mjs` -> resources/models,
+  win.extraResources; env STUDIO_MODELS_DIR), BiRefNet 224 MB Doctor tai (`fix: models`) -> ~/.capcut-studio/models.
+- `sidecar/winsupport.py` (server.py goi install()): Windows -> subprocess CREATE_NO_WINDOW + UTF-8 (errors=replace), stdout
+  UTF-8, pillow-heif; `ffbin` (ffmpeg.exe), `kill_tree` (taskkill /T thay os.killpg), `run` (het gio giet ca cay roi moi doc
+  ong), `parent_alive` (Windows khong doi ppid), `node_env` (SYSTEMROOT/TEMP cho Electron-as-Node). Electron dat
+  PYTHONUTF8=1 + PYTHONIOENCODING cho moi Python con (`env.augmentedEnv`).
+- GIOI HAN DONG LENH 32K (Windows): Claude `--system-prompt-file` (R4 ~30K ky tu); agy prompt qua STDIN
+  `--input-format stream-json --output-format stream-json -p=` voi dong `{"event":"user","message":{"content":...}}`, ket qua
+  dong `{"event":"result","result":{...}}` (`_agy_argv`/`_agy_result`; da goi that 2026-10-01: video thu doc dung, viewed=1).
+- Electron: `env.ts` (PATH dung `path.delimiter` + khoa `Path`, findIn/exeName theo PATHEXT, needsShell .cmd, killTree,
+  systemTar), dang nhap agy / Claude = cua so PowerShell rieng chay .ps1 UTF-8 CO BOM (`cli-login.ts`), titleBarOverlay
+  (3 nut cua so, header chua 150px), single-instance lock, Menu null, AppUserModelId, compositor `win32-x64-msvc`
+  (`remotion-worker.ts` — sai ten = moi lan render loi), kill cay khi huy render / tat sidecar, so sanh duong dan khong
+  phan biet hoa thuong (media-server, myinstants, `src/lib/projectMedia.ts`), NTFS khong clone (project-media), shell:openPath
+  chi mo THU MUC, luu video vao `app.getPath('videos')`. UI: `src/lib/platform.ts` (Terminal->PowerShell, Finder, Keychain->DPAPI,
+  fileUrl). Doctor: dong `os` (Windows), bo avconvert, dong Vision -> "Thi giac may (model ONNX)" + fix `models`.
+- Build: `bundle-python.mjs` (tar System32, xoa __pycache__ bang JS, KEM vcruntime140*/msvcp140* tu VS Redist — ban PBS khong
+  kem, may moi thieu -> python/onnxruntime khong nap), `compile-sidecar.mjs` (.pyd), `bundle-ffmpeg.mjs` theo nen tang,
+  electron-builder `win` (NSIS cai cho RIENG user, tieng Viet 1066, icon `build/icon.ico` tu `make_icon.py`), `build-windows.ps1`
+  giai nen truoc winCodeSign-2.6.0 bo thu muc darwin (loi "Cannot create symbolic link" khi chua bat Developer Mode).
+- Tu kiem: `scripts/selftest-packaged.mjs` (HOME/USERPROFILE tam + --user-data-dir): Doctor tu cai ffmpeg + Chrome, sidecar
+  .pyd, tach nguoi WebM, mat, OCR, SVG, hop cach ly FX, /health, render MP4 tieng Viet. Test: `tests/test_windows_port.py`
+  (gia lap nhanh Windows; `STUDIO_MODELS_DIR=<model>` chay model that), test_toolchain.py/.mts [win-x64], test_project_media.mts [8].
+- CHUA kiem tren may Windows that (khong co may): ten file phien dang nhap agy tren Windows (chap nhan *oauth*token*), sandbox
+  Codex Windows khi tao anh (co du phong lay anh tu ~/.codex/generated_images), SmartScreen / Smart App Control (app chua ky so).
 
 ## 12. CodeGraph
 

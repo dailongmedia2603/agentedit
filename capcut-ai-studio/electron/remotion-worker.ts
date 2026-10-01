@@ -35,7 +35,11 @@ const send = (m: Out) => parent.postMessage(m)
 function binariesDirectory(): string | null {
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const dir = dirname(require.resolve(`@remotion/compositor-${process.platform}-${process.arch}/package.json`))
+    // Ten goi theo nen tang: Windows la "win32-x64-msvc" (khong phai win32-x64) -> sai ten thi Remotion lay binary
+    // TRONG app.asar -> khong chay duoc -> moi lan render deu loi.
+    const key = `${process.platform}-${process.arch}`
+    const pkg = ({ 'win32-x64': 'win32-x64-msvc', 'win32-arm64': 'win32-arm64-msvc', 'linux-x64': 'linux-x64-gnu', 'linux-arm64': 'linux-arm64-gnu' } as Record<string, string>)[key] || key
+    const dir = dirname(require.resolve(`@remotion/compositor-${pkg}/package.json`))
     const marker = `app.asar${sep}`
     if (dir.includes(marker)) {
       const unpacked = dir.replace(marker, `app.asar.unpacked${sep}`)

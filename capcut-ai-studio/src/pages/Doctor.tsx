@@ -13,9 +13,10 @@ import {
 } from 'lucide-react'
 import { Badge, Button, Card, CardBody, CardHeader, Progress, Spinner } from '@/components/ui/primitives'
 import { cn } from '@/lib/utils'
+import { IS_WIN } from '../lib/platform'
 
 const GROUP_META: Record<DoctorCheck['group'], { title: string; info: string; icon: typeof Cpu }> = {
-  system: { title: 'Hệ thống', info: 'Có sẵn trong macOS hoặc đóng gói trong app', icon: Cpu },
+  system: { title: 'Hệ thống', info: IS_WIN ? 'Có sẵn trong Windows hoặc đóng gói trong app' : 'Có sẵn trong macOS hoặc đóng gói trong app', icon: Cpu },
   media: { title: 'Xử lý video & âm thanh', info: 'App tự tải đúng bản đã kiểm chứng (mã SHA-256)', icon: Clapperboard },
   python: { title: 'Python (sidecar)', info: 'Môi trường riêng của app, thư viện khoá đúng phiên bản', icon: Package },
   ai: { title: 'AI & tài khoản', info: 'App tự cài CLI; đăng nhập / API key làm trong Cài đặt API', icon: KeyRound }
@@ -31,7 +32,8 @@ const FIX_LABEL: Record<string, string> = {
   chrome: 'Chrome Headless Shell',
   codex: 'Codex CLI',
   claude: 'Claude Code CLI',
-  agy: 'Antigravity CLI'
+  agy: 'Antigravity CLI',
+  models: 'model thị giác máy (tách người / tách nền)'
 }
 
 function StatusIcon({ status }: { status: DoctorCheck['status'] }) {
@@ -75,7 +77,7 @@ export default function DoctorPage({
   const total = progress ? progress.done.length + progress.failed.length + progress.queue.length + (progress.current ? 1 : 0) : 0
   const step = progress ? progress.done.length + progress.failed.length + (progress.current ? 1 : 0) : 0
   // chi bao 'tai ~1 GB' khi dang cai may moi (Python / Whisper) — may cu thuong chi chep ffmpeg vai giay
-  const bigInstall = !!progress && [progress.current, ...progress.queue, ...progress.done].some((x) => x === 'python' || x === 'whisper')
+  const bigInstall = !!progress && [progress.current, ...progress.queue, ...progress.done].some((x) => x === 'python' || x === 'whisper' || x === 'models')
 
   return (
     <div className="w-full px-8 py-7">

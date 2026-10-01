@@ -1,10 +1,11 @@
 // Doc thoi luong + anh thumbnail cua 1 video tren may (dung chung Tao video / Video Remotion)
+import { fileUrl } from './platform'
 export async function loadVideoMeta(path: string): Promise<{ duration: number; thumb?: string }> {
   return new Promise((resolve) => {
     const v = document.createElement('video')
     v.preload = 'metadata'
     v.muted = true
-    v.src = `file://${path}`
+    v.src = fileUrl(path)
     let done = false
     const finish = (duration: number, thumb?: string) => {
       if (done) return

@@ -354,6 +354,92 @@ try:
     check("v2: buoc chu anh AI co chay (gom cum chu noi bat -> tao tam chu)", len(ART_CALLS) >= 1 and "TXT-art" in (p11.get("_pipeline") or {}).get("thu_tu", []),
           (ART_CALLS, (p11.get("_pipeline") or {}).get("thu_tu")))
     check("tao anh hong -> van dung duoc video bang chu code", d11.get("ok") and not any(L.get("art") for L in (d11.get("spec") or {}).get("layers") or []))
+
+    print("\n[12] VIEC CODEX CHAY NEN (2026-09-30): anh AI + chu anh AI song song voi cac buoc Claude; Claude KHONG dong thoi")
+    import time as _time
+    import threading as _th
+    import motion_design   # noqa: E402
+    import run_log         # noqa: E402
+    IMG = os.path.join(TMP, "anh.png")
+    subprocess.run([remotion_plan._ffbin("ffmpeg"), "-hide_banner", "-loglevel", "error", "-y", "-f", "lavfi",
+                    "-i", "color=red:s=64x64", "-frames:v", "1", IMG], check=True)
+    MOC = []                                              # (step_label, bat dau, ket thuc) moi luot Claude gia
+    CHAM = {"B6-inserts": 0.3, "FX-plan": 0.8}
+
+    def fake_cham(name, messages, **k):
+        lab = k.get("step_label")
+        t0 = _time.time()
+        _time.sleep(CHAM.get(lab, 0.05))
+        try:
+            return fake_chat(name, messages, **k)
+        finally:
+            MOC.append((lab, t0, _time.time()))
+
+    ANH, CHU = {}, {}
+
+    def fake_resolve(assets, source_videos, style="", log=None, contexts=None):
+        ANH.update(t0=_time.time(), run=run_log.current(), luong=_th.current_thread().name, ctx=contexts)
+        _time.sleep(1.2)                                  # Codex tao anh (~1-3 phut that)
+        for a in assets:
+            if a["id"] == "anh_hong":
+                a["error"] = "Codex khong tao duoc"
+            else:
+                a["path"] = IMG
+        ANH["t1"] = _time.time()
+        return assets
+
+    def fake_sheet(lk, *a, **k):
+        CHU.setdefault("t0", _time.time())
+        CHU.setdefault("luong", _th.current_thread().name)      # tam dau tien chay o luong TXT-art
+        _time.sleep(1.0)                                  # Codex tao tam chu (~1-3 phut that)
+        CHU["t1"] = _time.time()
+        return None
+
+    _goc = providers._chat, motion_design.resolve_assets, text_art.gen_sheet
+    providers._chat, motion_design.resolve_assets, text_art.gen_sheet = fake_cham, fake_resolve, fake_sheet
+    TRA_LOI["R4-design"] = dict(DESIGN, assets=[
+        {"id": "anh_tot", "kind": "ai_image", "prompt": "the ngan hang bi khoa", "aspect": "9:16"},
+        {"id": "anh_hong", "kind": "ai_image", "prompt": "dong tien bay mat", "aspect": "1:1"}])
+    NHAN.clear()
+    THU_TU.clear()
+    try:
+        t_bat_dau = _time.time()
+        with server.app.test_client() as c:
+            r = c.post("/remotion/autoplan", json={"brief": BRIEF, "fresh": True, "_run": {"id": "test-nen"},
+                                                   "edit_request": {"purpose": "canh bao lua dao"}})
+        t_tong = _time.time() - t_bat_dau
+    finally:
+        providers._chat, motion_design.resolve_assets, text_art.gen_sheet = _goc
+    d12 = r.get_json() or {}
+    moc = {lab: (a, b) for lab, a, b in MOC}
+    check("chay xong", r.status_code == 200 and d12.get("ok"), d12.get("error"))
+    check("thu tu cac buoc Claude giu nguyen nhu cu", [x for x in THU_TU if x != "R4-design-fix"][:9] ==
+          ["B1-select", "B2-timeline", "B3-hook", "R4-design", "R5-captions", "FX-plan", "FX-code", "B6-inserts",
+           "B7-audio"], THU_TU)
+    lan_luot = sorted(MOC, key=lambda x: x[1])
+    check("KHONG co 2 luot Claude nao chay cung luc", all(b[1] >= a[2] - 1e-3 for a, b in zip(lan_luot, lan_luot[1:])),
+          [(lab, round(a - t_bat_dau, 2), round(b - t_bat_dau, 2)) for lab, a, b in lan_luot])
+    check("tao anh chay o luong nen, van ghi vao nhat ky cua lan chay",
+          str(ANH.get("luong", "")).startswith("autoplan-nen") and (ANH.get("run") or {}).get("id") == "test-nen", ANH)
+    check("anh AI nhan boi canh (asset_contexts) nhu truoc", isinstance(ANH.get("ctx"), dict) and "anh_tot" in ANH["ctx"],
+          ANH.get("ctx"))
+    check("R5 KHONG cho tao anh (bat dau khi anh con dang tao)", moc["R5-captions"][0] < ANH["t1"], (moc["R5-captions"], ANH))
+    check("chu anh AI chay o luong nen", str(CHU.get("luong", "")).startswith("autoplan-nen"), CHU)
+    check("B6 + B7 KHONG cho chu anh AI (bat dau khi chu con dang tao)",
+          moc["B6-inserts"][0] < CHU["t1"] and moc["B7-audio"][0] < CHU["t1"], (moc.get("B6-inserts"), moc.get("B7-audio"), CHU))
+    check("ca lan chay ngan hon cong don anh 1.2s + chu 2x1.0s + B6 0.3s", t_tong < 3.5, round(t_tong, 2))
+    p12 = d12.get("plan") or {}
+    check("plan chi ghep sau khi anh xong: anh tot co duong dan", [a.get("id") for a in p12.get("assets") or []] == ["anh_tot"],
+          p12.get("assets"))
+    check("anh loi -> van bao canh bao cho nguoi dung", any("anh_hong" in w for w in d12.get("warnings") or []),
+          d12.get("warnings"))
+    ev = [json.loads(x) for x in open(run_log.events_path("test-nen"), encoding="utf-8") if x.strip()]
+    tieu_de = [(e.get("step"), e.get("title")) for e in ev]
+    check("nhat ky co TXT-art chay nen (truoc day luong phu bi mat nhat ky)", ("TXT-art", "Bắt đầu TXT-art") in tieu_de,
+          tieu_de)
+    check("nhat ky co ket qua tai nguyen hinh 1/2", ("assets", "Tài nguyên hình: 1/2 xong") in tieu_de, tieu_de)
+    check("ket qua tai nguyen hinh ghi SAU khi anh xong", next(e["ts"] for e in ev if e.get("step") == "assets"
+                                                              and e.get("kind") == "result") >= ANH["t1"])
 finally:
     shutil.rmtree(TMP, ignore_errors=True)
 

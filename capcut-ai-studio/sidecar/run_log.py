@@ -64,6 +64,20 @@ def current():
     return getattr(_tl, "run", None)
 
 
+def carry(fn):
+    """Boc fn de chay o LUONG PHU (ThreadPoolExecutor) van ghi vao run hien hanh cua luong goi.
+    Nhat ky theo luong -> khong boc thi moi su kien / lan goi AI trong luong phu bi mat."""
+    run = current()
+
+    def w(*a, **k):
+        set_run(run)
+        try:
+            return fn(*a, **k)
+        finally:
+            set_run(None)
+    return w
+
+
 # ---------------------------------------------------------------------------
 # Ghi
 # ---------------------------------------------------------------------------

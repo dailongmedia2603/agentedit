@@ -11,7 +11,7 @@
 import { register } from 'node:module'
 import { mkdirSync, writeFileSync, existsSync, readFileSync, symlinkSync, mkdtempSync } from 'fs'
 import { homedir, tmpdir } from 'os'
-import { join } from 'path'
+import { isAbsolute, join } from 'path'
 
 register('./helpers/electron-mock-loader.mjs', import.meta.url)
 const mock = await import('electron' as string)
@@ -24,8 +24,9 @@ function check(name: string, cond: unknown, detail?: unknown) {
 }
 
 const HOME = homedir()
-if (!HOME.includes('tmp') && !HOME.includes('/T/') && !HOME.startsWith('/var/folders')) {
-  console.log('Chay voi HOME tam: HOME=$(mktemp -d) node tests/test_project_delete.mts')
+const H = HOME.replace(/\\/g, '/').toLowerCase()
+if (!H.includes('tmp') && !H.includes('/t/') && !H.includes('/temp/') && !H.startsWith('/var/folders')) {
+  console.log('Chay voi HOME tam: HOME=$(mktemp -d) node tests/test_project_delete.mts  (Windows: $env:USERPROFILE = thu muc tam)')
   process.exit(2)
 }
 const ENG = join(HOME, '.capcut-studio')
@@ -38,7 +39,7 @@ writeFileSync(origVideo, 'goc'.repeat(100))
 function mkProject(id: string, wdName: string | null, extra: Record<string, unknown> = {}) {
   let wd: string | undefined
   if (wdName) {
-    wd = wdName.startsWith('/') ? wdName : join(PROJ, wdName)
+    wd = isAbsolute(wdName) ? wdName : join(PROJ, wdName)
     mkdirSync(join(wd, 'video-nguon'), { recursive: true })
     writeFileSync(join(wd, 'video-nguon', 'a-ban-sdr.mov'), 'x'.repeat(1000))
     writeFileSync(join(wd, 'video-1.mp4'), 'r'.repeat(500))
@@ -61,7 +62,8 @@ const listed = (id: string) => !!P.getProject(id)
 
 console.log('[1] diskInfo')
 const wd1 = mkProject('r_one', 'remotion-video-one') as string
-symlinkSync(OUTSIDE, join(wd1, 'lien-ket-ra-ngoai'))
+// Windows: symlink thu muc can admin / Developer Mode -> dung junction (cung la lien ket ra ngoai)
+symlinkSync(OUTSIDE, join(wd1, 'lien-ket-ra-ngoai'), process.platform === 'win32' ? 'junction' : 'dir')
 let info = await P.projectDiskInfo('r_one')
 check('trashable', info?.trashable, info)
 check('dung luong = 1000 + 2x500 (khong tinh symlink ra ngoai)', info?.bytes === 2000, info?.bytes)

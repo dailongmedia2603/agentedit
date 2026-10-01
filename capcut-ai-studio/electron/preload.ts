@@ -1,6 +1,8 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron'
 
 const api = {
+  /** He dieu hanh (darwin / win32) — UI doi chu (Finder / Terminal...) + cho nut cua so Windows */
+  platform: process.platform,
   appInfo: () => ipcRenderer.invoke('app:info'),
 
   // Doctor
@@ -74,6 +76,7 @@ const api = {
   libraryList: () => ipcRenderer.invoke('library:list'),
   libraryLookup: (paths: string[]) => ipcRenderer.invoke('library:lookup', paths),
   libraryDelete: (fp: string, part?: string) => ipcRenderer.invoke('library:delete', fp, part),
+  syncLibrary: () => ipcRenderer.invoke('library:sync'),
 
   // Projects
   projectsList: () => ipcRenderer.invoke('projects:list'),

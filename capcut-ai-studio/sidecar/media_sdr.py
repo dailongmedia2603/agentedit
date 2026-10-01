@@ -82,7 +82,8 @@ def is_hdr(path):
 
 def is_working_copy(path):
     try:
-        return os.path.abspath(path).startswith(os.path.abspath(CACHE_DIR) + os.sep)
+        nc = os.path.normcase       # Windows: khong phan biet hoa thuong, / va \\
+        return nc(os.path.abspath(path)).startswith(nc(os.path.abspath(CACHE_DIR)) + os.sep)
     except (TypeError, ValueError):
         return False
 
@@ -108,9 +109,12 @@ def _prune():
                 if not os.path.exists(p[:-len(USED_SUFFIX)]):
                     _rm(p)
                 continue
-            if os.path.isfile(p) and _last_used(p) < cutoff:
-                os.remove(p)
-                _rm(p + USED_SUFFIX)
+            try:
+                if os.path.isfile(p) and _last_used(p) < cutoff:
+                    os.remove(p)              # Windows: file dang mo (xem truoc / render) -> bo qua file do
+                    _rm(p + USED_SUFFIX)
+            except OSError:
+                continue
     except OSError:
         pass
 
@@ -169,7 +173,8 @@ def working_path(path, log=None):
         return path
     os.makedirs(CACHE_DIR, exist_ok=True)
     key = _src_key(path)
-    out = os.path.join(CACHE_DIR, key + ".mov")
+    # khong co avconvert (Windows) -> chi ffmpeg ra MP4: dat dung duoi .mp4 (trinh duyet nhan dung loai video)
+    out = os.path.join(CACHE_DIR, key + (".mov" if os.path.isfile(AVCONVERT) else ".mp4"))
     with _lock(key):
         if os.path.isfile(out) and os.path.getsize(out) > 1000:
             _mark_used(out)               # con dung -> khong bi don

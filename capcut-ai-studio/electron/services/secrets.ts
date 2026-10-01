@@ -33,7 +33,7 @@ const DEFAULTS: ProvidersMap = {
     base_url: 'https://generativelanguage.googleapis.com',
     model: 'gemini-2.5-flash',
     api_key: '',
-    auth_mode: 'api_key',
+    auth_mode: 'subscription',
     sub_model: 'gemini-3.1-pro-preview',
     sub_effort: ''
   },
@@ -41,7 +41,7 @@ const DEFAULTS: ProvidersMap = {
     base_url: 'https://api.openai.com/v1',
     model: 'gpt-4o',
     api_key: '',
-    auth_mode: 'api_key',
+    auth_mode: 'subscription',
     sub_model: 'gpt-6-luna',
     sub_effort: ''
   },
@@ -49,7 +49,7 @@ const DEFAULTS: ProvidersMap = {
     base_url: 'https://api.anthropic.com/v1',
     model: 'claude-sonnet-4-6',
     api_key: '',
-    auth_mode: 'api_key',
+    auth_mode: 'subscription',
     sub_model: 'claude-opus-5',
     sub_effort: ''
   }

@@ -170,7 +170,8 @@ Neu nhan "loi_can_sua": sua DUNG loi do, giu y do thiet ke, tra lai code moi.
 def node_bin():
     """(duong dan, env) de chay fx_runtime.mjs. App dong goi: chinh binary Electron (STUDIO_NODE_BIN, main
     truyen vao) chay o che do Node; dev / test: node trong PATH."""
-    env = {"PATH": os.environ.get("PATH", "/usr/bin:/bin"), "HOME": os.path.expanduser("~")}
+    import winsupport
+    env = winsupport.node_env()        # Windows: them SYSTEMROOT / TEMP... (Node khoi dong can)
     b = os.environ.get("STUDIO_NODE_BIN")
     if b and os.path.isfile(b):
         env["ELECTRON_RUN_AS_NODE"] = "1"

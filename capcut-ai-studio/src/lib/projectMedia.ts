@@ -45,14 +45,34 @@ export interface AdoptResult {
 /** Ban lam viec SDR cua video HDR (sidecar/media_sdr.py) */
 export const SDR_CACHE_MARK = '/.capcut-studio/cache/media-sdr/'
 
+/** Duong dan Windows (C:\... / \\may\...) — so sanh khong phan biet hoa thuong, \ va / nhu nhau. */
+const isWinPath = (p: string) => /^[A-Za-z]:[\\/]/.test(p) || p.startsWith('\\\\')
+
+/** Chuan hoa de SO SANH: \ -> /, bo / cuoi; Windows -> chu thuong. (Khong dung de luu.) */
+function normPath(p: string): string {
+  const s = p.replace(/\\/g, '/').replace(/\/+$/, '')
+  return isWinPath(p) ? s.toLowerCase() : s
+}
+
 export function insideDir(p: string, dir: string): boolean {
   if (!p || !dir) return false
-  const d = dir.replace(/\/+$/, '')
-  return p === d || p.startsWith(d + '/')
+  const a = normPath(p)
+  const d = normPath(dir)
+  return a === d || a.startsWith(d + '/')
 }
 
 export function baseName(p: string): string {
-  return (p || '').split('/').pop() || p
+  return (p || '').split(/[\\/]/).pop() || p
+}
+
+/** Duong dan tuyet doi (macOS /..., Windows C:\... hoac \\may\...). */
+export function isAbsPath(p: string): boolean {
+  return p.startsWith('/') || isWinPath(p)
+}
+
+/** File nam trong cache ban lam viec SDR (sidecar/media_sdr.py) */
+export function isSdrCachePath(p: string): boolean {
+  return normPath(p).includes(SDR_CACHE_MARK)
 }
 
 /** Thay moi chuoi TRUNG KHOP HOAN TOAN voi mot khoa cua `map` (khong sua doi tuong truyen vao). */
@@ -74,7 +94,7 @@ export function specMediaPaths(spec: unknown): string[] {
     if (Array.isArray(x)) x.forEach(walk)
     else if (x && typeof x === 'object') {
       for (const [k, v] of Object.entries(x as Record<string, unknown>)) {
-        if (k === 'path' && typeof v === 'string' && v.startsWith('/')) out.add(v)
+        if (k === 'path' && typeof v === 'string' && isAbsPath(v)) out.add(v)
         else walk(v)
       }
     }
@@ -91,7 +111,7 @@ export function sdrCandidates(spec: unknown): string[] {
   }[]
   const out = new Set<string>()
   for (const c of clips) {
-    if (c && c.kind !== 'insert' && typeof c.path === 'string' && c.path.includes(SDR_CACHE_MARK)) out.add(c.path)
+    if (c && c.kind !== 'insert' && typeof c.path === 'string' && isSdrCachePath(c.path)) out.add(c.path)
   }
   return [...out]
 }

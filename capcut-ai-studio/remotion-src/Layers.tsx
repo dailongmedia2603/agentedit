@@ -709,8 +709,9 @@ const SpeedLines: React.FC<{ L: RSLayer; local: number; W: number; H: number; op
 
 export function mediaUrl(base: string | undefined, path: string): string {
   if (/^(https?:|data:|blob:)/.test(path)) return path
-  if (!base) return 'file://' + path
-  const name = path.split('/').pop() || 'media'
+  // Windows: C:\a\b.mp4 -> file:///C:/a/b.mp4 (khong co may chu media — chi xay ra khi thieu base)
+  if (!base) return 'file://' + encodeURI((/^[A-Za-z]:/.test(path) ? '/' : '') + path.replace(/\\/g, '/'))
+  const name = path.split(/[\\/]/).pop() || 'media'
   return `${base}/${encodeURIComponent(name)}?p=${encodeURIComponent(path)}`
 }
 

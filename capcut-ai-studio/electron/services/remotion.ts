@@ -3,6 +3,18 @@ import { app, utilityProcess, UtilityProcess } from 'electron'
 import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { ENGINE_HOME } from './paths'
+import { killTree } from './env'
+
+/** Dung worker render + con chau (Windows: chrome-headless-shell.exe / remotion.exe compositor khong tu chet theo). */
+function killWorker(child: UtilityProcess): void {
+  killTree(child.pid, () => {
+    try {
+      child.kill()
+    } catch {
+      /* da thoat */
+    }
+  })
+}
 import { mediaBase } from './media-server'
 import { readState } from './state'
 
@@ -178,24 +190,14 @@ export function cancelRender(): boolean {
   r.child.postMessage({ type: 'cancel' })
   // Worker khong phan hoi (treo o trinh duyet) -> giet han sau 8s
   setTimeout(() => {
-    if (running?.jobId === r.jobId) {
-      try {
-        r.child.kill()
-      } catch {
-        /* ignore */
-      }
-    }
+    if (running?.jobId === r.jobId) killWorker(r.child)
   }, 8000)
   return true
 }
 
 export function stopRender(): void {
   if (running) {
-    try {
-      running.child.kill()
-    } catch {
-      /* ignore */
-    }
+    killWorker(running.child)
     running = null
   }
 }

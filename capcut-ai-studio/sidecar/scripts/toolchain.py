@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 """Phan Python cua Doctor (chay bang Python cua venv sidecar; Electron goi va doc 1 dong JSON cuoi).
 
-  toolchain.py probe            -> kiem Python 3.12, TUNG goi trong requirements.lock (dung phien ban),
-                                   thi giac may macOS (Vision: tach nguoi, OCR tieng Viet), model Whisper
+  toolchain.py probe            -> kiem Python 3.12, TUNG goi trong requirements.lock (dung phien ban, theo dieu kien
+                                   nen tang PEP 508), thi giac may (macOS: Vision; Windows: model ONNX — vision_onnx),
+                                   model Whisper
   toolchain.py whisper-install  -> tai model Whisper DUNG ban ghim (revision + SHA-256), roi kiem lai
 
 Moc phien ban doc tu ../assets/toolchain.json (cung file Electron doc) — khong ghi so o day.
@@ -18,13 +19,29 @@ SIDECAR = os.path.dirname(HERE)
 MANIFEST = json.load(open(os.path.join(SIDECAR, "assets", "toolchain.json"), encoding="utf-8"))
 
 
+def _marker_ok(marker):
+    """Dieu kien nen tang cua 1 dong lock (vd `sys_platform == "darwin"`) dung voi may nay khong."""
+    if not marker:
+        return True
+    try:
+        from packaging.markers import Marker
+        return Marker(marker).evaluate()
+    except Exception:  # noqa: BLE001  (thieu packaging: chi hieu sys_platform == / !=)
+        import re
+        m = re.match(r"""\s*sys_platform\s*(==|!=)\s*['"]([^'"]+)['"]\s*$""", marker)
+        if not m:
+            return True
+        return (sys.platform == m.group(2)) == (m.group(1) == "==")
+
+
 def _lock():
     out = {}
     with open(os.path.join(SIDECAR, MANIFEST["python_packages"]["lock"]), encoding="utf-8") as f:
         for line in f:
             line = line.split("#")[0].strip()
-            if "==" in line:
-                name, ver = line.split("==", 1)
+            spec, _, marker = line.partition(";")
+            if "==" in spec and _marker_ok(marker.strip()):
+                name, ver = spec.split("==", 1)
                 out[name.strip()] = ver.strip()
     return out
 
@@ -45,7 +62,16 @@ def probe_packages():
 
 
 def probe_vision():
-    out = {"ok": False, "foreground_mask": False, "person_seg": False, "ocr_vi": False, "error": None}
+    if sys.platform != "darwin" or os.environ.get("STUDIO_VISION") == "onnx":
+        # Khong co Apple Vision: model ONNX (tach nguoi RVM, tach nen BiRefNet, mat YuNet, OCR PP-OCR, SVG resvg)
+        sys.path.insert(0, SIDECAR)
+        try:
+            import vision_onnx
+            return vision_onnx.probe()
+        except Exception as e:  # noqa: BLE001
+            return {"ok": False, "backend": "onnx", "foreground_mask": False, "person_seg": False, "ocr_vi": False,
+                    "faces": False, "svg": False, "missing": [], "error": str(e).split("\n")[0][:200]}
+    out = {"ok": False, "backend": "vision", "foreground_mask": False, "person_seg": False, "ocr_vi": False, "error": None}
     try:
         import Vision
         import Quartz  # noqa: F401  (anh tu video, ve khung SVG do hook)
@@ -79,7 +105,7 @@ def probe_whisper(full_hash=False):
     mdir = _model_dir()
     out = {"ok": False, "cache": mdir, "revision": None, "missing": [], "bad": [], "detail": ""}
     try:
-        with open(os.path.join(mdir, "refs", "main")) as f:
+        with open(os.path.join(mdir, "refs", "main"), encoding="utf-8") as f:
             out["revision"] = f.read().strip()
     except OSError:
         pass
@@ -120,7 +146,7 @@ def whisper_install():
     # refs/main -> ghi tay de tro dung ban ghim
     refs = os.path.join(_model_dir(), "refs")
     os.makedirs(refs, exist_ok=True)
-    with open(os.path.join(refs, "main"), "w") as f:
+    with open(os.path.join(refs, "main"), "w", encoding="utf-8") as f:
         f.write(w["revision"])
     res = probe_whisper(full_hash=True)
     res["path"] = path

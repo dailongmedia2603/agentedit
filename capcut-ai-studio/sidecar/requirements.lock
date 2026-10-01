@@ -1,5 +1,9 @@
 # Thu vien Python cua sidecar — KHOA DUNG PHIEN BAN (Doctor cai bang: uv pip install -r requirements.lock).
 # Tao 2026-09-28 tu venv dang chay tot tren may user (uv pip compile, Python 3.12, macOS 14+ arm64).
+# 2026-10-01: them dieu kien nen tang (PEP 508). macOS: pyobjc (Vision). Windows: colorama (click/tqdm can),
+#   pillow-heif (anh HEIC thay sips), resvg-py (ve khung SVG do hook thay NSImage) — giai bang
+#   `uv pip compile --python-platform x86_64-pc-windows-msvc`, moi goi deu co wheel cp312 win_amd64.
+#   Thi giac may tren Windows (tach nguoi / tach nen / do mat / OCR) chay model ONNX bang onnxruntime (vision_onnx.py).
 # Doi phien ban: sua o day + sidecar/assets/toolchain.json (python_packages) roi chay tests/test_toolchain.py.
 annotated-doc==0.0.4
 anyio==4.13.0
@@ -8,6 +12,7 @@ blinker==1.9.0
 certifi==2026.5.20
 charset-normalizer==3.4.7
 click==8.4.1
+colorama==0.4.6 ; sys_platform == "win32"
 ctranslate2==4.7.2
 faster-whisper==1.2.1
 filelock==3.29.0
@@ -30,15 +35,17 @@ numpy==2.4.6
 onnxruntime==1.26.0
 packaging==26.2
 pillow==12.2.0
+pillow-heif==1.8.0 ; sys_platform == "win32"
 protobuf==7.35.0
 pygments==2.20.0
-pyobjc-core==12.2
-pyobjc-framework-cocoa==12.2
-pyobjc-framework-coreml==12.2
-pyobjc-framework-quartz==12.2
-pyobjc-framework-vision==12.2
+pyobjc-core==12.2 ; sys_platform == "darwin"
+pyobjc-framework-cocoa==12.2 ; sys_platform == "darwin"
+pyobjc-framework-coreml==12.2 ; sys_platform == "darwin"
+pyobjc-framework-quartz==12.2 ; sys_platform == "darwin"
+pyobjc-framework-vision==12.2 ; sys_platform == "darwin"
 pyyaml==6.0.3
 requests==2.34.2
+resvg-py==0.5.0 ; sys_platform == "win32"
 rich==15.0.0
 setuptools==82.0.1
 shellingham==1.5.4

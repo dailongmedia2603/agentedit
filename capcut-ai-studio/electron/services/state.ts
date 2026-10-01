@@ -20,7 +20,7 @@ export interface EngineState {
 export type PlanProvider = 'gpt' | 'claude'
 
 export function planProviderOf(s: EngineState): PlanProvider {
-  return s.plan_provider === 'claude' ? 'claude' : 'gpt'
+  return s.plan_provider === 'gpt' ? 'gpt' : 'claude'
 }
 
 export function readState(): EngineState {

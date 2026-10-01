@@ -159,7 +159,7 @@ def _run_codex(argv, text, work, target, timeout):
     het gio / xong viec thi giet CA NHOM tien trinh (node + codex + code-mode-host).
     Tra (duong_dan_anh | None, ma_thoat, log_cuoi)."""
     import re
-    import signal
+    import winsupport
     t0 = time.time()
     p = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
                          env=cli_providers._augmented_env(), cwd=work, start_new_session=True)
@@ -197,14 +197,8 @@ def _run_codex(argv, text, work, target, timeout):
         time.sleep(1)
     rc = p.poll()
     if rc is None:
-        try:
-            os.killpg(p.pid, signal.SIGTERM)
-            p.wait(timeout=5)
-        except Exception:
-            try:
-                os.killpg(p.pid, signal.SIGKILL)
-            except Exception:
-                pass
+        # giet CA NHOM (macOS: killpg session rieng; Windows: taskkill /T — os.killpg khong co tren Windows)
+        winsupport.kill_tree(p)
         rc = -9
     th.join(timeout=2)
     if not found:

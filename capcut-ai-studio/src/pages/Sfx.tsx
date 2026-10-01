@@ -15,10 +15,12 @@ import {
   Sparkles,
   Wand2,
   Square,
-  Mic
+  Mic,
+  RefreshCw
 } from 'lucide-react'
 import { Badge, Button, Card, CardBody, CardHeader, Spinner } from '@/components/ui/primitives'
 import { cn } from '@/lib/utils'
+import { MOD_KEY, fileUrl } from '../lib/platform'
 
 const EMOTIONS = ['punch', 'positive', 'negative', 'nostalgic', 'soft', 'neutral']
 
@@ -68,6 +70,30 @@ export default function SfxPage() {
   const loadLib = async () => {
     const r = await window.studio.sfxList()
     if (r.ok) setLib(r.sfx)
+  }
+
+  const [syncing, setSyncing] = useState(false)
+  const [syncMsg, setSyncMsg] = useState<string | null>(null)
+  const doSync = async () => {
+    setSyncing(true)
+    setSyncMsg(null)
+    try {
+      const r = await window.studio.syncLibrary()
+      if (!r.ok) {
+        setSyncMsg('Đồng bộ lỗi: ' + (r.error || 'không rõ'))
+      } else {
+        await loadLib()
+        const s = r.sfx || { added: 0, updated: 0, total: 0, errors: [] }
+        setSyncMsg(
+          `Đã đồng bộ kho: +${s.added} mới, ${s.updated} cập nhật (tổng ${s.total})` +
+            (s.errors && s.errors.length ? ` · ${s.errors.length} lỗi tải` : '')
+        )
+      }
+    } catch (e) {
+      setSyncMsg('Đồng bộ lỗi: ' + String(e))
+    } finally {
+      setSyncing(false)
+    }
   }
 
   const addPending = (items: StagedSfx[]) =>
@@ -132,7 +158,7 @@ export default function SfxPage() {
     if (res.canceled || !res.filePaths?.length) return
     addPending(
       res.filePaths.map((p) => {
-        const base = p.split('/').pop() || 'sfx'
+        const base = p.split(/[\\/]/).pop() || 'sfx'
         return {
           key: p,
           name: base.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' '),
@@ -232,11 +258,18 @@ export default function SfxPage() {
 
   return (
     <div className="w-full px-8 py-7">
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold text-ink-900">Kho âm thanh (SFX)</h1>
-        <p className="mt-1 text-sm text-ink-800/50">
-          Tải SFX về kho để AI tự chèn vào video ở điểm nhấn (hook, câu chốt, chuyển cảnh, reveal).
-        </p>
+      <div className="mb-4 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-ink-900">Kho âm thanh (SFX)</h1>
+          <p className="mt-1 text-sm text-ink-800/50">
+            Tải SFX về kho để AI tự chèn vào video ở điểm nhấn (hook, câu chốt, chuyển cảnh, reveal).
+          </p>
+          {syncMsg && <p className="mt-1 text-xs text-brand-600">{syncMsg}</p>}
+        </div>
+        <Button variant="outline" onClick={doSync} disabled={syncing} className="shrink-0">
+          {syncing ? <Spinner className="h-4 w-4" /> : <RefreshCw className="h-4 w-4" />}
+          {syncing ? 'Đang đồng bộ…' : 'Đồng bộ kho'}
+        </Button>
       </div>
 
       <div className="mb-5 flex items-start gap-2 rounded-xl border border-amber-400/30 bg-amber-50 p-3 text-xs text-amber-800">
@@ -286,7 +319,7 @@ export default function SfxPage() {
             <Button onClick={fetchLinks} disabled={fetching || !links.trim()}>
               {fetching ? <Spinner /> : <Download className="h-4 w-4" />} Lấy về
             </Button>
-            <span className="text-[11px] text-ink-800/40">⌘/Ctrl + Enter để lấy nhanh</span>
+            <span className="text-[11px] text-ink-800/40">{MOD_KEY} + Enter để lấy nhanh</span>
           </div>
 
           {blocked && (
@@ -357,7 +390,7 @@ export default function SfxPage() {
                   className="no-drag h-4 w-4 shrink-0 accent-[#FF7A1A]"
                 />
                 <button
-                  onClick={() => play('pd:' + p.key, `file://${encodeURI(p.path)}`)}
+                  onClick={() => play('pd:' + p.key, fileUrl(p.path))}
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-brand-500 shadow-sm"
                   aria-label="Nghe thử"
                 >
@@ -480,7 +513,7 @@ export default function SfxPage() {
             return (
               <div key={e.id} className="card-surface flex items-start gap-3 rounded-xl px-3 py-2.5">
                 <button
-                  onClick={() => play('lib:' + e.id, `file://${encodeURI(e.file)}`)}
+                  onClick={() => play('lib:' + e.id, fileUrl(e.file))}
                   className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-500/10 text-brand-500"
                 >
                   {playing === 'lib:' + e.id ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}

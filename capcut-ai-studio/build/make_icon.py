@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""logo-agent-edit.png (nen trong suot) -> icon_1024.png + icon.iconset + icon.icns (macOS).
+"""logo-agent-edit.png (nen trong suot) -> icon_1024.png + icon.iconset + icon.icns (macOS) + icon.ico (Windows).
 
 Than icon (vung khong trong suot, bo quang sang mo o vien) duoc dat vua khung 824x824 o giua canvas
 1024 — luoi icon chuan macOS, de icon khong to hon cac app khac tren Dock / Launchpad.
@@ -33,7 +33,17 @@ os.makedirs(iconset)
 for s in (16, 32, 128, 256, 512):
     canvas.resize((s, s), Image.LANCZOS).save(os.path.join(iconset, "icon_%dx%d.png" % (s, s)))
     canvas.resize((s * 2, s * 2), Image.LANCZOS).save(os.path.join(iconset, "icon_%dx%d@2x.png" % (s, s)))
-subprocess.run(["iconutil", "-c", "icns", iconset, "-o", os.path.join(HERE, "icon.icns")], check=True)
+if shutil.which("iconutil"):
+    subprocess.run(["iconutil", "-c", "icns", iconset, "-o", os.path.join(HERE, "icon.icns")], check=True)
+
+# Windows (.ico 16..256): icon Windows lap kin khung hon luoi Apple -> than icon ~92% canvas (khong thi nho tren
+# thanh tac vu / Desktop so voi app khac)
+BODY_WIN = 940
+sw = BODY_WIN / float(max(bw, bh))
+bigw = src.resize((round(src.width * sw), round(src.height * sw)), Image.LANCZOS)
+win = Image.new("RGBA", (1024, 1024), (0, 0, 0, 0))
+win.alpha_composite(bigw, (round(512 - (body[0] + bw / 2.0) * sw), round(512 - (body[1] + bh / 2.0) * sw)))
+win.save(os.path.join(HERE, "icon.ico"), sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
 
 # ban nho cho giao dien (thanh tren cung): ca than icon, cat sat, 256px
 tight = src.crop(body).resize((256, 256), Image.LANCZOS)

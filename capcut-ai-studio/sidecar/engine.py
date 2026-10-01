@@ -115,7 +115,8 @@ def measure_loudness(path):
     import subprocess
     if not path or not os.path.isfile(path):
         return None
-    for ff in (os.path.expanduser("~/.local/bin/ffmpeg"), "ffmpeg"):
+    import winsupport
+    for ff in (winsupport.ffbin("ffmpeg"), os.path.expanduser("~/.local/bin/ffmpeg"), "ffmpeg"):
         try:
             r = subprocess.run([ff, "-nostats", "-hide_banner", "-i", path,
                                 "-filter_complex", "ebur128=peak=true", "-f", "null", "-"],
@@ -444,7 +445,8 @@ def meme_import_local(paths):
             out.append({"ok": False, "file": p, "error": "Khong thay file"})
             continue
         d = w = h = None
-        for ff in (os.path.expanduser("~/.local/bin/ffprobe"), "ffprobe"):
+        import winsupport
+        for ff in (winsupport.ffbin("ffprobe"), os.path.expanduser("~/.local/bin/ffprobe"), "ffprobe"):
             try:
                 r = subprocess.run([ff, "-v", "error", "-select_streams", "v:0",
                                     "-show_entries", "stream=width,height:format=duration",

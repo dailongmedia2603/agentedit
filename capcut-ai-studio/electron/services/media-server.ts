@@ -39,8 +39,9 @@ const FX_DIR = join(ENGINE_HOME, 'cache', 'fx')
 function typeOf(path: string): string | undefined {
   const ext = extname(path).toLowerCase()
   if (ext === '.json') {
-    const full = resolve(path)
-    return full.startsWith(resolve(FX_DIR) + sep) ? 'application/json' : undefined
+    // Windows: duong dan khong phan biet hoa thuong
+    const norm = (p: string) => (process.platform === 'win32' ? p.toLowerCase() : p)
+    return norm(resolve(path)).startsWith(norm(resolve(FX_DIR) + sep)) ? 'application/json' : undefined
   }
   return TYPES[ext]
 }
@@ -135,7 +136,7 @@ export function mediaBase(): Promise<string> {
 /** URL cho 1 file (cung cong thuc voi remotion/AutoEdit.tsx -> mediaSrc). */
 export async function mediaUrl(path: string): Promise<string> {
   const b = await mediaBase()
-  const name = path.split('/').pop() || 'media'
+  const name = path.split(/[\\/]/).pop() || 'media'
   return `${b}/${encodeURIComponent(name)}?p=${encodeURIComponent(path)}`
 }
 

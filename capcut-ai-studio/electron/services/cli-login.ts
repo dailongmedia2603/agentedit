@@ -1,10 +1,10 @@
 import { spawn, ChildProcess } from 'child_process'
-import { installClaude, installCodex } from './toolchain'
+import { installAgy, installClaude, installCodex, powershell } from './toolchain'
 import { existsSync, mkdirSync, writeFileSync, chmodSync } from 'fs'
 import { homedir } from 'os'
-import { basename, isAbsolute, join } from 'path'
+import { basename, extname, isAbsolute, join } from 'path'
 import { shell } from 'electron'
-import { augmentedEnv } from './env'
+import { IS_WIN, augmentedEnv, cmdQuote, killTree, needsShell } from './env'
 
 /**
  * DANG NHAP / CAI CLI CHINH CHU NGAY TRONG APP.
@@ -31,6 +31,10 @@ import { augmentedEnv } from './env'
  *
  * Cai CLI: Codex = ban chinh chu tren GitHub ghim SHA-256, Claude Code = trinh cai chinh chu (toolchain.ts, khong
  * can Node / npm — giong Doctor tu cai); agy qua trinh cai chinh chu cua Google (them ~/.local/bin vao PATH).
+ *
+ * WINDOWS: khong co Terminal.app / file .command -> app ghi file .ps1 (UTF-8 co BOM: PowerShell 5.1 doc file khong
+ * BOM theo bang ma ANSI -> chu Viet vo) roi mo 1 cua so PowerShell rieng (spawn detached = console moi). agy / Claude
+ * van chay giao dien day du trong cua so do. Cai agy = install.ps1 chinh chu (toolchain.installAgy).
  */
 export type CliLoginMode = 'browser' | 'device'
 
@@ -58,11 +62,15 @@ export function cliTaskRunning(): boolean {
 export function cancelCliTask(): void {
   if (!child) return
   canceled = true
-  try {
-    child.kill('SIGTERM')
-  } catch {
-    /* tien trinh da thoat */
-  }
+  const c = child
+  // Windows: dung CA CAY (codex.exe con chau) — kill() chi giet tien trinh truc tiep
+  killTree(c.pid, () => {
+    try {
+      c.kill('SIGTERM')
+    } catch {
+      /* tien trinh da thoat */
+    }
+  })
 }
 
 function cleanEnv(extra: Record<string, string> = {}): NodeJS.ProcessEnv {
@@ -91,7 +99,14 @@ function runTask(
   if (child) return Promise.resolve({ ok: false, error: 'Đang có một lượt đăng nhập / cài đặt chạy dở.' })
   return new Promise((resolve) => {
     canceled = false
-    const proc = spawn(bin, args, { env: opts.env, cwd: opts.cwd, stdio: [opts.stdin || 'ignore', 'pipe', 'pipe'] })
+    const sh = needsShell(bin)
+    const proc = spawn(sh ? cmdQuote(bin) : bin, sh ? args.map(cmdQuote) : args, {
+      env: opts.env,
+      cwd: opts.cwd,
+      stdio: [opts.stdin || 'ignore', 'pipe', 'pipe'],
+      windowsHide: true,
+      shell: sh
+    })
     child = proc
     const tail: string[] = []
     let buf = ''
@@ -136,7 +151,31 @@ function runTask(
 }
 
 function validBin(bin: string, name: string): boolean {
-  return !!bin && isAbsolute(bin) && existsSync(bin) && basename(bin) === name
+  if (!bin || !isAbsolute(bin) || !existsSync(bin)) return false
+  // Windows: codex.exe / claude.exe / agy.exe (hoac codex.cmd cua npm)
+  const base = IS_WIN ? basename(bin, extname(bin)).toLowerCase() : basename(bin)
+  return base === name
+}
+
+/** PowerShell: chuoi trong nhay don (nhay don ben trong -> '') */
+const psq = (v: string) => "'" + v.replace(/'/g, "''") + "'"
+
+/** Windows: ghi .ps1 (UTF-8 co BOM) roi mo cua so PowerShell RIENG chay no. Tra loi (chuoi rong = ok). */
+function openPsWindow(file: string, lines: string[]): string {
+  writeFileSync(file, '\ufeff' + lines.join('\r\n') + '\r\n', 'utf-8')
+  try {
+    const p = spawn(powershell(), ['-NoExit', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', file], {
+      detached: true, // console moi -> cua so PowerShell hien ra cho nguoi dung thao tac
+      stdio: 'ignore',
+      windowsHide: false,
+      cwd: homedir(),
+      env: cleanEnv()
+    })
+    p.unref()
+    return ''
+  } catch (e) {
+    return String((e as Error)?.message || e)
+  }
 }
 
 export function startCodexLogin(bin: string, mode: CliLoginMode, onLine: (line: string) => void): Promise<TaskResult> {
@@ -179,6 +218,27 @@ export async function openAgyLogin(bin: string, workdir: string): Promise<TaskRe
   const dir = join(homedir(), '.capcut-studio', 'agy-login')
   mkdirSync(dir, { recursive: true })
   mkdirSync(workdir, { recursive: true })
+  if (IS_WIN) {
+    const err = openPsWindow(join(dir, 'dang-nhap-agy.ps1'), [
+      '[Console]::OutputEncoding = [Text.Encoding]::UTF8',
+      '$Host.UI.RawUI.WindowTitle = "Agent Edit - Đăng nhập Antigravity CLI"',
+      'Clear-Host',
+      'Write-Host "=== Đăng nhập Antigravity CLI (agy) cho Agent Edit ==="',
+      'Write-Host ""',
+      'Write-Host "1. agy sẽ hiện một đường link đăng nhập Google (không tự mở trình duyệt)."',
+      'Write-Host "2. Copy link (bôi đen rồi chuột phải), dán vào trình duyệt ĐANG đăng nhập tài khoản Google (AI Pro) của bạn."',
+      'Write-Host "3. Đăng nhập xong: nếu trang hiện mã (authorization code) thì dán vào cửa sổ này rồi Enter."',
+      'Write-Host "4. Khi agy hiện ô chat là xong — app tự nhận ra; gõ /exit rồi đóng cửa sổ này."',
+      'Write-Host ""',
+      '# Che do dang nhap tu xa: agy in link + nhan ma, khong tu mo trinh duyet mac dinh',
+      '$env:SSH_CONNECTION = "127.0.0.1 22 127.0.0.1 22"',
+      '$env:SSH_CLIENT = "127.0.0.1 22 22"',
+      '$env:SSH_TTY = "windows-console"',
+      `Set-Location -LiteralPath ${psq(workdir)}`,
+      `& ${psq(bin)}`
+    ])
+    return err ? { ok: false, error: 'Không mở được cửa sổ PowerShell: ' + err } : { ok: true }
+  }
   const file = join(dir, 'dang-nhap-agy.command')
   writeFileSync(file, agyLoginScript(bin, workdir), 'utf-8')
   chmodSync(file, 0o755)
@@ -212,6 +272,25 @@ export async function openClaudeLogin(bin: string): Promise<TaskResult> {
   if (!validBin(bin, 'claude')) return { ok: false, error: 'Không tìm thấy Claude Code CLI trên máy.' }
   const dir = join(homedir(), '.capcut-studio', 'claude-login')
   mkdirSync(dir, { recursive: true })
+  if (IS_WIN) {
+    const err = openPsWindow(join(dir, 'dang-nhap-claude.ps1'), [
+      '[Console]::OutputEncoding = [Text.Encoding]::UTF8',
+      '$Host.UI.RawUI.WindowTitle = "Agent Edit - Đăng nhập Claude Code"',
+      'Clear-Host',
+      'Write-Host "=== Đăng nhập Claude Code cho Agent Edit ==="',
+      'Write-Host ""',
+      'Write-Host "1. Claude Code sẽ mở trình duyệt để bạn đăng nhập tài khoản Claude (gói Pro / Max / Team)."',
+      'Write-Host "2. Trình duyệt không tự mở: copy đường link bên dưới dán vào trình duyệt."',
+      'Write-Host "3. Trang hiện mã (code): dán vào cửa sổ này (chuột phải để dán) rồi Enter."',
+      'Write-Host "4. Thấy báo đăng nhập thành công là xong — app tự nhận ra, đóng cửa sổ này."',
+      'Write-Host ""',
+      'Set-Location -LiteralPath $HOME',
+      `& ${psq(bin)} auth login --claudeai`,
+      'Write-Host ""',
+      'Write-Host "Xong — có thể đóng cửa sổ này."'
+    ])
+    return err ? { ok: false, error: 'Không mở được cửa sổ PowerShell: ' + err } : { ok: true }
+  }
   const file = join(dir, 'dang-nhap-claude.command')
   writeFileSync(file, claudeLoginScript(bin), 'utf-8')
   chmodSync(file, 0o755)
@@ -233,6 +312,13 @@ export function startCliInstall(name: string, onLine: (line: string) => void): P
   if (name === 'gpt' || name === 'claude') {
     const fn = name === 'gpt' ? installCodex : installClaude
     return fn(onLine).then(
+      () => ({ ok: true }),
+      (e) => ({ ok: false, error: String((e as Error)?.message || e) })
+    )
+  }
+  if (IS_WIN && name === 'gemini') {
+    // Windows: trinh cai chinh chu install.ps1 (agy.exe vao %LOCALAPPDATA%\agy\bin) — cung bo cai cua Doctor
+    return installAgy(onLine).then(
       () => ({ ok: true }),
       (e) => ({ ok: false, error: String((e as Error)?.message || e) })
     )

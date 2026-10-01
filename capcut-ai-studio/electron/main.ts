@@ -1,5 +1,6 @@
 import { app, BrowserWindow, Menu, nativeTheme } from 'electron'
 import { join } from 'path'
+import { tmpdir } from 'os'
 import { registerIpc } from './ipc'
 import { stopSidecar } from './services/sidecar'
 import { stopRender } from './services/remotion'
@@ -13,9 +14,16 @@ let mainWindow: BrowserWindow | null = null
  *  ("About auto-capcut", "Quit auto-capcut") nen tu dung menu voi ten hien thi. */
 const APP_DISPLAY_NAME = 'Agent Edit'
 
+const IS_WIN = process.platform === 'win32'
+
 function setAppMenu() {
   app.setAboutPanelOptions({ applicationName: APP_DISPLAY_NAME, applicationVersion: app.getVersion() })
-  if (process.platform !== 'darwin') return
+  if (process.platform !== 'darwin') {
+    // Windows: bo menu mac dinh cua Electron (Ctrl+R tai lai trang giua luc dung video, Ctrl+W, DevTools...).
+    // Sao chep / dan trong o nhap van chay (Chromium tu xu ly, khong can menu).
+    Menu.setApplicationMenu(null)
+    return
+  }
   Menu.setApplicationMenu(
     Menu.buildFromTemplate([
       {
@@ -46,7 +54,11 @@ function createWindow() {
     minWidth: 980,
     minHeight: 680,
     show: false,
-    titleBarStyle: 'hiddenInset',
+    // macOS: an thanh tieu de, giu 3 nut den. Windows: an thanh tieu de NHUNG ve lai 3 nut thu nho / phong to / dong
+    // tren thanh tren cung cua app (titleBarOverlay) — 'hiddenInset' tren Windows lam mat het nut cua so.
+    ...(IS_WIN
+      ? { titleBarStyle: 'hidden' as const, titleBarOverlay: { color: '#FDF6EF', symbolColor: '#1a1c22', height: 47 } }
+      : { titleBarStyle: 'hiddenInset' as const }),
     backgroundColor: '#FDF6EF',
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -64,6 +76,23 @@ function createWindow() {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 }
+
+// Chi 1 phien app: mo lan 2 (Windows hay bam 2 lan) -> 2 sidecar + 2 Doctor tu cai tranh nhau tools/bin,
+// 2 ben cung ghi projects.json. Lan 2 chi dua cua so dang mo len truoc roi thoat. Che do tu kiem (STUDIO_*) bo qua.
+const SELF_TEST = Object.keys(process.env).some((k) =>
+  ['STUDIO_TESTCONN', 'STUDIO_DUMPCFG', 'STUDIO_RAWGPT', 'STUDIO_DOCTOR', 'STUDIO_REMOTION_RENDER'].includes(k)
+)
+if (!SELF_TEST && !app.requestSingleInstanceLock()) {
+  app.quit()
+} else {
+  app.on('second-instance', () => {
+    if (!mainWindow) return
+    if (mainWindow.isMinimized()) mainWindow.restore()
+    mainWindow.focus()
+  })
+}
+// Windows: gom nhom thanh tac vu + thong bao dung app (cung appId cua electron-builder)
+if (IS_WIN) app.setAppUserModelId('app.autocapcut.desktop')
 
 app.whenReady().then(async () => {
   nativeTheme.themeSource = 'light'
@@ -91,7 +120,7 @@ app.whenReady().then(async () => {
   if (process.env.STUDIO_DUMPCFG) {
     const { loadProviders } = await import('./services/secrets')
     const fs = await import('fs')
-    fs.writeFileSync('/tmp/autocapcut_cfg.json', JSON.stringify({ providers: loadProviders() }))
+    fs.writeFileSync(join(tmpdir(), 'autocapcut_cfg.json'), JSON.stringify({ providers: loadProviders() }))
     console.log('[CFG] dumped')
     app.quit()
     return
@@ -146,7 +175,7 @@ app.whenReady().then(async () => {
     const log = (...a: unknown[]) => console.log('[RMR]', ...a)
     try {
       const spec = JSON.parse(fs.readFileSync(process.env.STUDIO_REMOTION_RENDER, 'utf-8'))
-      const out = process.env.STUDIO_REMOTION_OUT || '/tmp/autocapcut_remotion.mp4'
+      const out = process.env.STUDIO_REMOTION_OUT || join(tmpdir(), 'autocapcut_remotion.mp4')
       let lastPct = -1
       const res = await startRender(spec, out, (e) => {
         if (e.type === 'progress') {

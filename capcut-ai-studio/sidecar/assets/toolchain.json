@@ -8,11 +8,47 @@
     "install_version": "0.11.18",
     "installer": "https://astral.sh/uv/0.11.18/install.sh"
   },
-  "python": {"series": "3.12"},
+  "python": {
+    "series": "3.12"
+  },
+  "_python_embed_doc": "CPython nhung (python-build-standalone, Astral) ship san trong app -> nguoi dung KHONG cai Python. Doi ban: doi url + sha256 (tai file .tar.gz roi `shasum -a 256`), giu cung series 3.12 de khop requirements.lock (ABI cp312). Windows (win-x64): CUNG nguon python-build-standalone ban install_only (python/python.exe, co pip + include + libs de Cython build .pyd) — KHONG dung embeddable zip (khong pip, ._pth khoa sys.path).",
+  "python_embed": {
+    "version": "3.12.14",
+    "ext_suffix": {
+      "darwin": ".cpython-312-darwin.so",
+      "win32": ".cp312-win_amd64.pyd"
+    },
+    "darwin-arm64": {
+      "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20260929/cpython-3.12.14%2B20260929-aarch64-apple-darwin-install_only.tar.gz",
+      "sha256": "de6b8f94fa765639b423ea353ab340669704c7186f96ee3cab389dcfde770c3c",
+      "archive_top": "python",
+      "bin": "bin/python3.12"
+    },
+    "darwin-x64": null,
+    "win-x64": {
+      "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20260929/cpython-3.12.14%2B20260929-x86_64-pc-windows-msvc-install_only.tar.gz",
+      "sha256": "28728baf30b65e263f0b25c5a85be8226e7ab0d212fbadd6a8f0f796139fa804",
+      "archive_top": "python",
+      "bin": "python.exe"
+    }
+  },
   "python_packages": {
     "lock": "requirements.lock",
-    "top": ["flask", "requests", "json5", "numpy", "pillow", "faster-whisper",
-            "pyobjc-core", "pyobjc-framework-cocoa", "pyobjc-framework-quartz", "pyobjc-framework-vision"]
+    "top": [
+      "flask",
+      "requests",
+      "json5",
+      "numpy",
+      "pillow",
+      "faster-whisper",
+      "onnxruntime",
+      "pyobjc-core (macOS)",
+      "pyobjc-framework-cocoa (macOS)",
+      "pyobjc-framework-quartz (macOS)",
+      "pyobjc-framework-vision (macOS)",
+      "resvg-py (Windows)",
+      "pillow-heif (Windows)"
+    ]
   },
   "ffmpeg": {
     "version": "7.0",
@@ -20,21 +56,54 @@
     "zip_sha256": "b2da44a8169c4d09a97db996250690c3346f72e4795521d23d3dbb1e72421207",
     "zip_dir": "darwin_arm64",
     "files": {
-      "ffmpeg": {"sha256": "326895b16940f238d76e902fc71150f10c388c281985756f9850ff800a2f1499", "size": 49056648},
-      "ffprobe": {"sha256": "307e09bc01bd72bde5f441a1a6df68769da3b2b6e431accfbfc9cf3893ad00c4", "size": 48998536}
+      "ffmpeg": {
+        "sha256": "326895b16940f238d76e902fc71150f10c388c281985756f9850ff800a2f1499",
+        "size": 49056648
+      },
+      "ffprobe": {
+        "sha256": "307e09bc01bd72bde5f441a1a6df68769da3b2b6e431accfbfc9cf3893ad00c4",
+        "size": 48998536
+      }
     },
-    "encoders": ["libx264", "libvpx-vp9", "aac"],
-    "filters": ["zscale", "tonemap", "silencedetect", "ebur128", "astats", "alphamerge", "colorspace", "select"]
+    "encoders": [
+      "libx264",
+      "libvpx-vp9",
+      "aac"
+    ],
+    "filters": [
+      "zscale",
+      "tonemap",
+      "silencedetect",
+      "ebur128",
+      "astats",
+      "alphamerge",
+      "alphaextract",
+      "gblur",
+      "colorspace",
+      "select"
+    ]
   },
   "whisper": {
     "model": "small",
     "repo": "Systran/faster-whisper-small",
     "revision": "536b0662742c02347bc0e980a01041f333bce120",
     "files": {
-      "config.json": {"size": 2370, "sha256": "b55496ac7940a7ae47d2c01eab40edfd8701feec1229d9cce3b40014383fb828"},
-      "model.bin": {"size": 483546902, "sha256": "3e305921506d8872816023e4c273e75d2419fb89b24da97b4fe7bce14170d671"},
-      "tokenizer.json": {"size": 2203239, "sha256": "fb7b63191e9bb045082c79fd742a3106a12c99513ab30df4a0d47fa6cb6fd0ab"},
-      "vocabulary.txt": {"size": 459861, "sha256": "34ce3fe1c5041027b3f8d42912270993f986dbc4bb34cf27f951e34a1e453913"}
+      "config.json": {
+        "size": 2370,
+        "sha256": "b55496ac7940a7ae47d2c01eab40edfd8701feec1229d9cce3b40014383fb828"
+      },
+      "model.bin": {
+        "size": 483546902,
+        "sha256": "3e305921506d8872816023e4c273e75d2419fb89b24da97b4fe7bce14170d671"
+      },
+      "tokenizer.json": {
+        "size": 2203239,
+        "sha256": "fb7b63191e9bb045082c79fd742a3106a12c99513ab30df4a0d47fa6cb6fd0ab"
+      },
+      "vocabulary.txt": {
+        "size": 459861,
+        "sha256": "34ce3fe1c5041027b3f8d42912270993f986dbc4bb34cf27f951e34a1e453913"
+      }
     }
   },
   "chrome": {
@@ -57,6 +126,90 @@
     "agy": {
       "min": "1.2.11",
       "installer": "https://antigravity.google/cli/install.sh"
+    }
+  },
+  "_platforms_doc": "Ghi de theo nen tang (khoa = platformKey: darwin-arm64 / win-x64). Truong o NGOAI la ban macOS arm64 (ban dau tien); `platforms.<khoa>` ghi de tung khoi (ffmpeg, codex...). Electron: toolchain.ts ffSpec()/codexSpec()/osReq().",
+  "platforms": {
+    "win-x64": {
+      "os": {
+        "min_build": 17763,
+        "label": "Windows 10 (1809+) / Windows 11, 64-bit",
+        "why": "onnxruntime / ctranslate2 / Chrome Headless Shell can Windows 10 1809+ 64-bit"
+      },
+      "ffmpeg": {
+        "url": "https://github.com/zackees/ffmpeg_bins/raw/df95abcb0ce6efff710dda5ef28a2f6f1dc21493/v8.0/win32.zip",
+        "zip_sha256": "92662c2241e93fe71b3f3a01e94a0b0dc8cfad726019f96b83bc109ce44c5d0b",
+        "zip_dir": "win32",
+        "files": {
+          "ffmpeg.exe": {
+            "sha256": "5af82a0d4fe2b9eae211b967332ea97edfc51c6b328ca35b827e73eac560dc0d",
+            "size": 99264000
+          },
+          "ffprobe.exe": {
+            "sha256": "192a1d6899059765ac8c39764fc3148d4e6049955956dc2029f81f4bd6a8972d",
+            "size": 99066368
+          }
+        }
+      },
+      "codex": {
+        "_doc": "Goi chinh chu (layout codex-package: bin/codex.exe + codex-resources (sandbox Windows) + codex-path/rg.exe). Cai NGUYEN goi vao tools/codex.",
+        "url": "https://github.com/openai/codex/releases/download/rust-v0.156.1/codex-package-x86_64-pc-windows-msvc.tar.gz",
+        "sha256": "a2e017db9807e6a2269a26fea0e1d9546469cef4d472a33016bc9f3ad7d3b733",
+        "package": true,
+        "entry": "bin/codex.exe"
+      },
+      "claude": {
+        "installer": "https://claude.ai/install.ps1"
+      },
+      "agy": {
+        "installer": "https://antigravity.google/cli/install.ps1"
+      },
+      "uv": {
+        "installer": "https://astral.sh/uv/0.11.18/install.ps1"
+      }
+    }
+  },
+  "_vision_models_doc": "Thi giac may tren may KHONG co Apple Vision (Windows): model ONNX chay CPU bang onnxruntime (sidecar/vision_onnx.py). Chon bang do that 2026-10-01 so voi Vision tren video/anh that cua user: RVM IoU 0.97-0.99 (MODNet 0.95-0.98, U2Net-human 0.67-0.98); BiRefNet-lite IoU trung vi 0.958 (isnet 0.856); YuNet dong y co/khong mat 99%, lech tam 3%; PP-OCR (CTC, 1 dong) sim 0.98. bundle=true: scripts/bundle-models.mjs nhung san vao app (resources/models); false: Doctor tai ve ~/.capcut-studio/models.",
+  "vision_models": {
+    "rvm_mobilenetv3_fp32.onnx": {
+      "use": "tach nguoi tung khung video (chu sau nguoi)",
+      "license": "GPL-3.0 (PeterL1n/RobustVideoMatting)",
+      "url": "https://github.com/PeterL1n/RobustVideoMatting/releases/download/v1.0.0/rvm_mobilenetv3_fp32.onnx",
+      "sha256": "88d4531297118f595bf2fd60f6f566aec2e559393802d1f436c380f0cbbd2828",
+      "size": 14975696,
+      "bundle": true
+    },
+    "face_detection_yunet_2023mar.onnx": {
+      "use": "do mat",
+      "license": "MIT (opencv_zoo)",
+      "url": "https://github.com/opencv/opencv_zoo/raw/f12e12798e8314f7c074a6656816c048dcc95b7a/models/face_detection_yunet/face_detection_yunet_2023mar.onnx",
+      "sha256": "8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4",
+      "size": 232589,
+      "bundle": true
+    },
+    "PP-OCRv6_rec_small.onnx": {
+      "use": "OCR: khung tung tu",
+      "license": "Apache-2.0 (PaddleOCR / RapidOCR)",
+      "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.9.2/onnx/PP-OCRv6/rec/PP-OCRv6_rec_small.onnx",
+      "sha256": "6f327246b50388f3c176ae304bd95767ea6dc0c9ae92153ef8cbe210b3c14884",
+      "size": 21234383,
+      "bundle": true
+    },
+    "latin_PP-OCRv5_rec_mobile.onnx": {
+      "use": "OCR: kiem chinh ta chu anh AI",
+      "license": "Apache-2.0 (PaddleOCR / RapidOCR)",
+      "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.9.2/onnx/PP-OCRv5/rec/latin_PP-OCRv5_rec_mobile.onnx",
+      "sha256": "b20bd37c168a570f583afbc8cd7925603890efbcdc000a59e22c269d160b5f5a",
+      "size": 7904513,
+      "bundle": true
+    },
+    "BiRefNet-general-bb_swin_v1_tiny-epoch_232.onnx": {
+      "use": "tach nen anh tinh (sticker, anh AI)",
+      "license": "MIT (ZhengPeng7/BiRefNet)",
+      "url": "https://github.com/danielgatis/rembg/releases/download/v0.0.0/BiRefNet-general-bb_swin_v1_tiny-epoch_232.onnx",
+      "sha256": "5600024376f572a557870a5eb0afb1e5961636bef4e1e22132025467d0f03333",
+      "size": 224005088,
+      "bundle": false
     }
   }
 }

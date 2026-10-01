@@ -28,10 +28,14 @@
 ## Verification
 
 - Desktop build: `cd capcut-ai-studio && npm run build`
+- Windows installer: build ON Windows x64 only — `cd capcut-ai-studio && powershell -ExecutionPolicy Bypass -File .\build-windows.ps1`
+  (`npm run dist:win`; guide BUILD-WINDOWS.md, PROJECT_OVERVIEW.md section 14). Packaged self-test (any OS):
+  `node scripts/selftest-packaged.mjs [--app <exe|.app>]`
 - Type check: `cd capcut-ai-studio && npx tsc --noEmit -p tsconfig.json`
 - Python syntax: `python3 -m compileall -q capcut-ai-studio/sidecar`
 - Python tests (temp HOME so real data is untouched), from `capcut-ai-studio/`:
   `for t in tests/test_*.py; do HOME=$(mktemp -d) ../CapCutAPI/.venv/bin/python $t; done`
+  (Windows ONNX vision path on macOS: `STUDIO_VISION=onnx STUDIO_MODELS_DIR=<models>`; see tests/test_windows_port.py)
 - Electron/renderer helpers test (Node >= 23): `cd capcut-ai-studio && node tests/test_project_media.mts`
   (and `HOME=$(mktemp -d) node tests/test_toolchain.mts`, `tests/test_project_delete.mts`)
 - Doctor / toolchain (tool versions pinned in `capcut-ai-studio/sidecar/assets/toolchain.json` +

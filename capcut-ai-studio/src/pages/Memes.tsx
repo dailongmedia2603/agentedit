@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Download, FolderInput, Sparkles, Trash2, Info, Wand2 } from 'lucide-react'
+import { Download, FolderInput, Sparkles, Trash2, Info, Wand2, RefreshCw } from 'lucide-react'
 import { Button, Card, CardBody, CardHeader, Spinner, Badge } from '@/components/ui/primitives'
+import { fileUrl } from '../lib/platform'
 
 const EMOTIONS = ['punch', 'positive', 'negative', 'nostalgic', 'soft', 'neutral']
 
@@ -40,6 +41,30 @@ export default function MemesPage() {
   useEffect(() => {
     load()
   }, [])
+
+  const [syncing, setSyncing] = useState(false)
+  const [syncMsg, setSyncMsg] = useState<string | null>(null)
+  const doSync = async () => {
+    setSyncing(true)
+    setSyncMsg(null)
+    try {
+      const r = await window.studio.syncLibrary()
+      if (!r.ok) {
+        setSyncMsg('Đồng bộ lỗi: ' + (r.error || 'không rõ'))
+      } else {
+        await load()
+        const m = r.memes || { added: 0, updated: 0, total: 0, errors: [] }
+        setSyncMsg(
+          `Đã đồng bộ kho: +${m.added} mới, ${m.updated} cập nhật (tổng ${m.total})` +
+            (m.errors && m.errors.length ? ` · ${m.errors.length} lỗi tải` : '')
+        )
+      }
+    } catch (e) {
+      setSyncMsg('Đồng bộ lỗi: ' + String(e))
+    } finally {
+      setSyncing(false)
+    }
+  }
 
   const unlabeled = useMemo(() => memes.filter((m) => m.labeled_by !== 'gemini'), [memes])
 
@@ -117,10 +142,19 @@ export default function MemesPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-8 py-8">
-      <h1 className="text-3xl font-bold text-ink-900">Kho meme (b-roll chèn)</h1>
-      <p className="mt-1 text-sm text-ink-800/50">
-        Clip ngắn để AI chèn đè lên video chính 1-2 giây, minh hoạ đúng lúc người nói nhắc tới.
-      </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-ink-900">Kho meme (b-roll chèn)</h1>
+          <p className="mt-1 text-sm text-ink-800/50">
+            Clip ngắn để AI chèn đè lên video chính 1-2 giây, minh hoạ đúng lúc người nói nhắc tới.
+          </p>
+          {syncMsg && <p className="mt-1 text-xs text-brand-600">{syncMsg}</p>}
+        </div>
+        <Button variant="outline" onClick={doSync} disabled={syncing} className="shrink-0">
+          {syncing ? <Spinner className="h-4 w-4" /> : <RefreshCw className="h-4 w-4" />}
+          {syncing ? 'Đang đồng bộ…' : 'Đồng bộ kho'}
+        </Button>
+      </div>
 
       <div className="mt-5 flex items-start gap-2 rounded-xl border border-amber-300/40 bg-amber-50/40 px-4 py-3">
         <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
@@ -286,7 +320,7 @@ export default function MemesPage() {
                 <video
                   ref={videoRef}
                   className="max-h-64 rounded-lg bg-black"
-                  src={`file://${m.file}`}
+                  src={fileUrl(m.file)}
                   controls
                   autoPlay
                 />

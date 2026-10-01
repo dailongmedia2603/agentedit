@@ -14,19 +14,37 @@ files:
   - "!out/remotion-bundle/**"
   - package.json
 
-# Sidecar Python (chay bang venv cua user) + scripts da chung minh chay duoc
+# Sidecar Python DA BIEN DICH (Cython -> .so): scripts/compile-sidecar.mjs tao resources/sidecar-dist
+# (chi con .so + launcher + scripts wrapper + assets/references), ship thay cho source .py.
 extraResources:
-  - from: sidecar
+  - from: resources/sidecar-dist
     to: sidecar
     filter:
       - "**/*"
       - "!**/__pycache__/**"
       - "!**/*.pyc"
 
+  # PYTHON NHUNG (python-build-standalone) — scripts/bundle-python.mjs tao resources/python.
+  # Nguoi dung KHONG cai Python rieng; sidecar chay bang chinh interpreter nay.
+  - from: resources/python
+    to: python
+
+  # FFMPEG + FFPROBE NHUNG (zip ghim SHA) — scripts/bundle-ffmpeg.mjs. Doctor giai nen tu day,
+  # may moi khong phai tai GitHub (tung loi "SHA-256 khong khop" khi mang chap chon).
+  - from: resources/ffmpeg
+    to: ffmpeg
+
   # Trang web Remotion da dong goi san (npm run build -> out/remotion-bundle). Nam NGOAI
   # app.asar vi trinh duyet headless doc no qua may chu http cua Remotion.
   - from: out/remotion-bundle
     to: remotion-bundle
+
+# Sau khi dong goi app (da nhet Python nhung + .so): ad-hoc ky SAU toan bo -> tranh loi "bi hong"
+# tren may tai ve (identity:null lam electron-builder bo qua ky -> seal khong khop Resources moi). Chi macOS
+# (hook tu bo qua tren Windows; afterAllArtifactBuild chi xu ly file .dmg).
+afterPack: scripts/adhoc-sign.cjs
+# Sau khi build xong: gan icon logo cho chinh file .dmg (dmg.icon chi dat icon cho dia khi mount)
+afterAllArtifactBuild: scripts/dmg-seticon.cjs
 
 asar: true
 # Binary cua Remotion (compositor + ffmpeg + dylib) phai nam ngoai asar moi chay duoc;
@@ -50,8 +68,47 @@ mac:
     NSMicrophoneUsageDescription: Khong su dung microphone.
     NSCameraUsageDescription: Khong su dung camera.
 
+# ---------------------------------------------------------------------------------------------------
+# WINDOWS (x64) — build TREN may Windows (`npm run dist:win`, xem BUILD-WINDOWS.md): bytenode .jsc khoa theo V8
+# + CPU, Cython .pyd can MSVC -> khong build cheo tu macOS duoc.
+# ---------------------------------------------------------------------------------------------------
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: build/icon.ico
+  artifactName: ${productName}-Setup-${version}-${arch}.${ext}
+  # Cai cho RIENG nguoi dung (khong can quyen admin) -> app chay quyen thuong
+  requestedExecutionLevel: asInvoker
+  # Chua co chung chi ky ma (Authenticode) -> SmartScreen bao "Windows protected your PC" lan dau
+  # (bam "More info" -> "Run anyway"). Co chung chi thi them signtoolOptions / azureSignOptions o day.
+  extraResources:
+    # Model thi giac may ONNX nhung san (scripts/bundle-models.mjs): tach nguoi, tim mat, OCR — thay Apple Vision
+    - from: resources/models
+      to: models
+
+nsis:
+  oneClick: false
+  # %LOCALAPPDATA%\Programs\Agent Edit — khong can admin, app tu ghi duoc (Doctor cai cong cu vao ~/.capcut-studio)
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: Agent Edit
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  installerLanguages:
+    - vi_VN
+  language: '1066'
+  # Go cai dat KHONG xoa du lieu nguoi dung (khoa API da ma hoa, du an, kho SFX / meme o ~/.capcut-studio)
+  deleteAppDataOnUninstall: false
+  artifactName: ${productName}-Setup-${version}-${arch}.${ext}
+
 dmg:
   title: ${productName}
+  # Icon cua chinh file .dmg + icon o dia khi mount = logo app (build/icon.icns)
+  icon: build/icon.icns
   artifactName: ${productName}-${version}-${arch}.${ext}
   contents:
     - x: 130

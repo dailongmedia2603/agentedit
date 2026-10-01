@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Thi giac may tren macOS (Vision framework qua pyobjc) — KHONG goi AI, khong ton luot.
+"""Thi giac may: macOS = Vision framework (pyobjc); may khac (Windows) = model ONNX (vision_onnx.py).
+KHONG goi AI, khong ton luot.
 
 - face_box(video): vi tri khuon mat trong video nguon (trung vi nhieu khung). Dung de
   dat A-roll vao khung chia doi / the bo goc / khung tron ma KHONG cat mat mat nguoi,
@@ -8,7 +9,8 @@
 - lift_subject(anh): tach chu the khoi nen -> PNG trong suot (sticker, nhan vat, san pham)
   — giong "nhan giu anh de tach chu the" tren iPhone.
 
-Thieu pyobjc-framework-Vision -> tra None, pipeline van chay (chi mat 2 tien ich nay).
+Thieu pyobjc-framework-Vision -> dung vision_onnx (RVM / YuNet / BiRefNet); thieu ca model -> tra None,
+pipeline van chay (chi mat cac tien ich nay). STUDIO_VISION=onnx: ep dung ONNX ca tren macOS (de kiem).
 """
 import os
 import math
@@ -19,11 +21,14 @@ import subprocess
 import tempfile
 
 import remotion_plan
+import vision_onnx
 
 CACHE_DIR = os.path.join(os.path.expanduser("~"), ".capcut-studio", "cache", "vision")
 
 
 def _vision():
+    if os.environ.get("STUDIO_VISION") == "onnx":
+        return False
     try:
         import Vision  # noqa: F401
         import Quartz  # noqa: F401
@@ -34,7 +39,14 @@ def _vision():
 
 
 def available():
-    return _vision()
+    """Tach nguoi (chu sau nguoi / pop-out) dung duoc: Vision, hoac model RVM."""
+    return _vision() or vision_onnx.has(vision_onnx.RVM)
+
+
+def _mask_name(fp):
+    """f_00001.jpg -> m_00001.png CUNG thu muc (chi doi TEN file: duong dan co the chua 'f_', vd C:\\Users\\Jeff_x)."""
+    d, b = os.path.split(fp)
+    return os.path.join(d, b.replace("f_", "m_", 1).rsplit(".", 1)[0] + ".png")
 
 
 def _key(path, extra=""):
@@ -43,6 +55,11 @@ def _key(path, extra=""):
 
 
 def _faces_in_image(img_path):
+    if not _vision():
+        try:
+            return vision_onnx.faces(img_path) if vision_onnx.has(vision_onnx.YUNET) else []
+        except Exception:
+            return []
     import Vision
     from Foundation import NSURL
     req = Vision.VNDetectFaceRectanglesRequest.alloc().init()
@@ -58,15 +75,15 @@ def _faces_in_image(img_path):
 
 def face_box(video_path, samples=9, duration=None):
     """{cx, cy, w, h} (0..1, goc tren-trai) cua khuon mat chinh, hoac None."""
-    if not video_path or not os.path.isfile(video_path) or not _vision():
+    if not video_path or not os.path.isfile(video_path) or not (_vision() or vision_onnx.has(vision_onnx.YUNET)):
         return None
     import media_sdr
     video_path = media_sdr.working_path(video_path)     # HDR -> ban SDR (khung dung mau)
     os.makedirs(CACHE_DIR, exist_ok=True)
-    cp = os.path.join(CACHE_DIR, "face_" + _key(video_path) + ".json")
+    cp = os.path.join(CACHE_DIR, "face_" + _key(video_path, "" if _vision() else "onnx-yunet") + ".json")
     if os.path.isfile(cp):
         try:
-            with open(cp) as f:
+            with open(cp, encoding="utf-8") as f:
                 return json.load(f).get("face")
         except (OSError, ValueError):
             pass
@@ -100,19 +117,28 @@ def face_box(video_path, samples=9, duration=None):
         x, y, w, h = med("x"), med("y"), med("w"), med("h")
         face = {"cx": round(x + w / 2, 3), "cy": round(y + h / 2, 3), "w": round(w, 3), "h": round(h, 3),
                 "seen": round(len(boxes) / float(samples), 2)}
-    with open(cp, "w") as f:
+    with open(cp, "w", encoding="utf-8") as f:
         json.dump({"face": face}, f)
     return face
 
 
 def lift_subject(img_path, out_path=None):
     """Tach chu the khoi nen -> PNG RGBA cat sat chu the. Tra duong dan, hoac None."""
-    if not img_path or not os.path.isfile(img_path) or not _vision():
+    if not img_path or not os.path.isfile(img_path):
         return None
+    out_path = out_path or os.path.splitext(img_path)[0] + "_cut.png"
+    if not _vision():
+        if not vision_onnx.has(vision_onnx.CUT):
+            return None
+        if os.path.isfile(out_path) and os.path.getmtime(out_path) >= os.path.getmtime(img_path):
+            return out_path
+        try:
+            return vision_onnx.cutout(img_path, out_path)
+        except Exception:
+            return None
     import Vision
     import Quartz
     from Foundation import NSURL
-    out_path = out_path or os.path.splitext(img_path)[0] + "_cut.png"
     if os.path.isfile(out_path) and os.path.getmtime(out_path) >= os.path.getmtime(img_path):
         return out_path
     req = Vision.VNGenerateForegroundInstanceMaskRequest.alloc().init()
@@ -197,7 +223,7 @@ def _frame_masks_fg(frames, ctx, gray):
         rp.setQualityLevel_(1)                               # balanced: chi de loc vat the
         rp.setOutputPixelFormat_(1278226488)
         ok, _e = h.performRequests_error_([rf, rp], None)
-        mp = fp.replace("f_", "m_").replace(".jpg", ".png")
+        mp = _mask_name(fp)
         obs = (rf.results() or [None])[0] if ok else None
         buf = None
         if obs is not None:
@@ -257,7 +283,7 @@ def subject_matte(video_path, a, b, fps=30):
     """Video WebM (VP9 + kenh alpha) CHI GIU NGUOI trong doan [a, b] giay NGUON, cung kich thuoc
     khung nguon. Bo dung dat no DE LEN lop chu -> chu nam SAU nguoi (vd chu to sau dau).
     Tra {"path", "srcStart", "srcEnd"} hoac None. Co bo nho dem theo file + doan."""
-    if not video_path or not os.path.isfile(video_path) or not _vision():
+    if not video_path or not os.path.isfile(video_path) or not available():
         return None
     import media_sdr
     # Video HDR -> tach tu ban SDR: nguoi trong lop tach cung mau voi video nen (truoc day tach tu
@@ -271,16 +297,14 @@ def subject_matte(video_path, a, b, fps=30):
     src_fps = _src_fps(video_path) or fps
     a = matte_grid_start(a, src_fps)
     os.makedirs(CACHE_DIR, exist_ok=True)
-    k = _key(video_path, "matte|%.4f|%.2f|%d|v3" % (a, b, fps))[:24]
+    # khoa rieng cho ban ONNX (khong lan voi ban Vision khi ep STUDIO_VISION=onnx tren macOS)
+    k = _key(video_path, "matte|%.4f|%.2f|%d|v3%s" % (a, b, fps, "" if _vision() else "|onnx-rvm"))[:24]
     out = os.path.join(CACHE_DIR, "matte_%s.webm" % k)
     res = {"path": out, "srcStart": round(a, 4), "srcEnd": round(b, 3)}
     if os.path.isfile(out) and os.path.getsize(out) > 1000:
         return res
     import glob
     import shutil
-    import Vision
-    import Quartz
-    from Foundation import NSURL
     ff = remotion_plan._ffbin("ffmpeg")
     w = int(info.get("width") or 1080)
     h = int(info.get("height") or 1920)
@@ -296,16 +320,26 @@ def subject_matte(video_path, a, b, fps=30):
         frames = sorted(glob.glob(os.path.join(work, "f_*.jpg")))
         if r.returncode != 0 or not frames:
             return None
-        ctx = Quartz.CIContext.contextWithOptions_(None)
-        gray = Quartz.CGColorSpaceCreateDeviceGray()
-        # Tung khung DOC LAP (tach chu the, vien sac) + trung vi 3 khung (bo nhap nhay, khong tre)
-        try:
-            ok_fg = _frame_masks_fg(frames, ctx, gray)
-        except Exception:
-            ok_fg = False
-        if ok_fg:
+        if not _vision():
+            # Khong co Vision (Windows): RobustVideoMatting tung khung LIEN TIEP (giu trang thai) + trung vi 3 khung
+            if not vision_onnx.person_masks(frames):
+                return None
             _median3(sorted(glob.glob(os.path.join(work, "m_*.png"))))
+            ok_fg = True
         else:
+            import Quartz
+            ctx = Quartz.CIContext.contextWithOptions_(None)
+            gray = Quartz.CGColorSpaceCreateDeviceGray()
+            # Tung khung DOC LAP (tach chu the, vien sac) + trung vi 3 khung (bo nhap nhay, khong tre)
+            try:
+                ok_fg = _frame_masks_fg(frames, ctx, gray)
+            except Exception:
+                ok_fg = False
+            if ok_fg:
+                _median3(sorted(glob.glob(os.path.join(work, "m_*.png"))))
+        if not ok_fg:
+            import Vision
+            from Foundation import NSURL
             # may cu (chua co 'tach chu the'): MOT request + VNSequenceRequestHandler nhu truoc
             req = Vision.VNGeneratePersonSegmentationRequest.alloc().initWithCompletionHandler_(None)
             req.setQualityLevel_(0)  # accurate
@@ -314,7 +348,7 @@ def subject_matte(video_path, a, b, fps=30):
             for fp in frames:
                 ok, _e = seq.performRequests_onImageURL_error_([req], NSURL.fileURLWithPath_(fp), None)
                 res_ = req.results() if ok else None
-                mp = fp.replace("f_", "m_").replace(".jpg", ".png")
+                mp = _mask_name(fp)
                 if not res_:
                     return None
                 ci = Quartz.CIImage.imageWithCVPixelBuffer_(res_[0].pixelBuffer())

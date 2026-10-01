@@ -15,6 +15,7 @@ DO MANH theo TONE + TINH CHAT video (user: "ke chuyen nhe nhang thi hieu ung phu
 """
 import json
 import math
+import os
 
 import providers
 
@@ -193,8 +194,10 @@ def _transform_events(values, fps, start):
 
 
 def _raster(svg, w=216, h=384):
-    """Khung SVG -> mang RGBA 0..1 (NSImage cua macOS; khong co -> None)."""
+    """Khung SVG -> mang RGBA 0..1 (NSImage cua macOS; khong co -> resvg (Windows); ca 2 khong co -> None)."""
     try:
+        if os.environ.get("STUDIO_VISION") == "onnx":
+            raise ImportError("ep resvg")
         import AppKit
         import Foundation
         import numpy as np
@@ -210,6 +213,9 @@ def _raster(svg, w=216, h=384):
         img.drawInRect_(Foundation.NSMakeRect(0, 0, w, h))
         AppKit.NSGraphicsContext.restoreGraphicsState()
         return np.frombuffer(bytes(rep.bitmapData()[: w * h * 4]), dtype=np.uint8).reshape(h, w, 4).astype(np.float32) / 255.0
+    except ImportError:
+        import vision_onnx
+        return vision_onnx.raster_svg(svg, w, h)
     except Exception:
         return None
 

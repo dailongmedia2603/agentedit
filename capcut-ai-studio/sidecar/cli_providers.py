@@ -25,20 +25,43 @@ import tempfile
 import threading
 import subprocess
 
+import winsupport
 from debug_log import log_step_call, log_step_response, log_step_note
 
-# Thu muc co the chua binary khi app chay tu Finder (GUI khong ke thua PATH shell)
-_EXTRA_DIRS = [
-    os.path.expanduser("~/.capcut-studio/tools/bin"),   # Doctor tu cai dung ban ghim (codex)
-    os.path.expanduser("~/.local/bin"),
-    os.path.expanduser("~/.local/node/bin"),
-    os.path.expanduser("~/.bun/bin"),
-    os.path.expanduser("~/.volta/bin"),
-    os.path.expanduser("~/.cargo/bin"),
-    "/opt/homebrew/bin",
-    "/usr/local/bin",
-    "/usr/bin",
-]
+IS_WIN = winsupport.IS_WIN
+_HOME = os.path.expanduser("~")
+
+# Thu muc co the chua binary khi app chay tu Finder / Start menu (GUI khong ke thua PATH shell)
+if IS_WIN:
+    _LAD = os.environ.get("LOCALAPPDATA") or os.path.join(_HOME, "AppData", "Local")
+    _RAD = os.environ.get("APPDATA") or os.path.join(_HOME, "AppData", "Roaming")
+    _EXTRA_DIRS = [
+        os.path.join(_HOME, ".capcut-studio", "tools", "bin"),
+        os.path.join(_HOME, ".capcut-studio", "tools", "codex", "bin"),   # goi Codex chinh chu (Doctor cai)
+        os.path.join(_HOME, ".local", "bin"),                             # Claude Code (trinh cai chinh chu)
+        os.path.join(_LAD, "agy", "bin"),                                 # Antigravity CLI (install.ps1)
+        os.path.join(_RAD, "npm"),
+        os.path.join(_HOME, ".bun", "bin"),
+        os.path.join(_LAD, "Volta", "bin"),
+        os.path.join(_HOME, ".cargo", "bin"),
+    ]
+else:
+    _EXTRA_DIRS = [
+        os.path.expanduser("~/.capcut-studio/tools/bin"),   # Doctor tu cai dung ban ghim (codex)
+        os.path.expanduser("~/.local/bin"),
+        os.path.expanduser("~/.local/node/bin"),
+        os.path.expanduser("~/.bun/bin"),
+        os.path.expanduser("~/.volta/bin"),
+        os.path.expanduser("~/.cargo/bin"),
+        "/opt/homebrew/bin",
+        "/usr/local/bin",
+        "/usr/bin",
+    ]
+
+
+def _t(msg):
+    """Loi nhan cho nguoi dung: Windows khong co 'Terminal' -> PowerShell."""
+    return msg.replace("Terminal", "PowerShell") if IS_WIN else msg
 
 # Model goi y cho tung CLI (UI do danh sach nay vao dropdown).
 # Khong "chot cung": user van go tay duoc ten model khac ngoai danh sach.
@@ -108,6 +131,12 @@ SPEC = {
     },
 }
 
+if IS_WIN:
+    # Lenh cai TAY tren Windows (app / Doctor tu cai bang chinh cac trinh cai nay — toolchain.ts)
+    SPEC["claude"]["install_cmd"] = "irm https://claude.ai/install.ps1 | iex"
+    SPEC["gpt"]["install_cmd"] = "npm i -g @openai/codex"
+    SPEC["gemini"]["install_cmd"] = "irm https://antigravity.google/cli/install.ps1 | iex"
+
 SUPPORTED = tuple(SPEC.keys())
 
 # Muc suy nghi (reasoning effort) cua Codex. Moi model chi ho tro mot phan — danh sach that lay
@@ -124,6 +153,9 @@ CLAUDE_EFFORTS = ("low", "medium", "high", "xhigh", "max")
 
 class CliError(RuntimeError):
     """Loi thuoc tang CLI (chua cai / chua dang nhap / het han muc / timeout)."""
+
+    def __init__(self, msg="", *args):
+        super().__init__(_t(msg) if isinstance(msg, str) else msg, *args)
 
 
 # ----------------------------------------------------------------------------
@@ -155,14 +187,23 @@ def find_bin(name):
     if found:
         return found
     for d in _EXTRA_DIRS:
-        p = os.path.join(d, exe)
-        if os.path.isfile(p) and os.access(p, os.X_OK):
-            return p
+        for ext in ((".exe", ".cmd", "") if IS_WIN else ("",)):
+            p = os.path.join(d, exe + ext)
+            if os.path.isfile(p) and os.access(p, os.X_OK):
+                return p
     return None
 
 
 def _run(argv, stdin_text=None, timeout=60, cwd=None, env=None):
     """Chay lenh, tra (returncode, stdout, stderr). Khong nem exception."""
+    if IS_WIN:
+        # Windows: het gio phai giet CA CAY (chau con giu ong dan -> subprocess.run treo sau khi giet con)
+        try:
+            return winsupport.run(argv, input=(stdin_text or ""), timeout=timeout, env=env or _augmented_env(), cwd=cwd)
+        except subprocess.TimeoutExpired:
+            return -9, "", "TIMEOUT sau %ds" % timeout
+        except OSError as e:
+            return -1, "", str(e)
     try:
         p = subprocess.run(
             argv,
@@ -217,8 +258,8 @@ def cli_status(name):
 
     path = find_bin(name)
     if not path:
-        out["detail"] = ("Chưa cài %s trên máy — mở Doctor để app tự cài đúng bản, hoặc chạy trong Terminal:\n  %s"
-                         % (spec["label"], spec["install_cmd"]))
+        out["detail"] = _t("Chưa cài %s trên máy — mở Doctor để app tự cài đúng bản, hoặc chạy trong Terminal:\n  %s"
+                           % (spec["label"], spec["install_cmd"]))
         return out
     out["installed"] = True
     out["path"] = path
@@ -263,9 +304,9 @@ def cli_status(name):
             out["account"] = data.get("email")
             out["plan"] = data.get("subscriptionType")
             if (data.get("authMethod") or "") != "claude.ai":
-                out["detail"] = ("Claude Code đang dùng API key chứ không phải gói subscription. "
-                                 "Bấm “Đăng nhập Claude” bên dưới (hoặc chạy `claude auth login` "
-                                 "trong Terminal) và chọn đăng nhập bằng tài khoản Claude.ai.")
+                out["detail"] = _t("Claude Code đang dùng API key chứ không phải gói subscription. "
+                                   "Bấm “Đăng nhập Claude” bên dưới (hoặc chạy `claude auth login` "
+                                   "trong Terminal) và chọn đăng nhập bằng tài khoản Claude.ai.")
                 out["logged_in"] = False
             else:
                 out["detail"] = "Đã đăng nhập%s%s" % (
@@ -566,10 +607,17 @@ def _claude_chat(path, model, system, user, req_timeout, step_label, effort=""):
     ]
     if effort:
         argv += ["--effort", effort]
-    if system:
-        argv += ["--system-prompt", system]
-
     workdir = tempfile.mkdtemp(prefix="autocapcut-cli-")
+    if system:
+        if IS_WIN:
+            # Windows: ca dong lenh <= 32767 ky tu; system R4 ~30K -> qua file (WinError 206 neu de tham so)
+            spf = os.path.join(workdir, "system-prompt.md")
+            with open(spf, "w", encoding="utf-8") as f:
+                f.write(system)
+            argv += ["--system-prompt-file", spf]
+        else:
+            argv += ["--system-prompt", system]
+
     rc, so, se = _run(argv, stdin_text=user, timeout=req_timeout, cwd=workdir)
     data = _first_json(so)
 
@@ -686,7 +734,15 @@ def agy_workdir():
 
 def agy_logged_in():
     """Chi kiem tra CO file phien dang nhap cua agy (khong doc noi dung)."""
-    return os.path.isfile(os.path.join(AGY_HOME, "antigravity-oauth-token"))
+    if os.path.isfile(os.path.join(AGY_HOME, "antigravity-oauth-token")):
+        return True
+    if IS_WIN and os.path.isdir(AGY_HOME):
+        # Windows: ten file phien chua kiem chung tren may that -> chap nhan file *oauth*token* trong thu muc agy
+        try:
+            return any("oauth" in n.lower() and "token" in n.lower() for n in os.listdir(AGY_HOME))
+        except OSError:
+            return False
+    return False
 
 
 def _agy_model_note(mid):
@@ -726,7 +782,7 @@ def gemini_last_meta():
 def _agy_cleanup(job_dir, conv_id):
     """Xoa thu muc job + hoi thoai cua lan goi (2 ban sao video). Tra so video model da xem."""
     shutil.rmtree(job_dir, ignore_errors=True)
-    if not conv_id or "/" in conv_id or conv_id.startswith("."):
+    if not conv_id or any(c in conv_id for c in "/\\:") or conv_id.startswith("."):
         return 0
     brain = os.path.join(AGY_HOME, "brain", conv_id)
     media = os.path.join(brain, ".tempmediaStorage")
@@ -741,6 +797,42 @@ def _agy_cleanup(job_dir, conv_id):
         except OSError:
             pass
     return viewed
+
+
+# Windows: CA dong lenh <= 32767 ky tu, prompt Gemini (kem schema / phan tich) co the dai hon -> dua prompt qua
+# STDIN bang che do stream-json cua agy (`-p=` rong + `--input-format stream-json`; 1 dong
+# {"event":"user","message":{"content": ...}}; ket qua = dong {"event":"result","result":{...}} cung dang JSON
+# cua `--output-format json`). Da goi that 2026-10-01 (agy 1.2.14). macOS giu `-p <prompt>` nhu cu.
+AGY_ARG_LIMIT = 24000
+
+
+def _agy_use_stdin(full):
+    return IS_WIN or os.environ.get("STUDIO_AGY_STDIN") == "1" or len(full) > 100000
+
+
+def _agy_argv(path, full, model, req_timeout):
+    """(argv, stdin_text) cho 1 luot agy headless."""
+    common = ["--disable-slash-commands", "--print-timeout", "%ds" % int(req_timeout)]
+    if model:
+        common += ["--model", model]
+    if _agy_use_stdin(full):
+        msg = json.dumps({"event": "user", "message": {"content": full}}, ensure_ascii=False)
+        return [path, "--input-format", "stream-json", "--output-format", "stream-json"] + common + ["-p="], msg + "\n"
+    return [path, "-p", full, "--output-format", "json"] + common, ""
+
+
+def _agy_result(so):
+    """JSON ket qua cua agy: dang `json` (1 object) hoac `stream-json` (dong event "result")."""
+    for line in reversed((so or "").splitlines()):
+        line = line.strip()
+        if line.startswith("{") and '"event"' in line:
+            try:
+                ev = json.loads(line)
+            except ValueError:
+                continue
+            if ev.get("event") == "result" and isinstance(ev.get("result"), dict):
+                return ev["result"]
+    return _first_json(so)
 
 
 def _agy_call(path, model, prompt, files, req_timeout, step_label):
@@ -767,13 +859,10 @@ def _agy_call(path, model, prompt, files, req_timeout, step_label):
             full += ("\n\n# CACH XEM VIDEO\nDung cong cu view_file mo TUNG file duoi day (dung thu tu, xem ca "
                      "HINH va nghe TIENG) roi moi tra loi. KHONG chay lenh, KHONG ghi file, KHONG tim tren web.\n"
                      + "\n".join("%d. %s" % (i + 1, p) for i, p in enumerate(paths)))
-        argv = [path, "-p", full, "--output-format", "json", "--disable-slash-commands",
-                "--print-timeout", "%ds" % int(req_timeout)]
-        if model:
-            argv += ["--model", model]
+        argv, stdin_text = _agy_argv(path, full, model, req_timeout)
         _agy_tl.meta = {"models": [model] if model else [], "viewed": 0}
-        rc, so, se = _run(argv, stdin_text="", timeout=int(req_timeout) + 60, cwd=work)
-        data = _first_json(so)
+        rc, so, se = _run(argv, stdin_text=stdin_text, timeout=int(req_timeout) + 60, cwd=work)
+        data = _agy_result(so)
     except BaseException:
         shutil.rmtree(job_dir, ignore_errors=True)
         raise

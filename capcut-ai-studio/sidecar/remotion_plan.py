@@ -427,12 +427,9 @@ def apply_visual(segments, visual):
 # ---------------------------------------------------------------------------
 def _ffbin(name):
     # ban ffmpeg GHIM cua app (Doctor cai + kiem SHA-256, sidecar/assets/toolchain.json) truoc, roi moi toi may
-    for p in (os.path.expanduser("~/.capcut-studio/tools/bin/%s" % name),
-              os.path.expanduser("~/.local/bin/%s" % name), "/opt/homebrew/bin/%s" % name,
-              "/usr/local/bin/%s" % name):
-        if os.path.isfile(p):
-            return p
-    return name
+    # (Windows: ffmpeg.exe — xem winsupport.ffbin)
+    import winsupport
+    return winsupport.ffbin(name)
 
 
 @functools.lru_cache(maxsize=512)

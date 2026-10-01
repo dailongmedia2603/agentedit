@@ -34,8 +34,9 @@ import { SceneBackdrop, ScenePanels, arollStateAt } from './Scenes'
 /** Duong dan file tren may -> URL ma trinh duyet (Player lan may render) tai duoc. */
 export function mediaSrc(base: string | undefined, path: string): string {
   if (/^(https?:|data:|blob:)/.test(path)) return path
-  if (!base) return 'file://' + path
-  const name = path.split('/').pop() || 'media'
+  // Windows: C:\a\b.mp4 -> file:///C:/a/b.mp4 (khong co may chu media — chi xay ra khi thieu base)
+  if (!base) return 'file://' + encodeURI((/^[A-Za-z]:/.test(path) ? '/' : '') + path.replace(/\\/g, '/'))
+  const name = path.split(/[\\/]/).pop() || 'media'
   return `${base}/${encodeURIComponent(name)}?p=${encodeURIComponent(path)}`
 }
 

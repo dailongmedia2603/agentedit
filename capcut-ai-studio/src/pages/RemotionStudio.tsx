@@ -35,6 +35,7 @@ import { cn, fmtTime, todayStr } from '@/lib/utils'
 import { adoptProjectMedia, replacePaths, insideDir, baseName, type MissingMedia } from '@/lib/projectMedia'
 import { loadVideoMeta } from '@/lib/media'
 import type { RenderSpec } from '../../remotion-src/types'
+import { IS_WIN, REVEAL_LABEL } from '../lib/platform'
 
 /** Khop sidecar remotion_plan.SPEC_MEDIA_VERSION — spec cu hon thi dung lai tu plan khi mo du an */
 const SPEC_MEDIA_VERSION = 7
@@ -1362,7 +1363,7 @@ export default function RemotionStudioPage({
                 </p>
                 <div className="rounded-xl border border-black/8 bg-ink-50 p-3 text-xs text-ink-800/60">
                   Render xuất MP4 1080×1920, 30fps, H.264 + AAC. Lần đầu app tải trình render (~90MB) vào{' '}
-                  <code className="rounded bg-black/5 px-1">~/.capcut-studio/remotion</code>. Video 40 giây mất khoảng
+                  <code className="rounded bg-black/5 px-1">{IS_WIN ? '%USERPROFILE%\\.capcut-studio\\remotion' : '~/.capcut-studio/remotion'}</code>. Video 40 giây mất khoảng
                   1–3 phút tuỳ máy.
                 </div>
                 <div className="flex flex-wrap gap-2 pt-1">
@@ -1432,7 +1433,7 @@ export default function RemotionStudioPage({
                     <Download className="h-4 w-4" /> Lưu video…
                   </Button>
                   <Button variant="outline" onClick={() => window.studio.showItemInFolder(render.output)}>
-                    <FolderOpen className="h-4 w-4" /> Hiện trong Finder
+                    <FolderOpen className="h-4 w-4" /> {REVEAL_LABEL}
                   </Button>
                   <Button variant="outline" onClick={() => setStage('preview')}>
                     <MonitorPlay className="h-4 w-4" /> Về bản xem trước

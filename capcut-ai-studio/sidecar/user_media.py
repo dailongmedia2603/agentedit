@@ -223,8 +223,18 @@ def working_image(path):
                 im.size
         except Exception:
             conv = os.path.join(tmp_dir, "conv.png")
-            subprocess.run(["/usr/bin/sips", "-s", "format", "png", path, "--out", conv],
-                           capture_output=True, timeout=120)
+            if os.path.isfile("/usr/bin/sips"):
+                subprocess.run(["/usr/bin/sips", "-s", "format", "png", path, "--out", conv],
+                               capture_output=True, timeout=120)
+            else:
+                # Windows (khong co sips): HEIC/HEIF qua pillow-heif, dinh dang khac Pillow doc duoc thi doc thang
+                try:
+                    import pillow_heif
+                    pillow_heif.register_heif_opener()
+                except Exception:
+                    pass
+                with Image.open(path) as im_:
+                    ImageOps.exif_transpose(im_).save(conv, "PNG")
             if not os.path.isfile(conv):
                 return path
             src = conv

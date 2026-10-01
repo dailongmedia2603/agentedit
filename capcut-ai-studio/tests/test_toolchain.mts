@@ -25,10 +25,12 @@ function check(name: string, cond: unknown, detail?: unknown) {
 }
 
 const HOME = homedir()
-if (!HOME.includes('tmp') && !HOME.includes('/T/') && !HOME.startsWith('/var/folders')) {
-  console.log('Chay voi HOME tam: HOME=$(mktemp -d) node tests/test_toolchain.mts')
+const H = HOME.replace(/\\/g, '/').toLowerCase()
+if (!H.includes('tmp') && !H.includes('/t/') && !H.includes('/temp/') && !H.startsWith('/var/folders')) {
+  console.log('Chay voi HOME tam: HOME=$(mktemp -d) node tests/test_toolchain.mts  (Windows: $env:USERPROFILE = thu muc tam)')
   process.exit(2)
 }
+const IS_WIN = process.platform === 'win32'
 
 console.log('[1] phien ban')
 check('doc "codex-cli 0.156.1"', JSON.stringify(T.parseVersion('codex-cli 0.156.1')) === '[0,156,1]')
@@ -127,16 +129,54 @@ if (existsSync(join(legacy, 'ffmpeg'))) {
 }
 
 console.log('[4] tim CLI: ban cua app truoc')
-const mk = (dir: string, name: string) => {
+// Windows: CLI gia la file .cmd (findCli tu thu duoi theo PATHEXT; .cmd chay qua shell)
+const cliName = IS_WIN ? 'codex-test.cmd' : 'codex-test'
+const mk = (dir: string) => {
   mkdirSync(dir, { recursive: true })
-  writeFileSync(join(dir, name), '#!/bin/sh\necho "codex-cli 0.1.0"\n')
-  chmodSync(join(dir, name), 0o755)
+  writeFileSync(join(dir, cliName), IS_WIN ? '@echo codex-cli 0.1.0\r\n' : '#!/bin/sh\necho "codex-cli 0.1.0"\n')
+  chmodSync(join(dir, cliName), 0o755)
 }
-mk(join(HOME, '.local', 'bin'), 'codex-test')
-check('chi co ~/.local/bin -> tim thay o do', T.findCli('codex-test') === join(HOME, '.local', 'bin', 'codex-test'))
-mk(TOOLS_BIN, 'codex-test')
-check('co ca tools/bin -> uu tien ban cua app', T.findCli('codex-test') === join(TOOLS_BIN, 'codex-test'))
-check('doc phien ban CLI', (await T.cliVersion(join(TOOLS_BIN, 'codex-test'))) === 'codex-cli 0.1.0')
+mk(join(HOME, '.local', 'bin'))
+check('chi co ~/.local/bin -> tim thay o do', T.findCli('codex-test') === join(HOME, '.local', 'bin', cliName), T.findCli('codex-test'))
+mk(TOOLS_BIN)
+check('co ca tools/bin -> uu tien ban cua app', T.findCli('codex-test') === join(TOOLS_BIN, cliName))
+check('doc phien ban CLI', (await T.cliVersion(join(TOOLS_BIN, cliName))) === 'codex-cli 0.1.0', await T.cliVersion(join(TOOLS_BIN, cliName)))
+
+console.log('[5] Python nhung + ghi de theo nen tang')
+const hostKey = (IS_WIN ? 'win' : process.platform) + '-' + (process.arch === 'arm64' ? 'arm64' : 'x64')
+check('platformKey dung may nay', T.platformKey() === hostKey, T.platformKey())
+const pt = T.pyEmbedTarget()
+check('pyEmbedTarget co url https + sha256 + bin', !!pt && pt.url.startsWith('https://') && /^[0-9a-f]{64}$/.test(pt.sha256) && !!pt.bin, pt)
+check('pyExtSuffix dung nen tang', T.pyExtSuffix() === (IS_WIN ? '.cp312-win_amd64.pyd' : '.cpython-312-darwin.so'), T.pyExtSuffix())
+// Gia lap Windows x64 (platformKey doc process.platform / arch luc goi): moi khoi ghi de dung ban Windows
+const realPlat = Object.getOwnPropertyDescriptor(process, 'platform')!
+const realArch = Object.getOwnPropertyDescriptor(process, 'arch')!
+Object.defineProperty(process, 'platform', { value: 'win32' })
+Object.defineProperty(process, 'arch', { value: 'x64' })
+try {
+  check('[win] platformKey = win-x64', T.platformKey() === 'win-x64')
+  const wpe = T.pyEmbedTarget()
+  check('[win] python nhung = python.exe (install_only)', wpe?.bin === 'python.exe' && wpe.url.includes('windows-msvc-install_only'), wpe)
+  const wff = T.ffSpec()
+  check('[win] ffmpeg = zip win32 + ffmpeg.exe / ffprobe.exe', wff.zip_dir === 'win32' && 'ffmpeg.exe' in wff.files && 'ffprobe.exe' in wff.files
+        && wff.encoders.includes('libvpx-vp9') && wff.filters.includes('zscale'), wff)
+  const wcx = T.codexSpec()
+  check('[win] codex = goi codex-package, entry bin/codex.exe, cung min', !!wcx.package && wcx.entry === 'bin/codex.exe' && wcx.min === T.manifest().cli.codex.min, wcx)
+  check('[win] trinh cai .ps1', ['claude', 'agy', 'uv'].every((n) => T.installerOf(n as 'claude').endsWith('.ps1')))
+  check('[win] yeu cau Windows 10 1809+', (T.osReq()?.min_build || 0) >= 17763)
+  check('[win] can model thi giac may', T.visionModelsNeeded())
+} finally {
+  Object.defineProperty(process, 'platform', realPlat)
+  Object.defineProperty(process, 'arch', realArch)
+}
+if (!IS_WIN) {
+  check('[mac] ffmpeg / codex / trinh cai giu nguyen ban macOS', T.ffSpec().zip_dir === 'darwin_arm64' && !T.codexSpec().package &&
+        T.installerOf('claude').endsWith('install.sh') && T.osReq() === null)
+}
+
+console.log('[6] model thi giac may')
+const vs = T.visionModelsStatus()
+check('chua co model -> liet ke du 5 model thieu', !vs.ok && vs.missing.length === 5 && vs.totalMb > 200, vs)
 
 function createHash(b: Buffer): string {
   return nodeHash('sha256').update(b).digest('hex')

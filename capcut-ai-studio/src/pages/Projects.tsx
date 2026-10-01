@@ -5,6 +5,7 @@ import { Button, Card, CardBody, CardHeader, Badge, Collapsible, Spinner } from 
 import { ReferenceAnalysisView, SourceBriefView } from '@/components/ResultViews'
 import { cn, fmtTime } from '@/lib/utils'
 import RunLogPanel from '@/components/RunLogPanel'
+import { REVEAL_LABEL } from '../lib/platform'
 
 function statusBadge(status: string) {
   const map: Record<string, { tone: 'ok' | 'fail' | 'warn' | 'brand' | 'neutral'; label: string }> = {
@@ -64,7 +65,7 @@ function RenderedVideo({ info }: { info: RemotionRenderInfo }) {
               Lưu video…
             </Button>
             <Button variant="outline" size="sm" onClick={() => window.studio.showItemInFolder(info.output)}>
-              <FolderOpen className="h-4 w-4" /> Hiện trong Finder
+              <FolderOpen className="h-4 w-4" /> {REVEAL_LABEL}
             </Button>
           </div>
         </div>

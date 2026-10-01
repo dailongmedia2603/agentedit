@@ -3,9 +3,9 @@ import { createServer } from 'net'
 import { request as httpRequest } from 'http'
 import { randomBytes } from 'crypto'
 import { existsSync } from 'fs'
-import { augmentedEnv } from './env'
+import { augmentedEnv, killTree } from './env'
 import { readState } from './state'
-import { sidecarServer, sidecarDir } from './paths'
+import { sidecarServer, sidecarDir, embeddedPython, bundledModelsDir } from './paths'
 import { loadProviders } from './secrets'
 
 let child: ChildProcess | null = null
@@ -31,7 +31,11 @@ function freePort(): Promise<number> {
   })
 }
 
+// Python cho sidecar: UU TIEN python NHUNG trong app (nguoi dung khong cai gi) ->
+// fallback venv_python trong state.json (may cu da tao venv bang uv truoc day).
 function venvPython(): string | null {
+  const embedded = embeddedPython()
+  if (embedded) return embedded
   const s = readState()
   if (s.venv_python && existsSync(s.venv_python)) return s.venv_python
   return null
@@ -64,7 +68,7 @@ async function doStartSidecar(onLog?: (l: string) => void): Promise<{ ok: boolea
   if (child && !ready) stopSidecar() // lan truoc khoi dong hong -> tat han truoc khi chay cai moi
   const py = venvPython()
   if (!py) {
-    return { ok: false, error: 'Chua co venv_python (chay Doctor truoc).' }
+    return { ok: false, error: 'Chua co moi truong Python (python nhung thieu, chua co venv). Cai lai app hoac chay Doctor.' }
   }
   const server = sidecarServer()
   if (!existsSync(server)) {
@@ -77,7 +81,16 @@ async function doStartSidecar(onLog?: (l: string) => void): Promise<{ ok: boolea
   child = spawn(py, [server, '--port', String(port), '--token', token], {
     cwd: sidecarDir(),
     // STUDIO_NODE_BIN: chinh binary Electron (chay che do Node) -> sidecar chay hop cach ly hieu ung tu viet
-    env: { ...augmentedEnv(), STUDIO_TOKEN: token, STUDIO_NODE_BIN: process.execPath }
+    env: {
+      ...augmentedEnv(),
+      STUDIO_TOKEN: token,
+      STUDIO_NODE_BIN: process.execPath,
+      // model thi giac may ONNX nhung trong app (Windows — vision_onnx.model_dirs)
+      ...(bundledModelsDir() ? { STUDIO_MODELS_DIR: bundledModelsDir() as string } : {})
+    },
+    // Windows: python.exe la chuong trinh console -> khong an thi bat cua so den; con chau (ffmpeg...)
+    // dung chung console an nay nen cung khong bat cua so.
+    windowsHide: true
   })
   child.stdout?.on('data', (d) => {
     const s = d.toString().trimEnd()
@@ -174,11 +187,15 @@ export function sidecarRequest(path: string, body?: unknown, timeoutMs = 1800000
 
 export function stopSidecar(): void {
   if (child) {
-    try {
-      child.kill('SIGTERM')
-    } catch {
-      // ignore
-    }
+    const c = child
+    // Windows: kill() chi giet python.exe -> ffmpeg / codex / claude sidecar dang chay thanh mo coi
+    killTree(c.pid, () => {
+      try {
+        c.kill('SIGTERM')
+      } catch {
+        // ignore
+      }
+    })
     child = null
     ready = false
   }

@@ -7,7 +7,7 @@ Chay (HOME tam de khong dung state.json that):
 KHONG goi mang / KHONG goi CLI that — subprocess va requests bi thay bang ban gia lap.
 
 Cac dieu can dam bao:
-  1. config.plan_provider() doc state.json; gia tri la / thieu -> "gpt" (nguoi cu khong doi gi)
+  1. config.plan_provider() doc state.json; gia tri la / thieu -> "claude" (mac dinh tu 2026-10-01)
   2. Cac buoc ke hoach (B1..B7, R4, R5) di qua plan_chat -> dung provider da chon
   3. Claude CLI: --effort, tat cong cu, khong luu phien, dung sub_model
   4. Van tay cache: GPT giu nguyen dang cu; Claude khac GPT va doi theo model/effort
@@ -112,15 +112,17 @@ def fake_cli():
 MSGS = [{"role": "system", "content": "S"}, {"role": "user", "content": "U"}]
 
 # ---------------------------------------------------------------------------
-section("[1] plan_provider doc state.json, mac dinh GPT")
+section("[1] plan_provider doc state.json, mac dinh Claude")
 set_planner(None)
-check("chua chon -> gpt", config.plan_provider() == "gpt", config.plan_provider())
+check("chua chon -> claude", config.plan_provider() == "claude", config.plan_provider())
 set_planner("claude")
 check("chon claude -> claude", config.plan_provider() == "claude")
+set_planner("gpt")
+check("chon gpt -> gpt", config.plan_provider() == "gpt")
 set_planner("Claude ")
 check("khong phan biet hoa/thuong, bo khoang trang", config.plan_provider() == "claude")
 set_planner("gemini")
-check("gia tri la -> gpt", config.plan_provider() == "gpt")
+check("gia tri la -> claude", config.plan_provider() == "claude")
 check("PLAN_PROVIDERS = gpt, claude", set(config.PLAN_PROVIDERS) == {"gpt", "claude"})
 
 # ---------------------------------------------------------------------------

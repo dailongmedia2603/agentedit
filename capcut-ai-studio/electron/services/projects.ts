@@ -196,7 +196,9 @@ export async function deleteProject(
       await shell.trashItem(resolve(p.workDir as string))
       trashed.push(resolve(p.workDir as string))
     } catch (e) {
-      return { ok: false, trashed, error: 'Không chuyển được thư mục dự án vào Thùng rác: ' + String(e) }
+      // Windows: file dang mo (xem truoc / dang render / trinh phat video) -> khong vao Thung rac duoc
+      const busy = process.platform === 'win32' ? ' Có thể một video trong dự án đang được mở (xem trước, trình phát) — đóng lại rồi thử lại.' : ''
+      return { ok: false, trashed, error: 'Không chuyển được thư mục dự án vào Thùng rác: ' + String(e) + busy }
     }
     const log = runDir(id)
     if (existsSync(log)) {

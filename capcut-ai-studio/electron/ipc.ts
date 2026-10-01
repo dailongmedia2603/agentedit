@@ -1,7 +1,6 @@
 import { ipcMain, BrowserWindow, dialog, shell, app } from 'electron'
-import { join, basename } from 'path'
-import { existsSync, mkdirSync, copyFileSync } from 'fs'
-import { homedir } from 'os'
+import { join, basename, isAbsolute } from 'path'
+import { existsSync, mkdirSync, copyFileSync, statSync } from 'fs'
 import { runDoctor, fixCheck, autoFix, autoFixStatus, DoctorCheck } from './services/doctor'
 import {
   startCodexLogin,
@@ -127,7 +126,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
   // AI lap ke hoach (GPT / Claude) — luu state.json, sidecar doc lai moi lan lap plan
   ipcMain.handle('settings:getPlanner', () => planProviderOf(readState()))
   ipcMain.handle('settings:setPlanner', (_e, v: PlanProvider) => {
-    writeState({ plan_provider: v === 'claude' ? 'claude' : 'gpt' })
+    writeState({ plan_provider: v === 'gpt' ? 'gpt' : 'claude' })
     return planProviderOf(readState())
   })
   // Trang thai CLI chinh chu (Claude Code / Codex) cho che do goi subscription
@@ -313,7 +312,15 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
     return sidecarRequest('/understand_sources', payload, LONG_AI_MS)
   })
 
-  ipcMain.handle('shell:openPath', (_e, p: string) => shell.openPath(p))
+  // Chi mo THU MUC (thu muc du an): Windows openPath tren .exe / .bat / .lnk se CHAY file do
+  ipcMain.handle('shell:openPath', (_e, p: string) => {
+    try {
+      if (typeof p !== 'string' || !isAbsolute(p) || !statSync(p).isDirectory()) return 'Chỉ mở được thư mục.'
+    } catch {
+      return 'Không thấy thư mục.'
+    }
+    return shell.openPath(p)
+  })
 
   // ---- Nhat ky xu ly theo tung lan tao video (xem services/runlog.ts) ----
   ipcMain.handle('runlog:read', (_e, runId: string, offset?: number) => readRunLog(runId, offset || 0))
@@ -439,6 +446,8 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
   ipcMain.handle('library:list', () => libCall('/library/list'))
   ipcMain.handle('library:lookup', (_e, paths: string[]) => libCall('/library/lookup', { paths }))
   ipcMain.handle('library:delete', (_e, fp: string, part?: string) => libCall('/library/delete', { fp, part }))
+  // Dong bo kho SFX + Meme tu R2 (nut "Dong bo kho" + tu chay nen luc mo app)
+  ipcMain.handle('library:sync', () => libCall('/library/sync', {}))
 
   // ---- Projects (luu/khoi phuc du an) ----
   ipcMain.handle('projects:list', () => listProjects())
@@ -549,7 +558,8 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
     if (!win || !src || !existsSync(src)) return { ok: false, error: 'Không thấy file video' }
     const res = await dialog.showSaveDialog(win, {
       title: 'Lưu video',
-      defaultPath: join(homedir(), 'Movies', name ? `${slugify(name)}.mp4` : basename(src)),
+      // thu muc Video cua he dieu hanh (macOS ~/Movies, Windows %USERPROFILE%\Videos)
+      defaultPath: join(app.getPath('videos'), name ? `${slugify(name)}.mp4` : basename(src)),
       filters: [{ name: 'Video MP4', extensions: ['mp4'] }]
     })
     if (res.canceled || !res.filePath) return { ok: false, canceled: true }

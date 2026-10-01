@@ -8,6 +8,8 @@ interface OpenDialogReturn {
 }
 
 interface StudioBridge {
+  /** process.platform cua main (darwin / win32) */
+  platform: string
   appInfo(): Promise<{ version: string; name: string; engineHome: string }>
 
   doctorRun(): Promise<DoctorCheck[]>
@@ -84,6 +86,14 @@ interface StudioBridge {
   libraryList(): Promise<{ ok: boolean; items?: LibraryItem[]; error?: string }>
   libraryLookup(paths: string[]): Promise<{ ok: boolean; found?: Record<string, LibraryLookup>; error?: string }>
   libraryDelete(fp: string, part?: LibraryPart): Promise<{ ok: boolean; error?: string }>
+  syncLibrary(): Promise<{
+    ok: boolean
+    error?: string
+    sfx?: { added: number; updated: number; total: number; errors: string[] }
+    memes?: { added: number; updated: number; total: number; errors: string[] }
+    log?: string[]
+    manifest_updated?: string
+  }>
 
   projectsList(): Promise<Project[]>
   projectGet(id: string): Promise<Project | null>

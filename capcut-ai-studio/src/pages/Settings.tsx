@@ -22,6 +22,7 @@ import {
 import { Button, Input, Spinner, Badge } from '@/components/ui/primitives'
 import { GeminiMark, OpenAIMark, ClaudeMark } from '@/components/BrandIcons'
 import { cn } from '@/lib/utils'
+import { IS_WIN, KEY_STORE, TERM } from '../lib/platform'
 
 interface ProviderMeta {
   id: string
@@ -155,18 +156,18 @@ interface LoginRun {
 
 /** Huong dan hien trong khung cho khi dang nhap Antigravity CLI (dien ra trong Terminal) */
 const AGY_LOGIN_STEPS = [
-  '1. Trong cửa sổ Terminal vừa mở, agy hiện một đường link đăng nhập Google.',
+  `1. Trong cửa sổ ${TERM} vừa mở, agy hiện một đường link đăng nhập Google.`,
   '2. Copy link, dán vào trình duyệt đang đăng nhập tài khoản Google (AI Pro) của bạn.',
-  '3. Nếu trang hiện mã (authorization code): dán vào Terminal rồi Enter.',
-  '4. Thấy ô chat của agy là xong — app tự nhận ra. Gõ /exit để đóng Terminal.'
+  `3. Nếu trang hiện mã (authorization code): dán vào ${TERM} rồi Enter.`,
+  `4. Thấy ô chat của agy là xong — app tự nhận ra. Gõ /exit để đóng ${TERM}.`
 ]
 
 /** Huong dan hien trong khung cho khi dang nhap Claude Code (dien ra trong Terminal) */
 const CLAUDE_LOGIN_STEPS = [
-  '1. Cửa sổ Terminal vừa mở chạy “claude auth login” và mở trình duyệt đăng nhập Claude.',
-  '2. Trình duyệt không tự mở: copy link trong Terminal dán vào trình duyệt đang đăng nhập tài khoản Claude.',
-  '3. Trang hiện mã (code): dán vào Terminal rồi Enter.',
-  '4. Terminal báo đăng nhập thành công là xong — app tự nhận ra.'
+  `1. Cửa sổ ${TERM} vừa mở chạy “claude auth login” và mở trình duyệt đăng nhập Claude.`,
+  `2. Trình duyệt không tự mở: copy link trong ${TERM} dán vào trình duyệt đang đăng nhập tài khoản Claude.`,
+  `3. Trang hiện mã (code): dán vào ${TERM} rồi Enter.`,
+  `4. ${TERM} báo đăng nhập thành công là xong — app tự nhận ra.`
 ]
 
 /** Provider dang nhap trong cua so Terminal (app chi hoi lai trang thai) */
@@ -344,7 +345,7 @@ function LoginBox({
         <div className="flex flex-wrap items-center gap-2">
           <Button size="sm" onClick={() => onLogin('browser')}>
             <LogIn className="h-4 w-4" />{' '}
-            {google ? 'Đăng nhập Google (mở Terminal)' : claude ? 'Đăng nhập Claude (mở Terminal)' : 'Đăng nhập bằng ChatGPT'}
+            {google ? `Đăng nhập Google (mở ${TERM})` : claude ? `Đăng nhập Claude (mở ${TERM})` : 'Đăng nhập bằng ChatGPT'}
           </Button>
           {!terminal && (
             <button
@@ -364,8 +365,8 @@ function LoginBox({
           title={
             terminal
               ? claude
-                ? 'Đang chờ bạn đăng nhập Claude trong cửa sổ Terminal vừa mở…'
-                : 'Đang chờ bạn đăng nhập trong cửa sổ Terminal vừa mở…'
+                ? `Đang chờ bạn đăng nhập Claude trong cửa sổ ${TERM} vừa mở…`
+                : `Đang chờ bạn đăng nhập trong cửa sổ ${TERM} vừa mở…`
               : login.mode === 'device'
                 ? 'Mở link bên dưới, đăng nhập ChatGPT rồi nhập mã Codex hiện ra…'
                 : 'Đang chờ bạn đăng nhập ChatGPT trên trình duyệt…'
@@ -379,12 +380,12 @@ function LoginBox({
         <div className="text-[11.5px] text-ink-800/45">
           {terminal ? (
             <>
-              Hoặc tự mở Terminal, chạy <code className="font-mono">{loginCmd}</code> và đăng nhập, rồi bấm “Kiểm tra
+              Hoặc tự mở {TERM}, chạy <code className="font-mono">{loginCmd}</code> và đăng nhập, rồi bấm “Kiểm tra
               lại”.
             </>
           ) : (
             <>
-              Hoặc chạy trong Terminal rồi bấm “Kiểm tra lại”: <code className="font-mono">{loginCmd}</code>
+              Hoặc chạy trong {TERM} rồi bấm “Kiểm tra lại”: <code className="font-mono">{loginCmd}</code>
             </>
           )}
         </div>
@@ -477,7 +478,9 @@ function CliPanel({
                         {status.label === 'Codex CLI' ? (
                           <>bản chính chủ của OpenAI (GitHub), đúng phiên bản đã kiểm, kiểm mã SHA-256 — không cần Node.js</>
                         ) : status.label === 'Claude Code CLI' ? (
-                          <>trình cài chính chủ của Anthropic — cài vào ~/.local/bin, không cần Node.js</>
+                          <>trình cài chính chủ của Anthropic — cài vào {IS_WIN ? '%USERPROFILE%\\.local\\bin' : '~/.local/bin'}, không cần Node.js</>
+                        ) : IS_WIN ? (
+                          <>trình cài chính chủ của Google (install.ps1) — cài vào %LOCALAPPDATA%\\agy\\bin</>
                         ) : (
                           <>trình cài chính chủ của Google — cài vào ~/.local/bin, thêm dòng PATH vào ~/.zprofile</>
                         )}
@@ -490,7 +493,7 @@ function CliPanel({
                 </div>
               )}
               <div className="mt-2.5 flex items-center gap-1.5 text-[12px] font-medium text-ink-800/70">
-                <Download className="h-3.5 w-3.5" /> {onInstall ? 'Hoặc cài' : 'Bước 1 — cài CLI'} trong Terminal
+                <Download className="h-3.5 w-3.5" /> {onInstall ? 'Hoặc cài' : 'Bước 1 — cài CLI'} trong {TERM}
               </div>
               <CommandLine cmd={status.install_cmd} />
               <div className="mt-2 text-[12px] font-medium text-ink-800/70">
@@ -557,9 +560,9 @@ export default function SettingsPage() {
   const [cliLoading, setCliLoading] = useState(false)
   const [login, setLogin] = useState<LoginRun | null>(null)
   // AI lap ke hoach (B1..B7, R4, R5) — luu cung nut "Luu tat ca"
-  const [planner, setPlanner] = useState<PlanProvider>('gpt')
+  const [planner, setPlanner] = useState<PlanProvider>('claude')
   useEffect(() => {
-    window.studio.settingsGetPlanner().then((v) => setPlanner(v === 'claude' ? 'claude' : 'gpt'))
+    window.studio.settingsGetPlanner().then((v) => setPlanner(v === 'gpt' ? 'gpt' : 'claude'))
   }, [])
 
   // Dong chu CLI in ra khi dang nhap / cai dat (link dang nhap, ma 1 lan, log npm) -> hien trong khung
@@ -840,7 +843,7 @@ export default function SettingsPage() {
             Gemini, GPT và Claude chạy được bằng <b className="font-semibold text-ink-800/70">API key</b> hoặc bằng{' '}
             <b className="font-semibold text-ink-800/70">tài khoản đăng nhập trên máy</b>: Gemini qua Antigravity CLI
             (tài khoản Google, kể cả AI Pro / Ultra), GPT qua Codex CLI (ChatGPT Plus / Pro), Claude qua Claude Code
-            CLI (Claude Pro / Max). Khoá lưu mã hoá qua Keychain.
+            CLI (Claude Pro / Max). Khoá lưu mã hoá qua {KEY_STORE}.
           </p>
         </div>
         <Button className="shrink-0 whitespace-nowrap" onClick={save} disabled={Object.keys(local).length === 0}>
@@ -1047,7 +1050,7 @@ export default function SettingsPage() {
                         <p className="mt-2.5 text-[12px] leading-relaxed text-ink-800/55">
                           Dùng <b className="font-semibold text-ink-800/70">Claude Code CLI</b> (<code className="font-mono">claude</code>)
                           với tài khoản Claude đăng nhập trên máy — đăng nhập ở đây cũng là đăng nhập cho lệnh{' '}
-                          <code className="font-mono">claude</code> trong Terminal. App gọi Claude như một lượt hỏi đáp
+                          <code className="font-mono">claude</code> trong {TERM}. App gọi Claude như một lượt hỏi đáp
                           thuần: không công cụ, không MCP, không đọc CLAUDE.md, không lưu phiên vào lịch sử Claude Code.{' '}
                           <b className="font-semibold text-ink-800/70">Mức suy nghĩ</b> là cờ{' '}
                           <code className="font-mono">--effort</code> của Claude Code — càng cao càng kỹ nhưng chậm và
@@ -1058,7 +1061,7 @@ export default function SettingsPage() {
                         <p className="mt-2.5 text-[12px] leading-relaxed text-ink-800/55">
                           Dùng <b className="font-semibold text-ink-800/70">Antigravity CLI</b> (<code className="font-mono">agy</code>)
                           của Google với tài khoản đăng nhập trên máy — đăng nhập ở đây cũng là đăng nhập cho lệnh{' '}
-                          <code className="font-mono">agy</code> trong Terminal. (Gemini CLI không còn nhận tài khoản cá
+                          <code className="font-mono">agy</code> trong {TERM}. (Gemini CLI không còn nhận tài khoản cá
                           nhân từ 18/06/2026.) Gemini xem video bằng công cụ đọc file của agy nên mỗi lượt chậm hơn API
                           một chút; chỉ model Gemini xem được video.
                         </p>

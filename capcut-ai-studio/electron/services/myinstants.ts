@@ -5,12 +5,15 @@
 // Chay qua BrowserWindow + session persist => co cookie cf_clearance nhu khi user
 // mo web binh thuong, nen tai duoc. Cookie duoc giu lai giua cac lan mo app.
 import { BrowserWindow, session, Session } from 'electron'
-import { join } from 'path'
+import { join, resolve, sep } from 'path'
 import { mkdirSync, writeFileSync, rmSync } from 'fs'
 import { ENGINE_HOME } from './paths'
 
+// UA khop he dieu hanh that (Cloudflare so UA voi navigator.platform — lech de bi thu thach hon)
 const UA =
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36'
+  process.platform === 'win32'
+    ? 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36'
+    : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36'
 const PARTITION = 'persist:myinstants'
 const ORIGIN = 'https://www.myinstants.com'
 
@@ -274,9 +277,11 @@ export function closeBrowser(): void {
  */
 export function discardStaged(paths: string[]): { removed: number } {
   let removed = 0
-  const root = STAGE_DIR.endsWith('/') ? STAGE_DIR : STAGE_DIR + '/'
+  // so sanh theo duong dan da chuan hoa (Windows: \ va khong phan biet hoa thuong)
+  const norm = (x: string) => (process.platform === 'win32' ? resolve(x).toLowerCase() : resolve(x))
+  const root = norm(STAGE_DIR) + sep
   for (const p of paths || []) {
-    if (typeof p !== 'string' || !p.startsWith(root)) continue
+    if (typeof p !== 'string' || !norm(p).startsWith(root)) continue
     try {
       rmSync(p, { force: true })
       removed++

@@ -21,6 +21,7 @@ import SfxPage from '@/pages/Sfx'
 import MemesPage from '@/pages/Memes'
 import PromptsPage from '@/pages/Prompts'
 import RemotionStudioPage from '@/pages/RemotionStudio'
+import { IS_WIN } from './lib/platform'
 
 type Tab = 'doctor' | 'settings' | 'sfx' | 'memes' | 'prompts' | 'remotion' | 'projects'
 
@@ -66,6 +67,16 @@ export default function App() {
     window.studio.appInfo().then((i) => setAppVersion(i.version))
   }, [])
 
+  // Tu dong dong bo kho SFX + Meme tu R2 MOT LAN khi san sang (chay nen, khong chan UI).
+  // Loi mang -> im lang; nguoi dung co the bam "Dong bo kho" o trang SFX/Meme.
+  const [syncedOnce, setSyncedOnce] = useState(false)
+  useEffect(() => {
+    if (ready && !syncedOnce) {
+      setSyncedOnce(true)
+      window.studio.syncLibrary?.().catch(() => {})
+    }
+  }, [ready, syncedOnce])
+
   // Mo lai tab Doctor / Video Remotion (vd vua dang nhap AI o Cai dat) -> kiem lai (~1-2s); dang cai thi thoi
   const { run: rerunDoctor, busy: doctorBusy, checks: doctorChecks } = doctor
   useEffect(() => {
@@ -97,7 +108,7 @@ export default function App() {
           <span className="text-ink-800/25">·</span>
           <span className="font-normal text-ink-800/40">v{appVersion}</span>
         </div>
-        <div className="no-drag absolute right-4 flex items-center gap-1.5 text-ink-800/45">
+        <div className={`no-drag absolute ${IS_WIN ? 'right-[150px]' : 'right-4'} flex items-center gap-1.5 text-ink-800/45`}>
           <button className="rounded-lg p-1.5 hover:bg-black/5 hover:text-ink-900">
             <HelpCircle className="h-[18px] w-[18px]" />
           </button>

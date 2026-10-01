@@ -975,7 +975,7 @@ def _run_gemini_request(req, idx, total, fresh):
     files = []
     for x in send:
         st = os.stat(x["path"])
-        if os.path.abspath(x["path"]).startswith(os.path.abspath(gemini_media.CACHE_DIR) + os.sep):
+        if os.path.normcase(os.path.abspath(x["path"])).startswith(os.path.normcase(os.path.abspath(gemini_media.CACHE_DIR)) + os.sep):
             # Ban nen / phan cat: ten file da ma hoa (duong dan + kich thuoc + mtime) cua file GOC.
             # Khong dung mtime cua chinh no — moi lan dung lai cache duoc "cham" (utime) de khoi bi don.
             files.append([os.path.basename(x["path"]), st.st_size])

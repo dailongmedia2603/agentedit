@@ -322,9 +322,15 @@ def _ocr(arr, want_words=False):
     trong giua hai tu de do bang mat na)."""
     import numpy as np
     try:
+        if os.environ.get("STUDIO_VISION") == "onnx":
+            raise ImportError("ep ONNX")
         import Vision
         from Foundation import NSURL, NSMakeRange
     except Exception:
+        # Khong co Vision (Windows): nhan dang 1 dong bang PP-OCR ONNX (vision_onnx) — so khop bo dau nen du
+        import vision_onnx
+        if vision_onnx.ocr_ready():
+            return vision_onnx.ocr(arr, want_words=want_words)
         return (None, None) if want_words else None
     a = arr[..., 3:4].astype(float) / 255.0
     comp = np.concatenate([(arr[..., :3] * a + 40 * (1 - a)).astype(np.uint8), np.full(arr.shape[:2] + (1,), 255, np.uint8)], axis=2)

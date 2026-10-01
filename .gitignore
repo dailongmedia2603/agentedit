@@ -38,6 +38,16 @@ work_video-test-new/
 # own .git; the app no longer imports it. Its .venv must stay on disk locally.
 CapCutAPI/
 
+# Build artifacts: embedded Python runtime + compiled sidecar (built by
+# scripts/bundle-python.mjs + scripts/compile-sidecar.mjs during `npm run dist`)
+capcut-ai-studio/resources/python/
+capcut-ai-studio/resources/sidecar-dist/
+capcut-ai-studio/resources/ffmpeg/
+capcut-ai-studio/resources/models/
+
 # Secrets
 .env
 .env.*
+
+# R2 upload token (publish kho) - CHI o may tac gia, KHONG len git
+r2-publish.json

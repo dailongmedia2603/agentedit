@@ -17,8 +17,8 @@ STATE_PATH = os.path.join(ENGINE_HOME, "state.json")
 # Cau hinh provider mac dinh (OpenAI-compatible cho phep override base_url + model)
 #
 # auth_mode:
-#   "api_key"      -> goi thang HTTP API bang khoa da nhap (mac dinh)
-#   "subscription" -> goi qua CLI chinh chu da dang nhap san (Claude Code / Codex / Antigravity CLI),
+#   "api_key"      -> goi thang HTTP API bang khoa da nhap
+#   "subscription" -> (MAC DINH tu 2026-10-01) goi qua CLI chinh chu da dang nhap san (Claude Code / Codex / Antigravity CLI),
 #                     dung han muc cua goi Max / ChatGPT Plus / tai khoan Google thay vi tra tien API.
 #                     Khi do dung `sub_model` chu khong dung `model`, va base_url/api_key
 #                     bi bo qua hoan toan. Xem SUBSCRIPTION_CAPABLE.
@@ -29,7 +29,7 @@ DEFAULT_PROVIDERS = {
         "base_url": "https://generativelanguage.googleapis.com",
         "model": "gemini-2.5-flash",
         "api_key": "",
-        "auth_mode": "api_key",
+        "auth_mode": "subscription",
         "sub_model": "gemini-3.1-pro-high",
         "sub_effort": "",
     },
@@ -37,7 +37,7 @@ DEFAULT_PROVIDERS = {
         "base_url": "https://api.openai.com/v1",
         "model": "gpt-4o",
         "api_key": "",
-        "auth_mode": "api_key",
+        "auth_mode": "subscription",
         "sub_model": "gpt-6-luna",
         "sub_effort": "",
     },
@@ -45,7 +45,7 @@ DEFAULT_PROVIDERS = {
         "base_url": "https://api.anthropic.com/v1",
         "model": "claude-sonnet-4-6",
         "api_key": "",
-        "auth_mode": "api_key",
+        "auth_mode": "subscription",
         "sub_model": "claude-opus-5",
         "sub_effort": "",
     },
@@ -58,7 +58,7 @@ SUBSCRIPTION_CAPABLE = ("gpt", "claude", "gemini")
 # Electron ghi vao state.json -> "plan_provider". Phan tich video mau la Gemini (tu 2026-09-28); tao anh AI
 # + chu anh AI van la GPT qua Codex CLI (image_generation).
 PLAN_PROVIDERS = ("gpt", "claude")
-DEFAULT_PLAN_PROVIDER = "gpt"
+DEFAULT_PLAN_PROVIDER = "claude"
 
 _lock = threading.Lock()
 # Cau hinh runtime trong RAM (khong persist key)

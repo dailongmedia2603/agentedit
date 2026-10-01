@@ -11,7 +11,11 @@ export default defineConfig({
           index: resolve(__dirname, 'electron/main.ts'),
           // Tien trinh render Remotion (utilityProcess) — out/main/remotion-worker.js
           'remotion-worker': resolve(__dirname, 'electron/remotion-worker.ts')
-        }
+        },
+        // Doi MOI dynamic import() -> require() trong ban CJS. Bat buoc cho `npm run dist`:
+        // ma BE duoc bien dich bytecode (bytenode) KHONG chay duoc import() dong
+        // (ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING). Vd `await import('fs')` trong main.ts.
+        output: { dynamicImportInCjs: false }
       }
     }
   },
@@ -19,7 +23,8 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin()],
     build: {
       rollupOptions: {
-        input: { index: resolve(__dirname, 'electron/preload.ts') }
+        input: { index: resolve(__dirname, 'electron/preload.ts') },
+        output: { dynamicImportInCjs: false }
       }
     }
   },

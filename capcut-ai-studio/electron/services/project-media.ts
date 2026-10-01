@@ -85,7 +85,9 @@ async function importOne(workDir: string, src: string, kind: MediaKind, name?: s
     dest = join(dir, `${stem}-${k}${ext}`)
   }
 
-  const sameDevice = (await fsp.stat(dir)).dev === st.dev
+  // Clone (khong ton dung luong) chi co tren APFS cung o. Windows (NTFS) KHONG clone: luon chep that -> luon kiem
+  // dung luong + khong bao "clone".
+  const sameDevice = process.platform !== 'win32' && (await fsp.stat(dir)).dev === st.dev
   if (!sameDevice) {
     try {
       const fs = await fsp.statfs(dir)

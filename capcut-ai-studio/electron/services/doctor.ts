@@ -4,11 +4,11 @@
 // (fix). Moc phien ban / nguon tai: sidecar/assets/toolchain.json (xem toolchain.ts).
 //   fail = chua dung duoc / sai phien ban -> chan tao video (co fix + auto thi app tu cai luc mo)
 //   warn = van tao video duoc nhung mat 1 phan (vd Codex chua dang nhap -> khong co anh AI)
-import { existsSync } from 'fs'
-import { homedir } from 'os'
+import { existsSync, readdirSync } from 'fs'
+import { homedir, release } from 'os'
 import { join } from 'path'
-import { findBinary } from './env'
-import { DEFAULT_VENV_DIR, sidecarServer } from './paths'
+import { IS_WIN, findBinary } from './env'
+import { DEFAULT_VENV_DIR, bundledModelsDir, embeddedPython, sidecarServer, venvPythonIn } from './paths'
 import { browserInstalled, bundleDir, installBrowser, remotionHome } from './remotion'
 import { sidecarInfo, stopSidecar } from './sidecar'
 import { planProviderOf, readState, writeState } from './state'
@@ -44,24 +44,42 @@ function row(c: Omit<DoctorCheck, 'fixable'>): DoctorCheck {
   return { ...c, fixable: !!c.fix }
 }
 
-/** venv dang dung: venv_python trong state.json (may cu), neu khong thi venv mac dinh cua app. */
+/** Python cho sidecar: UU TIEN python NHUNG trong app; roi venv_python (may cu); roi venv mac dinh. */
 function resolveVenvPython(): string | null {
+  const embedded = embeddedPython()
+  if (embedded) return embedded
   const s = readState()
   if (s.venv_python && existsSync(s.venv_python)) return s.venv_python
-  const p = join(DEFAULT_VENV_DIR, 'bin', 'python')
+  const p = venvPythonIn(DEFAULT_VENV_DIR)
   return existsSync(p) ? p : null
+}
+
+/** Env cho Python cua Doctor: model ONNX nhung trong app (Windows). */
+function pyEnv(extra: Record<string, string> = {}): NodeJS.ProcessEnv {
+  const md = bundledModelsDir()
+  return T.cleanEnv({ ...(md ? { STUDIO_MODELS_DIR: md } : {}), ...extra })
 }
 
 interface Probe {
   python: string
   python_ok: boolean
   packages: { total: number; missing: string[]; wrong: { name: string; want: string; have: string }[] }
-  vision: { ok: boolean; foreground_mask: boolean; person_seg: boolean; ocr_vi: boolean; error: string | null }
+  vision: {
+    ok: boolean
+    backend?: 'vision' | 'onnx'
+    foreground_mask: boolean
+    person_seg: boolean
+    ocr_vi: boolean
+    faces?: boolean
+    svg?: boolean
+    missing?: string[]
+    error: string | null
+  }
   whisper: { ok: boolean; cache: string; revision: string | null; missing: string[]; bad: string[]; detail: string }
 }
 
 async function pythonProbe(py: string): Promise<Probe | { error: string }> {
-  const r = await T.runCmd(py, [T.probeScript(), 'probe'], { timeout: 60000 })
+  const r = await T.runCmd(py, [T.probeScript(), 'probe'], { timeout: 60000, env: pyEnv() })
   const line = (r.stdout.split('\n').find((l) => l.startsWith('RESULT=')) || '').slice(7)
   try {
     return JSON.parse(line)
@@ -90,7 +108,24 @@ async function codexLogin(path: string): Promise<{ ok: boolean; detail: string }
 }
 
 function agyLoggedIn(): boolean {
-  return existsSync(join(homedir(), '.gemini', 'antigravity-cli', 'antigravity-oauth-token'))
+  const dir = join(homedir(), '.gemini', 'antigravity-cli')
+  if (existsSync(join(dir, 'antigravity-oauth-token'))) return true
+  // Windows: ten file phien chua kiem chung tren may that -> chap nhan file *oauth*token* (giong cli_providers)
+  if (IS_WIN && existsSync(dir)) {
+    try {
+      return readdirSync(dir).some((n) => /oauth/i.test(n) && /token/i.test(n))
+    } catch {
+      return false
+    }
+  }
+  return false
+}
+
+/** Windows 10 build 17763 (1809) tro len, 64-bit. os.release() = "10.0.<build>". */
+function windowsOk(minBuild: number): { ok: boolean; found: string } {
+  const build = Number(release().split('.')[2] || 0)
+  const name = build >= 22000 ? 'Windows 11' : 'Windows 10'
+  return { ok: build >= minBuild && process.arch === 'x64', found: `${name} (build ${build}) · ${process.arch}` }
 }
 
 /** CLI chinh chu: chua cai / cu -> fail (tu cai); chua dang nhap -> `loginStatus` (Settings). */
@@ -132,10 +167,24 @@ export async function runDoctor(providersReady: ProvidersReady): Promise<DoctorC
   const mode = (n: string) => providersReady[n]?.auth_mode || 'api_key'
 
   const system = async (): Promise<DoctorCheck[]> => {
-    const osv = process.getSystemVersion?.() || ''
-    const osOk = T.versionGte(osv, m.macos_min) && process.arch === 'arm64'
     const bundleOk = existsSync(join(bundleDir(), 'index.html')) && existsSync(sidecarServer()) &&
       existsSync(join(sidecarServer(), '..', 'fx_runtime.mjs'))
+    const bundleRow = row({ id: 'bundle', label: 'Bộ dựng Remotion + hộp cách ly hiệu ứng (trong app)', group: 'system',
+            purpose: 'Xem trước, render MP4, chạy code hiệu ứng AI tự viết', required: 'đóng gói sẵn trong app',
+            found: bundleOk ? 'đủ' : 'thiếu file', status: bundleOk ? 'ok' : 'fail',
+            detail: bundleOk ? 'Đạt.' : 'Bản cài app bị thiếu file — cài lại app.' })
+    const wreq = T.osReq()
+    if (IS_WIN && wreq) {
+      const w = windowsOk(wreq.min_build)
+      return [
+        row({ id: 'os', label: 'Windows', group: 'system', purpose: 'Chạy app, Whisper, model thị giác máy, render',
+              required: wreq.label, found: w.found, status: w.ok ? 'ok' : 'fail',
+              detail: w.ok ? 'Đạt.' : `Cần ${wreq.label} (${wreq.why}).` }),
+        bundleRow
+      ]
+    }
+    const osv = process.getSystemVersion?.() || ''
+    const osOk = T.versionGte(osv, m.macos_min) && process.arch === 'arm64'
     return [
       row({ id: 'macos', label: 'macOS', group: 'system', purpose: 'Chạy app, tách người (Vision), nhận diện chữ tiếng Việt, Whisper',
             required: `macOS ≥ ${m.macos_min} · Apple Silicon`, found: `macOS ${osv} · ${process.arch}`,
@@ -144,10 +193,7 @@ export async function runDoctor(providersReady: ProvidersReady): Promise<DoctorC
             required: 'có sẵn', found: existsSync('/usr/bin/avconvert') ? '/usr/bin/avconvert' : 'không thấy',
             status: existsSync('/usr/bin/avconvert') ? 'ok' : 'warn',
             detail: existsSync('/usr/bin/avconvert') ? 'Đạt.' : 'Không thấy — video HDR sẽ đổi màu bằng ffmpeg (kém chuẩn hơn).' }),
-      row({ id: 'bundle', label: 'Bộ dựng Remotion + hộp cách ly hiệu ứng (trong app)', group: 'system',
-            purpose: 'Xem trước, render MP4, chạy code hiệu ứng AI tự viết', required: 'đóng gói sẵn trong app',
-            found: bundleOk ? 'đủ' : 'thiếu file', status: bundleOk ? 'ok' : 'fail',
-            detail: bundleOk ? 'Đạt.' : 'Bản cài app bị thiếu file — cài lại app.' })
+      bundleRow
     ]
   }
 
@@ -157,7 +203,7 @@ export async function runDoctor(providersReady: ProvidersReady): Promise<DoctorC
     return [
       row({ id: 'ffmpeg', label: 'FFmpeg + FFprobe', group: 'media',
             purpose: 'Nén 720p gửi Gemini, đo tiếng nói / khoảng lặng, cắt khung, tách người (VP9 alpha), HDR → SDR, ảnh chữ',
-            required: `bản ${m.ffmpeg.version} ghim SHA-256`, found: ff.found, status: ff.ok ? 'ok' : 'fail', detail: ff.detail,
+            required: `bản ${T.ffSpec().version} ghim SHA-256`, found: ff.found, status: ff.ok ? 'ok' : 'fail', detail: ff.detail,
             fix: 'ffmpeg', auto: true }),
       row({ id: 'chrome', label: 'Chrome Headless Shell (Remotion)', group: 'media', purpose: 'Render video MP4 cuối',
             required: m.chrome.version, found: chromeV || undefined,
@@ -167,48 +213,65 @@ export async function runDoctor(providersReady: ProvidersReady): Promise<DoctorC
     ]
   }
 
+  // Python NHUNG (ship trong app) -> nguoi dung khong cai gi; khong tu sua bang uv/venv duoc
+  // (nam trong app read-only). May cu (khong co ban nhung) van dung venv + uv nhu truoc.
+  const embedded = embeddedPython()
   const python = async (): Promise<DoctorCheck[]> => {
-    const uvPath = findBinary('uv')
-    const uvVer = uvPath ? await T.cliVersion(uvPath) : null
-    const uvOk = T.versionGte(uvVer, m.uv.min)
-    const out: DoctorCheck[] = [
-      row({ id: 'uv', label: 'uv (quản lý Python)', group: 'python', purpose: 'Cài Python 3.12 + thư viện cho sidecar',
+    const out: DoctorCheck[] = []
+    if (embedded) {
+      out.push(row({ id: 'uv', label: 'uv (quản lý Python)', group: 'python', purpose: 'Cài Python (chỉ dùng cho máy chưa có Python nhúng)',
+        required: 'không cần', found: 'Python nhúng', status: 'ok', detail: 'Không cần — app đã kèm sẵn Python nhúng.' }))
+    } else {
+      const uvPath = findBinary('uv')
+      const uvVer = uvPath ? await T.cliVersion(uvPath) : null
+      const uvOk = T.versionGte(uvVer, m.uv.min)
+      out.push(row({ id: 'uv', label: 'uv (quản lý Python)', group: 'python', purpose: 'Cài Python 3.12 + thư viện cho sidecar',
             required: `≥ ${m.uv.min} (cài bản ${m.uv.install_version})`, found: (T.parseVersion(uvVer) || []).join('.') || undefined,
-            status: uvOk ? 'ok' : 'fail', detail: uvOk ? 'Đạt.' : uvVer ? `Bản ${uvVer} quá cũ.` : 'Chưa cài uv.', fix: 'uv', auto: true })
-    ]
+            status: uvOk ? 'ok' : 'fail', detail: uvOk ? 'Đạt.' : uvVer ? `Bản ${uvVer} quá cũ.` : 'Chưa cài uv.', fix: 'uv', auto: true }))
+    }
+    // Goi Python cua sidecar: ban nhung khong tu cai lai duoc -> khong fix; ban venv thi fix bang uv.
+    const pyFix = embedded ? {} : { fix: 'python', auto: true }
+    const brokenHint = embedded ? 'Bản cài app bị thiếu/hỏng — cài lại app.' : 'Chờ tạo môi trường Python.'
+    const pyLabel = embedded ? `Python ${m.python.series} (nhúng trong app)` : `Python ${m.python.series} (môi trường sidecar)`
     const whisperBase = { id: 'whisper', label: `Whisper "${m.whisper.model}" (faster-whisper)`, group: 'media' as const,
       purpose: 'Căn giờ lời nói từng chữ: điểm cắt, phụ đề karaoke, chữ khớp lời',
       required: `bản ${m.whisper.revision.slice(0, 8)} ghim SHA-256 (~${Math.round(Object.values(m.whisper.files).reduce((a, f) => a + f.size, 0) / 1e6)} MB)`,
       fix: 'whisper', auto: true }
     const pkgBase = { id: 'pypkgs', label: 'Thư viện Python của sidecar', group: 'python' as const,
-      purpose: 'Flask (sidecar), numpy, Pillow, faster-whisper, pyobjc Vision…', fix: 'python', auto: true }
-    const visBase = { id: 'vision', label: 'Thị giác máy macOS (Vision)', group: 'python' as const,
-      purpose: 'Tìm mặt, tách người (chữ sau người), đọc chữ tiếng Việt để kiểm chữ ảnh AI', required: 'tách người + OCR vi-VT' }
+      purpose: IS_WIN ? 'Flask (sidecar), numpy, Pillow, faster-whisper, onnxruntime, resvg…' : 'Flask (sidecar), numpy, Pillow, faster-whisper, pyobjc Vision…',
+      ...pyFix }
+    const visBase = IS_WIN
+      ? { id: 'vision', label: 'Thị giác máy (model ONNX)', group: 'python' as const,
+          purpose: 'Tìm mặt, tách người (chữ sau người), tách nền ảnh (sticker), đọc chữ tiếng Việt để kiểm chữ ảnh AI',
+          required: 'RVM + BiRefNet + YuNet + PP-OCR + resvg' }
+      : { id: 'vision', label: 'Thị giác máy macOS (Vision)', group: 'python' as const,
+          purpose: 'Tìm mặt, tách người (chữ sau người), đọc chữ tiếng Việt để kiểm chữ ảnh AI', required: 'tách người + OCR vi-VT' }
     if (!venvPy) {
       out.push(
-        row({ id: 'python', label: `Python ${m.python.series} (môi trường sidecar)`, group: 'python', purpose: 'Chạy sidecar (AI, cắt ghép, kiểm luật)',
-              required: m.python.series, status: 'fail', detail: 'Chưa có môi trường Python (venv) cho sidecar.', fix: 'python', auto: true }),
-        row({ ...pkgBase, required: 'khoá đúng phiên bản', status: 'fail', detail: 'Chờ tạo môi trường Python.' }),
-        row({ ...visBase, status: 'fail', detail: 'Chờ cài thư viện Python.' }),
-        row({ ...whisperBase, status: 'fail', detail: 'Chờ cài thư viện Python.' })
+        row({ id: 'python', label: pyLabel, group: 'python', purpose: 'Chạy sidecar (AI, cắt ghép, kiểm luật)',
+              required: m.python.series, status: 'fail', detail: embedded ? 'Không thấy Python nhúng — cài lại app.' : 'Chưa có môi trường Python (venv) cho sidecar.', ...pyFix }),
+        row({ ...pkgBase, required: 'khoá đúng phiên bản', status: 'fail', detail: brokenHint }),
+        row({ ...visBase, status: 'fail', detail: brokenHint }),
+        row({ ...whisperBase, status: 'fail', detail: brokenHint })
       )
       return out
     }
     const p = await pythonProbe(venvPy)
     if ('error' in p) {
+      const errHint = embedded ? 'Python nhúng lỗi: ' + p.error : 'venv lỗi: ' + p.error
       out.push(
-        row({ id: 'python', label: `Python ${m.python.series} (môi trường sidecar)`, group: 'python', purpose: 'Chạy sidecar (AI, cắt ghép, kiểm luật)',
-              required: m.python.series, status: 'fail', detail: 'venv lỗi: ' + p.error, fix: 'python', auto: true }),
-        row({ ...pkgBase, required: 'khoá đúng phiên bản', status: 'fail', detail: 'Chờ sửa môi trường Python.' }),
-        row({ ...visBase, status: 'fail', detail: 'Chờ sửa môi trường Python.' }),
-        row({ ...whisperBase, status: 'fail', detail: 'Chờ sửa môi trường Python.' })
+        row({ id: 'python', label: pyLabel, group: 'python', purpose: 'Chạy sidecar (AI, cắt ghép, kiểm luật)',
+              required: m.python.series, status: 'fail', detail: errHint, ...pyFix }),
+        row({ ...pkgBase, required: 'khoá đúng phiên bản', status: 'fail', detail: embedded ? 'Chờ cài lại app.' : 'Chờ sửa môi trường Python.' }),
+        row({ ...visBase, status: 'fail', detail: embedded ? 'Chờ cài lại app.' : 'Chờ sửa môi trường Python.' }),
+        row({ ...whisperBase, status: 'fail', detail: embedded ? 'Chờ cài lại app.' : 'Chờ sửa môi trường Python.' })
       )
       return out
     }
-    out.push(row({ id: 'python', label: `Python ${m.python.series} (môi trường sidecar)`, group: 'python',
+    out.push(row({ id: 'python', label: pyLabel, group: 'python',
       purpose: 'Chạy sidecar (AI, cắt ghép, kiểm luật)', required: m.python.series, found: p.python,
-      status: p.python_ok ? 'ok' : 'fail', detail: p.python_ok ? venvPy : `venv đang dùng Python ${p.python} — cần ${m.python.series}.`,
-      fix: 'python', auto: true }))
+      status: p.python_ok ? 'ok' : 'fail', detail: p.python_ok ? venvPy : `Python ${p.python} — cần ${m.python.series}.`,
+      ...pyFix }))
     const pk = p.packages
     const bad = pk.missing.length + pk.wrong.length
     out.push(row({ ...pkgBase, required: `${pk.total} gói khoá đúng phiên bản`, found: `${pk.total - bad}/${pk.total} đúng`,
@@ -217,12 +280,25 @@ export async function runDoctor(providersReady: ProvidersReady): Promise<DoctorC
         ? [pk.missing.length ? 'thiếu ' + pk.missing.slice(0, 6).join(', ') : '',
            pk.wrong.length ? 'sai bản ' + pk.wrong.slice(0, 4).map((w) => `${w.name} ${w.have}→${w.want}`).join(', ') : '']
             .filter(Boolean).join('; ')
-        : 'Đủ và đúng phiên bản (flask, numpy, Pillow, faster-whisper, pyobjc…).' }))
+        : `Đủ và đúng phiên bản (flask, numpy, Pillow, faster-whisper, ${IS_WIN ? 'onnxruntime, resvg' : 'pyobjc'}…).` }))
     const v = p.vision
-    out.push(row({ ...visBase, found: v.error ? 'lỗi' : [v.person_seg && 'tách người', v.foreground_mask && 'tách từng khung', v.ocr_vi && 'OCR vi'].filter(Boolean).join(', '),
+    if (v.backend === 'onnx') {
+      const ms = T.visionModelsStatus()
+      const have = [v.person_seg && 'tách người', v.foreground_mask && 'tách nền', v.faces && 'tìm mặt', v.ocr_vi && 'OCR', v.svg && 'SVG']
+        .filter(Boolean).join(', ')
+      out.push(row({ ...visBase, found: v.error ? 'lỗi' : have || 'chưa có model',
+        status: v.ok && ms.ok ? 'ok' : bad || v.error ? 'fail' : 'warn',
+        detail: v.ok && ms.ok ? 'Đạt.'
+          : v.error ? `Không nạp được onnxruntime (${v.error}).`
+          : ms.missing.length ? `Thiếu model: ${ms.missing.join(', ')} (~${ms.totalMb} MB) — app tự tải; thiếu thì tính năng đó tự tắt.`
+          : `Thiếu: ${[!v.svg && 'resvg (vẽ SVG đo hook)', !v.ocr_vi && 'OCR'].filter(Boolean).join(', ')}.`,
+        ...(ms.ok ? {} : { fix: 'models', auto: true }) }))
+    } else {
+      out.push(row({ ...visBase, found: v.error ? 'lỗi' : [v.person_seg && 'tách người', v.foreground_mask && 'tách từng khung', v.ocr_vi && 'OCR vi'].filter(Boolean).join(', '),
       status: v.ok ? 'ok' : bad ? 'fail' : 'warn',
       detail: v.ok ? 'Đạt.' : v.error ? `Không nạp được Vision (${v.error}).`
         : `Thiếu: ${[!v.person_seg && 'tách người', !v.foreground_mask && 'tách người từng khung (macOS 14+)', !v.ocr_vi && 'OCR tiếng Việt'].filter(Boolean).join(', ')} — tính năng đó tự tắt.` }))
+    }
     const w = p.whisper
     out.push(row({ ...whisperBase, found: w.ok ? w.revision?.slice(0, 8) : undefined, status: w.ok ? 'ok' : 'fail',
       detail: w.ok ? 'Đạt.' : w.detail || 'Chưa tải model.' }))
@@ -264,9 +340,10 @@ export async function runDoctor(providersReady: ProvidersReady): Promise<DoctorC
   const groups = await Promise.all([system(), media(), python(), ai()])
   const checks = groups.flat()
 
-  // Ghi lai venv dang dung de sidecar khoi dong dung Python
-  const patch: Record<string, string> = { os: 'Darwin' }
-  if (venvPy) patch.venv_python = venvPy
+  // Ghi lai venv dang dung de sidecar khoi dong dung Python. Ban NHUNG thi khong ghi
+  // (sidecar tu uu tien python nhung; duong dan theo app -> tranh luu path cu).
+  const patch: Record<string, string> = { os: IS_WIN ? 'Windows' : 'Darwin' }
+  if (venvPy && !embedded) patch.venv_python = venvPy
   writeState(patch)
   return checks
 }
@@ -290,7 +367,7 @@ async function setupPython(onLog: T.Log) {
   if (!venvPy) {
     onLog(`Tạo môi trường Python ${m.python.series} (venv) cho sidecar...`)
     await T.streamCmd(uv, ['venv', '--clear', '--python', m.python.series, DEFAULT_VENV_DIR], onLog, { timeoutMs: 10 * 60 * 1000 })
-    venvPy = join(DEFAULT_VENV_DIR, 'bin', 'python')
+    venvPy = venvPythonIn(DEFAULT_VENV_DIR)
   }
   onLog('Cài thư viện Python đúng phiên bản khoá (requirements.lock)...')
   await T.streamCmd(uv, ['pip', 'install', '--python', venvPy, '-r', T.lockPath()], onLog, { timeoutMs: 30 * 60 * 1000 })
@@ -304,7 +381,8 @@ async function setupWhisper(onLog: T.Log) {
   const venvPy = resolveVenvPython()
   if (!venvPy) throw new Error('Chưa có môi trường Python — cài Python trước.')
   const lines = await T.streamCmd(venvPy, [T.probeScript(), 'whisper-install'], onLog, {
-    env: T.cleanEnv({ HF_HUB_DISABLE_TELEMETRY: '1', HF_HUB_DISABLE_PROGRESS_BARS: '1' }),
+    // HF_HUB_DISABLE_SYMLINKS_WARNING: Windows khong bat Developer Mode -> huggingface chep thay symlink (van dung)
+    env: pyEnv({ HF_HUB_DISABLE_TELEMETRY: '1', HF_HUB_DISABLE_PROGRESS_BARS: '1', HF_HUB_DISABLE_SYMLINKS_WARNING: '1' }),
     timeoutMs: 60 * 60 * 1000
   })
   const res = lines.find((l) => l.startsWith('RESULT='))
@@ -321,11 +399,12 @@ const FIXES: Record<string, (onLog: T.Log) => Promise<void>> = {
   chrome: installBrowser,
   codex: T.installCodex,
   claude: T.installClaude,
-  agy: T.installAgy
+  agy: T.installAgy,
+  models: T.installVisionModels
 }
 
 // thu tu phu thuoc: uv -> Python + thu vien -> Whisper (can faster-whisper) ; con lai doc lap
-const ORDER = ['uv', 'python', 'ffmpeg', 'whisper', 'chrome', 'codex', 'claude', 'agy']
+const ORDER = ['uv', 'python', 'ffmpeg', 'whisper', 'models', 'chrome', 'codex', 'claude', 'agy']
 
 export async function fixCheck(id: string, onLog: (line: string) => void): Promise<{ ok: boolean; error?: string }> {
   const fn = FIXES[id]

@@ -13,7 +13,7 @@ import { mkdtempSync, writeFileSync, readFileSync, statSync, existsSync, mkdirSy
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { importMedia, missingFiles } from '../electron/services/project-media.ts'
-import { adoptProjectMedia, replacePaths, specMediaPaths } from '../src/lib/projectMedia.ts'
+import { adoptProjectMedia, baseName, insideDir, isAbsPath, isSdrCachePath, replacePaths, specMediaPaths } from '../src/lib/projectMedia.ts'
 
 const FAILS: string[] = []
 function check(name: string, cond: unknown, detail?: unknown) {
@@ -162,6 +162,15 @@ async function main() {
   check('replacePaths chi thay chuoi trung khop hoan toan', JSON.stringify(y) === JSON.stringify({ a: '/y/1.mp4', b: ['/y/1.mp4', { c: '/x/1.mp4b' }] }), y)
   check('replacePaths khong sua dau vao', x.a === '/x/1.mp4')
   check('specMediaPaths', specMediaPaths({ clips: [{ path: '/a', subject: { path: '/b' } }], audio: [{ path: '/c' }] }).length === 3)
+
+  console.log('[8] duong dan Windows (so sanh, khong phu thuoc may dang chay)')
+  check('insideDir Windows: \\ va khong phan biet hoa thuong', insideDir('C:\\Users\\An\\.capcut-studio\\projects\\p1\\video-nguon\\a.mp4', 'c:\\users\\an\\.capcut-studio\\projects\\P1'))
+  check('insideDir Windows: thu muc khac ten dau giong -> false', !insideDir('C:\\x\\p10\\a.mp4', 'C:\\x\\p1'))
+  check('insideDir macOS giu nguyen (phan biet hoa thuong)', insideDir('/a/b/c.mp4', '/a/b') && !insideDir('/a/B/c.mp4', '/a/b'))
+  check('baseName Windows', baseName('C:\\Users\\An\\Videos\\IMG 1.MOV') === 'IMG 1.MOV')
+  check('isAbsPath: C:\\, \\\\may, / ; khong nhan duong dan tuong doi', isAbsPath('C:\\a') && isAbsPath('\\\\nas\\v') && isAbsPath('/a') && !isAbsPath('a\\b'))
+  check('specMediaPaths nhan duong dan Windows', specMediaPaths({ clips: [{ path: 'C:\\v\\a.mp4' }] }).length === 1)
+  check('isSdrCachePath Windows', isSdrCachePath('C:\\Users\\An\\.capcut-studio\\cache\\media-sdr\\abc.mp4') && !isSdrCachePath('C:\\v\\a.mp4'))
 
   rmSync(T, { recursive: true, force: true })
   console.log('\n' + (FAILS.length ? `CO ${FAILS.length} TEST FAIL` : 'TAT CA PASS'))
