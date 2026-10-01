@@ -77,8 +77,8 @@ def patch_run(fn):
     """Thay cli_providers._run. fn(argv, stdin, timeout, cwd) -> (rc, out, err)."""
     calls = []
 
-    def fake_run(argv, stdin_text=None, timeout=60, cwd=None):
-        calls.append({"argv": argv, "stdin": stdin_text, "timeout": timeout})
+    def fake_run(argv, stdin_text=None, timeout=60, cwd=None, env=None):
+        calls.append({"argv": argv, "stdin": stdin_text, "timeout": timeout, "env": env})
         return fn(argv, stdin_text, timeout, cwd)
 
     cli_providers._run = fake_run

@@ -1,10 +1,10 @@
-import { spawn, ChildProcess } from 'child_process'
+import { execFile, spawn, ChildProcess } from 'child_process'
 import { installAgy, installClaude, installCodex, powershell } from './toolchain'
 import { existsSync, mkdirSync, readdirSync, writeFileSync, chmodSync } from 'fs'
 import { homedir } from 'os'
 import { basename, extname, isAbsolute, join } from 'path'
 import { shell } from 'electron'
-import { IS_WIN, augmentedEnv, cmdQuote, killTree, needsShell } from './env'
+import { IS_WIN, augmentedEnv, claudeEnv, cmdQuote, killTree, needsShell } from './env'
 
 /**
  * DANG NHAP / CAI CLI CHINH CHU NGAY TRONG APP.
@@ -54,12 +54,19 @@ type TaskResult = { ok: boolean; canceled?: boolean; error?: string }
 
 let child: ChildProcess | null = null
 let canceled = false
+/** Tien trinh dang nhap chay o cua so RIENG (Windows: agy giao dien day du, thu nho) — khong phai con truc tiep */
+let extPid = 0
+let extCancel = false
 
 export function cliTaskRunning(): boolean {
-  return !!child
+  return !!child || !!extPid
 }
 
 export function cancelCliTask(): void {
+  if (extPid) {
+    extCancel = true
+    killTree(extPid)
+  }
   if (!child) return
   canceled = true
   const c = child
@@ -98,7 +105,7 @@ function runTask(
     doneWhen?: () => boolean
   }
 ): Promise<TaskResult> {
-  if (child) return Promise.resolve({ ok: false, error: 'Đang có một lượt đăng nhập / cài đặt chạy dở.' })
+  if (child || extPid) return Promise.resolve({ ok: false, error: 'Đang có một lượt đăng nhập / cài đặt chạy dở.' })
   return new Promise((resolve) => {
     canceled = false
     const sh = needsShell(bin)
@@ -240,15 +247,75 @@ export function startAgyLogin(bin: string, workdir: string, onLine: (line: strin
   if (!validBin(bin, 'agy')) return Promise.resolve({ ok: false, error: 'Không tìm thấy Antigravity CLI (agy) trên máy.' })
   if (workdir) mkdirSync(workdir, { recursive: true })
   const env = cleanEnv()
-  for (const k of ['SSH_CONNECTION', 'SSH_CLIENT', 'SSH_TTY']) delete env[k]
+  for (const k of Object.keys(env)) if (/^SSH_(CONNECTION|CLIENT|TTY)$/i.test(k)) delete env[k]
+  const cwd = workdir && isAbsolute(workdir) ? workdir : homedir()
+  if (IS_WIN) return agyLoginWindow(bin, cwd, env, onLine)
+  // macOS: `agy -p` khong tu mo trinh duyet (chi in link) -> app tu mo link dang nhap dau tien agy in ra
   onLine('Đang mở trình duyệt để đăng nhập tài khoản Google…')
+  let opened = false
+  const onLineOpen = (line: string) => {
+    const m = /https:\/\/accounts\.google\.com\/[^\s"'<>]+/.exec(line)
+    if (m && !opened) {
+      opened = true
+      shell.openExternal(m[0]).catch(() => {})
+    }
+    onLine(line)
+  }
   return runTask(bin, ['-p', 'Chỉ trả lời đúng một từ: OK', '--output-format', 'json', '--disable-slash-commands', '--print-timeout', '120s'], {
     env,
-    cwd: workdir && isAbsolute(workdir) ? workdir : homedir(),
+    cwd,
     timeoutMs: LOGIN_TIMEOUT_MS,
     stdin: 'pipe',
-    onLine,
+    onLine: onLineOpen,
     doneWhen: agyTokenPresent
+  })
+}
+
+/**
+ * Windows: agy CHAY AN (console an) ghi link / doc ma qua CONSOLE cua no (CONOUT$ / CONIN$) chu khong qua ong dan
+ * -> app khong nhan duoc gi, trinh duyet cung khong mo (su co that may Windows 2026-10-01). Giao dien day du cua agy
+ * (`agy` khong tham so, KHONG bien SSH_*) TU MO trinh duyet dang nhap Google -> chay no trong cua so RIENG, THU NHO
+ * (Start-Process -WindowStyle Minimized); co file phien -> app tu dong cua so do. Nguoi dung chi dang nhap tren trinh duyet.
+ */
+function agyLoginWindow(bin: string, cwd: string, env: NodeJS.ProcessEnv, onLine: (line: string) => void): Promise<TaskResult> {
+  if (child || extPid) return Promise.resolve({ ok: false, error: 'Đang có một lượt đăng nhập / cài đặt chạy dở.' })
+  return new Promise((resolve) => {
+    extCancel = false
+    const script = `$p = Start-Process -FilePath ${psq(bin)} -WorkingDirectory ${psq(cwd)} -WindowStyle Minimized -PassThru; $p.Id`
+    execFile(powershell(), ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', script],
+      { env, windowsHide: true, timeout: 30000 }, (err, stdout) => {
+        const pid = Number(String(stdout || '').trim().split(/\r?\n/).pop())
+        if (err || !pid) {
+          resolve({ ok: false, error: 'Không khởi động được Antigravity CLI: ' + String(err?.message || stdout).slice(0, 200) })
+          return
+        }
+        extPid = pid
+        onLine('Đã mở Antigravity CLI (cửa sổ thu nhỏ ở thanh tác vụ) — trình duyệt sẽ mở trang đăng nhập Google.')
+        onLine('Trình duyệt không mở? Bấm vào cửa sổ agy ở thanh tác vụ để xem link đăng nhập.')
+        const t0 = Date.now()
+        const alive = () => {
+          try {
+            process.kill(pid, 0)
+            return true
+          } catch {
+            return false
+          }
+        }
+        const done = (res: TaskResult) => {
+          clearInterval(timer)
+          killTree(pid)
+          extPid = 0
+          resolve(res)
+        }
+        const timer = setInterval(() => {
+          if (agyTokenPresent()) {
+            onLine('Đã nhận phiên đăng nhập Google — đóng cửa sổ agy.')
+            done({ ok: true })
+          } else if (extCancel) done({ ok: false, canceled: true })
+          else if (!alive()) done({ ok: false, error: 'Cửa sổ Antigravity CLI đã đóng trước khi đăng nhập xong.' })
+          else if (Date.now() - t0 > LOGIN_TIMEOUT_MS) done({ ok: false, error: 'Quá 10 phút chưa đăng nhập xong — bấm lại “Đăng nhập Google”.' })
+        }, 1000)
+      })
   })
 }
 
@@ -257,7 +324,7 @@ export function startAgyLogin(bin: string, workdir: string, onLine: (line: strin
 export function startClaudeLogin(bin: string, onLine: (line: string) => void): Promise<TaskResult> {
   if (!validBin(bin, 'claude')) return Promise.resolve({ ok: false, error: 'Không tìm thấy Claude Code CLI trên máy.' })
   return runTask(bin, ['auth', 'login', '--claudeai'], {
-    env: cleanEnv(),
+    env: claudeEnv(cleanEnv()),
     cwd: homedir(),
     timeoutMs: LOGIN_TIMEOUT_MS,
     stdin: 'pipe',
@@ -340,6 +407,7 @@ function claudeLoginScript(bin: string): string {
     'echo "4. Thấy báo đăng nhập thành công là xong — app tự nhận ra, đóng cửa sổ này."',
     'echo ""',
     `cd "$HOME"`,
+    'unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN ANTHROPIC_BASE_URL',
     `${q(bin)} auth login --claudeai`,
     'echo ""',
     'echo "Xong — có thể đóng cửa sổ này."',
@@ -365,6 +433,8 @@ export async function openClaudeLogin(bin: string): Promise<TaskResult> {
       'Write-Host "4. Thấy báo đăng nhập thành công là xong — app tự nhận ra, đóng cửa sổ này."',
       'Write-Host ""',
       'Set-Location -LiteralPath $HOME',
+      '# bo bien API key / router (vd 9Router) — chung lam Claude Code bo qua tai khoan Claude.ai',
+      'Remove-Item Env:ANTHROPIC_API_KEY, Env:ANTHROPIC_AUTH_TOKEN, Env:ANTHROPIC_BASE_URL -ErrorAction SilentlyContinue',
       `& ${psq(bin)} auth login --claudeai`,
       'Write-Host ""',
       'Write-Host "Xong — có thể đóng cửa sổ này."'
@@ -382,7 +452,7 @@ export async function openClaudeLogin(bin: string): Promise<TaskResult> {
 export function startClaudeUpdate(bin: string, onLine: (line: string) => void): Promise<TaskResult> {
   if (!validBin(bin, 'claude')) return Promise.resolve({ ok: false, error: 'Không tìm thấy Claude Code CLI trên máy.' })
   onLine('$ claude update')
-  return runTask(bin, ['update'], { env: cleanEnv(), cwd: homedir(), timeoutMs: INSTALL_TIMEOUT_MS, onLine })
+  return runTask(bin, ['update'], { env: claudeEnv(cleanEnv()), cwd: homedir(), timeoutMs: INSTALL_TIMEOUT_MS, onLine })
 }
 
 /** Cai CLI cho provider `name`: Codex / Claude Code qua bo cai cua Doctor (dung ban ghim), agy qua trinh cai chinh chu */

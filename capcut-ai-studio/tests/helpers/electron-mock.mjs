@@ -12,7 +12,9 @@ export const shell = {
       renameSync(p, join(globalThis.__TRASH_DIR, basename(p) + '-' + trashed.length))
     }
   },
-  async openPath() { return '' }
+  async openPath() { return '' },
+  // ghi lai link duoc mo (khong mo trinh duyet that) — globalThis.__OPENED
+  async openExternal(u) { (globalThis.__OPENED ||= []).push(u) }
 }
 export const app = { isPackaged: false, getPath: () => '/tmp', getAppPath: () => process.cwd() }
 export const safeStorage = { isEncryptionAvailable: () => false }

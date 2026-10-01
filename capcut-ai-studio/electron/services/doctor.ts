@@ -7,7 +7,7 @@
 import { existsSync, readdirSync } from 'fs'
 import { homedir, release } from 'os'
 import { join } from 'path'
-import { IS_WIN, findBinary } from './env'
+import { IS_WIN, claudeEnv, claudeOauthSaved, findBinary } from './env'
 import { DEFAULT_VENV_DIR, bundledModelsDir, embeddedPython, sidecarServer, venvPythonIn } from './paths'
 import { browserInstalled, bundleDir, installBrowser, remotionHome } from './remotion'
 import { sidecarInfo, stopSidecar } from './sidecar'
@@ -89,10 +89,14 @@ async function pythonProbe(py: string): Promise<Probe | { error: string }> {
 }
 
 async function claudeLogin(path: string): Promise<{ ok: boolean; detail: string }> {
-  const r = await T.runCmd(path, ['auth', 'status'], { timeout: 30000 })
+  // bo bien API key / router (ANTHROPIC_AUTH_TOKEN...) — app goi Claude bang goi subscription
+  const r = await T.runCmd(path, ['auth', 'status'], { timeout: 30000, env: claudeEnv(T.cleanEnv()) })
   try {
     const j = JSON.parse(r.stdout.slice(r.stdout.indexOf('{')))
     if (j.loggedIn && j.authMethod === 'claude.ai') return { ok: true, detail: `Đã đăng nhập${j.email ? ' — ' + j.email : ''}` }
+    // router dat trong ~/.claude/settings.json -> auth status bao khac, nhung phien Claude.ai van luu (app goi voi
+    // --setting-sources "" nen dung phien do)
+    if (j.loggedIn && claudeOauthSaved()) return { ok: true, detail: 'Đã đăng nhập tài khoản Claude.ai.' }
     if (j.loggedIn) return { ok: false, detail: 'Claude Code đang dùng API key, chưa đăng nhập bằng tài khoản Claude.ai.' }
   } catch {
     /* khong phai JSON */

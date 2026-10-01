@@ -1,6 +1,6 @@
 import { homedir } from 'os'
 import { delimiter, extname, join } from 'path'
-import { existsSync, statSync } from 'fs'
+import { existsSync, readFileSync, statSync } from 'fs'
 import { spawn } from 'child_process'
 import { TOOLS_BIN } from './paths'
 
@@ -137,4 +137,29 @@ export function killTree(pid: number | undefined, fallback?: () => void): void {
 export function systemTar(): string {
   if (IS_WIN) return join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'tar.exe')
   return '/usr/bin/tar'
+}
+
+// ---- Claude Code o che do GOI SUBSCRIPTION ----
+// Bien lam Claude Code dung API key / router (vd 9Router: ANTHROPIC_AUTH_TOKEN + ANTHROPIC_BASE_URL) THAY goi subscription:
+// co bien la `claude auth status` bao "oauth_token" -> app tuong chua dang nhap (su co that may Windows 2026-10-01).
+const CLAUDE_KEY_ENV = ['ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_BASE_URL', 'ANTHROPIC_CUSTOM_HEADERS',
+  'CLAUDE_CODE_USE_BEDROCK', 'CLAUDE_CODE_USE_VERTEX', 'CLAUDE_CODE_USE_FOUNDRY']
+
+/** Ban sao env BO cac bien API key / router cua Claude Code (chi cho tien trinh claude cua app). */
+export function claudeEnv(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+  const out = { ...env }
+  for (const k of Object.keys(out)) if (CLAUDE_KEY_ENV.includes(k.toUpperCase())) delete out[k]
+  return out
+}
+
+/** Co phien Claude.ai luu trong file (Windows / Linux: <config>/.credentials.json -> claudeAiOauth; macOS: Keychain -> false). */
+export function claudeOauthSaved(): boolean {
+  try {
+    const cfg = process.env.CLAUDE_CONFIG_DIR || join(homedir(), '.claude')
+    const j = JSON.parse(readFileSync(join(cfg, '.credentials.json'), 'utf-8'))
+    const o = j?.claudeAiOauth
+    return !!(o && (o.refreshToken || o.accessToken))
+  } catch {
+    return false
+  }
 }

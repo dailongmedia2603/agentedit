@@ -4,6 +4,7 @@
 //  2. agy: KHONG duoc nhan bien SSH_* (bien do bat che do "in link + dan ma", khong tu xong)
 //  3. claude: cho ma qua stdin -> sendCliInput gui ma -> CLI thoat 0 -> thanh cong; ma co xuong dong bi tu choi
 //  4. Huy giua chung -> canceled
+//  (Windows: agy chay o cua so rieng thu nho — agyLoginWindow — khong test bang CLI gia duoc; phan nay chi macOS / POSIX)
 import { register } from 'node:module'
 import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { homedir } from 'os'
@@ -41,6 +42,9 @@ function fake(name: string, js: string): string {
   return p
 }
 
+if (process.platform === 'win32') {
+  console.log('(Windows: bo qua [1] — agy dang nhap bang cua so rieng thu nho)')
+}
 console.log('[1] agy: co file phien -> dung som, thanh cong')
 const tokDir = join(HOME, '.gemini', 'antigravity-cli')
 const agy = fake('agy', `
@@ -59,6 +63,8 @@ const r1 = await L.startAgyLogin(agy, join(HOME, 'agy-work'), (l) => lines.push(
 check('thanh cong khi da co file phien', r1.ok, r1)
 check('dung som (khong cho het gio)', Date.now() - t0 < 15000, Date.now() - t0)
 check('chuyen link dang nhap ra log', lines.some((l) => l.includes('accounts.google.com')), lines)
+check('macOS: app TU MO link dang nhap 1 lan (agy -p khong tu mo)', (globalThis as any).__OPENED?.length === 1 &&
+      (globalThis as any).__OPENED[0].startsWith('https://accounts.google.com/'), (globalThis as any).__OPENED)
 const env1 = JSON.parse(readFileSync(join(HOME, 'agy-env.json'), 'utf-8'))
 check('KHONG truyen SSH_CONNECTION cho agy', env1.ssh === null, env1)
 check('chay agy -p (che do in, khong giao dien)', env1.args[0] === '-p' && env1.args.includes('json'), env1.args)

@@ -59,7 +59,7 @@ def fake_run(argv, stdin_text=None, timeout=60, cwd=None, env=None):
     return 0, json.dumps({"type": "result", "is_error": False, "result": "{\"ok\": 1}", "usage": {}}), ""
 
 
-ORIG_RUN, ORIG_WIN = C._run, C.IS_WIN
+ORIG_RUN, ORIG_WIN, ORIG_FIND_BIN = C._run, C.IS_WIN, C.find_bin
 C._run = fake_run
 BIG = "QUY TẮC R4 — chữ tiếng Việt có dấu. " * 1200          # ~43K ky tu > gioi han dong lenh Windows
 try:
@@ -106,6 +106,37 @@ r2 = C._agy_result(json.dumps({"conversation_id": "c2", "status": "SUCCESS", "re
 check("doc ket qua json thuong (macOS) nhu cu", r2.get("response") == "ok", r2)
 check("conv_id co \\ / : -> khong xoa gi (chan leo thu muc)", C._agy_cleanup(tempfile.mkdtemp(), "..\\x") == 0
       and C._agy_cleanup(tempfile.mkdtemp(), "C:x") == 0)
+
+# ---------------------------------------------------------------------------
+print("[2b] Claude: bo bien API key / router khi chay o che do goi subscription")
+os.environ.update({"ANTHROPIC_AUTH_TOKEN": "sk-router", "ANTHROPIC_BASE_URL": "http://127.0.0.1:20128", "ANTHROPIC_API_KEY": "sk-x"})
+ce = C._claude_env()
+check("_claude_env bo ANTHROPIC_AUTH_TOKEN / BASE_URL / API_KEY", not any(k in ce for k in C.CLAUDE_KEY_ENV), [k for k in ce if k.startswith("ANTHROPIC")])
+seen = {}
+
+
+def fake_status(argv, stdin_text=None, timeout=60, cwd=None, env=None):
+    seen["env"] = env
+    if argv[1:] == ["--version"]:
+        return 0, "2.1.286 (Claude Code)", ""
+    return 0, json.dumps({"loggedIn": True, "authMethod": "oauth_token"}), ""
+
+
+C._run, C.find_bin = fake_status, lambda n: "/fake/claude"
+try:
+    st = C.cli_status("claude")
+    check("auth status chay KHONG kem bien router", seen["env"] is not None and "ANTHROPIC_AUTH_TOKEN" not in seen["env"])
+    check("authMethod khac claude.ai + CHUA co phien Claude.ai -> chua dang nhap", not st["logged_in"], st.get("detail"))
+    cfg = tempfile.mkdtemp()
+    with open(os.path.join(cfg, ".credentials.json"), "w", encoding="utf-8") as f:
+        json.dump({"claudeAiOauth": {"accessToken": "a", "refreshToken": "r"}}, f)
+    os.environ["CLAUDE_CONFIG_DIR"] = cfg
+    st = C.cli_status("claude")
+    check("router trong settings.json nhung CO phien Claude.ai -> da dang nhap", st["logged_in"], st.get("detail"))
+finally:
+    C._run, C.find_bin = ORIG_RUN, ORIG_FIND_BIN
+    for k in ("ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_BASE_URL", "ANTHROPIC_API_KEY", "CLAUDE_CONFIG_DIR"):
+        os.environ.pop(k, None)
 
 # ---------------------------------------------------------------------------
 print("[3] winsupport")

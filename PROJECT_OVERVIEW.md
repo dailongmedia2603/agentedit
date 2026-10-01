@@ -879,6 +879,12 @@ macOS giu nguyen hanh vi (moi nhanh Windows deu co dieu kien nen tang); da kiem 
   (`doneWhen`); `startClaudeLogin` = `claude auth login --claudeai` an (tu mo trinh duyet, nhan qua localhost). UI: o "Dan ma"
   (`settings:cliLoginInput` -> stdin) + nut mo link; cua so Terminal / PowerShell cu thanh du phong (mode 'device').
   Test `tests/test_cli_login.mts` (CLI gia).
+  SUA 10-01 sau khi thu that tren Windows: (1) agy `-p` KHONG tu mo trinh duyet va tren Windows ghi link / doc ma qua
+  CONSOLE cua no (khong qua ong dan) -> Windows chay `agy` giao dien day du trong cua so THU NHO (Start-Process
+  -WindowStyle Minimized, tu mo trinh duyet), co file phien thi tu dong; macOS giu `-p` + app tu mo link agy in ra.
+  (2) Claude bao "dang dung API key" du da dang nhap: may co bien router (ANTHROPIC_AUTH_TOKEN + ANTHROPIC_BASE_URL, vd
+  9Router) -> `auth status` ra "oauth_token". App BO cac bien nay cho tien trinh claude (`_claude_env` / `claudeEnv`);
+  router dat trong ~/.claude/settings.json -> nhan phien Claude.ai trong .credentials.json (`claudeAiOauth`).
 - CHUA kiem tren may Windows that (khong co may): ten file phien dang nhap agy tren Windows (chap nhan *oauth*token*), sandbox
   Codex Windows khi tao anh (co du phong lay anh tu ~/.codex/generated_images), SmartScreen / Smart App Control (app chua ky so).
 

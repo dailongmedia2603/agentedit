@@ -404,7 +404,8 @@ function LoginBox({
         <TaskLog
           run={login}
           onCancel={onCancel}
-          codeInput={cliAuth && !terminal}
+          // Windows: agy dang nhap trong cua so rieng (doc ma tu console cua no) -> o dan ma cua app khong dung cho agy
+          codeInput={cliAuth && !terminal && !(IS_WIN && google)}
           title={
             terminal
               ? claude

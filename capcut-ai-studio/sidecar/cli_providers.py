@@ -177,6 +177,34 @@ def _augmented_env():
     return env
 
 
+# Bien moi truong lam Claude Code dung API key / router (vd 9Router: ANTHROPIC_AUTH_TOKEN + ANTHROPIC_BASE_URL) THAY
+# cho goi subscription: co bien la `claude auth status` bao authMethod "oauth_token" / -p tinh tien API key. Che do goi
+# subscription cua app BO cac bien nay cho rieng tien trinh claude (khong dung toi cau hinh khac cua may).
+CLAUDE_KEY_ENV = ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_BASE_URL", "ANTHROPIC_CUSTOM_HEADERS",
+                  "CLAUDE_CODE_USE_BEDROCK", "CLAUDE_CODE_USE_VERTEX", "CLAUDE_CODE_USE_FOUNDRY")
+
+
+def _claude_env():
+    env = _augmented_env()
+    for k in list(env):
+        if k.upper() in CLAUDE_KEY_ENV:
+            env.pop(k, None)
+    return env
+
+
+def _claude_oauth_saved():
+    """Co phien dang nhap Claude.ai luu trong file (Windows / Linux: <config>/.credentials.json -> claudeAiOauth).
+    macOS luu trong Keychain -> tra False (khong can: o macOS auth status da dung)."""
+    cfg = os.environ.get("CLAUDE_CONFIG_DIR") or os.path.join(_HOME, ".claude")
+    try:
+        with open(os.path.join(cfg, ".credentials.json"), encoding="utf-8") as f:
+            d = json.load(f)
+        o = d.get("claudeAiOauth") if isinstance(d, dict) else None
+        return bool(isinstance(o, dict) and (o.get("refreshToken") or o.get("accessToken")))
+    except (OSError, ValueError):
+        return False
+
+
 def find_bin(name):
     """Tra duong dan tuyet doi toi binary CLI, hoac None."""
     spec = SPEC.get(name)
@@ -297,13 +325,18 @@ def cli_status(name):
         out["outdated_models"] = outdated
         # Cung khuon voi Codex de UI dung chung o "Muc suy nghi" ("" = mac dinh cua Claude Code)
         out["reasoning"] = {m["id"]: {"default": "", "levels": list(CLAUDE_EFFORTS)} for m in models}
-        rc, so, se = _run([path, "auth", "status"], timeout=30)
+        rc, so, se = _run([path, "auth", "status"], timeout=30, env=_claude_env())
         data = _first_json(so)
         if isinstance(data, dict) and data.get("loggedIn"):
             out["logged_in"] = True
             out["account"] = data.get("email")
             out["plan"] = data.get("subscriptionType")
-            if (data.get("authMethod") or "") != "claude.ai":
+            if (data.get("authMethod") or "") != "claude.ai" and _claude_oauth_saved():
+                # router / API key dat trong ~/.claude/settings.json (env) -> auth status bao khac; app goi claude voi
+                # --setting-sources "" + bo bien key -> van dung PHIEN Claude.ai da luu
+                out["detail"] = ("Đã đăng nhập tài khoản Claude.ai (app bỏ qua cấu hình API key / router của Claude Code "
+                                 "trên máy khi gọi).")
+            elif (data.get("authMethod") or "") != "claude.ai":
                 out["detail"] = _t("Claude Code đang dùng API key chứ không phải gói subscription. "
                                    "Bấm “Đăng nhập Claude” bên dưới (hoặc chạy `claude auth login` "
                                    "trong Terminal) và chọn đăng nhập bằng tài khoản Claude.ai.")
@@ -618,7 +651,7 @@ def _claude_chat(path, model, system, user, req_timeout, step_label, effort=""):
         else:
             argv += ["--system-prompt", system]
 
-    rc, so, se = _run(argv, stdin_text=user, timeout=req_timeout, cwd=workdir)
+    rc, so, se = _run(argv, stdin_text=user, timeout=req_timeout, cwd=workdir, env=_claude_env())
     data = _first_json(so)
 
     if isinstance(data, dict) and data.get("type") == "result":
