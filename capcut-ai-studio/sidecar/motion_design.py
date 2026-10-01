@@ -18,6 +18,7 @@ import copy
 import json
 
 import plan_guard
+import creative
 import prompt_store
 import providers
 import remotion_plan as RP
@@ -39,7 +40,12 @@ KENBURNS = {"in", "out", "left", "right", "up", "none"}
 PATTERNS = {"curves", "grid", "dots", "rays", "none"}
 MAX_AI_IMAGES = 6
 MAX_LAYERS_PER_10S = 8
-SFX_CAP_MOTION = 16
+# LUAT CHU CO TIENG (user 2026-10-01): moi chu hien ra deu co tieng; KHONG con tran so SFX (tran 16 cu lam chu sau
+# giay ~56 mat tieng). Mot tieng bat dau trong [t - EARLY, t + LATE] cua luc chu hien = chu do da co tieng (hep: tieng
+# cua chu ke ben vao sau 0.3s khong duoc tinh cho chu nay — loi that 'TOÁN' an ke tieng cua 'THI ĐUA').
+TEXT_SFX_TYPES = ("text", "counter", "badge")
+TEXT_SFX_EARLY, TEXT_SFX_LATE = 0.15, 0.15
+TEXT_SFX_SAME = 0.12     # hai chu hien cach nhau < 0.12s = cung mot nhip -> dung chung mot tieng
 DESIGN_VERSION = 4      # doi cach thiet ke / tu kiem -> tang de khong dung lai ket qua R4 cu trong cache
                         # 4 = quy tac chu 2026-09-27 (khong emoji, thu tu doc, phan cap, ro net, lop tach, anh dung boi canh)
 
@@ -160,8 +166,11 @@ LOP DO HOA (layers: chu nhan, to hop chu, huy hieu, mui ten, vong, anh, the tric
    (vd lop truot qua khung, phong to dan). Easing mem (ease_out / back_out), khong chay deu cung.
 6. CAMERA: theo style_kit.camera (khong co -> chon theo noi dung; hieu ung manh chi khi tone can). Hieu ung manh
    cach nhau >= 2.5s.
-7. SFX: lop xuat hien dang ke co the co "sfx" (whoosh / swoosh / pop / click / boom / riser / ding / typing) theo
-   style_kit.sfx (khong co -> hop tone, tiet che voi video nhe nhang). Khong 2 tieng sat nhau < 0.35s.
+7. SFX: MOI lop CHU / bo dem / huy hieu PHAI co "sfx" (whoosh / swoosh / pop / click / boom / riser / ding / typing)
+   HOP voi chinh chu do: cach no hien (truot -> swoosh, bat ra -> pop, go chu -> typing, dap manh -> boom), y nghia
+   (con so -> ding, cau chot soc -> boom) va cam xuc / tone (nhe nhang -> tieng nhe: click / swoosh). Theo
+   style_kit.sfx neu co. Lop hinh khac (anh, vong, mui ten) xuat hien dang ke cung nen co tieng. Cac tang cua CUNG
+   mot to hop vao cung luc dung chung 1 tieng; to hop vao lech nhip thi moi nhip mot tieng. Thieu -> he thong tu gan.
 8. KET THUC: CTA cuoi video neu edit_request / noi dung can; hinh thuc CTA hop phong cach video nay.
 
 # CHI TIEU — CHI KHI CO style_kit (video mau): he thong DEM theo CHINH style_kit (ti le bo cuc, mat do
@@ -235,7 +244,8 @@ tai nguyen anh, lop chu / hinh ho tro, chuyen canh, tong mau."""
 
 
 def gpt_rm_design(segments, transcript_data, emotion_map_data, key_moments_data, story=None,
-                  reference_analysis=None, hook=None, faces=None, log=None, sources=None, user_media=None):
+                  reference_analysis=None, hook=None, faces=None, log=None, sources=None, user_media=None,
+                  brand=None):
     """user_media: tu lieu cua nguoi dung (user_media.normalize + ensure_analyzed) -> R4 thay muc dich + phan tich
     Gemini + so do, dat vao dung luc noi toi. Khong co tu lieu -> prompt + payload y nhu truoc (cache cu dung lai)."""
     kit = style_kit_for(reference_analysis)
@@ -278,11 +288,17 @@ def gpt_rm_design(segments, transcript_data, emotion_map_data, key_moments_data,
                   + "\n\n# TAI LIEU NGON NGU DUNG (chi dung dung cac truong nay)\n" + dsl_doc()
                   + "\n\n# THUAT NGU EDIT (ap dung dung cho)\n" + glossary_doc()
                   + "\n\n# DANH MUC REMOTION (transition / effect / grade):\n" + RP._catalog_block()
-                  + _NEW_FLOW_NOTE)
+                  + _NEW_FLOW_NOTE + creative.luat("R4"))
     if user_media:
         import user_media as UM
         payload["tu_lieu_nguoi_dung"] = UM.planner_view(user_media)
         sys_prompt += UM.r4_note()
+    import brand_guide
+    if brand_guide.view(brand, "plan"):
+        # Brand Guideline (ca 5 mat) -> thiet ke bo cuc / lop chu / anh AI / chuyen dong theo thuong hieu; khong co
+        # thi prompt + payload y nhu truoc (cache cu dung lai)
+        payload["brand_guideline"] = brand_guide.view(brand, "plan")
+        sys_prompt += brand_guide.rule_text(brand, "plan")
     if log:
         log("R4: %s thiet ke bo cuc + lop do hoa (%s)..." % (
             providers.plan_ai_name(), "theo bo phong cach video mau" if kit else "khong video mau: tu thiet ke theo noi dung"))
@@ -467,7 +483,7 @@ def normalize_assets(assets, source_videos, user_assets=None):
     return out
 
 
-def asset_contexts(design, transcript_data=None, story=None, sources=None, user_media=None):
+def asset_contexts(design, transcript_data=None, story=None, sources=None, user_media=None, brand=None):
     """BOI CANH cua tung anh AI (yeu cau user 2026-09-27: anh tao ra phai DUNG boi canh noi dung no
     hien thi): cau nguoi noi dang noi luc anh hien, vi tri anh tren man hinh (panel nua tren / nen /
     sticker tach nen...), chu hien cung luc, chu de + giong video, mo ta nguon. {asset_id: ctx}."""
@@ -487,6 +503,8 @@ def asset_contexts(design, transcript_data=None, story=None, sources=None, user_
     import asset_gen
     texts = [L for L in design.get("layers") or [] if isinstance(L, dict) and L.get("type") in ("text", "counter", "badge")]
     story = story if isinstance(story, dict) else {}
+    import brand_guide
+    brand_view = brand_guide.view(brand, "image")
     src_desc = "; ".join(str(s.get("summary"))[:200] for s in sources or [] if isinstance(s, dict) and s.get("summary"))
     out = {}
     for a in design.get("assets") or []:
@@ -526,6 +544,10 @@ def asset_contexts(design, transcript_data=None, story=None, sources=None, user_
                "tone": str(story.get("tone") or "")[:120],
                "chu_tren_anh": " / ".join(chu)[:200],
                "boi_canh_nguon": src_desc[:400]}
+        bv = brand_view
+        if bv:
+            # Brand Guideline: mau / ngon ngu do hoa / phong cach hinh anh (nam trong khoa cache cua anh)
+            ctx["thuong_hieu"] = bv
         out[a["id"]] = {k: v for k, v in ctx.items() if v}
     return out
 
@@ -903,6 +925,8 @@ def _text_height(L):
 def layers_to_spec(p, duration, scenes, assets_by_id, faces, changes, kit=None):
     fonts = _fonts()
     art_lookup = art_index(p)
+    import graphic_art
+    gfx_lookup = graphic_art.lookup(p)
     asr = p.get("asr_words") if isinstance(p.get("asr_words"), dict) else {}
     out = []
     # to hop co tang "sau nguoi" chu dong: ca to hop neo theo tang do (khong ne mat rieng le)
@@ -1022,6 +1046,10 @@ def layers_to_spec(p, duration, scenes, assets_by_id, faces, changes, kit=None):
                 L["words"] = _reveal_words(p, it, asr)
         elif typ == "counter":
             L["spans"] = []
+        elif typ == "badge":
+            # do hoa co chu: anh AI ca phan tu (graphic_art); khong co -> ve bang code voi MAU CUA VIDEO (khong co dinh)
+            if not (gfx_lookup and _attach_graphic(L, gfx_lookup, changes, "layer%d" % i)):
+                badge_colors(L, kit)
         elif typ in ("image", "video") and (assets_by_id.get(L0.get("asset")) or {}).get("user_media"):
             import user_media as UM
             if not UM.layer_spec(L, L0, assets_by_id[L0["asset"]], duration, changes, "layer%d" % i):
@@ -1137,6 +1165,61 @@ def _attach_art(L, lookup, changes, label, W=1080):
                       "easing": "ease_out"}
     changes.append("%s: chu noi bat -> chu anh AI (%d tang)" % (label, len(art)))
     return True
+
+
+def _attach_graphic(L, lookup, changes, label, W=1080):
+    """Lop badge -> anh phan tu do hoa AI (graphic_art). Than phan tu (phan dac) rong = be ngang thiet ke cua lop."""
+    import graphic_art
+    it = lookup.get(graphic_art.item_key(L.get("type"), L.get("label"), L.get("value")))
+    if not it:
+        return False
+    d = float(L.get("w") or 0.2) * W
+    s = d / max(1.0, float(it.get("core_w") or it.get("w") or 1))
+    L["art"] = [{"src": it["file"], "w": round(float(it["w"]) * s, 1), "h": round(float(it["h"]) * s, 1)}]
+    changes.append("%s: huy hieu '%s' -> do hoa anh AI" % (label, graphic_art._words(L.get("label"), L.get("value"))))
+    return True
+
+
+def _hexc(rgb):
+    return "#%02X%02X%02X" % tuple(int(round(max(0.0, min(1.0, v)) * 255)) for v in rgb[:3])
+
+
+def _mixc(a, b, t):
+    return tuple(a[i] * (1 - t) + b[i] * t for i in range(3))
+
+
+def badge_colors(L, kit):
+    """Huy hieu ve bang code (khi khong co anh AI): mau lay tu BANG MAU CUA VIDEO nay (style_kit / Brand Guideline ep
+    sau) — user 2026-10-01 bo mau cam co dinh. Chu luon tuong phan voi nen huy hieu. Mau AI da khai thi giu."""
+    pal = (kit or {}).get("palette") if isinstance((kit or {}).get("palette"), dict) else {}
+    cols = [c for c in (_rgba(_color(pal.get(k))) for k in ("primary", "accent", "highlight")) if c]
+    bg = [c for c in (_rgba(_color(x)) for x in (pal.get("bg_gradient") or [])) if c] if isinstance(pal.get("bg_gradient"), list) else []
+    white, ink = (1.0, 1.0, 1.0), (0.07, 0.07, 0.08)
+    main = cols[0] if cols else None
+    if not L.get("fillGradient") and not L.get("fill"):
+        if len(bg) >= 2:
+            L["fillGradient"] = [_hexc(bg[0]), _hexc(bg[-1])]
+        elif main:
+            L["fillGradient"] = [_hexc(_mixc(main, white, 0.7)), _hexc(main)]
+        else:
+            L["fillGradient"] = ["#FFFFFF", "#E9E9EC"]
+    if not L.get("strokeColor"):
+        edge = cols[1] if len(cols) > 1 else (main and _mixc(main, ink, 0.25))
+        L["strokeColor"] = _hexc(edge) if edge else "#2A2A2E"
+    if not L.get("color"):
+        fills = [c for c in (_rgba(x) for x in (L.get("fillGradient") or [L.get("fill")])) if c]
+        lum = sum(_lum(c) for c in fills) / len(fills) if fills else 1.0
+        if lum < 0.4:
+            L["color"] = "#FFFFFF"
+        else:
+            # chu toi: mau vien keo toi dan toi khi du tuong phan voi nen (>= 4.5)
+            base = _rgba(L["strokeColor"]) or ink
+            c = base
+            for t in (0.0, 0.3, 0.5, 0.7, 0.85, 1.0):
+                c = _mixc(base, ink, t)
+                if _contrast(_lum(c), lum) >= 4.5:
+                    break
+            L["color"] = _hexc(c)
 
 
 def hero_captions_to_art(spec, p, changes):
@@ -2298,10 +2381,96 @@ def layer_sfx(layers, changes):
         sid, path = sfx_kit.family_file(fam)
         if not sid:
             continue
+        if sid not in lib:          # bo tieng vua duoc tao + dang ky (lan dau tren may) -> doc lai kho
+            lib = {e["id"]: e for e in engine.sfx_list()}
         e = lib.get(sid) or {}
-        out.append({"sfx_id": sid, "file": path, "start": L["start"], "purpose": "ui" if fam in ("click", "pop", "typing") else
-                    "transition" if fam in ("whoosh", "swoosh") else "punch" if fam in ("boom", "impact", "punch") else "reveal",
-                    "_name": e.get("name"), "tags": e.get("tags") or [], "_lufs": e.get("lufs_m"), "_from_layer": L["id"]})
+        item = {"sfx_id": sid, "file": path, "start": L["start"], "purpose": _sfx_purpose(fam),
+                "_name": e.get("name"), "tags": e.get("tags") or [], "_lufs": e.get("lufs_m"), "_from_layer": L["id"]}
+        if L.get("type") in TEXT_SFX_TYPES:
+            item["_text"] = True
+        out.append(item)
     if out:
         changes.append("tu gan %d SFX theo lop do hoa" % len(out))
+    return out
+
+
+def _sfx_purpose(fam):
+    return ("ui" if fam in ("click", "pop", "typing") else "transition" if fam in ("whoosh", "swoosh")
+            else "punch" if fam in ("boom", "impact", "punch") else "reveal")
+
+
+def is_text_sfx(a):
+    """Tieng gan voi luc CHU hien (lop chu R4, chu hero B7 'reveal', tieng code tu gan) — khong bi bo vi gian cach."""
+    return bool(a.get("_text") or a.get("_auto_text") or a.get("purpose") == "reveal")
+
+
+_SOFT_ENTER = {"fade", "blur_in", "letters_blur", "words_blur", "letters_fade", "rise", "words_rise"}
+_SLIDE_ENTER = {"slide", "slide_left", "slide_right", "slide_up", "slide_down", "wipe", "stretch_x", "expand_y",
+                "write_on", "draw"}
+_SWING_ENTER = {"drop", "zoom_out", "spin_in", "flip", "glitch_in", "letters_drop"}
+
+
+def text_sfx_family(L):
+    """Tieng hop voi CHU nay theo cach no hien ra (kieu vao) + vai (bo dem so / huy hieu / chu to / chu nho)."""
+    typ = L.get("type")
+    pre = str((L.get("enter") or {}).get("preset") or "")
+    size = max([float(sp.get("size") or 0) for sp in L.get("spans") or [] if isinstance(sp, dict)]
+               + [float(L.get("size") or 0)])
+    if typ == "counter":
+        return "ding"
+    if typ == "badge":
+        return "pop"
+    if pre == "typewriter":
+        return "typing"
+    if pre in _SLIDE_ENTER:
+        return "swoosh"
+    if pre in _SWING_ENTER:
+        return "whoosh"
+    if 0 < size < 75:
+        return "click"          # chu nho / tang dan: tieng nhe
+    if pre in _SOFT_ENTER:
+        return "swoosh"
+    return "pop"
+
+
+def ensure_text_sfx(layers, captions, audio, duration, changes):
+    """MOI chu hien ra (lop chu / bo dem / huy hieu R4, chu hero / micro R5, chu hook) deu co tieng luc hien. Chu chua
+    co tieng nao bat dau trong [t - TEXT_SFX_EARLY, t + TEXT_SFX_LATE] -> gan tieng hop chu do (bo tieng motion).
+    Chu hien cung nhip (<= TEXT_SFX_LATE sau chu vua gan) dung chung tieng. Tra cac muc audio them (gio timeline)."""
+    import engine
+    import sfx_kit
+    need = []
+    for L in layers or []:
+        if L.get("type") in TEXT_SFX_TYPES and not L.get("um") and L.get("start") is not None:
+            need.append((float(L["start"]), text_sfx_family(L), str(L.get("id"))))
+    for n, c in enumerate(captions or []):
+        if not isinstance(c, dict) or c.get("start") is None or not str(c.get("text") or "").strip():
+            continue
+        role = plan_guard.normalize_role(c.get("role"))
+        if role == "micro":
+            need.append((providers._f(c.get("start")), "click", "cap%s" % c.get("_n", n)))
+        elif role == "hero":
+            fam = "typing" if "type" in str(c.get("style") or "") else "pop"
+            need.append((providers._f(c.get("start")), fam, "cap%s" % c.get("_n", n)))
+    if not need:
+        return []
+    starts = [providers._f(a.get("start")) for a in audio or [] if (a.get("role") or "sfx") != "bgm"]
+    lib = {e["id"]: e for e in engine.sfx_list()}
+    out, names = [], []
+    for t, fam, ref in sorted(need):
+        if t >= duration - 0.05 or any(t - TEXT_SFX_EARLY <= s <= t + TEXT_SFX_LATE for s in starts):
+            continue
+        sid, path = sfx_kit.family_file(fam)
+        if not sid:
+            continue
+        if sid not in lib:
+            lib = {e["id"]: e for e in engine.sfx_list()}
+        e = lib.get(sid) or {}
+        out.append({"sfx_id": sid, "file": path, "start": round(t, 3), "purpose": _sfx_purpose(fam),
+                    "_name": e.get("name"), "tags": e.get("tags") or [], "_lufs": e.get("lufs_m"),
+                    "_from_layer": ref, "_auto_text": True})
+        starts.append(t)
+        names.append("%s@%.1fs=%s" % (ref, t, fam))
+    if out:
+        changes.append("luat chu co tieng: tu gan %d SFX cho chu chua co tieng (%s)" % (len(out), ", ".join(names)[:400]))
     return out

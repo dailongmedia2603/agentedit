@@ -91,9 +91,10 @@ def venv_python():
 
 
 def plan_provider():
-    """Provider lap ke hoach dang chon ("gpt" | "claude"). Doc lai state.json moi lan goi
-    -> doi trong Cai dat la ap dung ngay cho lan lap plan sau, khong can khoi dong lai sidecar."""
-    v = str(load_state().get("plan_provider") or "").strip().lower()
+    """Provider lap ke hoach: LUON "claude" (2026-10-01 user: bo lua chon GPT / Claude, an muc "AI lap ke hoach" —
+    state.json cu con ghi "gpt" cung bi bo qua). Duong GPT van giu trong code, chi mo cho TEST bang bien moi truong
+    STUDIO_PLANNER_TEST=gpt (test dung API GPT gia qua HTTP, khong goi CLI that)."""
+    v = str(os.environ.get("STUDIO_PLANNER_TEST") or "").strip().lower()
     return v if v in PLAN_PROVIDERS else DEFAULT_PLAN_PROVIDER
 
 

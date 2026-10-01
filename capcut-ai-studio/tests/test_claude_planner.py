@@ -62,12 +62,12 @@ config.ENGINE_HOME = TMP
 
 
 def set_planner(v):
-    st = config.load_state()
+    """Tu 2026-10-01 app LUON lap ke hoach bang Claude (bo lua chon trong Cai dat); duong GPT chi mo cho test qua
+    bien moi truong STUDIO_PLANNER_TEST."""
     if v is None:
-        st.pop("plan_provider", None)
+        os.environ.pop("STUDIO_PLANNER_TEST", None)
     else:
-        st["plan_provider"] = v
-    config.save_state(st)
+        os.environ["STUDIO_PLANNER_TEST"] = v
 
 
 def reset_providers():
@@ -112,9 +112,12 @@ def fake_cli():
 MSGS = [{"role": "system", "content": "S"}, {"role": "user", "content": "U"}]
 
 # ---------------------------------------------------------------------------
-section("[1] plan_provider doc state.json, mac dinh Claude")
+section("[1] plan_provider: LUON Claude (state.json cu ghi gpt bi bo qua); GPT chi mo cho test")
 set_planner(None)
 check("chua chon -> claude", config.plan_provider() == "claude", config.plan_provider())
+config.save_state({**config.load_state(), "plan_provider": "gpt"})
+check("state.json cu con ghi 'gpt' -> van claude (khong con lua chon)", config.plan_provider() == "claude",
+      config.plan_provider())
 set_planner("claude")
 check("chon claude -> claude", config.plan_provider() == "claude")
 set_planner("gpt")

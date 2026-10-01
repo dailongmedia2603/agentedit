@@ -140,6 +140,16 @@ def _context_text(ctx):
         rows.append("- Boi canh / san pham that trong video nguon: %s" % ctx["boi_canh_nguon"])
     if ctx.get("tone"):
         rows.append("- Giong video: %s" % ctx["tone"])
+    bv = ctx.get("thuong_hieu")
+    if isinstance(bv, dict) and bv:
+        # Brand Guideline cua khach hang (motion_design.asset_contexts) — BAT BUOC theo, uu tien hon phong cach chung
+        import brand_guide
+        rows.append("- BRAND GUIDELINE (BAT BUOC theo, uu tien hon 'phong cach chung' ben duoi):")
+        for k in brand_guide.STEP_FIELDS["image"]:
+            if bv.get(k):
+                rows.append("    * %s: %s" % (brand_guide.LABELS[k], bv[k]))
+        if bv.get("ma_mau"):
+            rows.append("    * Ma mau thuong hieu: %s — mau nhan / chu the noi bat dung cac mau nay" % ", ".join(bv["ma_mau"]))
     return "\n".join(rows) or "(khong co boi canh loi noi)"
 
 

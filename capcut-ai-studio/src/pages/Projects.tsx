@@ -6,8 +6,15 @@ import { ReferenceAnalysisView, SourceBriefView } from '@/components/ResultViews
 import { cn, fmtTime } from '@/lib/utils'
 import RunLogPanel from '@/components/RunLogPanel'
 import { REVEAL_LABEL } from '../lib/platform'
+import { isFullUi, useFullUi } from '@/lib/clientUi'
 
 function statusBadge(status: string) {
+  // ban cai cho may khac: nhan trang thai khong neu buoc (src/lib/clientUi.ts)
+  const client: Record<string, string> = {
+    understanding: 'Đang phân tích',
+    analyzing_reference: 'Đang phân tích',
+    planning: 'Đang tạo video'
+  }
   const map: Record<string, { tone: 'ok' | 'fail' | 'warn' | 'brand' | 'neutral'; label: string }> = {
     done: { tone: 'ok', label: 'Hoàn tất' },
     error: { tone: 'fail', label: 'Lỗi' },
@@ -20,7 +27,7 @@ function statusBadge(status: string) {
     upload: { tone: 'neutral', label: 'Nháp' }
   }
   const m = map[status] || { tone: 'neutral' as const, label: status }
-  return <Badge tone={m.tone}>{m.label}</Badge>
+  return <Badge tone={m.tone}>{!isFullUi() && client[status] ? client[status] : m.label}</Badge>
 }
 
 function fmtDate(ts: number) {
@@ -43,7 +50,7 @@ function RenderedVideo({ info }: { info: RemotionRenderInfo }) {
   }, [info])
   return (
     <Card className="mt-4">
-      <CardHeader className="text-sm font-semibold text-ink-900">Video đã render (Remotion)</CardHeader>
+      <CardHeader className="text-sm font-semibold text-ink-900">Video đã xuất</CardHeader>
       <CardBody className="flex flex-col gap-4 sm:flex-row">
         <div className="w-full max-w-[260px] shrink-0">
           {url ? (
@@ -240,6 +247,8 @@ export default function ProjectsPage({
     load()
   }, [])
   const [logOpen, setLogOpen] = useState(false)
+  // ban cai cho may khac: an nhat ky + ket qua tung buoc (src/lib/clientUi.ts)
+  const fullUi = useFullUi()
 
   const [confirmDel, setConfirmDel] = useState<Project | null>(null)
   const deleted = (id: string) => {
@@ -269,18 +278,20 @@ export default function ProjectsPage({
             <ArrowLeft className="h-4 w-4" /> Danh sách
           </Button>
           <div className="flex gap-2">
-            <Button variant={logOpen ? 'subtle' : 'outline'} size="sm" onClick={() => setLogOpen((o) => !o)}>
-              <ScrollText className="h-4 w-4" /> Nhật ký xử lý
-            </Button>
+            {fullUi && (
+              <Button variant={logOpen ? 'subtle' : 'outline'} size="sm" onClick={() => setLogOpen((o) => !o)}>
+                <ScrollText className="h-4 w-4" /> Nhật ký xử lý
+              </Button>
+            )}
             <Button size="sm" onClick={() => openProject(p.id)}>
-              <ArrowRight className="h-4 w-4" /> Mở trong Video Remotion
+              <ArrowRight className="h-4 w-4" /> Mở trong Tạo video
             </Button>
             <Button
               variant="danger"
               size="sm"
               onClick={() => setConfirmDel(p)}
               disabled={busyId === p.id}
-              title={busyId === p.id ? 'Dự án đang xử lý ở Video Remotion — đợi xong rồi xoá' : undefined}
+              title={busyId === p.id ? 'Dự án đang xử lý ở Tạo video — đợi xong rồi xoá' : undefined}
             >
               <Trash2 className="h-4 w-4" /> Xoá
             </Button>
@@ -316,23 +327,30 @@ export default function ProjectsPage({
 
         {p.error && (
           <div className="mb-4 rounded-xl border border-red-400/40 bg-red-50 p-3 text-sm text-red-600">
-            Lỗi ở bước <b>{p.error.step}</b>: {p.error.message}
+            {fullUi ? (
+              <>
+                Lỗi ở bước <b>{p.error.step}</b>: {p.error.message}
+              </>
+            ) : (
+              <>Có lỗi: {p.error.message}</>
+            )}
           </div>
         )}
 
+        {/* ket qua tung buoc (ban cai cho may khac: an — lo quy trinh + AI dung) */}
         <div className="space-y-3">
-          {p.sourceBrief && (
+          {fullUi && p.sourceBrief && (
             <Collapsible title={`Hiểu ${sourceVideos.length || 1} video nguồn (Gemini)`} done defaultOpen>
               <SourceBriefView brief={p.sourceBrief} />
             </Collapsible>
           )}
-          {p.referenceAnalysis && (
+          {fullUi && p.referenceAnalysis && (
             <Collapsible title="Phân tích video mẫu (GPT · Codex CLI)" done>
               <ReferenceAnalysisView analysis={p.referenceAnalysis} />
             </Collapsible>
           )}
-          {p.rmPlan && (
-            <Collapsible title={`Kế hoạch dựng Remotion (${planAiName(p.rmPlan)})`} done>
+          {fullUi && p.rmPlan && (
+            <Collapsible title={`Kế hoạch dựng video (${planAiName(p.rmPlan)})`} done>
               <RemotionPlanView plan={p.rmPlan} spec={p.rmSpec || null} catalog={null} />
             </Collapsible>
           )}
@@ -342,7 +360,7 @@ export default function ProjectsPage({
 
         {confirmDel && <DeleteDialog project={confirmDel} onClose={() => setConfirmDel(null)} onDone={deleted} />}
 
-        {logOpen && (
+        {logOpen && fullUi && (
           <RunLogPanel
             runId={p.id}
             live={['understanding', 'analyzing_reference', 'planning', 'rendering'].includes(p.status)}
@@ -361,7 +379,9 @@ export default function ProjectsPage({
         <div>
           <h1 className="text-2xl font-bold text-ink-900">Video đã tạo</h1>
           <p className="mt-1 text-sm text-ink-800/50">
-            Xem lại các dự án Video Remotion: phân tích nguồn, video mẫu, kế hoạch dựng và video đã render.
+            {fullUi
+              ? 'Xem lại các dự án Tạo video: phân tích nguồn, video mẫu, kế hoạch dựng và video đã render.'
+              : 'Xem lại các dự án Tạo video và video đã xuất.'}
             {hidden > 0 && ` (Ẩn ${hidden} dự án CapCut cũ — dữ liệu vẫn giữ nguyên.)`}
           </p>
         </div>
@@ -379,7 +399,7 @@ export default function ProjectsPage({
           <CardBody className="flex flex-col items-center py-16 text-center">
             <MonitorPlay className="mb-3 h-9 w-9 text-ink-800/25" />
             <div className="font-semibold text-ink-900">Chưa có dự án nào</div>
-            <p className="mt-1 text-sm text-ink-800/45">Sang tab “Video Remotion” để bắt đầu dự án đầu tiên.</p>
+            <p className="mt-1 text-sm text-ink-800/45">Sang tab “Tạo video” để bắt đầu dự án đầu tiên.</p>
           </CardBody>
         </Card>
       ) : (

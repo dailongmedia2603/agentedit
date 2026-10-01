@@ -21,6 +21,7 @@ export interface Project {
   videos?: { id: string; path: string; name: string; duration: number; thumb?: string }[]
   referenceVideo?: { path: string; name: string; duration: number; thumb?: string } | null
   editRequest?: { purpose?: string; style?: string; audience?: string; duration?: string }
+  brandGuide?: { typography?: string; colors?: string; graphics?: string; imagery?: string; motion?: string }
   workDir?: string
   brief?: unknown
   sourceBrief?: unknown

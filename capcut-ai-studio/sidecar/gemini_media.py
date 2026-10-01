@@ -520,6 +520,12 @@ def merge_parts(source_id, name, duration, parts):
     if fr:
         merged["faces_region"] = fr
     merged["warnings"] = _union([s.get("warnings") for _, s in parts])
+    # giong noi (voice_boost): muc to chiem nhieu thoi luong nhat; mot phan nghe khong ro -> ca video khong ro
+    gn = [(s.get("giong_noi"), ln) for (_, s), ln in zip(parts, lens) if isinstance(s.get("giong_noi"), dict)]
+    if gn:
+        muc = _majority([g.get("muc_to") for g, _ in gn], [ln for _, ln in gn])
+        merged["giong_noi"] = {"muc_to": muc, "nghe_ro": not any(g.get("nghe_ro") is False for g, _ in gn),
+                               "van_de": " | ".join(str(g.get("van_de")) for g, _ in gn if g.get("van_de"))[:300]}
     summaries = [{"range": "%s–%s" % (fmt_time(p["start"]), fmt_time(p["end"])),
                   "start": p["start"], "end": p["end"], "summary": s.get("summary") or ""}
                  for p, s in parts]

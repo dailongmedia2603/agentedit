@@ -1558,6 +1558,9 @@ def voice_level(plan):
     nguon thuc su duoc dung (than video + hook), nhan volume cua doan. None neu khong do duoc."""
     import numpy as np
     paths = _src_paths(plan)
+    # giong da duoc NANG (voice_boost: ban lam viec, do o day van tren file goc) -> cong muc nang vao
+    gains = {sv.get("id"): float(sv.get("voice_gain_db") or 0.0) for sv in plan.get("source_videos") or []
+             if isinstance(sv, dict)}
     vals = []
     for s in plan.get("segments") or []:
         if not isinstance(s, dict) or s.get("kind") == "insert":
@@ -1575,7 +1578,7 @@ def voice_level(plan):
         # M o khung k = cua so 400ms ket thuc o (k+1)*0.1 -> lay khung trong [st+0.3, en]
         v = arr[int((st + 0.3) / LOUD_HOP):int(en / LOUD_HOP) + 1]
         if v.size:
-            vals.append(v + 20.0 * np.log10(min(1.0, vol)))
+            vals.append(v + 20.0 * np.log10(min(1.0, vol)) + gains.get(s.get("source_id"), 0.0))
     if not vals:
         return None
     x = np.concatenate(vals)

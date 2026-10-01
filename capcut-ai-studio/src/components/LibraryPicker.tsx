@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, Check, CheckCircle2, Film, Library, Search, Trash2, X } from 'lucide-react'
 import { Badge, Button, Input, Spinner } from '@/components/ui/primitives'
 import { cn, fmtTime } from '@/lib/utils'
+import { isFullUi } from '@/lib/clientUi'
 
 /** "2026-09-26T05:52:10" -> "26/09 05:52" */
 export function fmtSavedAt(at?: string | null): string {
@@ -48,11 +49,14 @@ export function SavedBadge({ at, label = 'Đã phân tích' }: { at?: string | n
 
 type Mode = 'source' | 'reference'
 
-const PART_LABEL: Record<LibraryPart, string> = {
+const PART_LABEL_FULL: Record<LibraryPart, string> = {
   source: 'Nguồn',
   ref_video: 'Mẫu · Gemini',
   ref_gpt: 'Mẫu · GPT (cũ)'
 }
+// ban cai cho may khac: khong neu ten AI (src/lib/clientUi.ts)
+const PART_LABEL_CLIENT: Record<LibraryPart, string> = { source: 'Nguồn', ref_video: 'Mẫu', ref_gpt: 'Mẫu (cũ)' }
+const partLabels = () => (isFullUi() ? PART_LABEL_FULL : PART_LABEL_CLIENT)
 
 // Phan tich app se DUNG LAI cho video nay (giong thu tu cua sidecar): mau Gemini truoc, khong co thi ban GPT cu
 function usedPart(it: LibraryItem, mode: Mode): LibraryPart | null {
@@ -152,7 +156,7 @@ export function LibraryPicker({
               Thư viện video đã phân tích · {mode === 'source' ? 'chọn video nguồn' : 'chọn video mẫu'}
             </div>
             <div className="text-xs text-ink-800/50">
-              Video có phân tích <b>{PART_LABEL[want]}</b> dùng lại ngay, không gọi lại AI. Mỗi lần phân tích xong, video
+              Video có phân tích <b>{partLabels()[want]}</b> dùng lại ngay, không gọi lại AI. Mỗi lần phân tích xong, video
               tự được lưu vào đây.
             </div>
           </div>
@@ -225,11 +229,11 @@ export function LibraryPicker({
                       it[part] ? (
                         <Badge key={part} tone={part === used ? 'ok' : 'neutral'} title={it[part]?.summary || ''}>
                           {part === used && <CheckCircle2 className="h-3 w-3" />}
-                          {PART_LABEL[part]} · {fmtSavedAt(it[part]?.at)}
+                          {partLabels()[part]} · {fmtSavedAt(it[part]?.at)}
                         </Badge>
                       ) : null
                     )}
-                    {!used && it.exists && <Badge tone="warn">Chưa có {PART_LABEL[want]} — sẽ phân tích khi chạy</Badge>}
+                    {!used && it.exists && <Badge tone="warn">Chưa có {partLabels()[want]} — sẽ phân tích khi chạy</Badge>}
                   </div>
                   {summary && <div className="mt-1 line-clamp-2 text-xs leading-relaxed text-ink-800/55">{summary}</div>}
                   {!it.exists && (

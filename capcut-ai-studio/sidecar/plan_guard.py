@@ -842,6 +842,8 @@ SFX_VOL_MAX = 1.20
 SFX_DUCK_OVER_SPEECH = 0.75   # roi dung luc dang noi -> lui ve sau giong noi
 SFX_HOOK_BOOST = 1.10         # SFX dau tien o hook duoc phep noi hon mot chut
 SFX_REPEAT_DECAY = 0.85       # cung mot tieng lap lai -> nho dan, do nham tai
+SFX_REPEAT_WINDOW = 10.0      # ... chi tinh lan lap trong 10s truoc
+SFX_REPEAT_MAX_STEPS = 2      # ... va giam toi da 2 bac (~-3 dB): chu ve sau van nghe ro
 SFX_CROWD_DECAY = 0.85        # hai SFX sat nhau -> cai sau nhuong cai truoc
 SFX_CROWD_SEC = 1.5
 SFX_LOUD_MARK = 0.85          # tren muc nay coi la "tieng to"
@@ -974,11 +976,14 @@ def mix_sfx(plan, changes):
             vol *= SFX_HOOK_BOOST
             ly_do.append("nam trong hook -> cho noi hon")
         khoa = a.get("sfx_id") or a.get("file") or ""
-        n = dem_lap.get(khoa, 0)
+        # chi dem lan lap TRONG ~SFX_REPEAT_WINDOW giay truoc, toi da SFX_REPEAT_MAX_STEPS bac (user 2026-10-01: dem
+        # ca video thi chu thu 15 cung tieng 'pop' con 0.85^14 ~ -20 dB = coi nhu mat tieng)
+        truoc = [x for x in dem_lap.get(khoa, []) if st - x < SFX_REPEAT_WINDOW]
+        n = min(len(truoc), SFX_REPEAT_MAX_STEPS)
         if n:
             vol *= SFX_REPEAT_DECAY ** n
-            ly_do.append("tieng nay lap lan %d -> nho dan" % (n + 1))
-        dem_lap[khoa] = n + 1
+            ly_do.append("tieng nay lap lan %d trong %.0fs -> nho dan" % (len(truoc) + 1, SFX_REPEAT_WINDOW))
+        dem_lap[khoa] = truoc + [st]
         if truoc_t is not None and st - truoc_t < SFX_CROWD_SEC:
             vol *= SFX_CROWD_DECAY
             ly_do.append("sat SFX truoc (%.1fs) -> nhuong" % (st - truoc_t))

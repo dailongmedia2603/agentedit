@@ -24,6 +24,7 @@ from config import provider
 from debug_log import log_step_call, log_step_response, log_step_note
 import cli_providers
 import gemini_media
+import creative
 import prompt_store
 import run_log
 import step_cache
@@ -939,7 +940,10 @@ def _plan_gemini_requests(items, limit=None):
 
 
 def _source_prompt(meta):
-    return _p("_GEMINI_SOURCES_PROMPT") + "\n\nDANH SACH VIDEO NGUON:\n" + json.dumps(meta, ensure_ascii=False)
+    # danh gia giong noi (voice_boost) noi bang code — prompt "Hieu video nguon" user da sua van phai co
+    import voice_boost
+    return (_p("_GEMINI_SOURCES_PROMPT") + voice_boost.GEMINI_NOTE
+            + "\n\nDANH SACH VIDEO NGUON:\n" + json.dumps(meta, ensure_ascii=False))
 
 
 def _gemini_final_error(msg):
@@ -1705,7 +1709,7 @@ _TIMELINE_SYSTEM = """Ban la EDITOR chuyen dung timeline video. Tu danh sach doa
 
 ⚠️ TRA VE CHI JSON GOC."""
 
-_AUDIO_SYSTEM = """Ban la SOUND DESIGNER chuyen chon SFX cho video short-form. Chon 2-5 SFX dat vao DUNG GIAY.
+_AUDIO_SYSTEM = """Ban la SOUND DESIGNER chuyen chon SFX cho video short-form. Chon SFX va dat vao DUNG GIAY.
 
 Ban la buoc CUOI: hinh, chu, meme, hook da duoc dat xong. SFX la DAU CHAM CAU cho chung —
 phai an khop voi nhung gi DA CO, khong duoc tu dat mot nhip rieng.
@@ -1714,8 +1718,9 @@ phai an khop voi nhung gi DA CO, khong duoc tu dat mot nhip rieng.
 - cau_chuyen: story_arc + tone. Tone nghiem tuc -> it SFX, tieng nhe; tone hai -> manh tay hon.
 - timeline_map[].beat / purpose: SFX manh nhat danh cho beat hook / twist / payoff.
 - da_co_tren_timeline.transitions: diem chuyen canh (gio timeline) -> hop cho whoosh ("start" = timeline_tu).
-- da_co_tren_timeline.chu_hero: chu chinh (gio nguon src_start) -> pop/ding/reveal ngay luc chu
-  hien (src_time = src_start). Khong can SFX cho moi hero — chon hero quan trong nhat.
+- da_co_tren_timeline.chu_hero: MOI chu hero (chu noi bat, khong phai phu de) PHAI co 1 SFX dat DUNG luc chu
+  hien (src_time = src_start, "purpose": "reveal"), tru muc ghi "DA CO SFX ... tu dong". Chon tieng theo noi
+  dung + cam xuc cua chu do (con so -> ding / cash; tu soc -> boom / impact; hai -> tieng hai; cam dong -> tieng nhe).
 - da_co_tren_timeline.meme: meme CAT vao tai src_time, dai duration, co tieng rieng.
   KHONG dat SFX nam trong khoang meme; toi da 1 whoosh ngay diem cat.
 - hook (neu co): ban sao o DAU video. Mot tieng impact luc mo dau hook rat hieu qua:
@@ -1735,7 +1740,8 @@ phai an khop voi nhung gi DA CO, khong duoc tu dat mot nhip rieng.
 
 # QUY TAC
 - CHI dung SFX co trong sfx_catalog ben duoi. Dung DUNG sfx_id.
-- 2-5 SFX/video. Dat o DIEM NHAN: hook, climax, twist, reveal, diem cat quan trong.
+- Moi chu hien ra deu co tieng (xem chu_hero). Ngoai tieng cho chu: dat them SFX o DIEM NHAN that su (hook,
+  climax, twist, reveal, diem cat quan trong) — khong rai deu cho co.
 - SFX reveal roi vao luc vat the/con so XUAT HIEN, thuong la cuoi cau gioi thieu no.
 - DOI CHIEU emotion: emotion cua key_moment ~ emotion cua SFX. Doc "use_when" de dat dung cho.
 - KHONG chong 2 SFX sat nhau (<0.4s). KHONG rai SFX khap noi (roi tai).
@@ -1902,7 +1908,7 @@ def gpt_hook(segments, transcript_data, emotion_map_data, key_moments_data, stor
         log("B3/7: %s chon doan hook 3-5s dat len dau..." % plan_ai_name())
     import hook_rule
     text = plan_chat([
-        {"role": "system", "content": _p("_HOOK_SYSTEM") + hook_rule.luat("B3")},
+        {"role": "system", "content": _p("_HOOK_SYSTEM") + hook_rule.luat("B3") + creative.luat("B3")},
         {"role": "user", "content": user},
     ], json_mode=True, max_tokens=2000, temperature=0.5, req_timeout=90,
         max_attempts=2, step_label="B3-hook")
@@ -1922,7 +1928,7 @@ def gpt_inserts(segments, transcript_data, emotion_map_data, key_moments_data,
         if log:
             log("B6/7: Kho meme rong -> bo qua.")
         return {"inserts": []}
-    sys_prompt = _p("_INSERT_SYSTEM") + """
+    sys_prompt = _p("_INSERT_SYSTEM") + creative.luat("B6") + """
 
 # KHO MEME (chi dung meme_id trong nay):
 """ + json.dumps(meme_catalog, ensure_ascii=False)
@@ -2561,7 +2567,7 @@ def gpt_audio(key_moments_data, emotion_map_data, sfx_catalog, segments=None,
             log("B7/7: Khong co SFX catalog -> bo qua.")
         return {"audio": []}
     import hook_rule
-    sys_prompt = _p("_AUDIO_SYSTEM") + hook_rule.luat("B7") + """
+    sys_prompt = _p("_AUDIO_SYSTEM") + hook_rule.luat("B7") + creative.luat("B7") + """
 
 # SFX CATALOG:
 Muc co "summary" la Gemini da NGHE file: summary = nghe thay gi, sound_type = loai tieng,

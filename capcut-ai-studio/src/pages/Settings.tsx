@@ -23,12 +23,13 @@ import { Button, Input, Spinner, Badge } from '@/components/ui/primitives'
 import { GeminiMark, OpenAIMark, ClaudeMark } from '@/components/BrandIcons'
 import { cn } from '@/lib/utils'
 import { IS_WIN, KEY_STORE, TERM } from '../lib/platform'
+import { isFullUi } from '@/lib/clientUi'
 
 interface ProviderMeta {
   id: string
   name: string
-  /** Dong mo ta duoi ten — tuy AI nao dang lap ke hoach */
-  role: (planner: PlanProvider) => string
+  /** Dong mo ta duoi ten (vai tro cua AI nay trong app) */
+  role: () => string
   mark: (p: { className?: string }) => JSX.Element
   placeholderModel: string
   /** Co CLI chinh chu chay bang tai khoan da dang nhap khong */
@@ -41,7 +42,7 @@ const PROVIDERS: ProviderMeta[] = [
   {
     id: 'gemini',
     name: 'Gemini',
-    role: () => 'Đọc & hiểu video (native video)',
+    role: () => (isFullUi() ? 'Đọc & hiểu video (native video)' : 'Hiểu nội dung video'),
     mark: GeminiMark,
     placeholderModel: 'gemini-2.5-flash',
     canSubscribe: true,
@@ -50,10 +51,7 @@ const PROVIDERS: ProviderMeta[] = [
   {
     id: 'gpt',
     name: 'GPT',
-    role: (pl) =>
-      pl === 'gpt'
-        ? 'Lập kế hoạch edit chi tiết · phân tích video mẫu · tạo ảnh AI'
-        : 'Phân tích video mẫu · tạo ảnh AI (lập kế hoạch đang dùng Claude)',
+    role: () => (isFullUi() ? 'Tạo ảnh AI + chữ ảnh AI (công cụ tạo ảnh của Codex CLI)' : 'Tạo hình ảnh'),
     mark: OpenAIMark,
     placeholderModel: 'gpt-4o',
     canSubscribe: true,
@@ -62,19 +60,12 @@ const PROVIDERS: ProviderMeta[] = [
   {
     id: 'claude',
     name: 'Claude',
-    role: (pl) =>
-      pl === 'claude' ? 'Lập kế hoạch edit chi tiết' : 'Chưa dùng — chọn Claude ở mục “AI lập kế hoạch” phía trên',
+    role: () => (isFullUi() ? 'Lập kế hoạch edit chi tiết (B1 chất liệu → B7 SFX)' : 'Dựng video'),
     mark: ClaudeMark,
     placeholderModel: 'claude-opus-5',
     canSubscribe: true,
     subLabel: 'Gói subscription'
   }
-]
-
-/** Provider lam duoc khau lap ke hoach (khop sidecar config.PLAN_PROVIDERS) */
-const PLANNERS: { id: PlanProvider; name: string; mark: (p: { className?: string }) => JSX.Element; note: string }[] = [
-  { id: 'gpt', name: 'GPT', mark: OpenAIMark, note: 'Codex CLI (ChatGPT) hoặc API key OpenAI' },
-  { id: 'claude', name: 'Claude', mark: ClaudeMark, note: 'Claude Code CLI (Claude Pro / Max) hoặc API key Anthropic' }
 ]
 
 interface LocalProvider {
@@ -605,11 +596,7 @@ export default function SettingsPage() {
   const [cli, setCli] = useState<Record<string, CliStatus>>({})
   const [cliLoading, setCliLoading] = useState(false)
   const [login, setLogin] = useState<LoginRun | null>(null)
-  // AI lap ke hoach (B1..B7, R4, R5) — luu cung nut "Luu tat ca"
-  const [planner, setPlanner] = useState<PlanProvider>('claude')
-  useEffect(() => {
-    window.studio.settingsGetPlanner().then((v) => setPlanner(v === 'gpt' ? 'gpt' : 'claude'))
-  }, [])
+  // AI lap ke hoach: LUON Claude (2026-10-01 bo lua chon GPT / Claude + an muc "AI lap ke hoach")
 
   // Dong chu CLI in ra khi dang nhap / cai dat (link dang nhap, ma 1 lan, log npm) -> hien trong khung
   useEffect(
@@ -680,12 +667,6 @@ export default function SettingsPage() {
     }
     return { gpt: make('gpt'), claude: make('claude') } as Record<string, (v: string) => void>
   }, [])
-
-  const choosePlanner = (v: PlanProvider) => {
-    setPlanner(v)
-    setSaved(false)
-    setOpen((s) => ({ ...s, [v]: true }))
-  }
 
   // Dang nhap agy / Claude Code dien ra trong cua so Terminal -> hoi lai trang thai moi 4s (toi da 10 phut)
   const termPoll = useRef({ cancel: false })
@@ -812,7 +793,6 @@ export default function SettingsPage() {
 
   const save = async () => {
     const m = await window.studio.settingsSave(buildProvidersMap())
-    setPlanner(await window.studio.settingsSetPlanner(planner))
     const l: Local = { ...local }
     for (const p of PROVIDERS) {
       l[p.id] = {
@@ -864,23 +844,6 @@ export default function SettingsPage() {
     return l.has_key ? <Badge tone="ok">đã có key</Badge> : <Badge tone="warn">chưa có key</Badge>
   }
 
-  /** AI lap ke hoach dang chon chua chay duoc thi vi sao (null = on) */
-  const plannerIssue = (() => {
-    const l = local[planner]
-    if (!l) return null
-    const name = planner === 'claude' ? 'Claude' : 'GPT'
-    if (l.auth_mode === 'subscription') {
-      const st = cli[planner]
-      if (st && !st.installed) return `${name} chưa cài ${st.label} — cài ở thẻ ${name} bên dưới.`
-      if (st && !st.logged_in) return `${name} chưa đăng nhập ${st.label} — đăng nhập ở thẻ ${name} bên dưới.`
-      const m = st?.models?.find((x) => x.id === (l.sub_model || st?.default_model))
-      if (m?.needs_update)
-        return `Model ${m.label} cần Claude Code ≥ ${m.needs_update} — bấm “Cập nhật Claude Code” ở thẻ Claude, hoặc chọn model khác.`
-      return null
-    }
-    return l.has_key || l.api_key ? null : `${name} chưa có API key — nhập ở thẻ ${name} bên dưới.`
-  })()
-
   return (
     <div className="w-full px-8 py-7">
       <div className="mb-5 flex items-start justify-between">
@@ -897,48 +860,6 @@ export default function SettingsPage() {
           {saved ? <CheckCircle2 className="h-4 w-4" /> : <Save className="h-4 w-4" />}
           {saved ? 'Đã lưu' : 'Lưu tất cả'}
         </Button>
-      </div>
-
-      {/* Chon AI lap ke hoach */}
-      <div className="card-surface mb-4 rounded-2xl px-5 py-4">
-        <div className="text-[15px] font-semibold text-ink-900">AI lập kế hoạch</div>
-        <div className="mt-0.5 text-xs text-ink-800/45">
-          Chạy các bước lập plan: B1 chất liệu → B2 timeline → B3 hook → R4 thiết kế → R5 phụ đề → B6 meme → B7 SFX
-        </div>
-        <div className="mt-3 grid grid-cols-2 gap-3">
-          {PLANNERS.map((o) => {
-            const on = planner === o.id
-            const M = o.mark
-            return (
-              <button
-                key={o.id}
-                onClick={() => choosePlanner(o.id)}
-                className={cn(
-                  'no-drag flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition',
-                  on ? 'border-brand-400 bg-brand-500/[0.06] ring-2 ring-brand-500/15' : 'border-black/10 hover:border-black/20'
-                )}
-              >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-black/6 bg-white">
-                  <M className="h-5 w-5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-[14px] font-semibold text-ink-900">{o.name}</div>
-                  <div className="text-[12px] text-ink-800/50">{o.note}</div>
-                </div>
-                {on && <CheckCircle2 className="h-5 w-5 shrink-0 text-brand-500" />}
-              </button>
-            )
-          })}
-        </div>
-        {plannerIssue && (
-          <div className="mt-3 flex items-start gap-2 rounded-lg bg-amber-500/[0.08] px-3 py-2 text-[12.5px] text-amber-800">
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /> {plannerIssue}
-          </div>
-        )}
-        <p className="mt-3 text-[12px] leading-relaxed text-ink-800/45">
-          Đổi AI thì lần lập plan sau các bước chạy lại thật (không dùng kết quả của AI kia). Phân tích video mẫu dùng
-          Gemini; tạo ảnh AI + chữ ảnh AI vẫn dùng GPT qua Codex CLI (công cụ tạo ảnh). Bấm “Lưu tất cả” để áp dụng.
-        </p>
       </div>
 
       <div className="space-y-4">
@@ -965,7 +886,7 @@ export default function SettingsPage() {
                     {p.name}
                     {headerBadge(p, l)}
                   </div>
-                  <div className="text-xs text-ink-800/45">{p.role(planner)}</div>
+                  <div className="text-xs text-ink-800/45">{p.role()}</div>
                 </div>
                 {tr && (
                   <div className="flex items-center gap-1.5 text-xs">

@@ -691,6 +691,77 @@ tieng; (3) chu anh AI: duoi 'g' hang tren con du manh tren hang duoi; (4) SFX kh
   mep cat co tieng 42 -> 21 (con lai o ranh gioi phan B1/B2 da bo: tieng dem / cau lap, duoc bao ro).
 - Test: `tests/test_smooth_zoom_audio.py` (moi), `test_cut_hook_rules.py` [7][8], `test_speech_cut.py` [8].
 
+## 11s. Menu "Tao video" + BRAND GUIDELINE + AI lap ke hoach co dinh Claude (2026-10-01)
+
+- Menu / tieu de "Video Remotion" -> "Tao video"; bo chu "Remotion" tren giao dien Tao video / Video da tao / nhat ky
+  (id noi bo `remotion`, thu muc du an `remotion-*`, muc Doctor "Bo dung Remotion" giu nguyen).
+- AI lap ke hoach LUON Claude: `config.plan_provider()` = "claude" (bo qua state.json `plan_provider` cu); duong GPT chi
+  mo cho TEST bang `STUDIO_PLANNER_TEST=gpt`. Electron `planProviderOf` = 'claude'; Cai dat API bo khung "AI lap ke hoach".
+- BRAND GUIDELINE (khong bat buoc) — `src/components/BrandGuideForm.tsx` (5 truong: typography, colors, graphics,
+  imagery, motion), luu `Project.brandGuide`, gui autoplan `brand_guide`. `sidecar/brand_guide.py`:
+  - `STEP_FIELDS`: plan (R4 / R4-visual) = ca 5; captions (R5) = typography + colors; text_art = typography + colors +
+    graphics + imagery; image (anh AI, qua `asset_contexts` -> `thuong_hieu` -> `_context_text`) = colors + graphics +
+    imagery; fx (FX-plan, FX-code / FX-fix, Hook-FX-plan) = motion + colors + graphics. `rule_text` NOI vao system
+    prompt bang code (ke ca prompt user da sua); B1/B2/B3/B6/B7 KHONG nhan.
+  - Khoa cache: moi buoc chi them "brand" khi CO Brand Guideline -> du an khong co giu nguyen cache + prompt.
+  - EP BANG CODE: `fonts()` = font DANH MUC duoc nhac ten (dau = tieu de, cuoi = noi dung / phu de); `hexes()` = ma
+    #hex / rgb(). `apply_kit` (autoplan sau R4 + build_spec): palette ve he thuong hieu, fonts theo vai, subtitle.font,
+    broll_style = Phong cach hinh anh. `enforce_plan` (dau build_spec, TRUOC dung lop chu): font + mau layers / scenes /
+    caption_theme / captions / style_kit. `enforce_spec` (sau tao spec): mau code tu sinh. FX overlay: ban sao khung
+    `-b<hash>.json` da `snap_svg`. Mau trung tinh (trang / den / xam: vien, bong) giu nguyen; sac do cach <= 60 (redmean)
+    giu (tong dam / nhat cua mau thuong hieu). Chi mo ta (khong ma / khong ten font) -> chi qua prompt.
+  - Uu tien hon phong cach boc tu video mau o 5 mat nay (yeu cau ro rang cua du an, khong phai phong cach mac dinh).
+- Test: `tests/test_brand_guide.py` (don vi + ca luong autoplan AI gia: dung truong tung buoc, ban dung dung font / mau,
+  khong Brand Guideline -> prompt / payload y nhu cu); `test_claude_planner.py` [1].
+
+## 11t. Moi chu co tieng, huy hieu bang anh AI, nang giong nho, luat sang tao (2026-10-01)
+
+- LUAT CHU CO TIENG: KHONG con tran so SFX (bo `SFX_CAP_MOTION` 16 — do that: 29 lop chu + 6 SFX B7, tran cat het tu giay
+  ~56/135, 17 chu cuoi im). build_spec: SFX khong gan chu van theo gian cach `SFX_MIN_GAP`; tieng CHU (`MD.is_text_sfx`:
+  `_text` lop chu R4 / `_auto_text` / B7 `purpose: reveal`) khong bao gio bi bo vi gian cach, chi "dung chung" khi trung
+  luc < `TEXT_SFX_SAME` 0.12s. Sau do `MD.ensure_text_sfx`: moi lop text / counter / badge + caption hero / micro (gom chu
+  hook) chua co tieng trong [t-0.15, t+0.15] -> gan tieng bo kit hop chu (`text_sfx_family`: counter ding, badge pop,
+  typewriter typing, truot swoosh, dap whoosh, chu nho click, con lai pop). `clear_over_inserts` chay TRUOC buoc nay.
+  `engine.resolve_plan_sfx`: tran MAX_SFX chi tinh SFX khong phai `reveal`. `mix_sfx`: lap cung tieng chi giam trong
+  `SFX_REPEAT_WINDOW` 10s, toi da `SFX_REPEAT_MAX_STEPS` 2 bac (truoc: 0.85^n ca video -> chu ve sau ~-20 dB). Spec audio
+  `textAuto: true` = tieng code tu gan -> luat hook KHONG tinh la tieng gay chu y (hook van can SFX AI chon).
+  Prompt B7 (mac dinh + ban user sua trong prompt_overrides.json, ban sao `.bak-20261001`) bo "2-5 SFX"; R4 muc 7: MOI lop
+  chu phai co `sfx` hop chu.
+- HUY HIEU BANG ANH AI (`sidecar/graphic_art.py`, buoc nen "GFX-art" song song TXT-art, pool nen 3 luong): lop `badge`
+  -> AI tao ANH CA PHAN TU (hinh + chat lieu + icon theo y nghia + chu), KHAC text_art (chi chu). Moi `group` <= 3 phan
+  tu = 1 anh 1024x1536, moi phan tu 1 hang; nhom dau lam mau `-i` cho nhom sau; cat bang `text_art.segment_rows/row_masks`;
+  kiem OCR (`contains`, >= 0.72) + hinh (ti le 0.4-2.5); sai -> tao lai 1 lan (prompt khac `attempt=2`). Prompt
+  `_GRAPHIC_ART_PROMPT` (own_key, khoa rieng `prompt_fp`). `plan["graphic_art"]`; `MD._attach_graphic` dat `L.art` (than
+  phan tu = w thiet ke); Layers.tsx badge co `art` -> ve anh. Do that: 5/5 phan tu dat OCR, ~150s / 2 nhom.
+- HUY HIEU VE CODE (du phong): `MD.badge_colors` lay mau tu palette video (bg_gradient / primary / accent), chu tuong phan
+  >= 4.5; Layers.tsx bo mau cam co dinh (#F28B3C / #E2601F / #FFD2A8...), chi nhan -> chu to vua long huy hieu.
+- GIONG NOI NHO (`sidecar/voice_boost.py`): autoplan sau B2 `assess` = do LUFS M p90 khung co loi tren file GOC (cung
+  thuoc voice_level) + Gemini `source.giong_noi` (GEMINI_NOTE noi bang code vao prompt Hieu nguon; `merge_parts` gop).
+  Muc tieu -15; thieu >= 6 dB -> nang; 3-6 dB chi khi Gemini nghe nho / khong ro; tran 20 dB va dinh p99 khong bi ep qua
+  6 dB. `plan["voice_boost"]`; build_spec `apply` sau media_sdr: ban lam viec `cache/voice-boost` (hinh copy, tieng
+  volume + alimiter -1 dBFS level=false latency=true; lech 0 ms do bang tuong quan), ghi `orig_path` -> speech_cut / cat
+  van tren file goc; `voice_level` cong `voice_gain_db` -> SFX / meme can theo giong sau nang. Do that du an 'hoc sinh':
+  -34.4 -> +19.4 dB -> -15.0 (I -18.3 LUFS, TP -0.8).
+- LUAT SANG TAO + CAM XUC (`sidecar/creative.py`, prompt `_CREATIVE_RULE` sua duoc): noi bang code vao B3 / R4 (ca R4
+  du phong) / R5 / FX-plan / B6 / B7 (ke ca prompt user da sua); B1 / B2 khong nhan (luat giu thu tu noi dung).
+- Test: `tests/test_badge_voice.py`; `test_remotion_plan.py` [5][6b], `test_plan_guard.py` [7], `test_info_flow.py` cap nhat.
+- Huy hieu AI tren Windows: OCR 1 dong (PP-OCR) doc ca huy hieu tron ra rac -> `graphic_art.read_text` quet DAI NGANG
+  (20-38% cao) khi khong co Vision; do that 5/5 huy hieu that doc dung (~0.4s / phan tu), chu sai van bi loai.
+
+## 11u. BAN CAI CHO MAY KHAC: an quy trinh / nhat ky / prompt (2026-10-02)
+
+- Co BUILD `__CLIENT_UI__` (electron.vite.config.ts, ca main + renderer): `command === 'build'` va KHONG co
+  `STUDIO_FULL_UI=1` -> an. Nghia la `npm run build` / `dist` / `dist:win` (build-windows.ps1) mac dinh la BAN CAI;
+  `npm run dev` va `STUDIO_FULL_UI=1 npm run dist` = giao dien day du (ban cua chu app tren may cua minh — app trong
+  /Applications may chu app CAI BANG BAN DAY DU, khong cai ban an len may nay).
+- `src/lib/clientUi.ts`: `isFullUi()` / `useFullUi()`; cua bi mat Ctrl/Cmd+Shift+Alt+D bat / tat (localStorage
+  `studio.fullUi`, chi may do). An: menu Prompt & quy tac; RunLogPanel + nut Nhat ky (Tao video, Video da tao); thanh
+  cac buoc; khung Ket qua (hieu nguon / video mau / ke hoach / kiem tra ky thuat) + "Dung lai N buoc"; Doctor "Nhat ky
+  cai dat"; ten AI / ten buoc trong loi nhan (chay: "Dang phan tich" -> "Dang tao video"; loi: "Co loi khi ..."; canh
+  bao: chi muc "Tu lieu..." + 1 dong chung); Cai dat API vai tro chung chung; thu vien "Mau" (khong "Gemini").
+  main.ts: menu Xem khong co DevTools + `webPreferences.devTools = false`.
+- Chuc nang KHONG doi (sidecar van ghi nhat ky ~/.capcut-studio/runs tren may khach, chi khong hien).
+
 ## 10b. Thu vien phan tich video (sidecar/analysis_library.py, them 2026-09-26)
 
 Luu ket qua "Hieu nguon" (Gemini + gio loi noi Whisper) va "Video mau" (GPT/Codex) de lan sau

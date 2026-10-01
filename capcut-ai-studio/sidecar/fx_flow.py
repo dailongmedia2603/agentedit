@@ -18,6 +18,7 @@ import os
 import shutil
 import subprocess
 
+import creative
 import prompt_store
 import providers
 
@@ -354,23 +355,29 @@ def _check_payload(e, faces, palette, W=1080, H=1920, fps=30, moments=None):
 
 
 def gpt_fx_plan(moments, story=None, style=None, sources=None, existing=None, log=None, hook=None, note=None,
-                step_label="FX-plan"):
-    """`note`: yeu cau them cho luot goi rieng (vd hook chua co hieu ung -> chi xet khoanh khac hook)."""
+                step_label="FX-plan", brand=None):
+    """`note`: yeu cau them cho luot goi rieng (vd hook chua co hieu ung -> chi xet khoanh khac hook).
+    `brand`: Brand Guideline (ngon ngu chuyen dong + mau + do hoa) — khong co thi prompt / payload y nhu truoc."""
+    import brand_guide
     import hook_rule
     payload = {"cau_chuyen": story or {}, "phong_cach": style or {}, "khoanh_khac": moments,
                "mo_ta_nguon": sources or [], "da_co": existing or {}}
     if hook:
         payload["hook"] = hook
+    if brand_guide.view(brand, "fx"):
+        payload["brand_guideline"] = brand_guide.view(brand, "fx")
+        note = ((note + "\n") if note else "") + brand_guide.rule_text(brand, "fx")
     if log:
         log("FX-plan: %s de xuat hieu ung tu boi canh %d khoanh khac..." % (providers.plan_ai_name(), len(moments)))
     text = providers.plan_chat([
-        {"role": "system", "content": _p("_FX_PLAN_SYSTEM") + hook_rule.luat("FX") + (("\n\n" + note) if note else "")},
+        {"role": "system", "content": _p("_FX_PLAN_SYSTEM") + hook_rule.luat("FX") + creative.luat("FX")
+         + (("\n\n" + note) if note else "")},
         {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
     ], json_mode=True, max_tokens=12000, temperature=0.5, req_timeout=300, max_attempts=2, step_label=step_label)
     return providers._safe_json(text)
 
 
-def gpt_fx_code(effects, fix=None, log=None):
+def gpt_fx_code(effects, fix=None, log=None, brand=None):
     """effects: hieu ung da loc (khong code). fix: {id: {"code", "errors"}} -> luot sua. Tra {id: {code, fit_check}}."""
     out = {}
     for i in range(0, len(effects), CODE_BATCH):
@@ -385,9 +392,13 @@ def gpt_fx_code(effects, fix=None, log=None):
             rows.append(r)
         if log:
             log("%s: %s viet code %d hieu ung..." % ("FX-fix" if fix else "FX-code", providers.plan_ai_name(), len(part)))
+        import brand_guide
+        user = {"effects": rows}
+        if brand_guide.view(brand, "fx"):
+            user["brand_guideline"] = brand_guide.view(brand, "fx")
         text = providers.plan_chat([
-            {"role": "system", "content": _p("_FX_CODE_SYSTEM")},
-            {"role": "user", "content": json.dumps({"effects": rows}, ensure_ascii=False)},
+            {"role": "system", "content": _p("_FX_CODE_SYSTEM") + brand_guide.rule_text(brand, "fx")},
+            {"role": "user", "content": json.dumps(user, ensure_ascii=False)},
         ], json_mode=True, max_tokens=16000, temperature=0.3, req_timeout=300, max_attempts=2,
             step_label="FX-fix" if fix else "FX-code")
         res = providers._safe_json(text)
@@ -399,13 +410,18 @@ def gpt_fx_code(effects, fix=None, log=None):
     return out
 
 
-def build_effects(plan_res, moments, faces, palette, step, changes, log=None, emit=None):
+def build_effects(plan_res, moments, faces, palette, step, changes, log=None, emit=None, brand=None):
     """plan_res (FX-plan) -> hieu ung co code DA KIEM. `step(name, payload, fn)` = cache tung buoc (server._step).
     emit(msg, level, output) -> nhat ky xu ly."""
     effects = sanitize_plan(plan_res, moments, changes)
     if not effects:
         return []
-    codes = step("FX-code", {"fx": effects, "v": FX_VERSION}, lambda: gpt_fx_code(effects, log=log)) or {}
+    import brand_guide
+    bv = brand_guide.view(brand, "fx")
+    k_code = {"fx": effects, "v": FX_VERSION}
+    if bv:
+        k_code["brand"] = bv          # chi them khi co Brand Guideline -> du an khong co giu khoa cache cu
+    codes = step("FX-code", k_code, lambda: gpt_fx_code(effects, log=log, brand=brand)) or {}
     kept = []
     for e in effects:
         c = codes.get(e["id"]) or {}
@@ -424,8 +440,11 @@ def build_effects(plan_res, moments, faces, palette, step, changes, log=None, em
         if emit:
             emit("Hộp cách ly bắt lỗi %d hiệu ứng -> nhờ AI sửa: %s" % (
                 len(bad), "; ".join("%s: %s" % (k, v["errors"][0]) for k, v in bad.items())[:400]), "warn", bad)
-        fixes = step("FX-fix", {"bad": bad, "fx": [e for e in kept if e["id"] in bad], "v": FX_VERSION},
-                     lambda: gpt_fx_code([e for e in kept if e["id"] in bad], fix=bad, log=log)) or {}
+        k_fix = {"bad": bad, "fx": [e for e in kept if e["id"] in bad], "v": FX_VERSION}
+        if bv:
+            k_fix["brand"] = bv
+        fixes = step("FX-fix", k_fix,
+                     lambda: gpt_fx_code([e for e in kept if e["id"] in bad], fix=bad, log=log, brand=brand)) or {}
         for e in kept:
             if e["id"] in bad and (fixes.get(e["id"]) or {}).get("code"):
                 e["code"] = fixes[e["id"]]["code"]
@@ -543,6 +562,28 @@ def smooth_scale(values, fps=30):
     return out, n
 
 
+def _brand_frames(path, brand_hex):
+    """Brand Guideline co ma mau -> ban sao khung ve san da dua mau NOI ve he mau thuong hieu (file goc trong cache
+    giu nguyen; ban sao cung thu muc cache/fx de may chu media phuc vu). Loi doc / ghi -> dung file goc."""
+    if not brand_hex or not path or not os.path.isfile(path):
+        return path
+    import brand_guide
+    out = path[:-5] + "-b" + hashlib.sha1("|".join(brand_hex).encode("utf-8")).hexdigest()[:10] + ".json"
+    if os.path.isfile(out):
+        return out
+    try:
+        with open(path, encoding="utf-8") as fh:
+            d = json.load(fh)
+        d["frames"] = [brand_guide.snap_svg(f, brand_hex) for f in d.get("frames") or []]
+        tmp = out + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as fh:
+            json.dump(d, fh)
+        os.replace(tmp, out)
+        return out
+    except (OSError, ValueError, TypeError):
+        return path
+
+
 def fx_to_spec(p, spec, changes):
     """p['fx'] (code da kiem) -> spec['fx'] (lop phu, file khung) + spec['fxTransforms'] (so tung khung).
     Khung ve san trong hop cach ly, luu cache theo (code, do dai, fps, khung, vi tri mat, tham so)."""
@@ -552,6 +593,8 @@ def fx_to_spec(p, spec, changes):
         return
     W, H, fps = spec["width"], spec["height"], spec["fps"]
     palette = ((p.get("style_kit") or {}).get("palette") or {}) if isinstance(p.get("style_kit"), dict) else {}
+    import brand_guide
+    brand_hex = brand_guide.hexes(p.get("brand_guide"))
     jobs, rows = [], []
     for e in items:
         hit = RP.map_range(p, e.get("source_id"), providers._f(e.get("src_start")), providers._f(e.get("src_end")),
@@ -599,7 +642,7 @@ def fx_to_spec(p, spec, changes):
                                                          "n": r.get("n"), "values": vals})
         else:
             spec.setdefault("fx", []).append({"id": e["id"], "start": round(st, 3), "end": round(st + job["duration"], 3),
-                                               "layer": e.get("layer") or "front", "file": job["out"]})
+                                               "layer": e.get("layer") or "front", "file": _brand_frames(job["out"], brand_hex)})
     n = len(spec.get("fx") or []) + len(spec.get("fxTransforms") or [])
     if n:
         changes.append("%d hieu ung tu viet da ve khung" % n)

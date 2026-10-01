@@ -268,7 +268,7 @@ try:
     check("plan la cua Remotion", plan.get("engine") == "remotion", plan.get("engine"))
     check("_pipeline co story_arc + tone", pip.get("story_arc") == STORY_ARC and pip.get("tone"), pip)
     check("_pipeline ghi dung thu tu buoc", pip.get("thu_tu") == ["B1-select", "B2-timeline", "B3-hook", "R4-design",
-                                                                  "assets", "R5-captions", "TXT-art", "FX-plan",
+                                                                  "assets", "R5-captions", "TXT-art", "GFX-art", "FX-plan",
                                                                   "FX-code", "B6-inserts", "B7-audio"],
           pip.get("thu_tu"))
     body = [s for s in plan.get("segments", []) if s.get("beat")]

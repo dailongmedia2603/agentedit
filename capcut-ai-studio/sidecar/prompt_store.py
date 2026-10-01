@@ -138,9 +138,17 @@ PROMPTS = [
     {"id": "_AUDIO_SYSTEM", "group": "plan", "title": "B7 · Chọn SFX",
      "used_in": "Bước Plan — B7 (cuối cùng)",
      "info": "Chạy CUỐI vì SFX là dấu chấm câu cho mọi thứ đã có. Nhận: timeline + câu chuyện + hook + "
-             "chuyển cảnh (R4) + chữ hero (R5 + lớp chữ đồ hoạ) + meme (B6) + kiểu SFX của video mẫu. Chọn 2-5 "
-             "SFX và đặt đúng giây (neo theo giờ trong file gốc, hệ thống tự quy đổi). Danh mục SFX được tự nối "
+             "chuyển cảnh (R4) + chữ hero (R5 + lớp chữ đồ hoạ) + meme (B6) + kiểu SFX của video mẫu. Mỗi chữ "
+             "hiện ra đều có SFX (thiếu thì hệ thống tự gắn) + SFX ở điểm nhấn, đặt đúng giây (neo theo giờ trong file gốc, hệ thống tự quy đổi). Danh mục SFX được tự nối "
              "vào cuối prompt. Kho trống → bỏ qua bước này."},
+    {"id": "_CREATIVE_RULE", "group": "plan", "module": "creative",
+     "title": "Luật sáng tạo + cảm xúc (chung)",
+     "used_in": "Hệ thống tự nối vào B3 hook, R4 thiết kế, R5 chữ, FX hiệu ứng, B6 meme, B7 SFX",
+     "info": "Khối luật CHUNG cho mọi bước thiết kế: mỗi lựa chọn (âm thanh, hiệu ứng, chuyển cảnh, chữ, nhịp) phải "
+             "tạo đúng một cảm xúc cho người xem; đi theo đường cong cảm xúc của câu chuyện; tránh lối mòn lặp một "
+             "công thức; âm thanh chọn theo cảm xúc; vài khoảnh khắc 'đắt' riêng cho nội dung video. Luôn được nối "
+             "vào các bước trên kể cả khi bạn đã sửa prompt của bước đó (B1/B2 không nhận: nội dung giữ thứ tự, chỉ "
+             "cắt). Sửa ở đây → các bước thiết kế chạy lại thật ở lần lập plan sau."},
     {"id": "_HOOK_FIX_SFX_PROMPT", "group": "plan", "module": "hook_rule",
      "title": "Luật hook · Bổ sung âm thanh cho hook",
      "used_in": "Sau khi dựng bản Remotion — chỉ khi hook CHƯA có SFX",
@@ -180,6 +188,15 @@ PROMPTS = [
              "cách video: 3 cụm / tấm, mỗi tầng một hàng cách xa, NỀN TRONG SUỐT; tấm đầu làm mẫu phong cách cho các "
              "tấm sau. Hệ thống cắt từng tầng, kiểm chính tả bằng OCR, tìm vị trí từng từ để chuyển động từng chữ. "
              "Hệ thống tự điền {chu_de} {phong_cach} {hang} {mau_tham_chieu} {out} — giữ nguyên {hang} và {out}."},
+    {"id": "_GRAPHIC_ART_PROMPT", "group": "remotion", "module": "graphic_art", "own_key": True,
+     "template": ["phan_tu", "out"],
+     "title": "Đồ hoạ có chữ bằng ảnh AI (huy hiệu…)",
+     "used_in": "Video Remotion — bước Plan, sau R4 (chạy nền cùng chữ ảnh AI)",
+     "info": "Khác chữ ảnh AI: mỗi mục là MỘT PHẦN TỬ ĐỒ HOẠ HOÀN CHỈNH (hình khối + chất liệu + icon minh hoạ đúng ý "
+             "+ chữ), không chỉ là chữ. Áp cho lớp huy hiệu (badge) của R4: các phần tử cùng nhóm vẽ chung một ảnh "
+             "để ra một bộ đồng nhất, nhóm đầu làm mẫu phong cách cho các nhóm sau. Hệ thống cắt từng phần tử, "
+             "kiểm chữ bằng OCR; sai → tạo lại 1 lần → vẫn sai thì vẽ bằng code theo màu của video. Hệ thống tự "
+             "điền {chu_de} {phong_cach} {phan_tu} {mau_tham_chieu} {out} — giữ nguyên {phan_tu} và {out}."},
     {"id": "_FX_PLAN_SYSTEM", "group": "remotion", "module": "fx_flow",
      "title": "FX · Đề xuất hiệu ứng theo bối cảnh (FX-plan)",
      "used_in": "Video Remotion — bước Plan, sau R5",

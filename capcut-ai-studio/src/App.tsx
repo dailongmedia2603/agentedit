@@ -22,6 +22,7 @@ import MemesPage from '@/pages/Memes'
 import PromptsPage from '@/pages/Prompts'
 import RemotionStudioPage from '@/pages/RemotionStudio'
 import { IS_WIN } from './lib/platform'
+import { installSecretToggle, useFullUi } from './lib/clientUi'
 
 type Tab = 'doctor' | 'settings' | 'sfx' | 'memes' | 'prompts' | 'remotion' | 'projects'
 
@@ -49,6 +50,12 @@ function Sparkline() {
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('doctor')
+  // Ban cai cho may khac: an Prompt & quy tac (+ nhat ky, quy trinh o cac trang) — cua bi mat Ctrl/Cmd+Shift+Alt+D
+  const fullUi = useFullUi()
+  useEffect(() => installSecretToggle(), [])
+  useEffect(() => {
+    if (!fullUi && tab === 'prompts') setTab('remotion')
+  }, [fullUi, tab])
   const [appVersion, setAppVersion] = useState('')
   // Doctor chay ngay khi mo app (kiem + tu cai cong cu thieu); san sang = khong con muc nao "fail"
   const doctor = useDoctor()
@@ -95,9 +102,9 @@ export default function App() {
     { id: 'sfx', label: 'Kho âm thanh', icon: Music2 },
     { id: 'memes', label: 'Kho meme', icon: Laugh },
     { id: 'prompts', label: 'Prompt & quy tắc', icon: ScrollText },
-    { id: 'remotion', label: 'Video Remotion', icon: MonitorPlay },
+    { id: 'remotion', label: 'Tạo video', icon: MonitorPlay },
     { id: 'projects', label: 'Video đã tạo', icon: FolderClock }
-  ]
+  ].filter((n) => fullUi || n.id !== 'prompts') as { id: Tab; label: string; icon: typeof Stethoscope }[]
 
   return (
     <div className="flex h-full w-full flex-col">
@@ -184,7 +191,7 @@ export default function App() {
               onDeleted={(id) => setDeletedReq({ id, nonce: Date.now() })}
             />
           )}
-          {promptsMounted && (
+          {promptsMounted && fullUi && (
             <div className={tab === 'prompts' ? '' : 'hidden'}>
               <PromptsPage />
             </div>

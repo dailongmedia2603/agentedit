@@ -73,6 +73,34 @@ Kết quả:
 
 Nếu bước nào báo **[LỖI]**, gửi lại toàn bộ nội dung cửa sổ PowerShell để xử lý.
 
+### Cập nhật lên bản mới (máy đã build trước đó)
+
+```powershell
+cd C:\ae
+git pull
+cd capcut-ai-studio
+powershell -ExecutionPolicy Bypass -File .\build-windows.ps1
+```
+
+Cài file `release\Agent Edit-Setup-<version>-x64.exe` mới đè lên bản cũ. Dự án, kho SFX / meme, đăng nhập AI (trong
+`%USERPROFILE%\.capcut-studio`) được giữ nguyên.
+
+### Giao diện bản cài (ẩn quy trình)
+
+Bản build mặc định là **bản cài cho máy khác**. Bản này ẩn:
+
+- Nhật ký xử lý;
+- menu Prompt & quy tắc;
+- thanh các bước và khung kết quả từng bước ở Tạo video;
+- nhật ký cài đặt ở Doctor;
+- tên bước và tên AI trong các lời nhắn: khi chạy chỉ hiện "Đang phân tích", rồi "Đang tạo video";
+- DevTools.
+
+Mọi chức năng giữ nguyên.
+
+- Cửa bí mật: `Ctrl + Shift + Alt + D` bật hoặc tắt giao diện đầy đủ. Lựa chọn chỉ lưu trên máy đó.
+- Cần build bản đầy đủ thì đặt `$env:STUDIO_FULL_UI = '1'` trước khi chạy script.
+
 ## 3. Cài và chạy trên máy người dùng
 
 - Bộ cài **cài cho riêng người dùng**, không cần quyền admin. App nằm tại `%LOCALAPPDATA%\Programs\Agent Edit`, có shortcut Desktop và Start menu. Trình cài hiển thị tiếng Việt và cho chọn thư mục.

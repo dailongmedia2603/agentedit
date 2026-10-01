@@ -165,11 +165,21 @@ def main():
         print("[5] tong mau + SFX")
         check("grade intensity bi kep <= 1", spec["grade"]["intensity"] <= 1.0, spec["grade"])
         auds = spec["audio"]
-        check("SFX sat nhau bi bo", len(auds) == 1, [(a["start"], a["name"]) for a in auds])
+        # tieng code tu gan cho chu (luat chu co tieng, bo tieng kit-*) tach rieng khoi SFX cua plan
+        plan_auds = [a for a in auds if a["path"] == sfx]
+        check("SFX sat nhau bi bo", len(plan_auds) == 1, [(a["start"], a["name"]) for a in auds])
         # con lai dung SFX o giay nguon 9.0 -> than video 7.0 -> timeline = hook + 7.0
         check("SFX gio nguon da cat khoi timeline bi bo, con dung cai o 9.0s nguon",
-              len(auds) == 1 and abs(auds[0]["start"] - (hook["end"] + 7.0)) < 0.05,
-              [(a["start"], hook["end"]) for a in auds])
+              len(plan_auds) == 1 and abs(plan_auds[0]["start"] - (hook["end"] + 7.0)) < 0.05,
+              [(a["start"], hook["end"]) for a in plan_auds])
+        # LUAT CHU CO TIENG (2026-10-01): chu hook + micro chua co tieng -> tu gan; hero 'CON SO' trung luc SFX 9.0 -> dung chung
+        starts = [a["start"] for a in auds]
+        for c in caps:
+            if c["role"] in ("hero", "micro"):
+                check("chu %s '%s' co tieng luc hien" % (c["role"], c["text"]),
+                      any(c["start"] - 0.2 <= t <= c["start"] + 0.3 for t in starts), (c["start"], starts))
+        check("khong 2 tieng chong cung luc", all(b_ - a_ >= 0.12 for a_, b_ in zip(sorted(starts), sorted(starts)[1:])),
+              sorted(starts))
         check("SFX dai bi cat <= 4s", all(a["srcEnd"] - a["srcStart"] <= 4.0 + 1e-6 for a in auds))
         check("SFX co am luong do guard tinh", all(0 < a["volume"] <= 1 for a in auds), auds)
 
@@ -218,7 +228,8 @@ def main():
               abs(by["neo hook sai"]["start"] - 6.2) < 0.01, by.get("neo hook sai"))
         check("hieu ung anchor hook khong bi vut", len(sp2["effects"]) == 1 and abs(sp2["effects"][0]["start"] - 0.1) < 0.01,
               sp2["effects"])
-        check("SFX o ranh gioi 17.0 -> dau doan sau (17.0)", len(sp2["audio"]) == 1 and abs(sp2["audio"][0]["start"] - 17.0) < 0.01,
+        au_plan = [a for a in sp2["audio"] if a["path"] == sfx]
+        check("SFX o ranh gioi 17.0 -> dau doan sau (17.0)", len(au_plan) == 1 and abs(au_plan[0]["start"] - 17.0) < 0.01,
               sp2["audio"])
 
         print("[7] catalog <-> composition")

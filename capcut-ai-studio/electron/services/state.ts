@@ -20,7 +20,9 @@ export interface EngineState {
 export type PlanProvider = 'gpt' | 'claude'
 
 export function planProviderOf(s: EngineState): PlanProvider {
-  return s.plan_provider === 'gpt' ? 'gpt' : 'claude'
+  // 2026-10-01: lap ke hoach LUON bang Claude (bo lua chon trong Cai dat API); gia tri cu trong state bi bo qua
+  void s
+  return 'claude'
 }
 
 export function readState(): EngineState {

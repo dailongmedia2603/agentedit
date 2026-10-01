@@ -397,9 +397,11 @@ def resolve_plan_sfx(plan, max_sfx=None, min_gap=None):
                 a["_lufs"] = None
         if not a.get("file"):
             continue
+        # tieng cho CHU hien ("reveal": chu hero / chu do hoa) khong tinh vao tran — moi chu hien ra deu co tieng
+        # (user 2026-10-01). Tran MAX_SFX chi gioi han tieng nhan / chuyen canh / dam.
+        if a.get("purpose") != "reveal" and sum(1 for x in resolved if x.get("purpose") != "reveal") >= max_sfx:
+            continue
         resolved.append(a)
-        if len(resolved) >= max_sfx:
-            break
     plan["audio"] = resolved
     return plan
 

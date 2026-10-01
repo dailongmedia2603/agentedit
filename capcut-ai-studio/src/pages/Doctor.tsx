@@ -14,6 +14,7 @@ import {
 import { Badge, Button, Card, CardBody, CardHeader, Progress, Spinner } from '@/components/ui/primitives'
 import { cn } from '@/lib/utils'
 import { IS_WIN } from '../lib/platform'
+import { useFullUi } from '@/lib/clientUi'
 
 const GROUP_META: Record<DoctorCheck['group'], { title: string; info: string; icon: typeof Cpu }> = {
   system: { title: 'Hệ thống', info: IS_WIN ? 'Có sẵn trong Windows hoặc đóng gói trong app' : 'Có sẵn trong macOS hoặc đóng gói trong app', icon: Cpu },
@@ -62,6 +63,7 @@ export default function DoctorPage({
   onFix: (id: string) => void
   goSettings: () => void
 }) {
+  const fullUi = useFullUi()
   const logRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight })
@@ -125,7 +127,7 @@ export default function DoctorPage({
                     ? 'Có thể dùng các trang khác trong lúc chờ; máy mới tải khoảng 1 GB (Python, Whisper, Chrome, FFmpeg, CLI).'
                     : 'Có thể dùng các trang khác trong lúc chờ.'
                   : allReady
-                    ? `${okN}/${checks.length} mục đạt${warns.length ? ` · ${warns.length} mục cảnh báo (vẫn tạo video được)` : ''}. Sang tab “Video Remotion”.`
+                    ? `${okN}/${checks.length} mục đạt${warns.length ? ` · ${warns.length} mục cảnh báo (vẫn tạo video được)` : ''}. Sang tab “Tạo video”.`
                     : needLogin.length && needLogin.length === fails.length
                       ? 'Công cụ đã đủ — còn kết nối AI (đăng nhập tài khoản hoặc API key) trong Cài đặt API.'
                       : progress?.failed.length
@@ -215,7 +217,8 @@ export default function DoctorPage({
         })}
       </div>
 
-      {logs.length > 0 && (
+      {/* Nhat ky cai dat (ban cai cho may khac: an — src/lib/clientUi.ts) */}
+      {fullUi && logs.length > 0 && (
         <Card className="mt-4">
           <CardHeader className="flex items-center gap-2">
             <Terminal className="h-4 w-4 text-brand-500" />

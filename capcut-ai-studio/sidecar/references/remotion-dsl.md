@@ -91,7 +91,9 @@ Trường chung:
   `strokeWidth`; enter `draw` = vòng tự vẽ) · `line` / `arrow` (`points`: [[x,y],[x,y]], `curve` -0.6..0.6,
   `strokeColor`, `strokeWidth`; enter `draw`) · `image` (`asset`, w, h?, `fit`, `mask`: none|round|circle,
   `radius`, `border`, `shadow`; loop `kenburns`) ·
-  `badge` (huy hiệu tròn: w, `label`, `value`, `active`) · `counter` (số chạy: `from`, `to`, `prefix`, `suffix`,
+  `badge` (huy hiệu / tem có chữ: w, `label`, `value`, `active`; hệ thống nhờ AI TẠO ẢNH cả phần tử — hình, chất liệu,
+  icon minh hoạ, chữ — theo phong cách video, nên ghi `why` = ý nghĩa của huy hiệu; các huy hiệu cùng `group` ra một
+  bộ đồng nhất. Không cần khai màu) · `counter` (số chạy: `from`, `to`, `prefix`, `suffix`,
   `decimals` + kiểu chữ như text) · `progress` (thanh: w, h, `to` 0–100) ·
   `speedlines` (vệt tốc độ toả ra từ x,y — nhấn mạnh / tập trung).
   KHÔNG có loại `emoji`: icon emoji / ký hiệu unicode (🔒 🔥 ✅ ⭐…) trông thô → bị bỏ. Cần icon thì dùng `image` với

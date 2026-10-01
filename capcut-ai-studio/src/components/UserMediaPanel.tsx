@@ -6,6 +6,7 @@ import { ImagePlus, Film, Image as ImageIcon, X, RotateCcw, Sparkles, AlertTrian
 import { Button, Card, CardBody, CardHeader, Spinner, Badge } from '@/components/ui/primitives'
 import { cn, fmtTime } from '@/lib/utils'
 import { mediaUrl } from '../../remotion-src/Layers'
+import { useFullUi } from '@/lib/clientUi'
 
 export const MEDIA_EXT = /\.(png|jpe?g|webp|gif|heic|heif|tiff?|bmp|avif|mp4|mov|m4v|webm|mkv|avi)$/i
 export const IMAGE_EXT = /\.(png|jpe?g|webp|gif|heic|heif|tiff?|bmp|avif)$/i
@@ -52,6 +53,7 @@ function Thumb({ it, mediaBase }: { it: UserMediaItem; mediaBase: string }) {
 }
 
 function UsageLine({ u }: { u?: UserMediaUsage }) {
+  const fullUi = useFullUi()
   if (!u) return null
   const shown = u.dung.length > 0
   return (
@@ -76,7 +78,7 @@ function UsageLine({ u }: { u?: UserMediaUsage }) {
       ) : u.use !== 'ai_ref' ? (
         <>
           <AlertTriangle className="mr-1 inline h-3.5 w-3.5" />
-          Chưa chèn{u.bo_qua ? `: ${u.bo_qua}` : ' — ghi rõ lúc nào cần hiện rồi lập lại plan'}
+          Chưa chèn{u.bo_qua ? `: ${u.bo_qua}` : fullUi ? ' — ghi rõ lúc nào cần hiện rồi lập lại plan' : ' — ghi rõ lúc nào cần hiện rồi tạo lại'}
         </>
       ) : null}
       {u.anh_ai_dung_mau > 0 && (
@@ -123,6 +125,9 @@ export default function UserMediaPanel({
   onAnalyze: (id: string, fresh: boolean) => void
   onReplan?: () => void
 }) {
+  // ban cai cho may khac: khong neu ten AI / ten buoc (src/lib/clientUi.ts)
+  const fullUi = useFullUi()
+  const AI = fullUi ? 'Gemini' : 'AI'
   const [dragOver, setDragOver] = useState(false)
   const [open, setOpen] = useState<Record<string, boolean>>({})
   const onDrop = (e: React.DragEvent) => {
@@ -162,8 +167,8 @@ export default function UserMediaPanel({
       <CardBody className="space-y-3">
         <p className="text-[13px] leading-relaxed text-ink-800/55">
           Ảnh sản phẩm, logo, ảnh chụp màn hình, bảng giá, clip demo… được <b className="text-ink-800/80">hiển thị LÊN video</b>{' '}
-          đúng lúc bạn nói tới (không ghép vào mạch video). Ghi rõ mục đích để AI biết chèn ở đâu — Gemini sẽ xem từng tư liệu
-          để hiểu nội dung, rồi AI lập kế hoạch chọn vị trí + cỡ phù hợp.
+          đúng lúc bạn nói tới (không ghép vào mạch video). Ghi rõ mục đích để AI biết chèn ở đâu — {AI} sẽ xem từng tư liệu
+          để hiểu nội dung, rồi {fullUi ? 'AI lập kế hoạch chọn' : 'chọn'} vị trí + cỡ phù hợp.
         </p>
         {!items.length ? (
           <button
@@ -211,13 +216,13 @@ export default function UserMediaPanel({
                       <div className="mt-1 text-[12px] leading-relaxed text-ink-800/60">
                         {it.analyzing ? (
                           <span className="flex items-center gap-1.5">
-                            <Spinner className="h-3.5 w-3.5" /> Gemini đang xem tư liệu…
+                            <Spinner className="h-3.5 w-3.5" /> {AI} đang xem tư liệu…
                           </span>
                         ) : it.error ? (
                           <span className="flex items-center gap-2 text-red-600">
                             <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                             <span className="min-w-0 flex-1 truncate" title={it.error}>
-                              Gemini chưa đọc được: {it.error}
+                              {AI} chưa đọc được: {it.error}
                             </span>
                             <button className="shrink-0 underline" onClick={() => onAnalyze(it.id, true)} disabled={disabled}>
                               Đọc lại
@@ -226,7 +231,7 @@ export default function UserMediaPanel({
                         ) : a ? (
                           <>
                             <span className="text-ink-800/80">
-                              <b>Gemini hiểu:</b> {a.chu_the ? `${a.chu_the} — ` : ''}
+                              <b>{AI} hiểu:</b> {a.chu_the ? `${a.chu_the} — ` : ''}
                               {a.mo_ta}
                             </span>
                             <span className="ml-1.5 inline-flex flex-wrap gap-1 align-middle">
@@ -244,7 +249,7 @@ export default function UserMediaPanel({
                               className="ml-2 inline-flex items-center gap-1 text-ink-800/45 hover:text-ink-900 disabled:opacity-40"
                               onClick={() => onAnalyze(it.id, true)}
                               disabled={disabled}
-                              title="Cho Gemini xem lại tư liệu này"
+                              title={`Cho ${AI} xem lại tư liệu này`}
                             >
                               <RotateCcw className="h-3 w-3" /> Đọc lại
                             </button>
@@ -253,7 +258,7 @@ export default function UserMediaPanel({
                           <span className="flex items-center gap-2">
                             Chưa đọc hiểu.
                             <button className="underline" onClick={() => onAnalyze(it.id, false)} disabled={disabled}>
-                              Cho Gemini xem
+                              Cho {AI} xem
                             </button>
                           </span>
                         )}
@@ -266,7 +271,7 @@ export default function UserMediaPanel({
                           {!!a.tu_khoa?.length && <div>Từ khoá: {a.tu_khoa.join(', ')}</div>}
                           {a.goi_y_hien_thi && (
                             <div>
-                              Gemini gợi ý: {PLACEMENTS.find((p) => p.id === a.goi_y_hien_thi?.cach)?.label || a.goi_y_hien_thi.cach}
+                              {AI} gợi ý: {PLACEMENTS.find((p) => p.id === a.goi_y_hien_thi?.cach)?.label || a.goi_y_hien_thi.cach}
                               {a.goi_y_hien_thi.ly_do ? ` — ${a.goi_y_hien_thi.ly_do}` : ''}
                             </div>
                           )}
@@ -354,11 +359,12 @@ export default function UserMediaPanel({
           <div className="flex items-center gap-3 rounded-xl border border-amber-300/60 bg-amber-50/70 px-3 py-2.5 text-[12.5px] text-amber-900">
             <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" />
             <div className="min-w-0 flex-1">
-              Tư liệu đã thay đổi sau lần lập kế hoạch trước. Cập nhật kế hoạch để chèn theo tư liệu mới — các bước không liên
-              quan (chọn chất liệu, timeline, hook) dùng lại kết quả cũ.
+              {fullUi
+                ? 'Tư liệu đã thay đổi sau lần lập kế hoạch trước. Cập nhật kế hoạch để chèn theo tư liệu mới — các bước không liên quan (chọn chất liệu, timeline, hook) dùng lại kết quả cũ.'
+                : 'Tư liệu đã thay đổi sau lần tạo video trước. Cập nhật để chèn theo tư liệu mới.'}
             </div>
             <Button size="sm" onClick={onReplan} disabled={disabled || items.some((x) => x.analyzing)}>
-              <Sparkles className="h-4 w-4" /> Cập nhật kế hoạch
+              <Sparkles className="h-4 w-4" /> {fullUi ? 'Cập nhật kế hoạch' : 'Cập nhật video'}
             </Button>
           </div>
         )}

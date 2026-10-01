@@ -117,7 +117,7 @@ config.set_providers({
     "gemini": {"base_url": "http://fake/v1", "api_key": "k", "model": "gem-fake", "auth_mode": "api_key"},
 })
 # Test di duong HTTP API gia cua GPT -> chon RO (tu 2026-10-01 mac dinh la Claude qua CLI subscription)
-config.save_state({**config.load_state(), "plan_provider": "gpt"})
+os.environ["STUDIO_PLANNER_TEST"] = "gpt"   # app that luon dung Claude; test mo duong GPT bang bien moi truong
 
 RID = "p_test_runlog"
 with server.app.test_client() as c:

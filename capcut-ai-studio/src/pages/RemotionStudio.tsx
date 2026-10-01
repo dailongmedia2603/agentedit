@@ -28,8 +28,10 @@ import { Button, Card, CardBody, CardHeader, Spinner, Badge, Progress, Collapsib
 import { SourceBriefView, ReferenceAnalysisView, GuardView } from '@/components/ResultViews'
 import { RemotionPreview, RemotionPlanView, RemotionReferenceExtra, fmtBytes, planAiName } from '@/components/RemotionViews'
 import EditRequestForm from '@/components/EditRequestForm'
+import BrandGuideForm, { compactBrandGuide, emptyBrandGuide } from '@/components/BrandGuideForm'
 import { LibraryPicker, SavedBadge, useLibraryLookup } from '@/components/LibraryPicker'
 import RunLogPanel from '@/components/RunLogPanel'
+import { isFullUi, useFullUi } from '@/lib/clientUi'
 import UserMediaPanel, { IMAGE_EXT, MEDIA_EXT } from '@/components/UserMediaPanel'
 import { cn, fmtTime, todayStr } from '@/lib/utils'
 import { adoptProjectMedia, replacePaths, insideDir, baseName, type MissingMedia } from '@/lib/projectMedia'
@@ -55,8 +57,16 @@ const STEPS = [
 const STEP_LABEL: Record<Step, string> = {
   'understand-sources': 'Hiểu các video nguồn (Gemini)',
   'understand-reference': 'Phân tích video mẫu (Gemini)',
-  plan: 'Lập kế hoạch Remotion',
-  render: 'Render MP4 bằng Remotion'
+  plan: 'Lập kế hoạch dựng video',
+  render: 'Xuất video MP4'
+}
+
+// Ban cai cho may khac (clientUi): khong neu ten buoc / ten AI — chi "phan tich" / "tao video" / "xuat video"
+const STEP_ERROR_CLIENT: Record<Step, string> = {
+  'understand-sources': 'Có lỗi khi phân tích video',
+  'understand-reference': 'Có lỗi khi phân tích video mẫu',
+  plan: 'Có lỗi khi tạo video',
+  render: 'Có lỗi khi xuất video'
 }
 
 const STATUS_OF: Record<Step, string> = {
@@ -112,11 +122,14 @@ export default function RemotionStudioPage({
   onBusy?: (projectId: string | null) => void
 }) {
   const [stage, setStage] = useState<Stage>('upload')
+  // Ban cai cho may khac: an thanh cac buoc, nhat ky, khung ket qua tung buoc, ten AI (src/lib/clientUi.ts)
+  const fullUi = useFullUi()
   // AI lap ke hoach dang chon trong Cai dat API (chi de hien chu khi dang chay)
-  const [plannerName, setPlannerName] = useState('GPT')
+  const [plannerName, setPlannerName] = useState('Claude')
   const [videos, setVideos] = useState<SourceVideo[]>([])
   const [referenceVideo, setReferenceVideo] = useState<VideoFile | null>(null)
   const [editRequest, setEditRequest] = useState<EditRequest>(emptyEditRequest)
+  const [brandGuide, setBrandGuide] = useState<BrandGuide>(emptyBrandGuide)
   const [workDir, setWorkDir] = useState('')
   const [brief, setBrief] = useState<SourceBrief | null>(null)
   const [referenceAnalysis, setReferenceAnalysis] = useState<RemotionReferenceAnalysis | null>(null)
@@ -196,6 +209,7 @@ export default function RemotionStudioPage({
     setVideos(p.videos || [])
     setReferenceVideo(p.referenceVideo || null)
     setEditRequest({ ...emptyEditRequest, ...(p.editRequest || {}) })
+    setBrandGuide({ ...emptyBrandGuide, ...(p.brandGuide || {}) })
     setWorkDir(p.workDir || '')
     setBrief((p.sourceBrief as SourceBrief) || null)
     setReferenceAnalysis((p.referenceAnalysis as RemotionReferenceAnalysis) || null)
@@ -213,7 +227,12 @@ export default function RemotionStudioPage({
     const dangDo = Object.entries(STATUS_OF).find(([, st]) => st === p.status)
     if (dangDo) {
       const step = dangDo[0] as Step
-      setError({ step, message: 'Phiên trước bị gián đoạn. Bấm Tiếp tục để chạy lại bước này.' })
+      setError({
+        step,
+        message: isFullUi()
+          ? 'Phiên trước bị gián đoạn. Bấm Tiếp tục để chạy lại bước này.'
+          : 'Lần chạy trước bị gián đoạn. Bấm Thử lại để tiếp tục.'
+      })
       setStage(step === 'understand-sources' ? 'upload' : step === 'render' ? 'preview' : 'reference')
     } else {
       setError((p.error as { step: Step; message: string } | null) || null)
@@ -318,6 +337,7 @@ export default function RemotionStudioPage({
       videos,
       referenceVideo,
       editRequest: compactEditRequest(editRequest),
+      brandGuide: compactBrandGuide(brandGuide),
       workDir,
       sourceBrief: brief || undefined,
       referenceAnalysis: referenceAnalysis || undefined,
@@ -332,7 +352,7 @@ export default function RemotionStudioPage({
     }
     window.studio.projectSave(proj)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [videos, referenceVideo, editRequest, workDir, brief, referenceAnalysis, plan, spec, summary, render, guard, stage, error, running, projectId, userMedia])
+  }, [videos, referenceVideo, editRequest, brandGuide, workDir, brief, referenceAnalysis, plan, spec, summary, render, guard, stage, error, running, projectId, userMedia])
 
   useEffect(() => {
     // mediaBusy = dang chep / chuyen SDR video vao thu muc du an
@@ -346,6 +366,7 @@ export default function RemotionStudioPage({
     setVideos([])
     setReferenceVideo(null)
     setEditRequest(emptyEditRequest)
+    setBrandGuide(emptyBrandGuide)
     setUserMedia([])
     setWorkDir('')
     setBrief(null)
@@ -380,7 +401,7 @@ export default function RemotionStudioPage({
     setProjectId(id)
     return id
   }
-  const runCtx = (id: string) => ({ id, label: `Remotion · ${deriveTopic(brief)}` })
+  const runCtx = (id: string) => ({ id, label: `Tạo video · ${deriveTopic(brief)}` })
   const logUi = (id: string, title: string, level: 'info' | 'ok' | 'warn' | 'error' = 'info', detail?: unknown) => {
     window.studio.runlogAppend(id, { kind: 'ui', title, level, detail }).catch(() => {})
   }
@@ -643,7 +664,7 @@ export default function RemotionStudioPage({
     setError(null)
     const rid = ensureRunId()
     setRunning('understand-sources')
-    logUi(rid, `[Remotion] Bấm "Hiểu nguồn" với ${videos.length} video`, 'info', {
+    logUi(rid, `Bấm "Hiểu nguồn" với ${videos.length} video`, 'info', {
       videos: videos.map((v) => ({ id: v.id, name: v.name, duration: v.duration, path: v.path }))
     })
     try {
@@ -680,7 +701,7 @@ export default function RemotionStudioPage({
       .settingsGetPlanner()
       .then((v) => setPlannerName(v === 'claude' ? 'Claude' : 'GPT'))
       .catch(() => undefined)
-    logUi(rid, fresh ? 'Bấm lập plan Remotion MỚI (bỏ qua kết quả đã lưu)' : 'Bắt đầu lập kế hoạch Remotion', 'info', {
+    logUi(rid, fresh ? 'Bấm lập plan MỚI (bỏ qua kết quả đã lưu)' : 'Bắt đầu lập kế hoạch dựng video', 'info', {
       co_video_mau: !!refAn,
       tu_lieu: userMediaRef.current.map((m) => ({ id: m.id, name: m.name, use: m.use, placement: m.placement, note: m.note }))
     })
@@ -696,6 +717,7 @@ export default function RemotionStudioPage({
         brief: useBrief,
         reference_analysis: refAn,
         edit_request: compactEditRequest(editRequest),
+        brand_guide: compactBrandGuide(brandGuide),
         user_media: um.length
           ? um.map(({ id, kind, path, name, use, placement, note, analysis }) => ({
               id,
@@ -725,7 +747,7 @@ export default function RemotionStudioPage({
     } catch (e) {
       setRunning(null)
       const message = String((e as Error).message || e)
-      logUi(rid, 'Lỗi ở bước Plan Remotion', 'error', message)
+      logUi(rid, 'Lỗi ở bước lập kế hoạch', 'error', message)
       setError({ step: 'plan', message })
     }
   }
@@ -817,7 +839,7 @@ export default function RemotionStudioPage({
             <Lock className="mx-auto mb-3 h-8 w-8 text-ink-800/25" />
             <div className="font-semibold text-ink-900">Chưa sẵn sàng</div>
             <p className="mt-1 text-sm text-ink-800/50">
-              Hoàn tất Doctor (môi trường + kết nối AI) để mở khoá Video Remotion.
+              Hoàn tất Doctor (môi trường + kết nối AI) để mở khoá Tạo video.
             </p>
           </CardBody>
         </Card>
@@ -868,13 +890,22 @@ export default function RemotionStudioPage({
   const refSavedAt = referenceVideo
     ? refLib.found[referenceVideo.path]?.ref_video_at || refLib.found[referenceVideo.path]?.ref_gpt_at
     : undefined
-  const busyMsg =
-    running === 'understand-sources'
+  const busyMsg = !fullUi
+    ? running === 'understand-sources' || running === 'understand-reference'
+      ? 'Đang phân tích'
+      : running === 'plan'
+        ? 'Đang tạo video'
+        : running === 'render'
+          ? renderEv?.stage === 'browser'
+            ? 'Đang chuẩn bị xuất video (lần đầu tải thêm ~90MB, chỉ một lần)'
+            : RENDER_STAGE[renderEv?.stage || 'prepare'] || 'Đang xuất video...'
+          : ''
+    : running === 'understand-sources'
       ? `Gemini đang phân tích ${videos.length} video nguồn, rồi Whisper căn lại giờ lời nói...`
       : running === 'understand-reference'
         ? 'Máy đo nhịp cắt, Gemini đang xem + nghe video mẫu rồi bóc bộ phong cách...'
         : running === 'plan'
-          ? `${plannerName} đang lập kế hoạch Remotion (chất liệu → timeline → hook → thiết kế bố cục + lớp đồ hoạ${
+          ? `${plannerName} đang lập kế hoạch dựng video (chất liệu → timeline → hook → thiết kế bố cục + lớp đồ hoạ${
               userMedia.length ? ' + chèn tư liệu của bạn' : ''
             } → tạo ảnh AI → phụ đề → meme → SFX). Có ảnh AI thì mất thêm vài phút...`
           : running === 'render'
@@ -885,15 +916,15 @@ export default function RemotionStudioPage({
     <div className="w-full px-8 py-7">
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-ink-900">Video Remotion</h1>
+          <h1 className="text-2xl font-bold text-ink-900">Tạo video</h1>
           <p className="mt-0.5 text-sm text-ink-800/45">
             {videos.length
-              ? `${videos.length} video nguồn đã chọn · dựng bằng Remotion, xem và xuất MP4 ngay trong app`
-              : 'Dựng video hoàn toàn bằng code (Remotion), xem trước và xuất MP4 ngay trong app. Kéo-thả video nguồn để bắt đầu.'}
+              ? `${videos.length} video nguồn đã chọn · AI dựng video, xem và xuất MP4 ngay trong app`
+              : 'AI tự dựng video từ video nguồn của bạn, xem trước và xuất MP4 ngay trong app. Kéo-thả video nguồn để bắt đầu.'}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {projectId && (
+          {projectId && fullUi && (
             <Button variant={logOpen ? 'subtle' : 'outline'} size="sm" onClick={() => setLogOpen((o) => !o)}>
               <ScrollText className="h-4 w-4" /> Nhật ký xử lý
               {running && <span className="h-2 w-2 animate-pulse rounded-full bg-brand-500" />}
@@ -907,7 +938,8 @@ export default function RemotionStudioPage({
         </div>
       </div>
 
-      {/* Stepper */}
+      {/* Stepper (ban cai cho may khac: an) */}
+      {fullUi && (
       <div className="card-surface mb-5 flex items-center justify-between rounded-2xl px-5 py-4">
         {STEPS.map((s, i) => {
           const Icon = s.icon
@@ -943,6 +975,7 @@ export default function RemotionStudioPage({
           )
         })}
       </div>
+      )}
 
       {(mediaBusy || mediaAlert) && (
         <div className="mb-5 space-y-2 rounded-2xl border border-amber-300/60 bg-amber-50/70 p-4 text-sm">
@@ -1010,7 +1043,9 @@ export default function RemotionStudioPage({
           <div className="flex items-start gap-3">
             <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" />
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-red-600">Lỗi ở bước: {STEP_LABEL[error.step]}</div>
+              <div className="text-sm font-semibold text-red-600">
+                {fullUi ? `Lỗi ở bước: ${STEP_LABEL[error.step]}` : STEP_ERROR_CLIENT[error.step]}
+              </div>
               <div className="mt-0.5 whitespace-pre-wrap break-words text-xs text-red-500/90">
                 {error.message.length > 1200 ? error.message.slice(0, 1200) + '…' : error.message}
               </div>
@@ -1026,15 +1061,15 @@ export default function RemotionStudioPage({
               <RotateCcw className="h-4 w-4" /> Làm lại từ đầu
             </Button>
             <Button size="sm" onClick={resume}>
-              <Play className="h-4 w-4" /> Tiếp tục (chạy lại bước này)
+              <Play className="h-4 w-4" /> {fullUi ? 'Tiếp tục (chạy lại bước này)' : 'Thử lại'}
             </Button>
           </div>
         </div>
       )}
 
-      {/* Ket qua cac buoc */}
+      {/* Ket qua cac buoc (ban cai cho may khac: an — lo quy trinh + AI dung) */}
       <div className="space-y-3">
-        {brief && (
+        {fullUi && brief && (
           <Collapsible
             title="Kết quả: Hiểu các video nguồn (Gemini)"
             done
@@ -1043,7 +1078,7 @@ export default function RemotionStudioPage({
             <SourceBriefView brief={brief} />
           </Collapsible>
         )}
-        {referenceAnalysis && (
+        {fullUi && referenceAnalysis && (
           <Collapsible
             title={`Kết quả: Phong cách video mẫu (${
               String(referenceAnalysis._source || '').startsWith('gpt-cli') ? 'GPT · Codex CLI, bản cũ' : 'Gemini'
@@ -1055,22 +1090,22 @@ export default function RemotionStudioPage({
             <RemotionReferenceExtra analysis={referenceAnalysis} catalog={catalog} />
           </Collapsible>
         )}
-        {plan && (
+        {fullUi && plan && (
           <Collapsible
-            title={`Kết quả: Kế hoạch dựng Remotion (${planAiName(plan)})`}
+            title={`Kết quả: Kế hoạch dựng video (${planAiName(plan)})`}
             done
             badge={<Badge tone="brand">{summary?.do_dai ? fmtTime(summary.do_dai) : 'plan'}</Badge>}
           >
             <RemotionPlanView plan={plan} spec={spec} catalog={catalog} />
           </Collapsible>
         )}
-        {!!reusedSteps.length && (
+        {fullUi && !!reusedSteps.length && (
           <div className="rounded-xl border border-emerald-300/40 bg-emerald-50/40 px-4 py-2.5 text-[12px] leading-relaxed text-ink-800/65">
             Dùng lại <b>{reusedSteps.length} bước</b> đã chạy xong ở lần trước ({reusedSteps.join(', ')}) — không gọi lại
             model.
           </div>
         )}
-        {!!warnings.length && (
+        {fullUi && !!warnings.length && (
           <div className="rounded-xl border border-amber-300/50 bg-amber-50/50 px-4 py-3">
             <div className="text-[13px] font-semibold text-amber-800">Kế hoạch vẫn dùng được, nhưng có bước không chạy trọn</div>
             <ul className="mt-1 space-y-0.5 text-[12px] leading-relaxed text-ink-800/65">
@@ -1080,7 +1115,21 @@ export default function RemotionStudioPage({
             </ul>
           </div>
         )}
-        {guard && (
+        {!fullUi && !!warnings.length && (
+          <div className="rounded-xl border border-amber-300/50 bg-amber-50/50 px-4 py-3">
+            <div className="text-[13px] font-semibold text-amber-800">Video vẫn tạo được, có vài phần chưa trọn</div>
+            <ul className="mt-1 space-y-0.5 text-[12px] leading-relaxed text-ink-800/65">
+              {/* chi canh bao NGUOI DUNG tu xu ly duoc (tu lieu cua ho); con lai gop 1 dong, khong neu ten buoc */}
+              {warnings.filter((w) => w.startsWith('Tư liệu')).map((w, i) => (
+                <li key={i}>• {w}</li>
+              ))}
+              {warnings.some((w) => !w.startsWith('Tư liệu')) && (
+                <li>• Một vài chi tiết trang trí không tạo được — có thể bấm “Tạo lại” để thử lại.</li>
+              )}
+            </ul>
+          </div>
+        )}
+        {fullUi && guard && (
           <Collapsible
             title="Kết quả: Kiểm tra kỹ thuật (tự động)"
             done
@@ -1108,7 +1157,9 @@ export default function RemotionStudioPage({
               Đã chạy {Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, '0')}
               {running === 'render' && renderEv?.totalFrames
                 ? ` · khung ${renderEv.renderedFrames ?? 0}/${renderEv.totalFrames}`
-                : ' — bước này có thể mất vài phút, đừng tắt app.'}
+                : fullUi
+                  ? ' — bước này có thể mất vài phút, đừng tắt app.'
+                  : ' — có thể mất vài phút, đừng tắt app.'}
             </div>
             <div className="mt-5 w-72">
               <Progress
@@ -1167,6 +1218,8 @@ export default function RemotionStudioPage({
           </div>
 
           <EditRequestForm value={editRequest} onChange={setEditRequest} />
+
+          <BrandGuideForm value={brandGuide} onChange={setBrandGuide} />
 
           {userMediaPanel(false)}
 
@@ -1229,7 +1282,7 @@ export default function RemotionStudioPage({
                 ))}
                 <div className="flex items-center justify-end gap-2 pt-2">
                   {nSrcSaved > 0 && (
-                    <Button variant="ghost" onClick={() => runUnderstand(true)} title="Bỏ qua bản đã lưu, gọi lại Gemini + Whisper">
+                    <Button variant="ghost" onClick={() => runUnderstand(true)} title={fullUi ? 'Bỏ qua bản đã lưu, gọi lại Gemini + Whisper' : 'Bỏ bản đã lưu, phân tích lại'}>
                       <RotateCcw className="h-4 w-4" /> Phân tích lại từ đầu
                     </Button>
                   )}
@@ -1254,14 +1307,23 @@ export default function RemotionStudioPage({
         <Card className="mt-5">
           <CardHeader className="flex items-center gap-2">
             <ScanSearch className="h-5 w-5 text-brand-500" />
-            <span className="font-semibold text-ink-900">Bước 2 — Phân tích video mẫu bằng Gemini</span>
+            <span className="font-semibold text-ink-900">
+              {fullUi ? 'Bước 2 — Phân tích video mẫu bằng Gemini' : 'Video mẫu (không bắt buộc)'}
+            </span>
           </CardHeader>
           <CardBody className="space-y-4">
+            {!fullUi ? (
+              <p className="text-sm text-ink-800/60">
+                Thêm một video mẫu để AI dựng theo phong cách tương tự. Không có video mẫu thì AI tự thiết kế theo nội
+                dung video của bạn.
+              </p>
+            ) : (
             <p className="text-sm text-ink-800/60">
               Máy đo nhịp cắt cảnh và độ to âm thanh bằng ffmpeg, rồi <b className="text-ink-900">Gemini</b> xem + nghe
               video mẫu để bóc tách kiểu chữ, nhịp dựng, hiệu ứng, màu, âm thanh; thêm một lượt xem dải khung hình dày
               (~6 khung/giây) để bóc chuyển động chữ + camera thành bộ phong cách.
             </p>
+            )}
             {!referenceVideo ? (
               <div className="flex gap-3">
                 <button
@@ -1317,12 +1379,19 @@ export default function RemotionStudioPage({
                 Bỏ qua video mẫu
               </Button>
               {refSavedAt && (
-                <Button variant="ghost" onClick={() => runReference(true)} title="Bỏ qua bản đã lưu, gọi lại Gemini">
+                <Button variant="ghost" onClick={() => runReference(true)} title={fullUi ? 'Bỏ qua bản đã lưu, gọi lại Gemini' : 'Bỏ bản đã lưu, phân tích lại'}>
                   <RotateCcw className="h-4 w-4" /> Phân tích lại mẫu
                 </Button>
               )}
               <Button onClick={() => runReference()} disabled={!referenceVideo}>
-                <ScanSearch className="h-4 w-4" /> {refSavedAt ? 'Dùng phân tích mẫu đã lưu & lập plan' : 'Phân tích mẫu & lập plan'}
+                <ScanSearch className="h-4 w-4" />{' '}
+                {fullUi
+                  ? refSavedAt
+                    ? 'Dùng phân tích mẫu đã lưu & lập plan'
+                    : 'Phân tích mẫu & lập plan'
+                  : refSavedAt
+                    ? 'Dùng mẫu đã phân tích & tạo video'
+                    : 'Phân tích mẫu & tạo video'}
               </Button>
             </div>
           </CardBody>
@@ -1362,16 +1431,22 @@ export default function RemotionStudioPage({
                   cùng lúc); bản MP4 render ra sẽ mượt.
                 </p>
                 <div className="rounded-xl border border-black/8 bg-ink-50 p-3 text-xs text-ink-800/60">
-                  Render xuất MP4 1080×1920, 30fps, H.264 + AAC. Lần đầu app tải trình render (~90MB) vào{' '}
-                  <code className="rounded bg-black/5 px-1">{IS_WIN ? '%USERPROFILE%\\.capcut-studio\\remotion' : '~/.capcut-studio/remotion'}</code>. Video 40 giây mất khoảng
-                  1–3 phút tuỳ máy.
+                  {fullUi ? (
+                    <>
+                      Render xuất MP4 1080×1920, 30fps, H.264 + AAC. Lần đầu app tải trình render (~90MB) vào{' '}
+                      <code className="rounded bg-black/5 px-1">{IS_WIN ? '%USERPROFILE%\\.capcut-studio\\remotion' : '~/.capcut-studio/remotion'}</code>. Video 40 giây mất khoảng
+                      1–3 phút tuỳ máy.
+                    </>
+                  ) : (
+                    <>Xuất MP4 1080×1920, 30fps. Lần đầu xuất video app tải thêm ~90MB (một lần). Video 40 giây mất khoảng 1–3 phút tuỳ máy.</>
+                  )}
                 </div>
                 <div className="flex flex-wrap gap-2 pt-1">
                   <Button variant="ghost" onClick={reset}>
                     <RotateCcw className="h-4 w-4" /> Bỏ
                   </Button>
                   <Button variant="outline" onClick={() => runPlan(undefined, undefined, true)}>
-                    <RotateCcw className="h-4 w-4" /> Lập lại plan
+                    <RotateCcw className="h-4 w-4" /> {fullUi ? 'Lập lại plan' : 'Tạo lại'}
                   </Button>
                   {render && (
                     <Button variant="outline" onClick={() => setStage('done')}>
@@ -1454,11 +1529,11 @@ export default function RemotionStudioPage({
         </Card>
       )}
 
-      {logOpen && projectId && (
+      {logOpen && projectId && fullUi && (
         <RunLogPanel
           runId={projectId}
           live={!!running}
-          title={videos.length ? `Remotion · ${deriveTopic(brief)} · ${videos.map((v) => v.name).join(', ')}` : projectId}
+          title={videos.length ? `Tạo video · ${deriveTopic(brief)} · ${videos.map((v) => v.name).join(', ')}` : projectId}
           onClose={() => setLogOpen(false)}
         />
       )}

@@ -603,8 +603,21 @@ const ShapeLayer: React.FC<{ L: RSLayer; fx: FxState; W: number; H: number; loca
     case 'badge': {
       const d = w
       const active = !!L.active
+      // DO HOA ANH AI (graphic_art): ca phan tu (hinh + trang tri + chu) la mot anh — chuyen dong vao / ra do lop lo
+      if (L.art && L.art.length) {
+        const a = L.art[0]
+        return <Img src={mediaUrl(base, a.src)} style={{ width: a.w, height: a.h, display: 'block', opacity: active ? 1 : 0.6 }} />
+      }
+      // ve bang code (khong co anh AI): mau do sidecar lay tu bang mau cua video (badge_colors) — khong mau co dinh;
+      // spec cu chua co mau -> trung tinh trang / toi
       const f = fontCss(L.font || 'barlow_condensed', 900)
-      const grad = L.fillGradient || (active ? ['#FFF3E6', '#FFD2A8'] : ['#FFE3CC', '#F6B98A'])
+      const grad = L.fillGradient || (L.fill ? [L.fill, L.fill] : ['#FFFFFF', '#E9E9EC'])
+      const edge = L.strokeColor || '#2A2A2E'
+      const ink = L.color || '#121214'
+      const glow = /^#[0-9a-fA-F]{6}$/.test(edge) ? `${edge}AA` : edge
+      // chi co nhan (khong co so): chu TO vua long huy hieu thay vi chu nho 14% tro troi giua vong tron
+      const only = !L.value && L.label ? String(L.label) : ''
+      const onlySize = only ? Math.min(d * 0.3, (d * 0.74) / Math.max(1, only.length * 0.56)) : 0
       return (
         <div
           style={{
@@ -612,18 +625,25 @@ const ShapeLayer: React.FC<{ L: RSLayer; fx: FxState; W: number; H: number; loca
             height: d,
             borderRadius: '50%',
             background: `radial-gradient(circle at 50% 35%, ${grad[0]}, ${grad[grad.length - 1]})`,
-            border: `${d * 0.06}px solid ${L.strokeColor || (active ? '#F28B3C' : 'rgba(242,139,60,0.55)')}`,
-            boxShadow: active ? `0 0 ${d * 0.35}px rgba(255,140,50,0.75), inset 0 0 ${d * 0.12}px rgba(255,255,255,0.8)` : 'inset 0 0 12px rgba(255,255,255,0.5)',
+            border: `${d * 0.06}px solid ${edge}`,
+            boxShadow: active ? `0 0 ${d * 0.3}px ${glow}, inset 0 0 ${d * 0.12}px rgba(255,255,255,0.75)` : 'inset 0 0 12px rgba(255,255,255,0.5)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
+            textAlign: 'center',
             opacity: active ? 1 : 0.6,
-            color: L.color || '#E2601F'
+            color: ink
           }}
         >
-          {L.label && <div style={{ ...f, fontSize: d * 0.14, lineHeight: 1, letterSpacing: '0.04em' }}>{L.label}</div>}
-          <div style={{ ...f, fontSize: d * 0.5, lineHeight: 0.95 }}>{L.value}</div>
+          {only ? (
+            <div style={{ ...f, fontSize: onlySize, lineHeight: 1, letterSpacing: '0.02em' }}>{only}</div>
+          ) : (
+            <>
+              {L.label && <div style={{ ...f, fontSize: d * 0.14, lineHeight: 1, letterSpacing: '0.04em' }}>{L.label}</div>}
+              <div style={{ ...f, fontSize: d * 0.5, lineHeight: 0.95 }}>{L.value}</div>
+            </>
+          )}
         </div>
       )
     }

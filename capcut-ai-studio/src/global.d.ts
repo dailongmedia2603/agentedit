@@ -132,6 +132,7 @@ interface StudioBridge {
     brief: SourceBrief
     reference_analysis?: RemotionReferenceAnalysis | null
     edit_request?: EditRequest
+    brand_guide?: BrandGuide
     /** tu lieu cua nguoi dung (anh / video hien LEN video) + muc dich + phan tich Gemini */
     user_media?: UserMediaPayload[]
     title?: string
@@ -458,6 +459,15 @@ declare global {
     duration?: string
   }
 
+  /** Brand Guideline (khong bat buoc) — sidecar brand_guide.py dua vao dung buoc AI + ep font / ma mau */
+  interface BrandGuide {
+    typography?: string
+    colors?: string
+    graphics?: string
+    imagery?: string
+    motion?: string
+  }
+
   interface SourceAnalysisItem {
     id: string
     name: string
@@ -670,6 +680,7 @@ declare global {
     videos?: SourceVideo[]
     referenceVideo?: VideoFile | null
     editRequest?: EditRequest
+    brandGuide?: BrandGuide
     workDir?: string
     sourceBrief?: SourceBrief
     referenceAnalysis?: ReferenceAnalysis

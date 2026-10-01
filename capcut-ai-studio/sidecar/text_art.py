@@ -197,7 +197,7 @@ _ROW_GAP_RULE = """# LUAT CAT NGANG (bat buoc, kiem bang code)
   mu, moc) cua hang duoi. Thu nho chu neu can de du khoang trong — KHONG de hai hang sat / chong nhau."""
 
 
-def sheet_prompt(lockups, style, story, has_ref, out):
+def sheet_prompt(lockups, style, story, has_ref, out, brand=None):
     rows, n = [], 0
     for i, lk in enumerate(lockups):
         for t in lk["tiers"]:
@@ -208,16 +208,18 @@ def sheet_prompt(lockups, style, story, has_ref, out):
            " moi hang tuong ung (chinh / phu) — chi doi noi dung chu.\n") if has_ref else ""
     txt = prompt_store.render("_TEXT_ART_PROMPT", chu_de=chu_de, phong_cach=phong_cach, hang="\n".join(rows),
                               mau_tham_chieu=ref, out=out)
-    # luat cat ngang NOI THEM bang code (prompt tren sua duoc trong menu — ban da sua van phai co luat nay)
-    return txt.replace("\nTao xong:", "\n" + _ROW_GAP_RULE + "\nTao xong:", 1) if "\nTao xong:" in txt else txt + "\n" + _ROW_GAP_RULE
+    # luat cat ngang + Brand Guideline NOI THEM bang code (prompt tren sua duoc trong menu — ban da sua van phai co)
+    import brand_guide
+    extra = _ROW_GAP_RULE + brand_guide.rule_text(brand, "text_art")
+    return txt.replace("\nTao xong:", "\n" + extra + "\nTao xong:", 1) if "\nTao xong:" in txt else txt + "\n" + extra
 
 
-def gen_sheet(lockups, style, story, ref=None, log=None, timeout=480):
+def gen_sheet(lockups, style, story, ref=None, log=None, timeout=480, brand=None):
     """Tao 1 tam chu. Cache theo noi dung prompt + anh mau. Tra duong dan PNG hoac None."""
     import asset_gen
     import cli_providers
     os.makedirs(ART_DIR, exist_ok=True)
-    probe = sheet_prompt(lockups, style, story, bool(ref), "{out}")
+    probe = sheet_prompt(lockups, style, story, bool(ref), "{out}", brand=brand)
     refh = hashlib.sha1(open(ref, "rb").read()).hexdigest()[:10] if ref and os.path.isfile(ref) else ""
     k = hashlib.sha1((probe + "|" + refh + "|v%d" % ART_VERSION).encode("utf-8")).hexdigest()[:20]
     out = os.path.join(ART_DIR, "sheet_%s.png" % k)
@@ -233,7 +235,7 @@ def gen_sheet(lockups, style, story, ref=None, log=None, timeout=480):
             "--sandbox", "workspace-write", "--color", "never", "-C", work, "-m", model, "-"]
     if ref and os.path.isfile(ref):
         argv += ["-i", ref]              # anh mau phong cach — dat SAU "-" (xem cli_providers._codex_chat)
-    text = sheet_prompt(lockups, style, story, bool(ref), target)
+    text = sheet_prompt(lockups, style, story, bool(ref), target, brand=brand)
     asset_gen.log_step_call("text-art", "cli:codex", model, "", text, params={"cum": len(lockups), "mau": bool(ref)})
     t0 = time.time()
     src, rc, tail = asset_gen._run_codex(argv, text, work, target, timeout)
@@ -559,7 +561,7 @@ def _pack(lockups, max_rows=MAX_ROWS, per=PER_SHEET):
     return out
 
 
-def make_text_art(lockups, style=None, story=None, log=None, emit=None, workers=3):
+def make_text_art(lockups, style=None, story=None, log=None, emit=None, workers=3, brand=None):
     """Tao + cat chu anh cho moi cum. Tra {"items": {key: {...}}, "failed": [{key, text, ly_do}]}."""
     items, failed = {}, []
     if not lockups:
@@ -568,7 +570,8 @@ def make_text_art(lockups, style=None, story=None, log=None, emit=None, workers=
 
     def run(sheet, ref):
         try:
-            p = gen_sheet(sheet, style, story, ref=ref, log=log)
+            # khong co Brand Guideline -> goi y nhu truoc (khong them tham so)
+            p = gen_sheet(sheet, style, story, ref=ref, log=log, **({"brand": brand} if brand else {}))
         except Exception as ex:
             return None, {}, [(lk["key"], "tao anh loi: %s" % str(ex)[:120]) for lk in sheet]
         if not p:

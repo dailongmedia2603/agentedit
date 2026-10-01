@@ -278,6 +278,8 @@ export interface RSAudio {
   name?: string
   /** do to khi phat so voi giong noi cua video (dB) — SFX da can theo giong (plan_guard.mix_sfx) */
   rel?: number | null
+  /** tieng code tu gan khi CHU hien (luat moi chu co tieng) — luat hook khong tinh la tieng gay chu y */
+  textAuto?: boolean
 }
 
 export interface RSOverlay {

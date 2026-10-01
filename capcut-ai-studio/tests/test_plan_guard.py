@@ -303,6 +303,12 @@ p, _ = dung(hook_plan(audio=[
 ]))
 vols = [a["volume"] for a in p["audio"]]
 check("cung mot tieng lap lai thi nho dan", vols[0] > vols[1] > vols[2], "-> %s" % vols)
+# 2026-10-01: chu nao cung co tieng -> cung mot tieng lap ca video; truoc day 0.85^n lam chu ve sau coi nhu mat tieng
+p, _ = dung(hook_plan(audio=[{"sfx_id": "x", "file": "/b.mp3", "_name": "ding", "_lufs": -12.0, "start": 2.0 + 3.1 * k}
+                             for k in range(9)]))
+vols = [a["volume"] for a in p["audio"]]
+check("lap lai ca video khong nho mai (toi da %d bac)" % g.SFX_REPEAT_MAX_STEPS,
+      min(vols) >= max(vols) * g.SFX_REPEAT_DECAY ** g.SFX_REPEAT_MAX_STEPS * g.SFX_CROWD_DECAY - 1e-3, "-> %s" % vols)
 p, _ = dung(hook_plan(audio=[
     {"sfx_id": "x", "file": "/b.mp3", "_name": "ding", "_lufs": -12.0, "start": 2.0,
      "volume": 0.95, "volume_fixed": True}]))

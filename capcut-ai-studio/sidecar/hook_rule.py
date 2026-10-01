@@ -364,8 +364,9 @@ def check(spec, level=None, plan=None):
     def in_hook(st, en):
         return st < end and en > a
 
+    # tieng code tu gan cho chu (textAuto) khong tinh: hook can tieng GAY CHU Y chon theo cam xuc, khong phai 'pop' chung
     snd_all = [x for x in spec.get("audio") or [] if isinstance(x, dict) and (x.get("role") or "sfx") == "sfx"
-               and x.get("start") is not None]
+               and x.get("start") is not None and not x.get("textAuto")]
     snd = [x for x in snd_all if float(x["start"]) < end]
     vis = ([("effect", e.get("type")) for e in spec.get("effects") or [] if isinstance(e, dict)
             and in_hook(providers._f(e.get("start")), providers._f(e.get("end"), providers._f(e.get("start"))))]
@@ -751,11 +752,16 @@ def ensure(plan, spec, build, step, sfx_catalog=None, transcript_data=None, stor
                         " | ".join(vd), level, why_level, ' ("anchor": "hook")' if moment.get("anchor") == "hook" else "",
                         L["hit"], L["beats"], (", khong dung im qua %.1fs" % L["gap"]) if L["gap"] else "",
                         "; tone nhe: em, muot, KHONG rung / loe / glitch" if level == "nhe" else ""))
-            res_p = step("Hook-FX-plan", {"m": hm, "story": story, "style": fx_ctx.get("style"), "hook": fx_ctx.get("hook"),
-                                          "vd": vd, "muc": level, "hr": HOOK_RULE_VERSION, "v": fx_flow.FX_VERSION},
+            import brand_guide
+            brand = fx_ctx.get("brand")
+            k_hook = {"m": hm, "story": story, "style": fx_ctx.get("style"), "hook": fx_ctx.get("hook"),
+                      "vd": vd, "muc": level, "hr": HOOK_RULE_VERSION, "v": fx_flow.FX_VERSION}
+            if brand_guide.view(brand, "fx"):
+                k_hook["brand"] = brand_guide.view(brand, "fx")     # chi khi co -> khoa cache cu giu nguyen
+            res_p = step("Hook-FX-plan", k_hook,
                          lambda: fx_flow.gpt_fx_plan(hm, story=story, style=fx_ctx.get("style"),
                                                      sources=fx_ctx.get("sources"), hook=fx_ctx.get("hook"),
-                                                     note=note, log=log, step_label="Hook-FX-plan")) or {}
+                                                     note=note, log=log, step_label="Hook-FX-plan", brand=brand)) or {}
             for i, e in enumerate(res_p.get("effects") or []):
                 if isinstance(e, dict):
                     e["id"] = "hook%d" % (i + 1)
@@ -763,7 +769,7 @@ def ensure(plan, spec, build, step, sfx_catalog=None, transcript_data=None, stor
                         e["anchor"] = "hook"
             ch = []
             got = fx_flow.build_effects(res_p, hm, fx_ctx.get("faces"), fx_ctx.get("palette"), step=step, changes=ch,
-                                        log=log)[:2]
+                                        log=log, brand=brand)[:2]
             for c in ch:
                 notes.append("FX hook: %s" % c)
             if got:

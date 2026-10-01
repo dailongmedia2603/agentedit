@@ -753,6 +753,9 @@ def remotion_autoplan_route():
     brief = _can_gio_loi_noi(brief)
     reference_analysis = b.get("reference_analysis")
     edit_request = b.get("edit_request")
+    # BRAND GUIDELINE (khong bat buoc): font / mau / do hoa / anh / chuyen dong -> dung buoc AI (brand_guide.py)
+    import brand_guide
+    brand = brand_guide.normalize(b.get("brand_guide"))
     use_cache = not b.get("fresh")
     reused, warnings = [], []
     # TU LIEU CUA NGUOI DUNG (anh / video hien LEN video): muc dich + phan tich Gemini + so do -> R4
@@ -900,6 +903,18 @@ def remotion_autoplan_route():
         if not segs_b2:
             return err("B2 khong dung duoc timeline nao tu chat lieu da chon")
 
+        # GIONG NOI (user 2026-10-01): do muc to giong that + y kien Gemini (source.giong_noi) -> giong qua nho thi
+        # NANG len vua nghe ro (build_spec dung ban lam viec giong da nang); giong da chuan -> giu nguyen
+        import voice_boost
+        try:
+            voice = voice_boost.assess(brief.get("sources"), source_videos, transcript_data, log=logger.info)
+        except Exception as ex:          # do am thanh loi khong duoc lam hong ke hoach
+            voice = {}
+            logger.warning("Danh gia giong noi loi: %s — giu tieng goc", ex)
+        for _sid, _v in voice.items():
+            run_log.emit("note", "Giọng nói %s: %s" % (_sid, _v["ly_do"]), step="voice",
+                         level="warn" if _v["gain_db"] else "info", output=_v)
+
         # B3: hook (goi y chuyen canh lay tu danh muc Remotion)
         goi_y = remotion_plan.transition_goi_y_hook()
         hook = _step("B3-hook", {
@@ -947,15 +962,22 @@ def remotion_autoplan_route():
         if um_items:
             # chi them khi CO tu lieu -> du an khong tu lieu giu nguyen khoa cache cu
             r4_key["um"] = user_media.key_view(um_items)
+        if brand:
+            # chi them khi CO Brand Guideline -> du an khong co giu nguyen khoa cache cu
+            r4_key["brand"] = brand_guide.view(brand, "plan")
+            run_log.emit("note", brand_guide.report(brand), step="R4-design", output=brand)
         design = _step("R4-design", r4_key, lambda: motion_design.gpt_rm_design(
             segments=segs_b2, transcript_data=transcript_data, emotion_map_data=emotion_map_data,
             key_moments_data=key_moments_data, story=story, reference_analysis=reference_analysis,
             hook=hook_info, faces=faces, log=logger.info,
             sources=[{"id": sv.get("id"), "summary": sv.get("summary"), "on_screen_text": sv.get("on_screen_text")}
                      for sv in brief.get("sources") or [] if isinstance(sv, dict)],
-            user_media=um_items or None), optional=True) or {}
+            user_media=um_items or None, brand=brand), optional=True) or {}
         # phong cach cua PHIEN: video mau -> bo cua video mau; khong -> "style" R4 tu dat cho rieng video nay
         style_phien = kit or motion_design.session_style(design)
+        if brand:
+            # Brand Guideline uu tien hon: palette ve he mau thuong hieu, font theo vai = font thuong hieu
+            style_phien = brand_guide.apply_kit(style_phien, brand)
         if not kit and style_phien:
             run_log.emit("note", "R4 tự đặt phong cách cho video này: %s" % (style_phien.get("mood") or "")[:160],
                          step="R4-design", output=style_phien)
@@ -965,14 +987,17 @@ def remotion_autoplan_route():
             visual = design
         else:
             # R4 thiet ke hong -> ban cu (chi chuyen canh / hieu ung / mau, khong lop do hoa)
-            visual = _step("R4-visual", {
+            rv_key = {
                 "segs": segs_b2, "emo": emotion_map_data, "tr": transcript_data, "km": key_moments_data,
                 "story": story, "hook": hook_info, "hints": hints, "cat": rm_fp,
                 "ref": providers.phong_cach_cho_buoc(reference_analysis, "effects"),
-            }, lambda: remotion_plan.gpt_rm_visual(
+            }
+            if brand:
+                rv_key["brand"] = brand_guide.view(brand, "plan")
+            visual = _step("R4-visual", rv_key, lambda: remotion_plan.gpt_rm_visual(
                 segments=segs_b2, emotion_map_data=emotion_map_data, transcript_data=transcript_data,
                 key_moments_data=key_moments_data, story=story, reference_analysis=reference_analysis,
-                hook=hook_info, log=logger.info), optional=True) or {}
+                hook=hook_info, log=logger.info, brand=brand), optional=True) or {}
 
         um_notes = []
         if um_items:
@@ -988,7 +1013,7 @@ def remotion_autoplan_route():
         # KHONG goi Claude CLI dong thoi: do that 09-30, 3 luot `claude -p` cung luc -> 2 luot bi chan dung ~900s
         # roi moi chay (104 luot tuan tu truoc do: 0 lan) -> moi buoc Claude van chay lan luot o luong chinh.
         from concurrent.futures import ThreadPoolExecutor
-        _nen = ThreadPoolExecutor(max_workers=2, thread_name_prefix="autoplan-nen")
+        _nen = ThreadPoolExecutor(max_workers=3, thread_name_prefix="autoplan-nen")
         _nen_nhan = lambda fn: _nen.submit(run_log.carry(fn))  # noqa: E731
 
         # Tai nguyen hinh: anh AI (Codex, song song) + khung cat tu video nguon (+ tach nen) + tu lieu nguoi dung.
@@ -1008,7 +1033,7 @@ def remotion_autoplan_route():
             ctxs = motion_design.asset_contexts(
                 design, transcript_data=transcript_data, story=story,
                 sources=[{"summary": sv.get("summary")} for sv in brief.get("sources") or [] if isinstance(sv, dict)],
-                user_media=um_items)
+                user_media=um_items, brand=brand)
             assets_job = _nen_nhan(lambda: motion_design.resolve_assets(
                 assets, source_videos, style=(style_phien or {}).get("broll_style") or "",
                 log=logger.info, contexts=ctxs))
@@ -1016,17 +1041,20 @@ def remotion_autoplan_route():
 
         # R5: phu de (theo bo phong cach) — biet truoc cac lop chu do hoa de khong viet trung
         layer_texts = motion_design.layer_texts(design.get("layers"))
-        captions = _step("R5-captions", {
+        r5_key = {
             "segs": segs_b2, "tr": transcript_data, "emo": emotion_map_data, "faces": faces_regions,
             "km": key_moments_data, "story": story, "hook": hook_info, "hints": hints, "cat": rm_fp,
             "ref": providers.phong_cach_cho_buoc(reference_analysis, "captions"),
             "layers": layer_texts, "sub": (kit or {}).get("subtitle"),
-        }, lambda: remotion_plan.gpt_rm_captions(
+        }
+        if brand_guide.view(brand, "captions"):
+            r5_key["brand"] = brand_guide.view(brand, "captions")
+        captions = _step("R5-captions", r5_key, lambda: remotion_plan.gpt_rm_captions(
             segments=segs_b2, transcript_data=transcript_data, emotion_map_data=emotion_map_data,
             faces_regions=faces_regions, key_moments_data=key_moments_data,
             reference_analysis=reference_analysis, story=story, hook=hook_info,
             layers=layer_texts, subtitle_style=(kit or {}).get("subtitle") if layer_texts else None,
-            log=logger.info), optional=True) or {}
+            log=logger.info, brand=brand), optional=True) or {}
 
         # HIEU UNG TU VIET: AI tu de xuat theo BOI CANH tung khoanh khac + tu viet code (kiem trong hop cach ly)
         art_future, art_res = None, None
@@ -1038,10 +1066,32 @@ def remotion_autoplan_route():
             run_log.emit("note", "Chữ ảnh AI: %d cụm chữ nổi bật (không gồm phụ đề karaoke) -> tạo ảnh chữ theo "
                          "phong cách video, cắt từng tầng + vị trí từng từ" % len(lockups), step="TXT-art",
                          output=[{"key": lk["key"], "tang": [(t["role"], t["text"]) for t in lk["tiers"]]} for lk in lockups])
+            art_key = {"lk": lockups, "style": style_phien, "story": story, "v": text_art.ART_VERSION}
+            if brand_guide.view(brand, "text_art"):
+                art_key["brand"] = brand_guide.view(brand, "text_art")
             art_future = _nen_nhan(lambda: _step(
-                "TXT-art", {"lk": lockups, "style": style_phien, "story": story, "v": text_art.ART_VERSION},
+                "TXT-art", art_key,
                 lambda: text_art.make_text_art(lockups, style=style_phien, story=story, log=logger.info,
-                                               emit=lambda m: run_log.emit("note", m, step="TXT-art")), True))
+                                               emit=lambda m: run_log.emit("note", m, step="TXT-art"), brand=brand),
+                True))
+        # DO HOA CO CHU BANG ANH AI (huy hieu...): AI tao CA phan tu (hinh + trang tri + icon + chu), khong chi chu —
+        # chay nen song song (Codex) nhu chu anh AI
+        import graphic_art
+        gfx_future, gfx_res = None, None
+        gfx_items = graphic_art.items_from(design.get("layers"), transcript_data)
+        if gfx_items:
+            run_log.emit("note", "Đồ hoạ ảnh AI: %d phần tử có chữ (huy hiệu…) -> AI tạo cả phần tử (hình, trang trí, "
+                         "icon, chữ) theo phong cách video" % len(gfx_items), step="GFX-art",
+                         output=[{k: it[k] for k in ("kind", "label", "value", "group")} for it in gfx_items])
+            gfx_key = {"it": gfx_items, "style": style_phien, "story": story, "v": graphic_art.ART_VERSION,
+                       "p": graphic_art.prompt_fp()}
+            if brand_guide.view(brand, "text_art"):
+                gfx_key["brand"] = brand_guide.view(brand, "text_art")
+            gfx_future = _nen_nhan(lambda: _step(
+                "GFX-art", gfx_key,
+                lambda: graphic_art.make_graphic_art(gfx_items, style=style_phien, story=story, log=logger.info,
+                                                     emit=lambda m: run_log.emit("note", m, step="GFX-art"), brand=brand),
+                True))
         import fx_flow
         if visual is not design:
             visual["effects"] = []          # R4 du phong (kho mau) -> khong dung hieu ung mau
@@ -1051,11 +1101,14 @@ def remotion_autoplan_route():
                                      user_media=um_items or None)
         src_desc = [{"id": sv.get("id"), "summary": sv.get("summary"), "on_screen_text": sv.get("on_screen_text")}
                     for sv in brief.get("sources") or [] if isinstance(sv, dict)]
-        fx_plan = _step("FX-plan", {"m": moments, "story": story, "style": style_phien, "src": src_desc,
-                                    "lop": layer_texts, "v": fx_flow.FX_VERSION},
+        fxp_key = {"m": moments, "story": story, "style": style_phien, "src": src_desc,
+                   "lop": layer_texts, "v": fx_flow.FX_VERSION}
+        if brand_guide.view(brand, "fx"):
+            fxp_key["brand"] = brand_guide.view(brand, "fx")
+        fx_plan = _step("FX-plan", fxp_key,
                         lambda: fx_flow.gpt_fx_plan(moments, story=story, style=style_phien, sources=src_desc,
                                                     existing={"lop_chu": layer_texts[:40]}, log=logger.info,
-                                                    hook=hook_info),
+                                                    hook=hook_info, brand=brand),
                         optional=True) or {}
         for x in (fx_plan.get("bo_qua") or [])[:20]:
             if isinstance(x, dict):
@@ -1065,7 +1118,7 @@ def remotion_autoplan_route():
         fx_list = fx_flow.build_effects(
             fx_plan, moments, faces, (style_phien or {}).get("palette"),
             step=lambda n, pl, fn: _step(n, pl, fn, optional=True), changes=fx_changes, log=logger.info,
-            emit=lambda m, lvl, out: run_log.emit("note", m, step="FX-code", level=lvl, output=out))
+            emit=lambda m, lvl, out: run_log.emit("note", m, step="FX-code", level=lvl, output=out), brand=brand)
         for c in fx_changes:
             logger.info("FX: %s", c)
             run_log.emit("note", "FX: %s" % c, step="FX-code", level="warn")
@@ -1123,6 +1176,19 @@ def remotion_autoplan_route():
             run_log.emit("result", "Chữ ảnh AI: %d cụm đạt, %d cụm dùng chữ code" % (n_ok, len(art_res.get("failed") or [])),
                          step="TXT-art", level="ok" if n_ok else "warn",
                          output={k: [t.get("file") for t in v.get("tiers") or []] for k, v in (art_res.get("items") or {}).items()})
+        if gfx_future is not None:
+            try:
+                gfx_res = gfx_future.result() or {}
+            except Exception as ex:
+                gfx_res = {}
+                warnings.append("Đồ hoạ ảnh AI lỗi (%s) — dùng huy hiệu vẽ bằng code." % str(ex)[:160])
+            for f in gfx_res.get("failed") or []:
+                run_log.emit("note", "Đồ hoạ ảnh AI bỏ '%s': %s — dùng huy hiệu vẽ bằng code (màu theo video)"
+                             % (f.get("text"), f.get("ly_do")), step="GFX-art", level="warn")
+            n_ok = len(gfx_res.get("items") or {})
+            run_log.emit("result", "Đồ hoạ ảnh AI: %d phần tử đạt, %d phần tử vẽ bằng code" % (
+                n_ok, len(gfx_res.get("failed") or [])), step="GFX-art", level="ok" if n_ok else "warn",
+                output={k: v.get("file") for k, v in (gfx_res.get("items") or {}).items()})
         if assets_job is not None:
             assets_job.result()             # loi ngoai du kien -> vut len nhu khi chay tuan tu (tra loi ke hoach)
             bad = [a for a in assets if a.get("error")]
@@ -1161,12 +1227,18 @@ def remotion_autoplan_route():
             "inserts": inserts.get("inserts", []),
             "audio": audio.get("audio", []),
             "speech": _khoang_loi_noi(transcript_data),
+            # giong noi nho -> muc nang (dB) theo tung video nguon (voice_boost); 0 = giong da chuan, giu nguyen
+            "voice_boost": voice,
             # khoang lang dai nhat duoc giu (luat cung 2026-10-01) — build_spec siet + kiem lai theo dung muc nay
             "pause_limit": speech_cut.pause_limit(story),
+            # Brand Guideline cua du an (build_spec ep font + ma mau thuong hieu, ke ca khi AI quen)
+            "brand_guide": brand,
             # hieu ung tu viet (code da kiem + boi canh / muc tieu / ly do) — chi nam trong plan nay
             "fx": fx_list,
             # chu noi bat ve bang anh AI (anh tung tang, vi tri tu) — build_spec dat vao lop chu
             "text_art": {"items": (art_res or {}).get("items") or {}} if art_res else None,
+            # do hoa co chu (huy hieu...) ve bang anh AI ca phan tu — build_spec dat vao lop badge
+            "graphic_art": {"items": (gfx_res or {}).get("items") or {}} if gfx_res else None,
             # gio TUNG CHU (Whisper) -> build_spec bam caption + karaoke dung chu dang noi
             "asr_words": {src.get("id"): src["asr_words"] for src in brief.get("sources") or []
                           if isinstance(src, dict) and src.get("asr_words")},
@@ -1178,7 +1250,7 @@ def remotion_autoplan_route():
                 "thu_tu_video": selection.get("thu_tu_video"),
                 "thu_tu": ["B1-select", "B2-timeline", "B3-hook",
                            "R4-design" if visual is design else "R4-visual", "assets", "R5-captions",
-                           "TXT-art", "FX-plan", "FX-code", "B6-inserts", "B7-audio"],
+                           "TXT-art", "GFX-art", "FX-plan", "FX-code", "B6-inserts", "B7-audio"],
                 # "v1" = du an lap ke hoach khi con luong cu (da go 2026-09-28)
                 "luong": "v2",
                 "transition_da_gan": n_tr,
@@ -1198,7 +1270,7 @@ def remotion_autoplan_route():
                 step=lambda n, pl, fn: _step(n, pl, fn, optional=True),
                 sfx_catalog=sfx_catalog, transcript_data=transcript_data, story=story,
                 fx_ctx={"moments": moments, "faces": faces, "palette": (style_phien or {}).get("palette"),
-                        "style": style_phien, "sources": src_desc, "hook": hook_info},
+                        "style": style_phien, "sources": src_desc, "hook": hook_info, "brand": brand},
                 emit=lambda m, lvl: run_log.emit("note", m, step="Hook-check", level=lvl), log=logger.info)
             if _rep_hook is not None:
                 report = _rep_hook
@@ -1216,7 +1288,7 @@ def remotion_autoplan_route():
                 output=plan["_pipeline"]["tu_lieu"])
         _log_guard(report, " (Remotion)")
         if not spec:
-            return err("Khong dung duoc ban Remotion: %s" % "; ".join(
+            return err("Khong dung duoc ban dung video: %s" % "; ".join(
                 i["problem"] for i in report.get("issues", [])))
         if reused:
             logger.info("Dung lai %d buoc da chay truoc: %s", len(reused), ", ".join(reused))

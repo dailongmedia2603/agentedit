@@ -46,6 +46,10 @@ app.on('child-process-gone', (_e, d) => {
   }
 })
 
+// Ban cai cho may khac (electron.vite.config.ts): khong co DevTools (mo ra xem duoc moi buoc / prompt / nhat ky)
+declare const __CLIENT_UI__: boolean
+const CLIENT_UI = typeof __CLIENT_UI__ !== 'undefined' && __CLIENT_UI__
+
 function setAppMenu() {
   app.setAboutPanelOptions({ applicationName: APP_DISPLAY_NAME, applicationVersion: app.getVersion() })
   if (process.platform !== 'darwin') {
@@ -71,7 +75,18 @@ function setAppMenu() {
         ]
       },
       { role: 'editMenu' },
-      { role: 'viewMenu' },
+      CLIENT_UI
+        ? {
+            label: 'Xem',
+            submenu: [
+              { role: 'resetZoom' },
+              { role: 'zoomIn' },
+              { role: 'zoomOut' },
+              { type: 'separator' },
+              { role: 'togglefullscreen' }
+            ]
+          }
+        : { role: 'viewMenu' },
       { role: 'windowMenu' }
     ])
   )
@@ -94,7 +109,8 @@ function createWindow() {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false
+      sandbox: false,
+      devTools: !CLIENT_UI
     }
   })
 

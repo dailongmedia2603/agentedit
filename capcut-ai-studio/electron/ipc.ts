@@ -129,7 +129,8 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
   // AI lap ke hoach (GPT / Claude) — luu state.json, sidecar doc lai moi lan lap plan
   ipcMain.handle('settings:getPlanner', () => planProviderOf(readState()))
   ipcMain.handle('settings:setPlanner', (_e, v: PlanProvider) => {
-    writeState({ plan_provider: v === 'gpt' ? 'gpt' : 'claude' })
+    void v // lap ke hoach co dinh Claude (2026-10-01)
+    writeState({ plan_provider: 'claude' })
     return planProviderOf(readState())
   })
   // Trang thai CLI chinh chu (Claude Code / Codex) cho che do goi subscription

@@ -22,6 +22,7 @@ import subprocess
 
 import config
 import plan_guard
+import creative
 import prompt_store
 import providers
 import speech_align
@@ -279,7 +280,7 @@ def _hints(reference_analysis):
 
 
 def gpt_rm_visual(segments, emotion_map_data, transcript_data=None, key_moments_data=None,
-                  story=None, reference_analysis=None, hook=None, log=None):
+                  story=None, reference_analysis=None, hook=None, log=None, brand=None):
     seg_context = []
     for i, seg in enumerate(segments or []):
         sid = seg.get("source_id", "")
@@ -311,7 +312,11 @@ def gpt_rm_visual(segments, emotion_map_data, transcript_data=None, key_moments_
         payload["goi_y_remotion"] = _hints(reference_analysis)
     import hook_rule
     sys_prompt = (_p("_RM_VISUAL_SYSTEM") + "\n\n# DANH MUC REMOTION (chi dung id trong nay):\n" + _catalog_block()
-                  + hook_rule.luat("R4"))
+                  + hook_rule.luat("R4") + creative.luat("R4"))
+    import brand_guide
+    if brand_guide.view(brand, "plan"):
+        payload["brand_guideline"] = brand_guide.view(brand, "plan")
+        sys_prompt += brand_guide.rule_text(brand, "plan")
     if log:
         log("R4: %s chon chuyen canh / hieu ung / tong mau Remotion..." % providers.plan_ai_name())
     text = providers.plan_chat([
@@ -343,7 +348,8 @@ _RM_CAPTION_MOTION_NOTE = """
 
 
 def gpt_rm_captions(segments, transcript_data, emotion_map_data, faces_regions, key_moments_data,
-                    reference_analysis=None, story=None, hook=None, log=None, layers=None, subtitle_style=None):
+                    reference_analysis=None, story=None, hook=None, log=None, layers=None, subtitle_style=None,
+                    brand=None):
     seg_context = []
     for i, seg in enumerate(segments or []):
         sid = seg.get("source_id", "")
@@ -382,7 +388,12 @@ def gpt_rm_captions(segments, transcript_data, emotion_map_data, faces_regions, 
         payload["phong_cach_phu_de"] = {k: v for k, v in subtitle_style.items() if k in (
             "font", "weight", "size", "case", "style", "words_per_chunk", "rule")}
     sys_prompt = (_p("_RM_CAPTION_SYSTEM") + (_RM_CAPTION_MOTION_NOTE if motion else "")
-                  + "\n\n# DANH MUC REMOTION (chi dung id trong nay):\n" + _catalog_block())
+                  + "\n\n# DANH MUC REMOTION (chi dung id trong nay):\n" + _catalog_block() + creative.luat("R5"))
+    import brand_guide
+    if brand_guide.view(brand, "captions"):
+        # Brand Guideline: font + mau thuong hieu cho phu de / chu hero theo loi noi (code ep lai o build_spec)
+        payload["brand_guideline"] = brand_guide.view(brand, "captions")
+        sys_prompt += brand_guide.rule_text(brand, "captions")
     if log:
         log("R5: %s viet caption Remotion..." % providers.plan_ai_name())
     text = providers.plan_chat([
@@ -1022,12 +1033,16 @@ def _audio_to_spec(p, duration):
             src_en = src_st + (duration - st)
         else:
             src_en = src_st + min(dur - src_st, SFX_MAX_LEN, duration - st)
-        out.append({"id": "aud%d" % i, "path": path, "start": round(st, 3),
-                    "volume": round(_clamp(providers._f(a.get("volume"), 0.8), 0.0, 1.0), 3),
-                    "srcStart": round(src_st, 3), "srcEnd": round(src_en, 3), "role": role,
-                    "name": a.get("_name") or a.get("sfx_id"),
-                    # do to khi phat so voi giong noi cua video (dB) — luat hook dung de biet SFX co nghe ro khong
-                    "rel": a.get("_rel_db")})
+        row = {"id": "aud%d" % i, "path": path, "start": round(st, 3),
+               "volume": round(_clamp(providers._f(a.get("volume"), 0.8), 0.0, 1.0), 3),
+               "srcStart": round(src_st, 3), "srcEnd": round(src_en, 3), "role": role,
+               "name": a.get("_name") or a.get("sfx_id"),
+               # do to khi phat so voi giong noi cua video (dB) — luat hook dung de biet SFX co nghe ro khong
+               "rel": a.get("_rel_db")}
+        if a.get("_auto_text"):
+            # tieng code tu gan cho chu (luat chu co tieng) — luat hook KHONG tinh la tieng gay chu y cua hook
+            row["textAuto"] = True
+        out.append(row)
     return out
 
 
@@ -1070,6 +1085,11 @@ def build_spec(plan, log=None):
     p["source_videos"] = media_sdr.working_sources(p.get("source_videos"), log=log)
     if p["source_videos"]:
         p["source_video"] = p["source_videos"][0].get("path") or p.get("source_video")
+    if p.get("voice_boost"):
+        # GIONG NOI NHO (user 2026-10-01): ban lam viec giong da nang thay cho video o khau phat tieng; do dac de cat
+        # van tren file goc (orig_path) -> diem cat khong doi
+        import voice_boost
+        voice_boost.apply(p, changes, log=log)
     # File video nguon bi chuyen / xoa -> KHONG dung spec (truoc day ra spec khong co clip nao ma van
     # "ok" -> UI thay ban dung dang xem duoc bang ban rong). Bao ro de giu ban cu + nguoi dung biet.
     dung = {s.get("source_id") for s in p.get("segments") or [] if isinstance(s, dict) and s.get("kind") != "insert"}
@@ -1084,6 +1104,13 @@ def build_spec(plan, log=None):
     W, H = int(canvas.get("w") or CANVAS["w"]), int(canvas.get("h") or CANVAS["h"])
     p["canvas"] = {"w": W, "h": H}
     fps = int(p.get("fps") or FPS)
+    if p.get("brand_guide"):
+        # BRAND GUIDELINE: ep font + ma mau thuong hieu len lop chu / phu de / nen / bo phong cach TRUOC khi dung (do
+        # vi tri, ne mat, do tuong phan deu tinh tren font / mau that) — AI quen van ra dung thuong hieu
+        import brand_guide
+        if isinstance(p.get("style_kit"), dict):
+            p["style_kit"] = brand_guide.apply_kit(p["style_kit"], p["brand_guide"])
+        brand_guide.enforce_plan(p, changes)
 
     segs = p.get("segments") or []
     if any(s.get("kind") in ("hook", "insert") or s.get("_cut_head") for s in segs):
@@ -1221,8 +1248,12 @@ def build_spec(plan, log=None):
     if p.get("fx"):
         import fx_flow as FX
         p["audio"] = list(p.get("audio") or []) + FX.fx_sfx(p, changes)
-    sfx_cap = max(plan_guard.MAX_SFX, MD.SFX_CAP_MOTION) if motion else plan_guard.MAX_SFX
+    # KHONG con tran so SFX ca video (user 2026-10-01: tran 16 lam moi chu sau giay ~56 mat tieng). Chi con gian
+    # cach cho SFX KHONG gan voi chu; tieng cua chu khong bao gio bi bo vi gian cach (MD.is_text_sfx)
     sfx_gap = min(plan_guard.SFX_MIN_GAP, 0.3) if motion else plan_guard.SFX_MIN_GAP
+    # chu / hieu ung cua video chinh khong chay de len doan meme cat vao (TRUOC khi gan tieng cho chu: chu bi day ra
+    # sau meme thi tieng cua no theo gio moi)
+    plan_guard.clear_over_inserts(p, changes)
 
     auds = []
     for i, a in enumerate(p.get("audio") or []):
@@ -1238,19 +1269,27 @@ def build_spec(plan, log=None):
             changes.append("audio%d: ngoai video -> bo" % i)
             continue
         auds.append(a)
-    auds.sort(key=lambda a: providers._f(a.get("start")))
+    # cung giay: tieng tu chon (AI) dung truoc tieng code tu gan
+    auds.sort(key=lambda a: (providers._f(a.get("start")), 1 if a.get("_auto_text") else 0))
     kept, last = [], -99.0
     for a in auds:
         st = providers._f(a.get("start"))
         if (a.get("role") or "sfx") != "bgm":
-            if st - last < sfx_gap:
+            if MD.is_text_sfx(a):
+                # chu hien CUNG LUC voi mot tieng khac (< TEXT_SFX_SAME) -> dung chung tieng do, khong chong 2 tieng
+                if any(abs(st - providers._f(x.get("start"))) < MD.TEXT_SFX_SAME
+                       for x in kept if (x.get("role") or "sfx") != "bgm"):
+                    changes.append("audio %s %.2fs: chu hien cung luc voi tieng khac -> dung chung tieng do"
+                                   % (a.get("sfx_id"), st))
+                    continue
+            elif st - last < sfx_gap:
                 changes.append("audio %s: sat SFX truoc (<%.2fs) -> bo" % (a.get("sfx_id"), sfx_gap))
                 continue
-            if len([x for x in kept if (x.get("role") or "sfx") != "bgm"]) >= sfx_cap:
-                changes.append("chi giu %d SFX dau" % sfx_cap)
-                break
-            last = st
+            last = max(last, st)
         kept.append(a)
+    # LUAT (user 2026-10-01): MOI chu hien ra deu co tieng — chu AI chua gan / B7 chua dat -> code tu gan tieng hop chu
+    kept += MD.ensure_text_sfx(layers, p.get("captions"), kept, duration, changes)
+    kept.sort(key=lambda a: providers._f(a.get("start")))
     p["audio"] = kept
     # muc to giong noi cua CHINH video nay -> SFX / meme can theo no (khong theo muc tuyet doi)
     try:
@@ -1260,8 +1299,6 @@ def build_spec(plan, log=None):
         p["_voice_lufs"] = None
         changes.append("khong do duoc muc to giong noi (%s) -> SFX theo muc tuyet doi" % str(ex)[:120])
     plan_guard.mix_sfx(p, changes)
-    # chu / hieu ung cua video chinh khong chay de len doan meme cat vao
-    plan_guard.clear_over_inserts(p, changes)
 
     theme = p.get("caption_theme") if isinstance(p.get("caption_theme"), dict) else {}
     grade = p.get("grade") if isinstance(p.get("grade"), dict) else {}
@@ -1284,6 +1321,10 @@ def build_spec(plan, log=None):
         "scenes": scenes,
         "layers": layers,
     }
+    if p.get("brand_guide"):
+        # mau code tu sinh khi dung (nen the lay tu khung video, mau tang phu...) -> he mau thuong hieu; trung tinh giu
+        import brand_guide
+        brand_guide.enforce_spec(spec, p["brand_guide"], changes)
     if p.get("text_art"):
         # chu hero / hook co chu anh AI -> lop chu anh (truoc ne phu de: phu de phai tranh ca chu nay)
         MD.hero_captions_to_art(spec, p, changes)
