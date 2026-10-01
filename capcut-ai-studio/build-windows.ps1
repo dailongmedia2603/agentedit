@@ -62,8 +62,19 @@ if (-not $node -and $InstallPrereqs -and (HasWinget)) {
 }
 if (-not $node) { Fail 'Chưa có Node.js 22+. Cài tại https://nodejs.org (bản LTS 64-bit) hoặc chạy lại với -InstallPrereqs.' }
 $nodeVer = (& node -p "process.versions.node").Trim()
+if ([int]($nodeVer.Split('.')[0]) -lt 22 -and $InstallPrereqs -and (HasWinget)) {
+    # Node cu (vd 20) -> nang len ban LTS moi (install; da cai bang winget thi upgrade)
+    Write-Host "  Node.js $nodeVer quá cũ — nâng lên bản LTS mới bằng winget..."
+    winget install -e --id OpenJS.NodeJS.LTS --accept-package-agreements --accept-source-agreements --silent
+    winget upgrade -e --id OpenJS.NodeJS.LTS --accept-package-agreements --accept-source-agreements --silent
+    RefreshPath
+    $nodeVer = (& node -p "process.versions.node").Trim()
+}
 $nodeArch = (& node -p "process.arch").Trim()
-if ([int]($nodeVer.Split('.')[0]) -lt 22) { Fail "Node.js $nodeVer quá cũ — cần 22 trở lên." }
+if ([int]($nodeVer.Split('.')[0]) -lt 22) {
+    Fail ("Node.js $nodeVer quá cũ — cần 22 trở lên. Cài bản LTS 64-bit tại https://nodejs.org (cài đè bản cũ), " +
+          'ĐÓNG hẳn PowerShell, mở lại rồi chạy lại script.')
+}
 if ($nodeArch -ne 'x64') { Fail "Node.js đang là bản $nodeArch — cần bản x64 (bytecode .jsc biên dịch theo kiến trúc)." }
 Ok "Node.js $nodeVer ($nodeArch)"
 
