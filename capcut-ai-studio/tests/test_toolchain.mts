@@ -104,6 +104,30 @@ for (const ranged of [true, false]) {
   flaky.close()
 }
 
+// Su co that 2026-10-01 (Windows): dung kich thuoc nhung SAI byte, moi lan mot ma -> lan sau tai bang curl he thong
+{
+  let n = 0
+  const bad = Buffer.from(body)
+  bad[100] ^= 0xff
+  const corrupt = createServer((_req, res) => {
+    n++
+    res.writeHead(200, { 'content-length': body.length })
+    res.end(n === 1 ? bad : body)
+  })
+  await new Promise<void>((r) => corrupt.listen(0, '127.0.0.1', () => r()))
+  const cu = `http://127.0.0.1:${(corrupt.address() as { port: number }).port}/c.bin`
+  const cl: string[] = []
+  let cerr = ''
+  try {
+    await T.download(cu, join(HOME, 'dl', 'c.bin'), (l) => cl.push(l), good)
+  } catch (e) {
+    cerr = String(e)
+  }
+  check('noi dung hong (dung kich thuoc) -> lan sau tai bang curl he thong -> khop',
+        !cerr && cl.some((l) => l.includes('không khớp')) && cl.some((l) => l.includes('curl')) && cl.some((l) => l.includes('khớp ')), { cerr, cl })
+  corrupt.close()
+}
+
 console.log('[3] ffmpeg ban ghim')
 const st0 = await T.ffmpegStatus()
 check('chua cai -> chua dat', !st0.ok && st0.detail.includes('Chưa cài'), st0)

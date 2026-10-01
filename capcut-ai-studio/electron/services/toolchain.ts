@@ -29,8 +29,6 @@ import {
 } from 'fs'
 import { homedir } from 'os'
 import { delimiter, join } from 'path'
-import { Readable } from 'stream'
-import { pipeline } from 'stream/promises'
 import { IS_WIN, augmentedEnv, cmdQuote, exeName, findIn, killTree, needsShell, pathKey, systemTar } from './env'
 import { ENGINE_HOME, TOOLS_BIN, USER_MODELS_DIR, bundledFfmpegZip, bundledModelsDir, sidecarDir } from './paths'
 
@@ -328,17 +326,51 @@ async function fetchInto(url: string, dest: string, onLog: Log, prog: { lastPct:
   const base = resumed ? have : 0
   const total = base + Number(res.headers.get('content-length') || 0)
   let got = base
-  const body = Readable.fromWeb(res.body as unknown as import('stream/web').ReadableStream)
-  body.on('data', (d: Buffer) => {
-    got += d.length
-    const pct = total ? Math.floor((got / total) * 100) : -1
-    if (pct >= prog.lastPct + 10) {
-      prog.lastPct = pct
-      onLog(`  ${pct}% (${(got / 1e6).toFixed(1)}/${(total / 1e6).toFixed(1)} MB)`)
+  // Doc tung khuc -> CHEP ra Buffer rieng -> ghi, CHO o dia nhan xong (drain) moi doc tiep.
+  // Su co that 2026-10-01 (Windows, file 154 / 224 MB): dung kich thuoc nhung SHA-256 moi lan mot khac — o dia ghi cham
+  // (Defender quet luc ghi) -> khuc cho ghi trong hang doi bi ghi de khi vung nho duoc dung lai cho lan doc sau.
+  const reader = (res.body as unknown as import('stream/web').ReadableStream<Uint8Array>).getReader()
+  const ws = createWriteStream(dest, { flags: resumed ? 'a' : 'w' })
+  let wsErr: Error | null = null
+  ws.on('error', (e) => (wsErr = e))
+  try {
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) break
+      if (wsErr) throw wsErr
+      const buf = Buffer.from(value) // ban sao rieng
+      got += buf.length
+      if (!ws.write(buf)) await new Promise<void>((r) => ws.once('drain', () => r()))
+      const pct = total ? Math.floor((got / total) * 100) : -1
+      if (pct >= prog.lastPct + 10) {
+        prog.lastPct = pct
+        onLog(`  ${pct}% (${(got / 1e6).toFixed(1)}/${(total / 1e6).toFixed(1)} MB)`)
+      }
     }
-  })
-  await pipeline(body, createWriteStream(dest, { flags: resumed ? 'a' : 'w' }))
+  } finally {
+    await new Promise<void>((r) => ws.end(() => r()))
+  }
+  if (wsErr) throw wsErr
   return total
+}
+
+/** Tai bang curl CUA HE THONG (Windows 10 1803+ co san System32\curl.exe; macOS /usr/bin/curl) — duong du phong khi
+ *  ban tai bang Node bi sai ma. Tra true neu chay xong (kiem ma o noi goi). */
+async function curlInto(url: string, dest: string, onLog: Log): Promise<boolean> {
+  const curl = IS_WIN ? join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'curl.exe') : '/usr/bin/curl'
+  if (!existsSync(curl)) return false
+  rmSync(dest, { force: true })
+  onLog('  Tải lại bằng curl của hệ thống...')
+  try {
+    await streamCmd(curl, ['-L', '--fail', '--retry', '5', '--retry-delay', '2', '-sS', '-o', dest, url], onLog, {
+      show: `curl -L -o ${dest.split(/[\\/]/).pop()} ${url}`,
+      timeoutMs: 60 * 60 * 1000
+    })
+    return existsSync(dest)
+  } catch (e) {
+    onLog('  curl lỗi: ' + String((e as Error)?.message || e).slice(0, 200))
+    return false
+  }
 }
 
 /**
@@ -349,11 +381,17 @@ async function fetchInto(url: string, dest: string, onLog: Log, prog: { lastPct:
 export async function download(url: string, dest: string, onLog: Log, sha256?: string): Promise<void> {
   onLog(`Tải ${url}`)
   let last = ''
+  let viaCurl = false
   for (let full = 1; full <= 3; full++) {
     rmSync(dest, { force: true })
     const prog = { lastPct: -10 }
     let total = 0
     let done = false
+    // Lan truoc da SAI MA (khong phai dut mang) -> doi sang curl cua he thong (ngan xep mang / ghi file khac han)
+    if (viaCurl && (await curlInto(url, dest, onLog))) {
+      done = true
+      total = 0
+    }
     for (let part = 1; part <= 6 && !done; part++) {
       try {
         total = await fetchInto(url, dest, onLog, prog)
@@ -381,6 +419,7 @@ export async function download(url: string, dest: string, onLog: Log, sha256?: s
     }
     last = `Mã SHA-256 không khớp (tải về ${got256.slice(0, 12)}…, cần ${sha256.slice(0, 12)}…)`
     onLog(`  ${last} — xoá, tải lại từ đầu (${full}/3).`)
+    viaCurl = true
   }
   rmSync(dest, { force: true })
   throw new Error(`Tải ${url.split('/').pop()} không thành công sau 3 lượt: ${last} — đã xoá file, không dùng.`)
