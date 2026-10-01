@@ -32,7 +32,7 @@ New-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem -Name L
 ## 2. Build
 
 ```powershell
-git clone https://github.com/dailongmedia2603/editagent-kp3.git C:\ae
+git clone https://github.com/dailongmedia2603/agentedit.git C:\ae
 cd C:\ae\capcut-ai-studio
 powershell -ExecutionPolicy Bypass -File .\build-windows.ps1
 ```
