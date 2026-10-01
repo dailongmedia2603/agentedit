@@ -69,6 +69,9 @@ function createWindow() {
   })
 
   mainWindow.on('ready-to-show', () => mainWindow?.show())
+  mainWindow.on('closed', () => {
+    mainWindow = null
+  })
 
   if (process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
@@ -86,8 +89,13 @@ if (!SELF_TEST && !app.requestSingleInstanceLock()) {
   app.quit()
 } else {
   app.on('second-instance', () => {
-    if (!mainWindow) return
+    // Phien dang chay MAT cua so (vd dong cua so nhung qua trinh tat bi ket) -> mo lai cua so thay vi im lang
+    if (!mainWindow || mainWindow.isDestroyed()) {
+      if (app.isReady()) createWindow()
+      return
+    }
     if (mainWindow.isMinimized()) mainWindow.restore()
+    mainWindow.show()
     mainWindow.focus()
   })
 }
@@ -203,7 +211,12 @@ app.whenReady().then(async () => {
 
 app.on('window-all-closed', () => {
   stopSidecar()
-  if (process.platform !== 'darwin') app.quit()
+  if (process.platform !== 'darwin') {
+    app.quit()
+    // Windows: tat bi ket (tien trinh con / tai do dang) -> phien ma giu khoa "1 phien" -> lan mo sau khong len.
+    // Sau 8s van chua thoat thi thoat han.
+    setTimeout(() => app.exit(0), 8000)
+  }
 })
 
 app.on('before-quit', () => {
