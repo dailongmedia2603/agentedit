@@ -126,8 +126,12 @@ async function main() {
   for (const id of must) record(`Doctor: ${id}`, rows[id]?.status === 'ok', rows[id] ? `${rows[id].status} — ${rows[id].text}` : 'không có dòng này')
   if (rows.vision) {
     // thieu MOI model lon (Doctor tai luc dung that) van chap nhan; con lai phai dat
+    // dong Doctor = "label | yeu cau: ... | may co: ... | <chi tiet>" — chi xet phan CHI TIET (phan yeu cau
+    // co chu "resvg / PP-OCR" -> truoc day bi doc nham la thieu)
     const v = rows.vision
-    const okv = v.status === 'ok' || (v.status === 'warn' && /BiRefNet/.test(v.text) && !/onnxruntime|resvg|OCR\b/.test(v.text.split('Thiếu model')[0]))
+    const detail = v.text.split(' | ').pop() || ''
+    const okv = v.status === 'ok' ||
+      (v.status === 'warn' && /^Thiếu model: BiRefNet[^,]*\(~\d+ MB\)/.test(detail))
     record('Doctor: thị giác máy', okv, `${v.status} — ${v.text}`)
   }
   for (const id of ['whisper', 'ai_gemini', 'ai_planner', 'codex']) {
