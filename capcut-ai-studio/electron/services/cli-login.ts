@@ -1,6 +1,6 @@
 import { spawn, ChildProcess } from 'child_process'
 import { installAgy, installClaude, installCodex, powershell } from './toolchain'
-import { existsSync, mkdirSync, writeFileSync, chmodSync } from 'fs'
+import { existsSync, mkdirSync, readdirSync, writeFileSync, chmodSync } from 'fs'
 import { homedir } from 'os'
 import { basename, extname, isAbsolute, join } from 'path'
 import { shell } from 'electron'
@@ -94,6 +94,8 @@ function runTask(
     /** Chi Gemini can stdin (tra loi cau hoi dong y); Codex giu 'ignore' nhu truoc */
     stdin?: 'ignore' | 'pipe'
     onChunk?: (text: string, proc: ChildProcess) => void
+    /** Hoi moi giay: tra true = viec da xong (vd da co file phien dang nhap) -> dung tien trinh, bao THANH CONG */
+    doneWhen?: () => boolean
   }
 ): Promise<TaskResult> {
   if (child) return Promise.resolve({ ok: false, error: 'Đang có một lượt đăng nhập / cài đặt chạy dở.' })
@@ -133,8 +135,24 @@ function runTask(
       opts.onLine(`Quá ${Math.round(opts.timeoutMs / 60000)} phút chưa xong — dừng lại.`)
       cancelCliTask()
     }, opts.timeoutMs)
+    let doneEarly = false
+    const poll = opts.doneWhen
+      ? setInterval(() => {
+          if (!doneEarly && opts.doneWhen && opts.doneWhen()) {
+            doneEarly = true
+            killTree(proc.pid, () => {
+              try {
+                proc.kill('SIGTERM')
+              } catch {
+                /* da thoat */
+              }
+            })
+          }
+        }, 1000)
+      : null
     const finish = (res: TaskResult) => {
       clearTimeout(timer)
+      if (poll) clearInterval(poll)
       if (buf.trim()) opts.onLine(buf.trim())
       child = null
       resolve(res)
@@ -143,7 +161,8 @@ function runTask(
     proc.on('close', (code) => {
       // Codex thoat EM voi ma 0 khi nhan SIGTERM -> phai xet "da huy" TRUOC ma thoat.
       // Ma 0 cung chua chac da dang nhap: noi goi (ipc) hoi lai trang thai qua sidecar.
-      if (canceled) finish({ ok: false, canceled: true })
+      if (doneEarly) finish({ ok: true })
+      else if (canceled) finish({ ok: false, canceled: true })
       else if (code === 0) finish({ ok: true })
       else finish({ ok: false, error: tail.slice(-4).join('\n') || `${basename(bin)} thoát với mã ${code}` })
     })
@@ -183,6 +202,67 @@ export function startCodexLogin(bin: string, mode: CliLoginMode, onLine: (line: 
   const args = mode === 'device' ? ['login', '--device-auth'] : ['login']
   const env = cleanEnv()
   return runTask(bin, args, { env, timeoutMs: LOGIN_TIMEOUT_MS, onLine })
+}
+
+/** Gui 1 dong (vd ma xac thuc nguoi dung dan vao) toi CLI dang chay dang nhap. */
+export function sendCliInput(text: string): boolean {
+  const t = String(text || '').trim()
+  if (!child?.stdin || !t || t.length > 4096 || /[\r\n]/.test(t)) return false
+  try {
+    child.stdin.write(t + '\n')
+    return true
+  } catch {
+    return false
+  }
+}
+
+/** File phien dang nhap cua agy (cung cach sidecar / Doctor nhan biet). */
+function agyTokenPresent(): boolean {
+  const dir = join(homedir(), '.gemini', 'antigravity-cli')
+  if (existsSync(join(dir, 'antigravity-oauth-token'))) return true
+  if (IS_WIN && existsSync(dir)) {
+    try {
+      return readdirSync(dir).some((n) => /oauth/i.test(n) && /token/i.test(n))
+    } catch {
+      return false
+    }
+  }
+  return false
+}
+
+/**
+ * Dang nhap agy NGAY TRONG APP (giong Codex): chay `agy -p` an — chua co phien thi agy tu bat dau OAuth: mo trinh duyet
+ * mac dinh + cho ket qua qua may chu localhost (trang callback cua Google gui ve), in kem link du phong + "paste code".
+ * Thay file phien -> dung agy ngay (khong can cho tra loi prompt). Da thu that 2026-10-01 (agy 1.2.14).
+ * KHONG dat SSH_CONNECTION (bien do bat che do "in link + dan ma", khong tu xong).
+ */
+export function startAgyLogin(bin: string, workdir: string, onLine: (line: string) => void): Promise<TaskResult> {
+  if (!validBin(bin, 'agy')) return Promise.resolve({ ok: false, error: 'Không tìm thấy Antigravity CLI (agy) trên máy.' })
+  if (workdir) mkdirSync(workdir, { recursive: true })
+  const env = cleanEnv()
+  for (const k of ['SSH_CONNECTION', 'SSH_CLIENT', 'SSH_TTY']) delete env[k]
+  onLine('Đang mở trình duyệt để đăng nhập tài khoản Google…')
+  return runTask(bin, ['-p', 'Chỉ trả lời đúng một từ: OK', '--output-format', 'json', '--disable-slash-commands', '--print-timeout', '120s'], {
+    env,
+    cwd: workdir && isAbsolute(workdir) ? workdir : homedir(),
+    timeoutMs: LOGIN_TIMEOUT_MS,
+    stdin: 'pipe',
+    onLine,
+    doneWhen: agyTokenPresent
+  })
+}
+
+/** Dang nhap Claude Code NGAY TRONG APP: `claude auth login --claudeai` an — CLI tu mo trinh duyet + nhan ket qua qua
+ *  localhost, in link du phong + "Paste code here if prompted" (stdin). Da thu that 2026-10-01 (2.1.283). */
+export function startClaudeLogin(bin: string, onLine: (line: string) => void): Promise<TaskResult> {
+  if (!validBin(bin, 'claude')) return Promise.resolve({ ok: false, error: 'Không tìm thấy Claude Code CLI trên máy.' })
+  return runTask(bin, ['auth', 'login', '--claudeai'], {
+    env: cleanEnv(),
+    cwd: homedir(),
+    timeoutMs: LOGIN_TIMEOUT_MS,
+    stdin: 'pipe',
+    onLine
+  })
 }
 
 /** Noi dung file .command mo trong Terminal de dang nhap agy (co dinh, khong nhan tu ngoai) */

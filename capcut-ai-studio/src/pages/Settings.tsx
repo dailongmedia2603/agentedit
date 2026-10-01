@@ -183,10 +183,40 @@ const AGY_LEGACY_MODELS: Record<string, string> = {
 }
 
 /** Link dang nhap chinh chu CLI in ra (mo bang nut khi trinh duyet khong tu mo) */
-const LOGIN_URL_RE = /https:\/\/(auth\.openai\.com|chatgpt\.com|accounts\.google\.com)\/[^\s"'<>]+/g
+const LOGIN_URL_RE = /https:\/\/(auth\.openai\.com|chatgpt\.com|accounts\.google\.com|claude\.com|claude\.ai|platform\.claude\.com)\/[^\s"'<>]+/g
 
 /** Khung chu CLI dang chay (dang nhap / cai dat), kem nut Huy + nut mo link dang nhap */
-function TaskLog({ run, title, onCancel }: { run: LoginRun; title: string; onCancel?: () => void }) {
+/** O dan ma xac thuc (trang dang nhap hien ma thay vi tu xong) -> gui vao CLI dang chay */
+function CodeInput() {
+  const [code, setCode] = useState('')
+  const [sent, setSent] = useState<'' | 'ok' | 'err'>('')
+  const send = async () => {
+    const r = await window.studio.settingsCliLoginInput(code).catch(() => ({ ok: false }))
+    setSent(r.ok ? 'ok' : 'err')
+    if (r.ok) setCode('')
+  }
+  return (
+    <div className="mt-2 flex items-center gap-2">
+      <input
+        className="no-drag min-w-0 flex-1 rounded-md border border-black/10 bg-white px-2.5 py-1.5 font-mono text-[12px] outline-none focus:border-brand-400"
+        placeholder="Trang đăng nhập hiện mã? Dán mã vào đây"
+        value={code}
+        onChange={(e) => {
+          setCode(e.target.value)
+          setSent('')
+        }}
+        onKeyDown={(e) => e.key === 'Enter' && code.trim() && send()}
+      />
+      <Button variant="outline" size="sm" disabled={!code.trim()} onClick={send}>
+        Gửi mã
+      </Button>
+      {sent === 'ok' && <span className="text-[11.5px] text-emerald-600">Đã gửi</span>}
+      {sent === 'err' && <span className="text-[11.5px] text-red-600">Chưa gửi được</span>}
+    </div>
+  )
+}
+
+function TaskLog({ run, title, onCancel, codeInput }: { run: LoginRun; title: string; onCancel?: () => void; codeInput?: boolean }) {
   const urls = Array.from(new Set(run.lines.join(' ').match(LOGIN_URL_RE) || []))
   return (
     <div className="rounded-lg border border-black/8 bg-white/70 px-3 py-2.5">
@@ -209,6 +239,7 @@ function TaskLog({ run, title, onCancel }: { run: LoginRun; title: string; onCan
           ))}
         </div>
       )}
+      {codeInput && <CodeInput />}
       {!!run.lines.length && (
         <div className="mt-2 max-h-40 overflow-y-auto rounded-md bg-ink-900 px-2.5 py-2 font-mono text-[11px] leading-relaxed text-ink-50/85">
           {run.lines.slice(-12).map((l, i) => (
@@ -338,16 +369,27 @@ function LoginBox({
   const running = !!login?.running
   const google = provider === 'gemini'
   const claude = provider === 'claude'
-  const terminal = TERMINAL_LOGIN.has(provider)
+  // agy / Claude Code: mac dinh dang nhap NGAY TRONG APP (CLI tu mo trinh duyet); cua so Terminal / PowerShell la du phong
+  const cliAuth = TERMINAL_LOGIN.has(provider)
+  const terminal = cliAuth && login?.mode === 'device'
   return (
     <div className="mt-2.5 space-y-2">
       {!running && (
         <div className="flex flex-wrap items-center gap-2">
           <Button size="sm" onClick={() => onLogin('browser')}>
             <LogIn className="h-4 w-4" />{' '}
-            {google ? `Đăng nhập Google (mở ${TERM})` : claude ? `Đăng nhập Claude (mở ${TERM})` : 'Đăng nhập bằng ChatGPT'}
+            {google ? 'Đăng nhập Google' : claude ? 'Đăng nhập Claude' : 'Đăng nhập bằng ChatGPT'}
           </Button>
-          {!terminal && (
+          {cliAuth && (
+            <button
+              className="no-drag text-[12px] text-brand-600 hover:underline"
+              onClick={() => onLogin('device')}
+              title={`Mở cửa sổ ${TERM} chạy ${google ? 'agy' : 'claude auth login'} — dán link vào đúng trình duyệt có tài khoản`}
+            >
+              Không đăng nhập được? Mở cửa sổ {TERM}
+            </button>
+          )}
+          {!cliAuth && (
             <button
               className="no-drag text-[12px] text-brand-600 hover:underline"
               onClick={() => onLogin('device')}
@@ -362,12 +404,15 @@ function LoginBox({
         <TaskLog
           run={login}
           onCancel={onCancel}
+          codeInput={cliAuth && !terminal}
           title={
             terminal
               ? claude
                 ? `Đang chờ bạn đăng nhập Claude trong cửa sổ ${TERM} vừa mở…`
                 : `Đang chờ bạn đăng nhập trong cửa sổ ${TERM} vừa mở…`
-              : login.mode === 'device'
+              : cliAuth
+                ? `Đang chờ bạn đăng nhập ${google ? 'tài khoản Google' : 'tài khoản Claude'} trên trình duyệt vừa mở…`
+                : login.mode === 'device'
                 ? 'Mở link bên dưới, đăng nhập ChatGPT rồi nhập mã Codex hiện ra…'
                 : 'Đang chờ bạn đăng nhập ChatGPT trên trình duyệt…'
           }
@@ -378,7 +423,7 @@ function LoginBox({
       )}
       {loginCmd && (
         <div className="text-[11.5px] text-ink-800/45">
-          {terminal ? (
+          {cliAuth ? (
             <>
               Hoặc tự mở {TERM}, chạy <code className="font-mono">{loginCmd}</code> và đăng nhập, rồi bấm “Kiểm tra
               lại”.
@@ -659,7 +704,8 @@ export default function SettingsPage() {
 
   const startLogin = async (id: string, mode: 'browser' | 'device') => {
     const who = id === 'gemini' ? 'Antigravity CLI' : id === 'claude' ? 'Claude Code' : 'Codex'
-    const steps = id === 'gemini' ? AGY_LOGIN_STEPS : id === 'claude' ? CLAUDE_LOGIN_STEPS : []
+    // huong dan tung buoc chi cho cach dang nhap trong cua so Terminal / PowerShell (du phong)
+    const steps = mode !== 'device' ? [] : id === 'gemini' ? AGY_LOGIN_STEPS : id === 'claude' ? CLAUDE_LOGIN_STEPS : []
     setLogin({ id, kind: 'login', mode, running: true, lines: steps })
     const r = await window.studio
       .settingsCliLogin(mode, id === 'gemini' || id === 'claude' ? id : 'gpt')
@@ -986,7 +1032,7 @@ export default function SettingsPage() {
                         onCancelLogin={() => {
                           // agy / Claude Code dang nhap trong Terminal cua nguoi dung -> chi dung viec cho;
                           // con lai huy tien trinh
-                          if (TERMINAL_LOGIN.has(p.id) && login?.kind === 'login') termPoll.current.cancel = true
+                          if (TERMINAL_LOGIN.has(p.id) && login?.kind === 'login' && login.mode === 'device') termPoll.current.cancel = true
                           else window.studio.settingsCliLoginCancel()
                         }}
                       />

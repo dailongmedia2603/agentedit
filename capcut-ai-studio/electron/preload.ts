@@ -29,6 +29,7 @@ const api = {
   settingsCliStatus: (name?: string) => ipcRenderer.invoke('settings:cliStatus', name),
   settingsCliLogin: (mode?: 'browser' | 'device', name?: string) => ipcRenderer.invoke('settings:cliLogin', mode, name),
   settingsCliLoginCancel: () => ipcRenderer.invoke('settings:cliLoginCancel'),
+  settingsCliLoginInput: (text: string) => ipcRenderer.invoke('settings:cliLoginInput', text),
   settingsCliInstall: (name: string) => ipcRenderer.invoke('settings:cliInstall', name),
   settingsCliUpdate: (name: string) => ipcRenderer.invoke('settings:cliUpdate', name),
   settingsGetPlanner: () => ipcRenderer.invoke('settings:getPlanner'),

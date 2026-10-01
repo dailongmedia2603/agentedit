@@ -42,6 +42,8 @@ interface StudioBridge {
   settingsSetPlanner(v: PlanProvider): Promise<PlanProvider>
   /** Huy luot dang nhap / cai dat CLI dang chay */
   settingsCliLoginCancel(): Promise<{ ok: boolean }>
+  /** Gui ma xac thuc nguoi dung dan vao toi CLI dang dang nhap (agy / Claude Code) */
+  settingsCliLoginInput(text: string): Promise<{ ok: boolean }>
   /** Cai CLI (npm cho Codex; trinh cai chinh chu cho Antigravity CLI); dong chu in ra di qua onCliLoginLog */
   settingsCliInstall(name: string): Promise<{ ok: boolean; version?: string; canceled?: boolean; error?: string }>
   /** Mo link dang nhap chinh chu (chi auth.openai.com / chatgpt.com / accounts.google.com) */

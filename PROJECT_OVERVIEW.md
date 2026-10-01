@@ -873,6 +873,12 @@ macOS giu nguyen hanh vi (moi nhanh Windows deu co dieu kien nen tang); da kiem 
 - Tu kiem: `scripts/selftest-packaged.mjs` (HOME/USERPROFILE tam + --user-data-dir): Doctor tu cai ffmpeg + Chrome, sidecar
   .pyd, tach nguoi WebM, mat, OCR, SVG, hop cach ly FX, /health, render MP4 tieng Viet. Test: `tests/test_windows_port.py`
   (gia lap nhanh Windows; `STUDIO_MODELS_DIR=<model>` chay model that), test_toolchain.py/.mts [win-x64], test_project_media.mts [8].
+- DANG NHAP agy / Claude NGAY TRONG APP (2026-10-01, ca macOS + Windows, user yeu cau "giong Codex"): `cli-login.ts`
+  `startAgyLogin` = `agy -p "..." --output-format json` chay an (chua co phien -> agy tu bat dau OAuth, mo trinh duyet,
+  cho ket qua qua localhost; KHONG dat SSH_* — bien do bat che do in link + dan ma), thay file phien -> dung agy ngay
+  (`doneWhen`); `startClaudeLogin` = `claude auth login --claudeai` an (tu mo trinh duyet, nhan qua localhost). UI: o "Dan ma"
+  (`settings:cliLoginInput` -> stdin) + nut mo link; cua so Terminal / PowerShell cu thanh du phong (mode 'device').
+  Test `tests/test_cli_login.mts` (CLI gia).
 - CHUA kiem tren may Windows that (khong co may): ten file phien dang nhap agy tren Windows (chap nhan *oauth*token*), sandbox
   Codex Windows khi tao anh (co du phong lay anh tu ~/.codex/generated_images), SmartScreen / Smart App Control (app chua ky so).
 

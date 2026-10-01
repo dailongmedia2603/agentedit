@@ -6,6 +6,9 @@ import {
   startCodexLogin,
   openAgyLogin,
   openClaudeLogin,
+  startAgyLogin,
+  startClaudeLogin,
+  sendCliInput,
   startClaudeUpdate,
   startCliInstall,
   cancelCliTask,
@@ -170,13 +173,22 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
     const st = cur.st
     if (!st?.installed || !st?.path) return { ok: false, error: `Chưa cài ${label} trên máy.` }
     if (st.logged_in) return { ok: true, already: true }
-    if (id === 'gemini' || id === 'claude') {
-      // Dang nhap dien ra trong cua so Terminal -> tra ngay; renderer hoi lai cli_status den khi xong
-      const r = id === 'gemini' ? await openAgyLogin(st.path, st.workdir) : await openClaudeLogin(st.path)
-      return r.ok ? { ok: true, terminal: true } : r
-    }
     const win = getWindow()
     const send = (line: string) => win?.webContents.send('settings:cliLoginLog', line)
+    if (id === 'gemini' || id === 'claude') {
+      if (mode === 'device') {
+        // Du phong: dang nhap trong cua so Terminal / PowerShell -> tra ngay; renderer hoi lai cli_status den khi xong
+        const r = id === 'gemini' ? await openAgyLogin(st.path, st.workdir) : await openClaudeLogin(st.path)
+        return r.ok ? { ok: true, terminal: true } : r
+      }
+      // Mac dinh: NGAY TRONG APP (giong Codex) — CLI chay an, tu mo trinh duyet, nhan ket qua qua localhost
+      const res = id === 'gemini' ? await startAgyLogin(st.path, st.workdir, send) : await startClaudeLogin(st.path, send)
+      if (res.canceled) return res
+      // Ma thoat khong quyet dinh (agy bi dung som khi da co phien) -> hoi trang thai THAT
+      const now = (await cliStatusOf(id)).st
+      if (now?.logged_in) return { ok: true }
+      return res.ok ? { ok: false, error: now?.detail || `${label} chưa ghi nhận đăng nhập.` } : res
+    }
     const res = await startCodexLogin(st.path, mode === 'device' ? 'device' : 'browser', send)
     if (!res.ok) return res
     // Chi bao thanh cong khi trang thai that xac nhan da dang nhap (khong tin rieng ma thoat)
@@ -184,6 +196,8 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
     if (now?.logged_in) return { ok: true }
     return { ok: false, error: now?.detail || `${label} chưa ghi nhận đăng nhập. Thử lại hoặc đăng nhập trong Terminal.` }
   })
+  // Ma xac thuc nguoi dung dan vao (trang dang nhap hien ma thay vi tu xong) -> stdin cua CLI dang chay
+  ipcMain.handle('settings:cliLoginInput', (_e, text: string) => ({ ok: sendCliInput(text) }))
   ipcMain.handle('settings:cliLoginCancel', () => {
     cancelCliTask()
     return { ok: true }
@@ -218,7 +232,8 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
   ipcMain.handle('settings:openLoginUrl', (_e, url: string) => {
     try {
       const u = new URL(String(url))
-      if (u.protocol === 'https:' && ['auth.openai.com', 'chatgpt.com', 'accounts.google.com'].includes(u.hostname)) {
+      if (u.protocol === 'https:' && ['auth.openai.com', 'chatgpt.com', 'accounts.google.com', 'claude.com', 'claude.ai',
+        'platform.claude.com', 'console.anthropic.com'].includes(u.hostname)) {
         return shell.openExternal(u.toString())
       }
     } catch {
