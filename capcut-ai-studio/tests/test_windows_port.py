@@ -139,6 +139,25 @@ finally:
         os.environ.pop(k, None)
 
 # ---------------------------------------------------------------------------
+print("[2c] agy: nhan biet phien dang nhap (Windows luu trong Credential Manager, khong co file)")
+import shutil  # noqa: E402
+shutil.rmtree(C.AGY_HOME, ignore_errors=True)
+check("chua co gi -> chua dang nhap", not C.agy_logged_in())
+os.makedirs(C.AGY_HOME, exist_ok=True)
+open(os.path.join(C.AGY_HOME, "keyring-marker-jetski"), "w").close()
+check("co file danh dau keyring-marker-* -> da dang nhap", C.agy_logged_in())
+os.remove(os.path.join(C.AGY_HOME, "keyring-marker-jetski"))
+saved_win, saved_cred = C.IS_WIN, C._windows_cred_has_agy
+try:
+    C.IS_WIN = True
+    C._windows_cred_has_agy = lambda: True
+    check("Windows: muc antigravity trong Credential Manager -> da dang nhap", C.agy_logged_in())
+    C._windows_cred_has_agy = lambda: False
+    check("Windows: khong file, khong muc Credential Manager -> chua", not C.agy_logged_in())
+finally:
+    C.IS_WIN, C._windows_cred_has_agy = saved_win, saved_cred
+
+# ---------------------------------------------------------------------------
 print("[3] winsupport")
 tools = os.path.join(HOME, ".capcut-studio", "tools", "bin")
 os.makedirs(tools, exist_ok=True)

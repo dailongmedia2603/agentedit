@@ -1,7 +1,7 @@
 import { homedir } from 'os'
 import { delimiter, extname, join } from 'path'
-import { existsSync, readFileSync, statSync } from 'fs'
-import { spawn } from 'child_process'
+import { existsSync, readFileSync, readdirSync, statSync } from 'fs'
+import { execFileSync, spawn } from 'child_process'
 import { TOOLS_BIN } from './paths'
 
 export const IS_WIN = process.platform === 'win32'
@@ -162,4 +162,38 @@ export function claudeOauthSaved(): boolean {
   } catch {
     return false
   }
+}
+
+// ---- Phien dang nhap Antigravity CLI (agy) ----
+// agy luu phien qua go-keyring: macOS thuong ra FILE ~/.gemini/antigravity-cli/antigravity-oauth-token (Keychain cham -> roi
+// ve file); Windows luu trong CREDENTIAL MANAGER (khong co file — su co that 2026-10-01: dang nhap xong app van bao chua).
+// Nhan biet: file phien | file danh dau keyring-marker-* | (Windows) muc antigravity / jetski trong `cmdkey /list`
+// (chi liet ke TEN muc, khong doc mat khau).
+let cmdkeyCache: { at: number; hit: boolean } = { at: 0, hit: false }
+function windowsCredHasAgy(): boolean {
+  if (Date.now() - cmdkeyCache.at < 2000) return cmdkeyCache.hit
+  let hit = false
+  try {
+    const out = execFileSync(join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'cmdkey.exe'), ['/list'], {
+      encoding: 'utf-8',
+      windowsHide: true,
+      timeout: 8000
+    })
+    hit = /antigravity|jetski/i.test(out)
+  } catch {
+    hit = false
+  }
+  cmdkeyCache = { at: Date.now(), hit }
+  return hit
+}
+
+export function agySessionPresent(): boolean {
+  const dir = join(homedir(), '.gemini', 'antigravity-cli')
+  if (existsSync(join(dir, 'antigravity-oauth-token'))) return true
+  try {
+    if (existsSync(dir) && readdirSync(dir).some((n) => /^keyring-marker/i.test(n) || (/oauth/i.test(n) && /token/i.test(n)))) return true
+  } catch {
+    /* bo qua */
+  }
+  return IS_WIN ? windowsCredHasAgy() : false
 }

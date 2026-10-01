@@ -765,17 +765,37 @@ def agy_workdir():
     return AGY_WORKDIR
 
 
+_CMDKEY = {"at": 0.0, "hit": False}
+
+
+def _windows_cred_has_agy():
+    """Windows: agy (go-keyring) luu phien trong Credential Manager — `cmdkey /list` chi liet ke TEN muc."""
+    if time.time() - _CMDKEY["at"] < 2:
+        return _CMDKEY["hit"]
+    hit = False
+    try:
+        r = subprocess.run([os.path.join(os.environ.get("SystemRoot", "C:\\Windows"), "System32", "cmdkey.exe"), "/list"],
+                           capture_output=True, text=True, timeout=8)
+        hit = bool(re.search(r"antigravity|jetski", r.stdout or "", re.I))
+    except (OSError, subprocess.TimeoutExpired):
+        hit = False
+    _CMDKEY.update(at=time.time(), hit=hit)
+    return hit
+
+
 def agy_logged_in():
-    """Chi kiem tra CO file phien dang nhap cua agy (khong doc noi dung)."""
+    """agy da co phien dang nhap chua (khong doc noi dung). agy luu phien qua go-keyring: macOS thuong ra FILE
+    antigravity-oauth-token (Keychain cham -> roi ve file); Windows luu trong CREDENTIAL MANAGER, KHONG co file (su co
+    that 2026-10-01: dang nhap xong app van bao chua) -> them file danh dau keyring-marker-* + `cmdkey /list`."""
     if os.path.isfile(os.path.join(AGY_HOME, "antigravity-oauth-token")):
         return True
-    if IS_WIN and os.path.isdir(AGY_HOME):
-        # Windows: ten file phien chua kiem chung tren may that -> chap nhan file *oauth*token* trong thu muc agy
-        try:
-            return any("oauth" in n.lower() and "token" in n.lower() for n in os.listdir(AGY_HOME))
-        except OSError:
-            return False
-    return False
+    try:
+        if os.path.isdir(AGY_HOME) and any(n.lower().startswith("keyring-marker") or ("oauth" in n.lower() and "token" in n.lower())
+                                           for n in os.listdir(AGY_HOME)):
+            return True
+    except OSError:
+        pass
+    return _windows_cred_has_agy() if IS_WIN else False
 
 
 def _agy_model_note(mid):

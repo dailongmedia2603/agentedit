@@ -4,10 +4,10 @@
 // (fix). Moc phien ban / nguon tai: sidecar/assets/toolchain.json (xem toolchain.ts).
 //   fail = chua dung duoc / sai phien ban -> chan tao video (co fix + auto thi app tu cai luc mo)
 //   warn = van tao video duoc nhung mat 1 phan (vd Codex chua dang nhap -> khong co anh AI)
-import { existsSync, readdirSync } from 'fs'
-import { homedir, release } from 'os'
+import { existsSync } from 'fs'
+import { release } from 'os'
 import { join } from 'path'
-import { IS_WIN, claudeEnv, claudeOauthSaved, findBinary } from './env'
+import { IS_WIN, agySessionPresent, claudeEnv, claudeOauthSaved, findBinary } from './env'
 import { DEFAULT_VENV_DIR, bundledModelsDir, embeddedPython, sidecarServer, venvPythonIn } from './paths'
 import { browserInstalled, bundleDir, installBrowser, remotionHome } from './remotion'
 import { sidecarInfo, stopSidecar } from './sidecar'
@@ -112,17 +112,8 @@ async function codexLogin(path: string): Promise<{ ok: boolean; detail: string }
 }
 
 function agyLoggedIn(): boolean {
-  const dir = join(homedir(), '.gemini', 'antigravity-cli')
-  if (existsSync(join(dir, 'antigravity-oauth-token'))) return true
-  // Windows: ten file phien chua kiem chung tren may that -> chap nhan file *oauth*token* (giong cli_providers)
-  if (IS_WIN && existsSync(dir)) {
-    try {
-      return readdirSync(dir).some((n) => /oauth/i.test(n) && /token/i.test(n))
-    } catch {
-      return false
-    }
-  }
-  return false
+  // file phien (macOS) | keyring-marker | Windows Credential Manager (xem env.agySessionPresent)
+  return agySessionPresent()
 }
 
 /** Windows 10 build 17763 (1809) tro len, 64-bit. os.release() = "10.0.<build>". */

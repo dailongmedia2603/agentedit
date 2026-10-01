@@ -1,10 +1,10 @@
 import { execFile, spawn, ChildProcess } from 'child_process'
 import { installAgy, installClaude, installCodex, powershell } from './toolchain'
-import { existsSync, mkdirSync, readdirSync, writeFileSync, chmodSync } from 'fs'
+import { existsSync, mkdirSync, writeFileSync, chmodSync } from 'fs'
 import { homedir } from 'os'
 import { basename, extname, isAbsolute, join } from 'path'
 import { shell } from 'electron'
-import { IS_WIN, augmentedEnv, claudeEnv, cmdQuote, killTree, needsShell } from './env'
+import { IS_WIN, agySessionPresent, augmentedEnv, claudeEnv, cmdQuote, killTree, needsShell } from './env'
 
 /**
  * DANG NHAP / CAI CLI CHINH CHU NGAY TRONG APP.
@@ -225,16 +225,7 @@ export function sendCliInput(text: string): boolean {
 
 /** File phien dang nhap cua agy (cung cach sidecar / Doctor nhan biet). */
 function agyTokenPresent(): boolean {
-  const dir = join(homedir(), '.gemini', 'antigravity-cli')
-  if (existsSync(join(dir, 'antigravity-oauth-token'))) return true
-  if (IS_WIN && existsSync(dir)) {
-    try {
-      return readdirSync(dir).some((n) => /oauth/i.test(n) && /token/i.test(n))
-    } catch {
-      return false
-    }
-  }
-  return false
+  return agySessionPresent()
 }
 
 /**
