@@ -243,6 +243,15 @@ async function main() {
     }
   }
 
+  // 5b) Sidecar QUA tien trinh main cua app (duong trang Cai dat API dung) — bat loi main nem khi doc log sidecar
+  console.log('\n[5b] Sidecar qua tiến trình chính của app...')
+  {
+    const sm = await runApp({ STUDIO_SIDECAR_SMOKE: '1' }, 3 * 60 * 1000)
+    const ok = /\[SMOKE\] PASS/.test(sm.out) && !/UNCAUGHT/.test(sm.out) && /cli_status ok/.test(sm.out)
+    record('Main khởi động sidecar + /cli_status, không lỗi chưa bắt', ok,
+      ok ? '' : sm.out.split(/\r?\n/).filter((l) => /SMOKE|rror/.test(l)).slice(-6).join(' | '))
+  }
+
   // 6) Render MP4 that
   console.log('\n[6] Render MP4 (Remotion + Chrome Headless + compositor)...')
   const out = join(work, 'ket qua render.mp4')

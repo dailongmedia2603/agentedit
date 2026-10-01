@@ -7,6 +7,7 @@
 // LUU Y: KHONG bat selfDefending / debugProtection / renameGlobals (lam hong Electron). __dirname
 // van dung (bytenode dat theo vi tri .jsc = out/main). bytenode nam trong dependencies -> co trong asar.
 import JavaScriptObfuscator from 'javascript-obfuscator'
+import { transformSync } from 'esbuild'
 import { execFileSync } from 'node:child_process'
 import { createRequire } from 'node:module'
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
@@ -27,11 +28,13 @@ const TARGETS = [
   join(out, 'preload', 'index.js')
 ]
 
+// controlFlowFlattening TAT (2026-10-01): javascript-obfuscator 4.1.1 dich SAI loi goi tuy chon `f?.(x)` thanh goi bat buoc
+// (do 60/60 lan hong) -> "undefined is not a function" o main (su co that tren Windows: mo trang Cai dat API la loi).
+// Bien doi chon NGAU NHIEN theo nguong -> moi lan build hong cho khac nhau. Bao ve chinh van la bytecode V8 (.jsc).
 const OBFUSCATE_OPTS = {
   target: 'node',
   compact: true,
-  controlFlowFlattening: true,
-  controlFlowFlatteningThreshold: 0.5,
+  controlFlowFlattening: false,
   deadCodeInjection: false,
   stringArray: true,
   stringArrayEncoding: ['base64'],
@@ -64,8 +67,9 @@ for (const file of TARGETS) {
   const name = basename(file, '.js') // index / remotion-worker
   const src = readFileSync(file, 'utf-8')
 
-  // 1) lam roi
-  const obf = JavaScriptObfuscator.obfuscate(src, OBFUSCATE_OPTS).getObfuscatedCode()
+  // 1) ha cu phap moi (?. ?? ...) xuong ES2019 roi lam roi — obfuscator tung xu ly sai cu phap moi
+  const lowered = transformSync(src, { target: 'es2019', loader: 'js', format: 'cjs', platform: 'node' }).code
+  const obf = JavaScriptObfuscator.obfuscate(lowered, OBFUSCATE_OPTS).getObfuscatedCode()
   const obfPath = join(dir, name + '.obf.cjs')
   writeFileSync(obfPath, obf)
 

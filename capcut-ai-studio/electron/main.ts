@@ -129,7 +129,7 @@ function createWindow() {
 // Chi 1 phien app: mo lan 2 (Windows hay bam 2 lan) -> 2 sidecar + 2 Doctor tu cai tranh nhau tools/bin,
 // 2 ben cung ghi projects.json. Lan 2 chi dua cua so dang mo len truoc roi thoat. Che do tu kiem (STUDIO_*) bo qua.
 const SELF_TEST = Object.keys(process.env).some((k) =>
-  ['STUDIO_TESTCONN', 'STUDIO_DUMPCFG', 'STUDIO_RAWGPT', 'STUDIO_DOCTOR', 'STUDIO_REMOTION_RENDER'].includes(k)
+  ['STUDIO_TESTCONN', 'STUDIO_DUMPCFG', 'STUDIO_RAWGPT', 'STUDIO_DOCTOR', 'STUDIO_REMOTION_RENDER', 'STUDIO_SIDECAR_SMOKE'].includes(k)
 )
 if (!SELF_TEST && !app.requestSingleInstanceLock()) {
   bootLog('da co 1 phien dang chay -> bao phien do mo cua so, thoat')
@@ -156,6 +156,32 @@ app.whenReady().then(async () => {
   registerIpc(() => mainWindow)
 
   // Che do test connection cac provider luong Remotion dung (dung key that da luu)
+  // Tu kiem SIDECAR QUA MAIN (dung duong cua trang Cai dat API: startSidecar() khong kem onLog + /cli_status), bat moi
+  // loi chua xu ly cua main. Su co that 2026-10-01: obfuscator dich sai `onLog?.(s)` -> main nem loi moi khi sidecar in log
+  // — tu kiem cu goi Python truc tiep nen khong bat duoc. selftest-packaged.mjs [5b] dung che do nay.
+  if (process.env.STUDIO_SIDECAR_SMOKE) {
+    const fail = (e: unknown) => {
+      console.log('[SMOKE] UNCAUGHT', String((e as Error)?.stack || e).slice(0, 800))
+      app.exit(1)
+    }
+    process.on('uncaughtException', fail)
+    process.on('unhandledRejection', fail)
+    const { startSidecar, sidecarRequest, stopSidecar: stopSc } = await import('./services/sidecar')
+    const s = await startSidecar()
+    console.log('[SMOKE] sidecar:', JSON.stringify(s))
+    try {
+      const st = await sidecarRequest('/cli_status', { name: 'claude' }, 120000)
+      console.log('[SMOKE] cli_status ok:', JSON.stringify(st).slice(0, 160))
+    } catch (e) {
+      console.log('[SMOKE] cli_status loi:', String(e).slice(0, 200))
+    }
+    await new Promise((r) => setTimeout(r, 3000)) // de sidecar kip in log (stdout / stderr) qua main
+    stopSc()
+    console.log(s.ok ? '[SMOKE] PASS' : '[SMOKE] FAIL')
+    app.exit(s.ok ? 0 : 1)
+    return
+  }
+
   if (process.env.STUDIO_TESTCONN) {
     const { startSidecar, sidecarRequest } = await import('./services/sidecar')
     const s = await startSidecar()
