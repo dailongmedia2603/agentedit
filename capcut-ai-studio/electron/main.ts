@@ -1,6 +1,7 @@
 import { app, BrowserWindow, Menu, nativeTheme } from 'electron'
 import { join } from 'path'
 import { tmpdir } from 'os'
+import { appendFileSync, existsSync, mkdirSync, writeFileSync } from 'fs'
 import { registerIpc } from './ipc'
 import { stopSidecar } from './services/sidecar'
 import { stopRender } from './services/remotion'
@@ -15,6 +16,35 @@ let mainWindow: BrowserWindow | null = null
 const APP_DISPLAY_NAME = 'Agent Edit'
 
 const IS_WIN = process.platform === 'win32'
+
+// ---- NHAT KY KHOI DONG: <userData>/logs/main.log (Windows: %APPDATA%\auto-capcut\logs\main.log) ----
+// App mo len khong hien cua so (may Windows that, 2026-10-01) -> can biet ket o buoc nao ma khong can terminal.
+function bootLog(msg: string): void {
+  try {
+    const dir = join(app.getPath('userData'), 'logs')
+    mkdirSync(dir, { recursive: true })
+    appendFileSync(join(dir, 'main.log'), `${new Date().toISOString()} [${process.pid}] ${msg}\n`)
+  } catch {
+    /* khong ghi duoc log -> bo qua */
+  }
+}
+// GPU loi o lan truoc -> lan nay tat tang toc do hoa (phai goi TRUOC app ready)
+const GPU_OFF = () => join(app.getPath('userData'), 'gpu-off')
+if (existsSync(GPU_OFF()) || process.argv.includes('--disable-gpu')) {
+  app.disableHardwareAcceleration()
+}
+bootLog(`khoi dong v${app.getVersion()} ${process.platform}-${process.arch} gpu=${existsSync(GPU_OFF()) ? 'tat' : 'bat'}`)
+app.on('child-process-gone', (_e, d) => {
+  bootLog(`tien trinh con ${d.type} dung: ${d.reason} (ma ${d.exitCode})`)
+  if (d.type === 'GPU' && d.reason !== 'clean-exit' && d.reason !== 'killed') {
+    try {
+      writeFileSync(GPU_OFF(), new Date().toISOString())
+      bootLog('GPU loi -> lan mo sau tat tang toc do hoa')
+    } catch {
+      /* bo qua */
+    }
+  }
+})
 
 function setAppMenu() {
   app.setAboutPanelOptions({ applicationName: APP_DISPLAY_NAME, applicationVersion: app.getVersion() })
@@ -68,7 +98,23 @@ function createWindow() {
     }
   })
 
-  mainWindow.on('ready-to-show', () => mainWindow?.show())
+  bootLog('tao cua so')
+  const win = mainWindow
+  mainWindow.on('ready-to-show', () => {
+    bootLog('ready-to-show -> hien cua so')
+    win.show()
+  })
+  // Giao dien chua ve xong khung dau sau 6s (GPU / driver loi...) -> van hien cua so, khong de app "vo hinh"
+  setTimeout(() => {
+    if (!win.isDestroyed() && !win.isVisible()) {
+      bootLog('6s chua ready-to-show -> ep hien cua so')
+      win.show()
+    }
+  }, 6000)
+  mainWindow.webContents.on('did-finish-load', () => bootLog('giao dien nap xong'))
+  mainWindow.webContents.on('did-fail-load', (_e, code, desc) => bootLog(`giao dien nap LOI ${code} ${desc}`))
+  mainWindow.webContents.on('render-process-gone', (_e, d) => bootLog(`renderer dung: ${d.reason} (ma ${d.exitCode})`))
+  mainWindow.on('unresponsive', () => bootLog('cua so khong phan hoi'))
   mainWindow.on('closed', () => {
     mainWindow = null
   })
@@ -86,6 +132,7 @@ const SELF_TEST = Object.keys(process.env).some((k) =>
   ['STUDIO_TESTCONN', 'STUDIO_DUMPCFG', 'STUDIO_RAWGPT', 'STUDIO_DOCTOR', 'STUDIO_REMOTION_RENDER'].includes(k)
 )
 if (!SELF_TEST && !app.requestSingleInstanceLock()) {
+  bootLog('da co 1 phien dang chay -> bao phien do mo cua so, thoat')
   app.quit()
 } else {
   app.on('second-instance', () => {
@@ -103,6 +150,7 @@ if (!SELF_TEST && !app.requestSingleInstanceLock()) {
 if (IS_WIN) app.setAppUserModelId('app.autocapcut.desktop')
 
 app.whenReady().then(async () => {
+  bootLog('app ready')
   nativeTheme.themeSource = 'light'
   setAppMenu()
   registerIpc(() => mainWindow)
