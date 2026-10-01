@@ -870,9 +870,23 @@ def remotion_autoplan_route():
             providers.gioi_han_cat(_segs, selection.get("removed"), _doi)
             # dau / cuoi doan la khoang lang dai / "ờ" keo dai (loi Gemini xac nhan) -> cat sat chu
             speech_cut.trim_filler_edges(_asr_plan, _segs, transcript_data, _doi)
-            # siet khoang nghi (lang that, do bang am thanh) theo nhip video: nhanh 0.3s / thuong 0.45s / nhe 0.75s
-            _segs = speech_cut.tighten_pauses(_asr_plan, _segs, speech_cut.pause_limit(story), _doi)
+            # LUAT CUNG khoang lang (2026-10-01): moi khoang lang that nguoi xem nghe thay > gioi han deu bi cat
+            # (nhanh 0.22s / thuong 0.28s / nhe 0.40s), mep cat giu tron duoi am; noi vap lap lai -> bo lan dau
+            _lim = speech_cut.pause_limit(story)
+            _segs = speech_cut.tighten_pauses(_asr_plan, _segs, _lim, _doi)
+            _segs = speech_cut.cut_restarts(_asr_plan, _segs, _doi)
             speech_cut.fix_segment_cuts(_asr_plan, _segs, _doi)
+            # cat an toan co the noi lai khoang lang (noi cho het cau / noi lien) -> siet lai lan cuoi + KIEM LAI
+            _segs, _ = plan_guard.chuan_hoa_segments(_segs, _doi)
+            _segs = speech_cut.tighten_pauses(_asr_plan, _segs, _lim, _doi)
+            _segs, _ = plan_guard.chuan_hoa_segments(_segs, _doi)
+            _kiem = speech_cut.audit_cuts(_asr_plan, _segs, _lim, _doi)
+            _con = len(_kiem["im_lang"]) + len(_kiem["cat_vao_tieng"])
+            run_log.emit("note", "Kiểm tra cắt (giới hạn lặng %.2fs): %s" % (
+                _lim, "đạt — không còn khoảng lặng dài, không điểm cắt nào rơi vào tiếng"
+                + (" (đã tự sửa %d mép cắt)" % _kiem["da_sua"] if _kiem["da_sua"] else "") if not _con else
+                "còn %d chỗ: %s" % (_con, "; ".join((_kiem["im_lang"] + _kiem["cat_vao_tieng"])[:8]))),
+                step="B2-timeline", level="warn" if _con else "info", output=_kiem)
         except Exception as ex:  # loi do am thanh khong duoc lam hong ca ke hoach
             _segs = _bak
             logger.warning("Cat an toan theo tieng noi loi: %s — giu diem cat cu", ex)
@@ -1147,6 +1161,8 @@ def remotion_autoplan_route():
             "inserts": inserts.get("inserts", []),
             "audio": audio.get("audio", []),
             "speech": _khoang_loi_noi(transcript_data),
+            # khoang lang dai nhat duoc giu (luat cung 2026-10-01) — build_spec siet + kiem lai theo dung muc nay
+            "pause_limit": speech_cut.pause_limit(story),
             # hieu ung tu viet (code da kiem + boi canh / muc tieu / ly do) — chi nam trong plan nay
             "fx": fx_list,
             # chu noi bat ve bang anh AI (anh tung tang, vi tri tu) — build_spec dat vao lop chu

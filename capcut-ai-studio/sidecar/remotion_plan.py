@@ -925,7 +925,84 @@ def _clips_to_spec(p, W, H, changes):
     for c in clips:
         c.pop("_srcEnd", None)
         c.pop("_srcDur", None)
+    _meme_volume(p, clips, changes)
+    _smooth_zoom(clips, changes)
     return clips
+
+
+# ZOOM MUOT (2026-10-01, user: "zoom in / zoom out dang bi CAT hinh roi thay khung zoom -> giat; zoom phai la
+# chuyen dong muot"). Truoc day moi doan mang 1 muc `scale` co dinh (B2 xen ke 1.0 / 1.3, siet khoang nghi +0.08)
+# -> o diem cat khung NHAY sang muc zoom moi trong 1 khung hinh. Gio: doan sau BAT DAU dung muc zoom doan truoc
+# dang giu roi CHUYEN DONG (ease in-out) toi muc cua no trong ZOOM_RAMP giay -> khong bao gio nhay zoom.
+# Renderer (AutoEdit.tsx clipZoomAt) doc zoomFrom / zoomDur; test_remotion_plan kiem buoc nhay moi khung.
+ZOOM_RAMP_MIN, ZOOM_RAMP_MAX, ZOOM_RAMP_PER = 0.45, 0.9, 2.0     # giay: 0.45 + 2.0 x |chenh lech|, toi da 0.9
+ZOOM_MAX_STEP = 0.03                                              # chenh lech scale toi da giua 2 khung (30fps)
+_EASE_PEAK = 3.0                                                  # do doc lon nhat cua easeInOutCubic (giua duong)
+
+
+def clip_zoom_at(clip, t):
+    """Muc zoom cua clip tai gio timeline t — GIU KHOP clipZoomAt trong remotion-src/AutoEdit.tsx."""
+    k1 = float(clip.get("scale") or 1.0)
+    z0, zd = clip.get("zoomFrom"), float(clip.get("zoomDur") or 0)
+    if z0 is None or zd <= 0:
+        return k1
+    p = max(0.0, min(1.0, (t - float(clip["start"])) / zd))
+    e = 4 * p ** 3 if p < 0.5 else 1 - (-2 * p + 2) ** 3 / 2     # easeInOutCubic (= Easing.inOut(Easing.cubic))
+    return float(z0) + (k1 - float(z0)) * e
+
+
+def _smooth_zoom(clips, changes=None):
+    """Gan zoomFrom / zoomDur cho clip co muc zoom KHAC clip lien truoc (tru meme cat vao: noi dung khac han)."""
+    n = 0
+    for prev, c in zip(clips, clips[1:]):
+        c.pop("zoomFrom", None)
+        c.pop("zoomDur", None)
+        if prev.get("kind") == "insert" or c.get("kind") == "insert":
+            continue
+        k0 = float(prev.get("scale") or 1.0)
+        d = float(c.get("scale") or 1.0) - k0
+        if abs(d) < 0.005:
+            continue
+        span = float(c["end"]) - float(c["start"])
+        # moi khung doi <= ZOOM_MAX_STEP (o giua duong cong ease doc gap _EASE_PEAK lan trung binh)
+        need = _EASE_PEAK * abs(d) / ZOOM_MAX_STEP / 30.0
+        if need > span:
+            # clip qua ngan de zoom het muc -> zoom it hon (van muot), clip sau tinh tu muc nay
+            d = (1 if d > 0 else -1) * span * ZOOM_MAX_STEP * 30.0 / _EASE_PEAK
+            c["scale"] = round(k0 + d, 3)
+            need = span
+        dur = min(span, max(need, min(ZOOM_RAMP_MAX, ZOOM_RAMP_MIN + ZOOM_RAMP_PER * abs(d))))
+        c["zoomFrom"] = round(k0, 3)
+        c["zoomDur"] = round(max(0.05, dur), 3)
+        n += 1
+    if n and changes is not None:
+        changes.append("zoom muot: %d cho doi muc zoom -> chuyen dong ease in-out thay vi nhay khung" % n)
+
+
+def _meme_volume(p, clips, changes=None):
+    """Tieng meme CAT vao khong to hon giong noi cua video (cung thuoc do speech_cut.playback_lufs)."""
+    voice = p.get("_voice_lufs")
+    if voice is None:
+        return
+    import math
+    import speech_cut
+    for c in clips:
+        if c.get("kind") != "insert" or c.get("volume", 0) <= 0:
+            continue
+        try:
+            lufs = speech_cut.playback_lufs(c["path"], c["srcStart"], c["srcStart"] + (c["end"] - c["start"]) * c["speed"])
+        except Exception:
+            lufs = None
+        if lufs is None:
+            continue
+        that = lufs + 20 * math.log10(c["volume"])
+        tran = voice + plan_guard.MEME_REL
+        if that > tran + 0.3:
+            v = round(max(0.01, 10 ** ((tran - lufs) / 20.0)), 3)
+            if changes is not None:
+                changes.append("%s: tieng meme %.1f LUFS > giong video %.1f -> volume %.2f -> %.2f"
+                               % (c["id"], that, voice, c["volume"], v))
+            c["volume"] = v
 
 
 def _audio_to_spec(p, duration):
@@ -948,7 +1025,9 @@ def _audio_to_spec(p, duration):
         out.append({"id": "aud%d" % i, "path": path, "start": round(st, 3),
                     "volume": round(_clamp(providers._f(a.get("volume"), 0.8), 0.0, 1.0), 3),
                     "srcStart": round(src_st, 3), "srcEnd": round(src_en, 3), "role": role,
-                    "name": a.get("_name") or a.get("sfx_id")})
+                    "name": a.get("_name") or a.get("sfx_id"),
+                    # do to khi phat so voi giong noi cua video (dB) — luat hook dung de biet SFX co nghe ro khong
+                    "rel": a.get("_rel_db")})
     return out
 
 
@@ -972,9 +1051,11 @@ def _overlays_to_spec(p, duration):
 
 # 2 = video HDR -> ban SDR + lop tach nguoi khop khung; 3 = cat an toan theo tieng noi + lop chu
 # khop loi (2026-09-26). UI dung lai spec cu hon tu plan khi mo du an.
-SPEC_MEDIA_VERSION = 7     # 4 = quy tac chu 2026-09-27; 5 = phu de cach chu noi bat + chu khong tu xuong dong;
+SPEC_MEDIA_VERSION = 8     # 4 = quy tac chu 2026-09-27; 5 = phu de cach chu noi bat + chu khong tu xuong dong;
                            # 6 = chu khop loi theo cau phu de + SFX hook khong roi khoi hook;
                            # 7 = tach nguoi tung khung (tach chu the + loc vung nguoi + trung vi 3 khung)
+                           # 8 = zoom muot (zoomFrom/zoomDur), luat cung khoang lang + kiem lai diem cat,
+                           #     SFX / meme can theo giong noi cua video (2026-10-01)
 
 
 def build_spec(plan, log=None):
@@ -1022,9 +1103,26 @@ def build_spec(plan, log=None):
             segs, moves = bak, []
             changes.append("bo qua cat an toan theo tieng noi (%s)" % str(ex)[:120])
         segs, dur = plan_guard.chuan_hoa_segments(segs, changes)
+        # LUAT CUNG khoang lang (2026-10-01): moi khoang lang nguoi xem nghe thay > gioi han deu bi cat (ke ca cho
+        # buoc cat an toan vua noi lai), noi vap lap lai -> bo lan dau; roi KIEM LAI tren timeline (mep cat roi
+        # vao tieng -> sua). Chay lai tren plan da siet thi khong doi gi (on dinh).
+        removed = []
+        bak2 = copy.deepcopy(segs)
+        try:
+            lim = speech_cut.plan_pause_limit(p)
+            segs = speech_cut.tighten_pauses(p, segs, lim, changes, removed=removed)
+            segs = speech_cut.cut_restarts(p, segs, changes, removed=removed)
+            segs, dur = plan_guard.chuan_hoa_segments(segs, changes)
+            speech_cut.audit_cuts(p, segs, lim, changes)          # mep cat roi vao duoi am -> sua
+            segs, dur = plan_guard.chuan_hoa_segments(segs, changes)
+        except Exception as ex:
+            segs, removed = bak2, []
+            segs, dur = plan_guard.chuan_hoa_segments(segs, changes)
+            changes.append("bo qua siet khoang nghi (%s)" % str(ex)[:120])
         p["segments"] = segs
         # meme / SFX neo DUNG mep doan vua bi cat bot -> theo mep moi (khong roi ra ngoai timeline)
         speech_cut.follow_anchors(p, moves, changes)
+        speech_cut.follow_removed(p, removed, changes)
     try:
         speech_cut.snap_layers(p, changes)
     except Exception as ex:
@@ -1061,15 +1159,30 @@ def build_spec(plan, log=None):
     changes[:] = [c.replace("+ transition %s" % plan_guard.HOOK_TRANSITION,
                             "+ chuyen canh %s" % (hook_tr or {}).get("type", "flash"))
                   for c in changes]
-    for s in p["segments"]:
+    hook_last = max([i for i, s in enumerate(p["segments"]) if s.get("kind") == "hook"] or [-1])
+    for i, s in enumerate(p["segments"]):
         for k in ("transition", "transition_duration", "transition_kho"):
             s.pop(k, None)
-        if s.get("kind") == "hook" and hook_tr:
-            s["rm_transition"] = dict(hook_tr)
+        if s.get("kind") == "hook":
+            # hook co the la nhieu manh (da cat khoang lang ben trong) -> chuyen canh chi o manh CUOI
+            s.pop("rm_transition", None)
+            if hook_tr and i == hook_last:
+                s["rm_transition"] = dict(hook_tr)
         if s.get("_cut_head") or s.get("kind") == "insert":
             s.pop("rm_transition", None)
     duration = float(p.get("duration") or dur)
     tmap = plan_guard.build_time_map(p)
+    # KIEM LAI tren timeline CUOI (hook + than video + meme cat vao): con lang dai / mep cat roi vao tieng -> bao
+    try:
+        import speech_cut
+        kiem = speech_cut.audit_cuts(p, p["segments"], speech_cut.plan_pause_limit(p), fix=False)
+        p["_kiem_cat"] = kiem
+        for k, ten in (("im_lang", "khoảng lặng còn sót"), ("cat_vao_tieng", "điểm cắt rơi vào tiếng")):
+            if kiem.get(k):
+                issues.append({"severity": "low", "area": "pacing",
+                               "problem": "Kiểm tra cắt: %d %s — %s" % (len(kiem[k]), ten, "; ".join(kiem[k][:6]))})
+    except Exception as ex:
+        changes.append("bo qua kiem lai diem cat (%s)" % str(ex)[:120])
 
     # --- quy doi gio nguon -> timeline ---
     # _n = so thu tu GOC (nhan trong nhat ky khong doi khi phan tu truoc bi bo)
@@ -1139,6 +1252,13 @@ def build_spec(plan, log=None):
             last = st
         kept.append(a)
     p["audio"] = kept
+    # muc to giong noi cua CHINH video nay -> SFX / meme can theo no (khong theo muc tuyet doi)
+    try:
+        import speech_cut
+        p["_voice_lufs"] = speech_cut.voice_level(p)
+    except Exception as ex:
+        p["_voice_lufs"] = None
+        changes.append("khong do duoc muc to giong noi (%s) -> SFX theo muc tuyet doi" % str(ex)[:120])
     plan_guard.mix_sfx(p, changes)
     # chu / hieu ung cua video chinh khong chay de len doan meme cat vao
     plan_guard.clear_over_inserts(p, changes)
@@ -1216,6 +1336,9 @@ def build_spec(plan, log=None):
         "issues_before": [],
         "ok": not [i for i in issues if i["severity"] == "high"],
         "counts": {k: len(spec[k]) for k in ("clips", "captions", "effects", "audio", "overlays", "scenes", "layers")},
+        # kiem lai diem cat (khoang lang con sot / mep cat roi vao tieng) + muc to giong noi da dung de can SFX
+        "kiem_cat": p.get("_kiem_cat"),
+        "giong_lufs": p.get("_voice_lufs"),
     }
     return spec, report
 

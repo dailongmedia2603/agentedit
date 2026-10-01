@@ -179,6 +179,13 @@ function envelope(t: number, s: number, e: number, fadeIn = 0.18, fadeOut = 0.18
   return Math.min(a, b)
 }
 
+/** Do 'vao' / 'ra' cua phan ZOOM trong hieu ung camera: smoothstep (ease in-out) thay vi bat / tat tuc thi.
+ *  Luat 2026-10-01: muc zoom KHONG BAO GIO nhay trong 1 khung — moi thay doi scale deu la chuyen dong muot. */
+const ZOOM_EASE = 0.28
+function zoomEnv(t: number, s: number, e: number, fadeIn = ZOOM_EASE, fadeOut = ZOOM_EASE) {
+  return easeInOut(envelope(t, s, e, fadeIn, fadeOut))
+}
+
 export function cameraAt(effects: RSEffect[], t: number, W: number): Camera {
   const cam: Camera = { scale: 1, tx: 0, ty: 0, rotate: 0, blur: 0, grayscale: 0, rgbSplit: 0, fisheye: 0, focus: 0 }
   for (const fx of effects) {
@@ -188,27 +195,32 @@ export function cameraAt(effects: RSEffect[], t: number, W: number): Camera {
     const local = t - fx.start
     switch (fx.type) {
       case 'zoom_punch': {
-        // dap nhanh 0.12s len dinh, lui ve muc giu, tha ra o 0.15s cuoi
+        // day nhanh len dinh trong 0.2s (ease in-out: van la CHUYEN DONG, khong nhay khung), lui ve muc giu,
+        // tha ra muot trong 0.3s cuoi
         const peak = 0.2 * I
         const hold = 0.11 * I
-        const up = interpolate(local, [0, 0.12, 0.3], [0, peak, hold], { extrapolateRight: 'clamp', easing: easeOut })
-        const release = clamp01((fx.end - t) / 0.15)
+        const up = interpolate(local, [0, 0.2, 0.45], [0, peak, hold], { extrapolateRight: 'clamp', easing: easeInOut })
+        const release = easeInOut(clamp01((fx.end - t) / 0.3))
         cam.scale *= 1 + up * release
         break
       }
       case 'ken_burns':
-        cam.scale *= 1 + 0.13 * I * easeInOut(clamp01(local / dur)) * envelope(t, fx.start, fx.end, 0, 0.2)
+        cam.scale *= 1 + 0.13 * I * easeInOut(clamp01(local / dur)) * zoomEnv(t, fx.start, fx.end, 0, 0.35)
         break
-      case 'zoom_out_reveal':
-        cam.scale *= 1 + 0.32 * I * (1 - easeOut(clamp01(local / (dur * 0.7))))
+      case 'zoom_out_reveal': {
+        // truoc day bat dau O NGAY muc phong 1.32 (nhay zoom 1 khung) -> gio day vao muot 0.25s roi lui ra
+        const inn = easeInOut(clamp01(local / 0.25))
+        const out = 1 - easeInOut(clamp01((local - 0.25) / Math.max(0.1, dur * 0.7 - 0.25)))
+        cam.scale *= 1 + 0.32 * I * inn * out
         break
+      }
       case 'shake': {
         const amp = 26 * I * (1 - 0.6 * clamp01(local / dur))
         const k = Math.round(t * 30)
         cam.tx += (random(`${fx.id}x${k}`) - 0.5) * 2 * amp * (W / 1080)
         cam.ty += (random(`${fx.id}y${k}`) - 0.5) * 2 * amp * (W / 1080)
         cam.rotate += (random(`${fx.id}r${k}`) - 0.5) * 2.4 * I
-        cam.scale *= 1.04 // phong nhe de rung khong lo vien den
+        cam.scale *= 1 + 0.04 * zoomEnv(t, fx.start, fx.end, 0.12, 0.2) // phong nhe de rung khong lo vien den
         break
       }
       case 'pulse':
@@ -222,7 +234,7 @@ export function cameraAt(effects: RSEffect[], t: number, W: number): Camera {
         break
       case 'fisheye':
         cam.fisheye = Math.max(cam.fisheye, I * envelope(t, fx.start, fx.end, 0.12, 0.2))
-        cam.scale *= 1 + 0.06 * I
+        cam.scale *= 1 + 0.06 * I * zoomEnv(t, fx.start, fx.end)
         break
       case 'focus':
         cam.focus = Math.max(cam.focus, I * envelope(t, fx.start, fx.end, 0.1, 0.25))
@@ -230,8 +242,9 @@ export function cameraAt(effects: RSEffect[], t: number, W: number): Camera {
       case 'pan_left':
       case 'pan_right': {
         const dir = fx.type === 'pan_left' ? -1 : 1
-        cam.scale *= 1 + 0.12 * I
-        cam.tx += dir * (clamp01(local / dur) - 0.5) * W * 0.09 * I
+        const k = zoomEnv(t, fx.start, fx.end)
+        cam.scale *= 1 + 0.12 * I * k
+        cam.tx += dir * (clamp01(local / dur) - 0.5) * W * 0.09 * I * k
         break
       }
       case 'rgb_split': {

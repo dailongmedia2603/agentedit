@@ -116,6 +116,8 @@ sai cam xuc, che mat nguoi, tranh voi chu dang hien, khong phuc vu muc tieu) -> 
   saturate, hueRotate} }` — chi ghi khoa can doi; x/y = px, rotate/hueRotate = do, blur = px; mac dinh scale 1,
   x 0, y 0, rotate 0, blur 0, brightness 1, contrast 1, saturate 1, hueRotate 0. Gioi han: scale 0.5-2.5,
   |rotate| <= 30, blur <= 30.
+  ZOOM PHAI LA CHUYEN DONG MUOT: scale bat dau tu 1 (t = 0), ve lai 1 khi het hieu ung, doi <= 0.03 moi khung
+  (vd day vao 15% can >= 0.2s, dung easing) — KHONG nhay scale trong 1 khung. Engine tu cham toc do neu vuot.
 - ctx: t (giay tu luc hieu ung bat dau), d (do dai giay), p = t/d (0..1), frame, fps, W = 1080, H = 1920,
   face = {x, y, w, h} (TAM mat nguoi va kich thuoc, px tren khung; co the null), avoid = [{x, y, w, h, text}]
   (khung CHU dang hien — goc tren-trai + kich thuoc, px; vi tri THAT luc dung), params = {colors: [...],
@@ -512,6 +514,35 @@ def _avoid_in_spec(spec, st, en, W, H):
     return out[:12]
 
 
+ZOOM_MAX_STEP = 0.03        # scale doi toi da moi khung (30fps) — GIU KHOP remotion_plan.ZOOM_MAX_STEP
+
+
+def smooth_scale(values, fps=30):
+    """Luat ZOOM MUOT (2026-10-01) cho hieu ung bien doi khung TU VIET: code AI co the nhay scale trong 1 khung
+    (vd 1 -> 1.2 ngay khung dau, hoac tat hieu ung khi khung dang phong) = 'zoom giat'. Gioi han toc do doi scale
+    moi khung (<= ZOOM_MAX_STEP @30fps) theo CA HAI chieu, truoc hieu ung va sau hieu ung la 1.0 (khung goc)
+    -> zoom vao / ra luon la chuyen dong. Tra (values_moi, so_khung_da_sua). Khong dung x / y / rotate (rung)."""
+    arr = (values or {}).get("scale")
+    if not isinstance(arr, list) or not arr:
+        return values, 0
+    r = ZOOM_MAX_STEP * 30.0 / float(fps or 30)
+    x = [float(v) for v in arr]
+    y, prev = [], 1.0
+    for v in x:                                    # xuoi: bat dau tu khung goc
+        prev = min(prev + r, max(prev - r, v))
+        y.append(prev)
+    nxt = 1.0
+    for i in range(len(y) - 1, -1, -1):            # nguoc: ket thuc ve khung goc
+        nxt = min(nxt + r, max(nxt - r, y[i]))
+        y[i] = nxt
+    n = sum(1 for a_, b_ in zip(x, y) if abs(a_ - b_) > 1e-4)
+    if not n:
+        return values, 0
+    out = dict(values)
+    out["scale"] = [round(v, 4) for v in y]
+    return out, n
+
+
 def fx_to_spec(p, spec, changes):
     """p['fx'] (code da kiem) -> spec['fx'] (lop phu, file khung) + spec['fxTransforms'] (so tung khung).
     Khung ve san trong hop cach ly, luu cache theo (code, do dai, fps, khung, vi tri mat, tham so)."""
@@ -561,8 +592,11 @@ def fx_to_spec(p, spec, changes):
                 os.makedirs(FX_CACHE, exist_ok=True)
                 with open(job["out"], "w", encoding="utf-8") as fh:
                     json.dump({"n": r.get("n"), "values": r.get("values") or {}}, fh)
+            vals, n_fix = smooth_scale(r.get("values") or {}, fps)
+            if n_fix:
+                changes.append("%s: zoom muot — gioi han toc do doi scale (%d khung)" % (e["id"], n_fix))
             spec.setdefault("fxTransforms", []).append({"id": e["id"], "start": round(st, 3), "end": round(st + job["duration"], 3),
-                                                         "n": r.get("n"), "values": r.get("values") or {}})
+                                                         "n": r.get("n"), "values": vals})
         else:
             spec.setdefault("fx", []).append({"id": e["id"], "start": round(st, 3), "end": round(st + job["duration"], 3),
                                                "layer": e.get("layer") or "front", "file": job["out"]})

@@ -115,7 +115,10 @@ t, why = SC.safe_end(WS, NONE, 4.7, 99, 0.0)
 check("dang o khoang lang sau dau cham -> giu nguyen", t == 4.7 and why is None, (t, why))
 far = [("a%d" % k, k * 0.3, k * 0.3 + 0.28) for k in range(40)]
 t, why = SC.safe_end(far, NONE, 6.05, 99, 0.0)
-check("khong co cho ngat gan -> giu nguyen + bao ly do", t == 6.05 and "giu nguyen" in (why or ""), (t, why))
+check("khong co cho ngat cau gan -> KHONG cat giua chu: ve ranh gioi chu gan nhat + bao ly do",
+      abs(t - 6.05) <= 0.4 and not inside_word(t, far) and "ranh gioi chu" in (why or ""), (t, why))
+t, why = SC.safe_end(far, NONE, 6.29, 99, 0.0)
+check("dang o ranh gioi chu (khong co cho ngat cau) -> giu nguyen", t == 6.29 and "giu nguyen" in (why or ""), (t, why))
 t, why = SC.safe_end(WS, NONE, 0.0, 99, 0.0)
 check("truoc do chua ai noi -> giu nguyen", t == 0.0 and why is None, (t, why))
 
@@ -320,16 +323,36 @@ spec, rep = remotion_plan.build_spec(plan)
 clips = (spec or {}).get("clips") or []
 check("spec dung duoc", bool(spec) and rep.get("ok"), rep)
 check("plan truyen vao khong bi sua", plan == before)
-c1 = clips[0] if clips else {}
-c1_src_end = c1.get("srcStart", 0) + (c1.get("end", 0) - c1.get("start", 0)) * (c1.get("speed") or 1)
-check("clip 1 ket thuc sau khi het tieng 'phí.' (4.62)", 4.62 <= c1_src_end <= 4.75, c1)
-c2 = clips[1] if len(clips) > 1 else {}
-check("clip 2 vao tu dau cau 'Bạn' (5.0)", 4.9 <= (c2.get("srcStart") or 0) <= 5.0, c2)
+def src_end(c):
+    return c.get("srcStart", 0) + (c.get("end", 0) - c.get("start", 0)) * (c.get("speed") or 1)
+
+
+def clip_at(t_src):
+    return next((c for c in clips if c.get("srcStart", 0) - 1e-3 <= t_src < src_end(c)), {})
+
+
+def tl_of(t_src):
+    c = clip_at(t_src)
+    return c.get("start", 0) + (t_src - c.get("srcStart", 0)) / (c.get("speed") or 1) if c else None
+
+
+# LUAT CUNG khoang lang (2026-10-01): lang 0.40s giua 'sẻ.' (1.60) va 'Công' (2.00) — truoc day giu (gioi han 0.45s)
+c1 = clip_at(4.12)
+check("doan chua 'phí.' ket thuc sau khi het tieng (4.62), khong om lang", 4.62 <= src_end(c1) <= 4.75, c1)
+c2 = clip_at(5.0)
+check("doan sau vao tu dau cau 'Bạn' (5.0)", 4.9 <= (c2.get("srcStart") or 0) <= 5.0, c2)
+check("lang 0.40s giua cau (1.60-2.00) bi cat: khong clip nao phat 1.70-1.90",
+      not any(c.get("srcStart", 0) < 1.85 and src_end(c) > 1.75 for c in clips), [(c["srcStart"], src_end(c)) for c in clips])
+check("cat khong mat tieng: 'sẻ.' phat het (>= 1.60), 'Công' vao truoc 2.00",
+      src_end(clip_at(1.5)) >= 1.60 and (clip_at(2.1).get("srcStart") or 9) <= 2.0, [(c["srcStart"], src_end(c)) for c in clips])
+kc = rep.get("kiem_cat") or {}
+check("kiem lai: khong con lang dai, khong mep cat roi vao tieng", not kc.get("im_lang") and not kc.get("cat_vao_tieng"), kc)
 lays = {x["id"].rsplit("_", 1)[0]: x for x in spec.get("layers") or []}
 mp = lays.get("mp") or {}
-check("lop 'MIỄN PHÍ' hien ngay truoc 'miễn' (timeline 3.70)", abs((mp.get("start") or 0) - 3.70) < 0.02, mp)
+check("lop 'MIỄN PHÍ' hien ngay truoc 'miễn'", abs((mp.get("start") or 0) - (tl_of(3.82) - SC.LAYER_LEAD)) < 0.02,
+      (mp.get("start"), tl_of(3.82)))
 tv = lays.get("tv") or {}
-t_tai = c2.get("start", 0) + (5.92 - (c2.get("srcStart") or 0))
+t_tai = tl_of(5.92)
 check("lop 'TẢI VỀ' hien ngay truoc 'tải' tren timeline", abs((tv.get("start") or 0) - (t_tai - SC.LAYER_LEAD)) < 0.02,
       (tv.get("start"), t_tai))
 check("SFX cua lop keu cung luc lop hien",

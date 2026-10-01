@@ -42,6 +42,18 @@ export function mediaSrc(base: string | undefined, path: string): string {
 
 const toFrame = (t: number, fps: number) => Math.round(t * fps)
 
+const easeInOutCubic = (p: number) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2)
+
+/** ZOOM MUOT: muc zoom cua clip tai gio timeline t. Clip co zoomFrom bat dau DUNG muc zoom clip truoc dang giu
+ *  roi ease in-out toi clip.scale -> o diem cat khung khong nhay zoom (user 2026-10-01: "zoom phai chuyen dong
+ *  muot, khong phai cat roi thay khung zoom"). GIU KHOP remotion_plan.clip_zoom_at (Python). */
+export function clipZoomAt(clip: RSClip, t: number): number {
+  const k1 = clip.scale || 1
+  if (clip.zoomFrom === undefined || clip.zoomFrom === null || !clip.zoomDur || clip.zoomDur <= 0) return k1
+  const p = clamp01((t - clip.start) / clip.zoomDur)
+  return clip.zoomFrom + (k1 - clip.zoomFrom) * easeInOutCubic(p)
+}
+
 // SVG filter tach kenh mau (dung cho glitch / rgb_split). id rieng cho tung lop.
 const RgbSplitDefs: React.FC<{ id: string; amount: number }> = ({ id, amount }) => (
   <svg width={0} height={0} style={{ position: 'absolute' }} aria-hidden>
@@ -169,14 +181,16 @@ const ClipLayer: React.FC<{ clip: RSClip; prev: RSClip | null; base?: string; cw
   const volumeAt = (f: number) => {
     const tt = showStart + f / fps
     if (tt < clip.start - 0.001 || tt > clip.end + 0.001) return 0
-    const edgeIn = clamp01((tt - clip.start) / 0.03)
-    const edgeOut = clamp01((clip.end - tt) / 0.05)
+    // chong tieng 'cup' o mep cat: giam am 30ms — nam tron trong khoang lang da chua lai sau diem cat
+    // (speech_cut CUT_TAIL_KEEP 60ms) nen khong nuot duoi am cua chu cuoi
+    const edgeIn = clamp01((tt - clip.start) / 0.02)
+    const edgeOut = clamp01((clip.end - tt) / 0.03)
     return Math.min(1, clip.volume) * Math.min(edgeIn, edgeOut)
   }
   const inner: React.CSSProperties = {
     width: '100%',
     height: '100%',
-    transform: `translate(${clip.x * 50}%, ${clip.y * 50}%) scale(${clip.scale})`
+    transform: `translate(${clip.x * 50}%, ${clip.y * 50}%) scale(${clipZoomAt(clip, t)})`
   }
   const pos = clip.fit === 'blur' ? undefined : facePosition(clip, cw, ch, fy)
   if (subject && clip.subject) {

@@ -28,9 +28,10 @@ from concurrent.futures import ThreadPoolExecutor
 import prompt_store
 
 ART_DIR = os.path.join(os.path.expanduser("~"), ".capcut-studio", "cache", "textart")
-ART_VERSION = 1
+ART_VERSION = 2            # 2 = luat cat ngang (khoang dong rong) + gan tron net chu ve dung hang
 PER_SHEET = 3
-MAX_ROWS = 5            # toi da 5 hang / tam: 7 hang thi AI xep sat, duoi chu viet tay cham chu duoi
+MAX_ROWS = 4            # toi da 4 hang / tam: nhieu hang thi AI xep sat, duoi chu (g, y, chu viet tay) cham
+                        # hang duoi (5 -> 4 ngay 2026-10-01 de con cho cho khoang dong rong)
 MAX_CHARS = 48          # cum dai hon (the trich dan, danh sach) -> giu chu ve bang code
 MAX_TIERS = 3
 SHEET_W, SHEET_H = 1024, 1536
@@ -61,7 +62,10 @@ Phong cach thi giac cua video: {phong_cach}
   bat ky (sang lan toi): luon co vien hoac bong tach khoi nen.
 {mau_tham_chieu}
 # BO CUC BAT BUOC (de cat)
-- Moi hang NAM RIENG, can giua; giua hai hang bat ky phai co khoang TRONG HOAN TOAN it nhat 1/10 chieu cao anh.
+- Moi hang NAM RIENG, can giua; giua hai hang bat ky phai co mot DAI NGANG TRONG SUOT HOAN TOAN cao it nhat
+  1/8 chieu cao anh, do tu DIEM THAP NHAT cua hang tren (ke ca DUOI CHU thong xuong: g, y, p, q, j, dau nang,
+  vien, bong 3D, net bay cua chu viet tay) toi DIEM CAO NHAT cua hang duoi (ke ca dau sac / huyen / hoi / nga,
+  mu cua a / e / o, moc cua o / u, vien). Ke mot duong ngang bat ky trong dai do se KHONG cham pixel nao.
 - Khong chu / vien / bong / hieu ung nao cua hang nay cham sang hang khac. Moi TU cach nhau ro rang.
 - Chu chiem gan het be ngang (de net) nhung khong cham mep anh.
 - NEN TRONG SUOT (PNG co kenh alpha). Khong nen mau, khong khung, khong vat trang tri, khong logo, khong icon,
@@ -184,6 +188,15 @@ def _style_text(style, story):
     return chu_de or "(khong ro)", "; ".join(parts) or "hien dai, sach, noi bat, hop mang xa hoi"
 
 
+# 2026-10-01 (user, kem anh): chu "g" cua 'tặng voucher' thong xuong sat hang 'HỜI' -> cat ngang con du mot manh
+# 'g' tren dau hang duoi. Luat nay luon duoc noi vao prompt (ke ca khi user da sua prompt) + slice_sheet gan
+# TRON tung net chu (thanh phan lien thong) ve dung hang cua no.
+_ROW_GAP_RULE = """# LUAT CAT NGANG (bat buoc, kiem bang code)
+- Anh se bi cat NGANG giua cac hang. DE KHOANG CACH DONG RAT RONG: dai trong suot giua 2 hang >= 1/8 chieu cao anh,
+  tinh tu duoi chu thong xuong (g, y, p, q, j, dau nang, bong) cua hang tren toi dau thanh (sac, huyen, hoi, nga,
+  mu, moc) cua hang duoi. Thu nho chu neu can de du khoang trong — KHONG de hai hang sat / chong nhau."""
+
+
 def sheet_prompt(lockups, style, story, has_ref, out):
     rows, n = [], 0
     for i, lk in enumerate(lockups):
@@ -193,8 +206,10 @@ def sheet_prompt(lockups, style, story, has_ref, out):
     chu_de, phong_cach = _style_text(style, story)
     ref = ("- ANH DINH KEM la mau cua CUNG video: GIU DUNG phong cach chu do (font, mau, vien, bong, hieu ung) cho"
            " moi hang tuong ung (chinh / phu) — chi doi noi dung chu.\n") if has_ref else ""
-    return prompt_store.render("_TEXT_ART_PROMPT", chu_de=chu_de, phong_cach=phong_cach, hang="\n".join(rows),
-                               mau_tham_chieu=ref, out=out)
+    txt = prompt_store.render("_TEXT_ART_PROMPT", chu_de=chu_de, phong_cach=phong_cach, hang="\n".join(rows),
+                              mau_tham_chieu=ref, out=out)
+    # luat cat ngang NOI THEM bang code (prompt tren sua duoc trong menu — ban da sua van phai co luat nay)
+    return txt.replace("\nTao xong:", "\n" + _ROW_GAP_RULE + "\nTao xong:", 1) if "\nTao xong:" in txt else txt + "\n" + _ROW_GAP_RULE
 
 
 def gen_sheet(lockups, style, story, ref=None, log=None, timeout=480):
@@ -308,6 +323,80 @@ def segment_rows(core, n):
     return [tuple(x) for x in segs]
 
 
+def _components(mask):
+    """Gan nhan thanh phan lien thong (8 lan can) cho mat na bool HxW: chay ngang moi dong + union-find (khong can
+    scipy). Tra mang nhan int32 (-1 = nen)."""
+    import numpy as np
+    H, W = mask.shape
+    parent = []
+
+    def find(a):
+        while parent[a] != a:
+            parent[a] = parent[parent[a]]
+            a = parent[a]
+        return a
+
+    runs, prev = [], []
+    for y in range(H):
+        row = mask[y]
+        if not row.any():
+            prev = []
+            continue
+        d = np.diff(np.concatenate(([0], row.astype(np.int8), [0])))
+        cur, j = [], 0
+        for x0, x1 in zip(np.nonzero(d == 1)[0].tolist(), (np.nonzero(d == -1)[0] - 1).tolist()):
+            while j < len(prev) and prev[j][1] < x0 - 1:
+                j += 1
+            lab, k = None, j
+            while k < len(prev) and prev[k][0] <= x1 + 1:
+                r = find(prev[k][2])
+                if lab is None:
+                    lab = r
+                elif r != lab:
+                    parent[r] = lab
+                k += 1
+            if lab is None:
+                lab = len(parent)
+                parent.append(lab)
+            cur.append((x0, x1, lab))
+            runs.append((y, x0, x1, lab))
+        prev = cur
+    out = np.full((H, W), -1, dtype=np.int32)
+    for y, x0, x1, lab in runs:
+        out[y, x0:x1 + 1] = find(lab)
+    return out
+
+
+def row_masks(soft, rows, bounds):
+    """Moi pixel chu -> chi so HANG cua no (-1 = nen). Gan TRON tung net chu (thanh phan lien thong) ve hang chua
+    nhieu pixel cua no nhat: duoi chu 'g' thong qua duong cat van thuoc hang tren, dau / mu cua hang duoi van thuoc
+    hang duoi — cat ngang khong con du manh chu hang ben canh (loi that 2026-10-01: manh 'g' tren dau 'HỜI').
+    Net dinh lien ca hai hang (bong / vien chay dai, >= 20% o moi ben) -> chia theo duong cat nhu cu."""
+    import numpy as np
+    H = soft.shape[0]
+    row_of_y = np.full(H, -1, dtype=np.int32)
+    for i, (top, bot) in enumerate(bounds):
+        row_of_y[top:bot + 1] = i
+    lab = _components(soft)
+    n = int(lab.max()) + 1
+    owner = np.full(soft.shape, -1, dtype=np.int32)
+    if n <= 0:
+        return owner
+    ys, xs = np.nonzero(lab >= 0)
+    ls, rs = lab[ys, xs], row_of_y[ys]
+    ok = rs >= 0
+    cnt = np.zeros((n, len(rows)), dtype=np.int64)
+    np.add.at(cnt, (ls[ok], rs[ok]), 1)
+    tot = cnt.sum(axis=1)
+    best = cnt.argmax(axis=1)
+    srt = np.sort(cnt, axis=1)
+    second = srt[:, -2] if len(rows) > 1 else np.zeros(n, dtype=np.int64)
+    merged = (second >= 0.2 * np.maximum(tot, 1)) & (second >= 40)
+    own = np.where(merged[ls], rs, best[ls])
+    owner[ys, xs] = own
+    return owner
+
+
 def _save_png(arr, path):
     import remotion_plan as RP
     h, w = arr.shape[:2]
@@ -399,26 +488,29 @@ def slice_sheet(path, lockups):
         top = (rows[i - 1][1] + r0) // 2 if i else 0
         bot = (r1 + rows[i + 1][0]) // 2 if i + 1 < len(rows) else H - 1
         bounds.append((top, bot))
+    owner = row_masks(soft, rows, bounds)
     os.makedirs(ART_DIR, exist_ok=True)
     base = os.path.splitext(os.path.basename(path))[0]
     res, bad = {}, []
     for i, ((lk, t), (r0, r1), (top, bot)) in enumerate(zip(expect, rows, bounds)):
-        band = soft[top:bot + 1]
-        ys = np.nonzero(band.any(axis=1))[0]
-        xs = np.nonzero(band.any(axis=0))[0]
+        mine = owner == i
+        ys = np.nonzero(mine.any(axis=1))[0]
+        xs = np.nonzero(mine.any(axis=0))[0]
         if not ys.size or not xs.size:
             bad.append((lk["key"], "hang %d trong" % (i + 1)))
             continue
-        y0, y1 = top + int(ys[0]), top + int(ys[-1])
+        y0, y1 = int(ys[0]), int(ys[-1])
         x0, x1 = int(xs[0]), int(xs[-1])
         crop = img[y0:y1 + 1, x0:x1 + 1].copy()
+        # chi giu pixel THUOC hang nay: manh duoi chu / dau cua hang ben canh lot vao khung cat -> trong suot
+        crop[..., 3] = np.where(mine[y0:y1 + 1, x0:x1 + 1], crop[..., 3], 0)
         text_ocr, ocr_words = _ocr(crop, want_words=True)
         sim = _sim(text_ocr, t["text"]) if text_ocr else None
         if text_ocr and sim < OCR_MIN:
             bad.append((lk["key"], "hang %d doc ra %r, can %r" % (i + 1, text_ocr[:40], t["text"])))
             continue
         # vi tri tung TU: uu tien khung tung tu cua OCR (dung ca chu hep co bong); khong khop so tu -> khe trong
-        c_core = core[r0:r1 + 1, x0:x1 + 1]
+        c_core = (core & mine)[r0:r1 + 1, x0:x1 + 1]
         words = t["text"].split()
         wr = None
         if len(words) > 1:

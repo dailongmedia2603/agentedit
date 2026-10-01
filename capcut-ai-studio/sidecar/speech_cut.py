@@ -144,11 +144,17 @@ def energy(path):
     return db
 
 
-def silence_threshold(db):
-    """Nguong 'het tieng': nen on + 35% khoang dong (dB) giua nen on va tieng noi."""
+def silence_threshold(db, frac=0.35):
+    """Nguong 'het tieng': nen on + 35% khoang dong (dB) giua nen on va tieng noi.
+    frac=SOFT_FRAC -> nguong MEM: duoi am nho (phu am cuoi, hoi xuong giong, hoi tho) van tinh la tieng."""
     import numpy as np
     floor, loud = float(np.percentile(db, 10)), float(np.percentile(db, 90))
-    return floor + 0.35 * max(6.0, loud - floor)
+    return floor + frac * max(6.0, loud - floor)
+
+
+SOFT_FRAC = 0.18          # nguong mem (xem silence_threshold)
+SOFT_RUN = 0.03           # tieng TAT HAN = duoi nguong mem lien tuc >= 30ms
+SOFT_SEARCH = 0.30        # tim cho tieng tat han / bat dau that toi da 0.3s quanh moc nguong chinh
 
 
 class Audio:
@@ -161,6 +167,53 @@ class Audio:
     def __init__(self, db):
         self.db = db
         self.thr = silence_threshold(db) if db is not None and len(db) > 50 else None
+        self.soft = silence_threshold(db, SOFT_FRAC) if self.thr is not None else None
+
+    def soft_in(self, a, b):
+        """Nguong mem CHO KHOANG LANG [a, b]: phong on (nen) o day co the cao hon nguong mem chung (do that 2026-10-01:
+        phong -55..-60 dB tren nguong mem -59 -> ca khoang lang bi coi la 'duoi am', khong cat duoc). Lay
+        trung vi khoang lang + 6 dB (khong vuot nguong chinh - 1)."""
+        if self.thr is None:
+            return None
+        import numpy as np
+        seg = self.db[self._idx(a):self._idx(b) + 1]
+        if len(seg) < 5:
+            return self.soft
+        return min(self.thr - 1.0, max(self.soft, float(np.median(seg)) + 6.0))
+
+    def sound_end(self, a, limit=SOFT_SEARCH, soft=None):
+        """Tieng TAT HAN tu moc `a` (moc bat dau lang theo nguong chinh): duoi am nho hon nguong chinh nhung
+        tren nguong mem van la tieng -> chua duoc cat. Khong thay tat han trong `limit` -> a + limit."""
+        if self.thr is None:
+            return a
+        soft = self.soft if soft is None else soft
+        i, i_end, need, cnt = self._idx(a), self._idx(a + limit), max(1, int(round(SOFT_RUN / HOP))), 0
+        for k in range(i, i_end + 1):
+            if float(self.db[k]) < soft:
+                cnt += 1
+                if cnt >= need:
+                    return max(a, (k - cnt + 1) * HOP)
+            else:
+                cnt = 0
+        return a + limit
+
+    def sound_start(self, b, limit=SOFT_SEARCH, soft=None):
+        """Tieng BAT DAU THAT truoc moc `b` (cho tieng vuot nguong chinh): phan dau am dang len (tren nguong mem)
+        cung la tieng -> vao truoc no."""
+        if self.thr is None:
+            return b
+        soft = self.soft if soft is None else soft
+        k, lo = self._idx(b) - 1, self._idx(max(0.0, b - limit))
+        while k >= lo and float(self.db[k]) >= soft:
+            k -= 1
+        return min(b, (k + 1) * HOP)
+
+    def loud_at(self, t0, t1):
+        """Co tieng THAT (nguong chinh) trong [t0, t1] — dung de kiem diem cat co roi vao tieng khong."""
+        if self.thr is None or t1 <= t0:
+            return False
+        seg = self.db[self._idx(t0):self._idx(t1) + 1]
+        return bool(len(seg)) and float(seg.max()) >= self.thr
 
     def _idx(self, t):
         return max(0, min(len(self.db) - 1, int(round(t / HOP))))
@@ -239,9 +292,17 @@ class Audio:
         # chu, va bao chu sau bat dau som) -> van cat duoc, mien truoc do CHUA co tieng cua chu sau.
         q_hi = min(hard_hi, nxt_start + 0.35, w_end + TAIL_SEARCH)
         for a, b in self.quiet_runs(lo, q_hi, TAIL_RUN):
+            # tieng VANG LAI truoc khi chu sau bat dau (Whisper bao chu sau SOM, khong bao gio muon) -> khoang lang
+            # nay con nam TRONG chu hien tai (vd khoang dong cua phu am 't' trong 'tính' — do that 2026-10-01: cat o
+            # 122.42 giua 'tính,') -> chua phai het tieng
+            if nxt_start < float("inf") and b < nxt_start - 0.05 and self.has_sound(b + 0.01, nxt_start - 0.03):
+                continue
             if a <= nxt_start + TAIL_OVER or not self.has_sound(nxt_start + TAIL_OVER, a):
                 return min(q_hi, a + TAIL_KEEP)             # tieng tat -> cat ngay sau do 30ms
-        return self.valley(lo, hi)                          # noi lien: cat o cho nho tieng nhat
+        # noi lien: cat o cho nho tieng nhat — uu tien SAU moc het chu (giua chu nay va chu sau): cho trung trong chu
+        # (khoang dong phu am 't' cua 'tính') co the con nho tieng hon khe giua hai chu (do that 2026-10-01)
+        v_lo = max(lo, w_end - 0.03)
+        return self.valley(v_lo, hi) if hi - v_lo >= 0.03 else self.valley(lo, hi)
 
     def cut_before(self, w_start, prv_end, lo_hard):
         """Diem vao truoc chu [w_start, ...] (chu truoc het o prv_end)."""
@@ -339,6 +400,18 @@ def safe_end(words, audio, t, lim_hi, min_t, bridge=None):
         elif br is not None and br <= EXTEND_MAX:
             return round(bridge, 3), "noi lien sang doan ke tiep (cau chua het)"
         else:
+            # khong co cho ngat cau gan: it nhat KHONG CAT GIUA CHU -> ranh gioi chu gan nhat (cho nho tieng nhat)
+            w = words[idx]
+            if w[1] + 0.03 < t < w[2] - 0.03:
+                cands = []
+                if idx > 0 and t - w[1] <= 0.4 and w[1] - min_t >= MIN_SEG:
+                    pw = words[idx - 1]
+                    cands.append(audio.cut_after(pw[2], pw[1], w[1], w[2], lim_hi))
+                if w[2] - t <= 0.4 and w[2] <= lim_hi:
+                    ns2, ne2 = _nxt(words, idx)
+                    cands.append(audio.cut_after(w[2], w[1], ns2, ne2, lim_hi))
+                if cands:
+                    return round(min(cands, key=lambda x: abs(x - t)), 3), "khong co cho ngat cau gan -> cat o ranh gioi chu"
             return t, "khong tim duoc cho ngat cau gan — giu nguyen"
         ns, ne = _nxt(words, k)
     new = audio.cut_after(words[k][2], words[k][1], ns, ne, lim_hi)
@@ -507,34 +580,133 @@ def trim_filler_edges(plan, segs, transcript_data, changes=None, label="seg"):
     return segs
 
 
-PAUSE_KEEP = 0.08         # giu 80ms moi ben cho cat khoang nghi (hoi tho tu nhien, khong cut cut)
-EDGE_KEEP_TAIL = 0.12     # sau chu cuoi truoc cho noi
-EDGE_KEEP_HEAD = 0.06     # truoc chu dau sau cho noi
-MIN_PIECE = 0.35          # manh doan ngan hon -> khong cat o do (giu khoang nghi)
+# ----------------------------------------------------------------------------
+# SIET KHOANG NGHI — LUAT CUNG (2026-10-01, user: "toan bo cac video co khoang im lang deu phai cat, cat khong
+# duoc mat am, am phai phat het"). Moi khoang lang THAT (do bang am thanh) ma nguoi xem nghe thay dai hon
+# `max_pause` deu bi cat; mep cat dat theo NGUONG MEM (duoi am nho / dau am dang len van la tieng) + dem, nen
+# khong bao gio xen vao tieng. Sau khi cat co buoc KIEM LAI tren timeline (audit_cuts): con lang dai / mep cat
+# roi vao tieng -> tu sua neu an toan, khong thi bao ro trong nhat ky.
+# ----------------------------------------------------------------------------
+CUT_TAIL_KEEP = 0.06      # giu 60ms sau khi tieng TAT HAN (nguong mem) — dai hon doan giam am 30ms o mep clip
+CUT_HEAD_KEEP = 0.05      # vao truoc tieng bat dau that 50ms
+END_KEEP = 0.20           # cuoi video: giu 0.2s sau tieng cuoi (khong dung khung dot ngot)
+MIN_PIECE = 0.25          # manh doan ngan hon -> khong cat o do (bao trong buoc kiem lai)
+MIN_CUT = 0.08            # phan lang bo di ngan hon -> khong dang cat
+AUDIT_TOL = 0.12          # kiem lai: lang nghe thay > gioi han + 0.12s moi bao (duoi am mem nam duoi nguong chinh)
+TAIL_PAST_HARD = 0.25     # kiem lai: duoi am duoc vuot moc phan da bo (hard_hi / hard_lo) toi 0.25s (khong chen chu moi)
+PAUSE_FAST, PAUSE_NORMAL, PAUSE_SLOW = 0.22, 0.28, 0.40
 _FAST = ("nhanh", "bắt trend", "trend", "vui", "năng lượng", "sôi động", "hài", "dồn dập", "hype", "gắt")
 _SLOW = ("nhẹ nhàng", "tâm sự", "sâu lắng", "cảm động", "chậm", "thư giãn", "chữa lành", "thủ thỉ", "bình yên")
 
 
 def pause_limit(story=None):
-    """Khoang nghi dai nhat duoc GIU theo nhip video (yeu cau edit + tone): nhanh / vui / bat trend 0.30s,
-    binh thuong 0.45s, nhe nhang / tam su 0.75s."""
+    """Khoang lang dai nhat nguoi xem duoc nghe thay (giua 2 cau / 2 doan). Moi khoang dai hon deu bi cat.
+    Nhip theo yeu cau edit + tone: nhanh / vui / bat trend 0.22s, binh thuong 0.28s, nhe nhang / tam su 0.40s
+    (truoc 2026-10-01 la 0.30 / 0.45 / 0.75 — user bao 'cat chua chat')."""
     st = story or {}
     req = st.get("edit_request") if isinstance(st.get("edit_request"), dict) else {}
     txt = " ".join([str(st.get("tone") or "")] + [str(v) for v in req.values() if isinstance(v, str)]).lower()
     f, sl = sum(k in txt for k in _FAST), sum(k in txt for k in _SLOW)
     if sl > f:
-        return 0.75
+        return PAUSE_SLOW
     if f > sl:
-        return 0.30
-    return 0.45
+        return PAUSE_FAST
+    return PAUSE_NORMAL
 
 
-def tighten_pauses(plan, segs, max_pause, changes=None, label="seg"):
-    """SIET KHOANG NGHI (than video): khoang lang THAT (do bang am thanh) dai hon `max_pause`
-    - giua mot doan -> tach doan, bo khoang lang (giu PAUSE_KEEP moi ben); doan sau phong nhe +0.08 (jump-cut)
-      de khong thay giat hinh;
-    - o cho noi 2 doan tren timeline (duoi doan truoc + dau doan sau = khoang nguoi xem nghe thay) -> cat bot.
+def plan_pause_limit(plan):
+    """Gioi han khoang lang cua MOT plan: autoplan ghi plan['pause_limit']; plan cu -> theo tone da luu."""
+    try:
+        v = float(plan.get("pause_limit"))
+    except (TypeError, ValueError):
+        v = None
+    if v:
+        return max(0.15, min(PAUSE_SLOW, v))
+    pp = plan.get("_pipeline") if isinstance(plan.get("_pipeline"), dict) else {}
+    return pause_limit({"tone": pp.get("tone")})
+
+
+def _cut_window(au, a, b):
+    """Khoang lang that [a, b] (nguong chinh) -> (cat_tu, cat_den): giu TRON duoi am cua tieng truoc va dau am
+    cua tieng sau (nguong mem) + dem. cat_den - cat_tu < MIN_CUT -> khong cat."""
+    sf = au.soft_in(a, b)
+    return round(au.sound_end(a, soft=sf) + CUT_TAIL_KEEP, 3), round(au.sound_start(b, soft=sf) - CUT_HEAD_KEEP, 3)
+
+
+def _spoken(words, sid, a, b):
+    return [w for w in words.get(sid) or [] if w[2] > a + 0.02 and w[1] < b - 0.02]
+
+
+def _split_middle(s, au, sw, max_pause, open_head=False, open_tail=False):
+    """Cac khoang [cat_tu, cat_den] can bo GIUA doan: lang that > max_pause co tieng noi ca truoc va sau.
+    open_head / open_tail: doan lien truoc / lien sau tren timeline noi LIEN trong nguon -> manh sat mep do duoc
+    ngan hon MIN_PIECE (no chay tiep tu clip ben canh, khong phai 'manh nhay'). Do that 2026-10-01: doan bat dau
+    bang 0.16s duoi am 'rồi.' roi lang 0.61s -> truoc day khong cat duoc."""
+    st, en = float(s["start"]), float(s["end"])
+    acc, left = [], st
+    for a, b in au.quiet_runs(st + 0.1, en - 0.1, max_pause):
+        before = any(w[1] < a for w in sw) or au.has_sound(st, a - 0.01)
+        after = any(w[2] > b for w in sw) or au.has_sound(b + 0.01, en)
+        if not (before and after):
+            continue                                       # doan nhac / b-roll o dau hay cuoi doan: de cho noi xu ly
+        lo, hi = _cut_window(au, a, b)
+        if hi - lo < MIN_CUT:
+            continue
+        def no_word(x0, x1):
+            # chu Whisper dai > 1.2s la moc hong (Whisper keo 1 chu qua ca khoang lang, vd 'nếu' 185.86-188.68)
+            return not any(w[1] < x1 - 0.02 and w[2] > x0 + 0.02 and w[2] - w[1] <= 1.2 for w in sw)
+        head_ok = lo - left >= MIN_PIECE or (open_head and not acc and lo - left >= 0.03)
+        tail_ok = en - hi >= MIN_PIECE or (open_tail and en - hi >= 0.03)
+        if not head_ok and not acc and not open_head and no_word(st, lo):
+            lo, head_ok = st, True          # manh dau chi la hoi tho / tieng lach tach < 0.25s -> doan bat dau sau lang
+        if not tail_ok and not open_tail and no_word(hi, en) and lo > st:
+            hi, tail_ok = en, True          # manh cuoi tuong tu -> doan ket thuc truoc lang
+        if head_ok and tail_ok:
+            acc.append((lo, hi))
+            left = hi
+    return acc
+
+
+def _pieces(s, acc):
+    """Tach doan `s` bo cac khoang `acc`. Giu NGUYEN khung (scale) — khong con jump-cut zoom o cho cat lang:
+    doi khung dot ngot o diem cat la 'zoom giat' (user 2026-10-01); zoom gio la chuyen dong muot (xem
+    remotion_plan._smooth_zoom)."""
+    st, en = float(s["start"]), float(s["end"])
+    s = dict(s)
+    acc = list(acc)
+    if acc and acc[0][0] <= st + 1e-6:                     # bo ca dau doan (hoi tho + lang)
+        st = acc.pop(0)[1]
+        s["start"], s["quiet_start"] = round(st, 3), True
+        s.pop("hard_lo", None)
+    if acc and acc[-1][1] >= en - 1e-6:                    # bo ca cuoi doan
+        en = acc.pop()[0]
+        s["end"], s["quiet_end"] = round(en, 3), True
+        s.pop("hard_hi", None)
+    bounds = [st] + [x for lo, hi in acc for x in (lo, hi)] + [en]
+    ts = float(s.get("target_start") or 0)
+    out = []
+    for k in range(len(acc) + 1):
+        p = dict(s)
+        p["start"], p["end"] = round(bounds[2 * k], 3), round(bounds[2 * k + 1], 3)
+        p["target_start"] = round(ts, 3)
+        ts += (p["end"] - p["start"]) / float(p.get("speed", 1.0) or 1.0)
+        if k > 0:
+            p["quiet_start"] = True
+            p.pop("hard_lo", None)
+        if k < len(acc):
+            p["quiet_end"] = True
+            p.pop("hard_hi", None)
+        out.append(p)
+    return out
+
+
+def tighten_pauses(plan, segs, max_pause, changes=None, label="seg", removed=None):
+    """SIET KHOANG NGHI (than video): moi khoang lang THAT ma nguoi xem nghe thay > `max_pause`
+    - giua mot doan -> tach doan, bo khoang lang (giu tron duoi am / dau am theo nguong mem + dem);
+    - o cho noi 2 doan tren timeline (duoi doan truoc + dau doan sau) -> cat bot ca hai ben;
+    - dau video (lang truoc tieng dau) va CUOI video (lang sau tieng cuoi) -> cat.
     Mep cat danh dau quiet_start / quiet_end -> cat an toan theo tieng noi (va build_spec chay lai) giu nguyen.
+    `removed` (list) nhan (source_id, tu, den) cac khoang da bo -> moc diem (meme / SFX) trong do theo mep cat.
     Tra danh sach segment moi (target_start xep lai sau bang chuan_hoa_segments)."""
     if not segs or not max_pause:
         return segs
@@ -544,107 +716,424 @@ def tighten_pauses(plan, segs, max_pause, changes=None, label="seg"):
     audios = {}
     srcs = {sv.get("id") for sv in plan.get("source_videos") or [] if isinstance(sv, dict)}
 
-    def spoken(sid, a, b):
-        """Chu Whisper trong [a, b]: chi siet o doan CO LOI NOI (b-roll / nhac / quay man hinh khong loi: giu nguyen)."""
-        return [w for w in words.get(sid) or [] if w[2] > a + 0.02 and w[1] < b - 0.02]
+    def note(sid, a, b):
+        if removed is not None and b - a > 0.01:
+            removed.append((sid, round(a, 3), round(b, 3)))
+
     body = [s for s in segs if isinstance(s, dict) and s.get("kind") not in ("insert", "hook")]
     body.sort(key=lambda s: float(s.get("target_start") or 0))
     au_of = {}
     for s in body:
         sid = s.get("source_id")
-        if sid in srcs and spoken(sid, float(s["start"]), float(s["end"])):
+        # chi siet o NGUON co loi noi (video khong loi / chi nhac: giu nguyen) va doan CO TIENG (canh b-roll im hoan toan
+        # la co y: giu nguyen). Khong doi doan phai co chu Whisper: Whisper hay bo sot ca cau (do that 2026-10-01:
+        # doan 278.4-281.5 co tieng noi, khong chu Whisper nao -> lang 0.44s khong duoc cat).
+        if sid in srcs and words.get(sid):
             try:
-                au_of[id(s)] = _audio_for(plan, sid, audios)
+                au = _audio_for(plan, sid, audios)
             except Exception:
-                au_of[id(s)] = None
+                au = None
+            ok = au is not None and au.thr is not None and au.has_sound(float(s["start"]), float(s["end"]))
+            au_of[id(s)] = au if ok else None
     # 1) cho noi giua 2 doan lien tiep tren timeline
     for i, s in enumerate(body):
         au = au_of.get(id(s))
-        if au is None or au.thr is None:
-            continue
+        sid = s.get("source_id")
         st, en = float(s["start"]), float(s["end"])
-        sw = spoken(s.get("source_id"), st, en)
-        q0 = au.quiet_start(en - 0.02)
+        sw = _spoken(words, sid, st, en)
+        q0 = au.quiet_start(en - 0.02) if au is not None else None
         if q0 is not None and sw:
             q0 = max(q0, sw[-1][1] + 0.05)                    # khong cat vao chu cuoi (Whisper)
         tail = (en - max(st, q0)) if q0 is not None else 0.0
+        if au is None and (i + 1 >= len(body) or au_of.get(id(body[i + 1])) is None):
+            continue
         nxt = body[i + 1] if i + 1 < len(body) else None
-        head, nq1 = 0.0, None
-        if nxt is not None and au_of.get(id(nxt)) is not None:
-            nau = au_of[id(nxt)]
+        head, nq1, nau = 0.0, None, au_of.get(id(nxt)) if nxt is not None else None
+        if nau is not None:
             nst, nen = float(nxt["start"]), float(nxt["end"])
             nq1 = nau.quiet_end(nst + 0.02)
-            nw = spoken(nxt.get("source_id"), nst, nen)
+            nw = _spoken(words, nxt.get("source_id"), nst, nen)
             if nq1 is not None and nw:
                 nq1 = min(nq1, nw[0][2] - 0.05)                # khong cat vao chu dau (Whisper)
             head = max(0.0, min(nen, nq1) - nst) if nq1 is not None else 0.0
-        if tail + head <= max_pause + 0.05:
+        limit = max_pause if nxt is not None else END_KEEP     # cuoi video: chi giu 0.2s sau tieng cuoi
+        if tail + head <= limit + 0.02:
             continue
         cut = []
-        if tail > EDGE_KEEP_TAIL + 0.03 and en - tail + EDGE_KEEP_TAIL - st >= MIN_PIECE:
-            s["end"] = round(en - tail + EDGE_KEEP_TAIL, 3)
-            s["quiet_end"] = True
-            cut.append("duoi %.2fs" % (tail - EDGE_KEEP_TAIL))
-        if nxt is not None and head > EDGE_KEEP_HEAD + 0.03 and float(nxt["end"]) - (float(nxt["start"]) + head - EDGE_KEEP_HEAD) >= MIN_PIECE:
-            old = float(nxt["start"])
-            nxt["start"] = round(old + head - EDGE_KEEP_HEAD, 3)
-            nxt["quiet_start"] = True
-            cut.append("dau doan sau %.2fs" % (head - EDGE_KEEP_HEAD))
+        if tail > 0.0 and au is not None:
+            keep = CUT_TAIL_KEEP if nxt is not None else END_KEEP
+            new_en = round(min(en, au.sound_end(en - tail, soft=au.soft_in(en - tail, en)) + keep), 3)
+            if en - new_en >= 0.03 and new_en - st >= MIN_PIECE:
+                note(sid, new_en, en)
+                s["end"] = new_en
+                s["quiet_end"] = True
+                s.pop("hard_hi", None)
+                cut.append("duoi %.2fs" % (en - new_en))
+        if nau is not None and head > 0.0:
+            nst, nen = float(nxt["start"]), float(nxt["end"])
+            new_st = round(max(nst, nau.sound_start(nst + head, soft=nau.soft_in(nst, nst + head)) - CUT_HEAD_KEEP), 3)
+            if new_st - nst >= 0.03 and nen - new_st >= MIN_PIECE:
+                note(nxt.get("source_id"), nst, new_st)
+                nxt["start"] = new_st
+                nxt["quiet_start"] = True
+                nxt.pop("hard_lo", None)
+                cut.append("dau doan sau %.2fs" % (new_st - nst))
         if cut and changes is not None:
-            changes.append("%s%d: siet khoang nghi o cho noi %.2fs -> cat %s" % (label, i, tail + head, ", ".join(cut)))
+            changes.append("%s%d: siet khoang nghi %s %.2fs -> cat %s" % (
+                label, i, "o cho noi" if nxt is not None else "cuoi video", tail + head, ", ".join(cut)))
     # dau video (doan dau tien)
-    if body and au_of.get(id(body[0])) is not None and au_of[id(body[0])].thr is not None:
-        s0 = body[0]
-        q1 = au_of[id(s0)].quiet_end(float(s0["start"]) + 0.02)
-        w0 = spoken(s0.get("source_id"), float(s0["start"]), float(s0["end"]))
+    if body and au_of.get(id(body[0])) is not None:
+        s0, au = body[0], au_of[id(body[0])]
+        st0 = float(s0["start"])
+        q1 = au.quiet_end(st0 + 0.02)
+        w0 = _spoken(words, s0.get("source_id"), st0, float(s0["end"]))
         if q1 is not None and w0:
             q1 = min(q1, w0[0][2] - 0.05)
-        if q1 is not None and q1 - float(s0["start"]) > max_pause and float(s0["end"]) - (q1 - EDGE_KEEP_HEAD) >= MIN_PIECE:
-            if changes is not None:
-                changes.append("%s0: bo %.2fs lang dau video" % (label, q1 - float(s0["start"]) - EDGE_KEEP_HEAD))
-            s0["start"] = round(q1 - EDGE_KEEP_HEAD, 3)
-            s0["quiet_start"] = True
-    # 2) khoang lang GIUA doan
+        if q1 is not None and q1 - st0 > max_pause:
+            new_st = round(max(st0, au.sound_start(q1, soft=au.soft_in(st0, q1)) - CUT_HEAD_KEEP), 3)
+            if new_st - st0 >= 0.03 and float(s0["end"]) - new_st >= MIN_PIECE:
+                if changes is not None:
+                    changes.append("%s0: bo %.2fs lang dau video" % (label, new_st - st0))
+                note(s0.get("source_id"), st0, new_st)
+                s0["start"] = new_st
+                s0["quiet_start"] = True
+                s0.pop("hard_lo", None)
+    # 2) khoang lang GIUA doan (theo thu tu timeline: manh dau / cuoi qua ngan duoc GOP vao doan ben canh noi lien
+    #    trong nguon — chuan_hoa_segments bo moi doan < 0.2s, tach rieng la MAT duoi am; do that 2026-10-01)
+    def lien(a, b):
+        return (a.get("source_id") == b.get("source_id") and abs(float(a["end"]) - float(b["start"])) < CONTIG
+                and abs(float(a.get("speed", 1) or 1) - float(b.get("speed", 1) or 1)) < 1e-6)
+    res = {}
+    for i, s in enumerate(body):
+        au = au_of.get(id(s))
+        if au is None:
+            continue
+        st, en = float(s["start"]), float(s["end"])
+        prv = body[i - 1] if i > 0 and lien(body[i - 1], s) else None
+        nxt = body[i + 1] if i + 1 < len(body) and lien(s, body[i + 1]) else None
+        acc = _split_middle(s, au, _spoken(words, s.get("source_id"), st, en), max_pause, prv is not None, nxt is not None)
+        if not acc:
+            continue
+        for lo, hi in acc:
+            note(s.get("source_id"), lo, hi)
+        if prv is not None and acc[0][0] - st < MIN_PIECE:
+            last = (res.get(id(prv)) or [prv])[-1]           # manh dau ngan -> noi vao cuoi doan truoc
+            last["end"], last["quiet_end"] = acc[0][0], True
+            last.pop("hard_hi", None)
+            s["start"], s["quiet_start"] = acc[0][1], True
+            s.pop("hard_lo", None)
+            acc = acc[1:]
+        if nxt is not None and acc and en - acc[-1][1] < MIN_PIECE:
+            nxt["start"], nxt["quiet_start"] = acc[-1][1], True   # manh cuoi ngan -> doan sau bat dau som hon
+            nxt.pop("hard_lo", None)
+            s["end"], s["quiet_end"] = acc[-1][0], True
+            s.pop("hard_hi", None)
+            acc = acc[:-1]
+        res[id(s)] = _pieces(s, acc) if acc else [s]
+        if changes is not None:
+            changes.append("%s %.2f-%.2f: siet khoang nghi giua doan (%s)" % (
+                label, st, en, ", ".join("%.2fs@%.2f" % (hi - lo, lo) for lo, hi in
+                                          [x for x in au.quiet_runs(st + 0.1, en - 0.1, max_pause)])))
     out = []
     for s in segs:
-        if not isinstance(s, dict) or s.get("kind") in ("insert", "hook") or au_of.get(id(s)) is None:
+        out.extend(res.get(id(s)) or [s])
+    return out
+
+
+def split_quiet(plan, seg, max_pause, changes=None, label="hook"):
+    """Mot doan dung RIENG (ban sao hook o dau video): khoang lang that > max_pause ben trong -> tach thanh
+    nhieu manh lien tiep (cung kind). Tra [manh...] (it nhat 1)."""
+    sid = seg.get("source_id")
+    words = words_by_source(plan)
+    st, en = float(seg["start"]), float(seg["end"])
+    sw = _spoken(words, sid, st, en)
+    if not sw or not max_pause:
+        return [seg]
+    au = _audio_for(plan, sid, {})
+    if au.thr is None:
+        return [seg]
+    acc = _split_middle(seg, au, sw, max_pause)
+    if not acc:
+        return [seg]
+    if changes is not None:
+        changes.append("%s %.2f-%.2f: siet %d khoang nghi (%s)" % (
+            label, st, en, len(acc), ", ".join("%.2fs@%.2f" % (hi - lo, lo) for lo, hi in acc)))
+    return _pieces(seg, acc)
+
+
+# ----------------------------------------------------------------------------
+# NOI LAP LIEN KE: vap roi noi lai ngay ("cái này... cái này là") -> bo lan dau
+# ----------------------------------------------------------------------------
+RESTART_MIN, RESTART_MAX = 2, 8      # cum lap 2-8 chu (1 chu 'rất rất' co the la nhan manh -> giu)
+RESTART_GAP = 0.15                   # giua lan dau va lan noi lai phai co khoang lang that >= 0.15s (vap)
+RESTART_SPAN = 6.0
+
+
+def _restart_at(sw, toks, au, i, st):
+    """Lan noi lai bat dau o chu i? Tra (cat_tu, cat_den, k, cum) hoac None. Chi khi CA HAI diem cat roi vao
+    khoang lang that (khong mat tieng)."""
+    for k in range(RESTART_MAX, RESTART_MIN - 1, -1):
+        A = toks[i:i + k]
+        if len(A) < k or not all(A) or sum(len(x) for x in A) < 6 or all(x in _EDGE_FILL for x in A):
+            continue
+        j = i + k
+        while j < len(toks) and j - (i + k) < 2 and toks[j] in _EDGE_FILL:
+            j += 1                                          # 'cái này ờ cái này'
+        B = toks[j:j + k]
+        if len(B) < k or not all(_tok_eq(x, y) for x, y in zip(A, B)):
+            continue
+        a0, b0 = sw[i][1], sw[j][1]
+        if b0 - a0 > RESTART_SPAN:
+            continue
+        gap = [r for r in au.quiet_runs(sw[i + k - 1][1], b0 + 0.1, RESTART_GAP) if r[1] >= b0 - 0.15]
+        if not gap:
+            continue                                        # noi lien khong ngap ngung = nhan manh co chu y
+        hi = round(au.sound_start(gap[-1][1]) - CUT_HEAD_KEEP, 3)
+        if a0 - st < 0.15:
+            lo = st                                         # lan dau nam ngay dau doan -> chi cat dau doan
+        else:
+            pre = [r for r in au.quiet_runs(max(st, a0 - 0.6), a0 + 0.1, 0.06) if r[1] >= a0 - 0.15]
+            if not pre:
+                continue                                    # truoc lan dau dang noi lien -> cat se mat tieng
+            lo = round(au.sound_end(pre[-1][0]) + CUT_TAIL_KEEP, 3)
+        if hi - lo >= 0.2:
+            return lo, hi, j - i, " ".join(w[0] for w in sw[i:i + k])
+    return None
+
+
+def cut_restarts(plan, segs, changes=None, label="seg", removed=None):
+    """Nguoi noi VAP roi noi lai ngay cung cum 2-8 chu (co ngap ngung >= 0.15s o giua) -> bo lan dau, giu lan
+    noi lai. Diem cat nam trong khoang lang that o ca hai dau (do bang am thanh) -> khong mat tieng. Cau lap xa
+    hon / dai hon do B1 + `providers.bo_lap_trong_video` lo."""
+    words = words_by_source(plan)
+    if not words or not segs:
+        return segs
+    audios, out = {}, []
+    for s in segs:
+        if not isinstance(s, dict) or s.get("kind") in ("insert", "hook") or not words.get(s.get("source_id")):
             out.append(s)
             continue
-        au = au_of[id(s)]
+        sid = s.get("source_id")
         st, en = float(s["start"]), float(s["end"])
-        sw = spoken(s.get("source_id"), st, en)
-        acc, left = [], st
-        for a, b in au.quiet_runs(st + 0.15, en - 0.15, max_pause):
-            # lang GIUA loi noi: co chu truoc va sau (khong cat doan nhac / b-roll o dau hay cuoi doan)
-            if not (any(w[1] < a for w in sw) and any(w[2] > b for w in sw)):
-                continue
-            if (a + PAUSE_KEEP) - left >= MIN_PIECE and en - (b - PAUSE_KEEP) >= MIN_PIECE:
-                acc.append((a, b))
-                left = b - PAUSE_KEEP
+        sw = [w for w in words[sid] if w[1] >= st - 0.02 and w[2] <= en + 0.05]
+        try:
+            au = _audio_for(plan, sid, audios)
+        except Exception:
+            au = None
+        if au is None or au.thr is None or len(sw) < 2 * RESTART_MIN:
+            out.append(s)
+            continue
+        toks = [" ".join(_norm(w[0])) for w in sw]
+        acc, i, left = [], 0, st
+        while i < len(sw):
+            hit = _restart_at(sw, toks, au, i, st)
+            if hit and (hit[0] == st or hit[0] - left >= MIN_PIECE) and en - hit[1] >= MIN_PIECE:
+                acc.append(hit)
+                left = hit[1]
+                i += hit[2]
+            else:
+                i += 1
         if not acc:
             out.append(s)
             continue
-        base = float(s.get("scale", 1.0) or 1.0)
-        bounds = [st] + [x for a, b in acc for x in (a + PAUSE_KEEP, b - PAUSE_KEEP)] + [en]
-        ts = float(s.get("target_start") or 0)
-        for k in range(len(acc) + 1):
-            p = dict(s)
-            p["start"], p["end"] = round(bounds[2 * k], 3), round(bounds[2 * k + 1], 3)
-            p["target_start"] = round(ts, 3)
-            ts += (p["end"] - p["start"]) / float(p.get("speed", 1.0) or 1.0)
-            if k > 0:
-                p["quiet_start"] = True
-                p.pop("hard_lo", None)
-                # jump-cut: doi khung nhe o moi cho cat de khong thay giat hinh
-                p["scale"] = round(base + 0.08 if k % 2 else base, 2) if base <= 1.3 else round(base - 0.08 if k % 2 else base, 2)
-            if k < len(acc):
-                p["quiet_end"] = True
-                p.pop("hard_hi", None)
-            out.append(p)
-        if changes is not None:
-            changes.append("%s %.2f-%.2f: siet %d khoang nghi giua doan (%s)" % (
-                label, st, en, len(acc), ", ".join("%.2fs@%.2f" % (b - a, a) for a, b in acc)))
+        cur = dict(s)
+        if acc[0][0] <= st + 1e-6:                          # lan dau o ngay dau doan -> chi doi dau doan
+            lo, hi, _k, txt = acc.pop(0)
+            cur["start"], cur["quiet_start"] = hi, True
+            cur.pop("hard_lo", None)
+            if removed is not None:
+                removed.append((sid, st, hi))
+            if changes is not None:
+                changes.append("%s %.2f-%.2f: bo lan noi vap '%s' (%.2fs) o dau doan" % (label, st, en, txt, hi - st))
+        pieces = _pieces(cur, [(lo, hi) for lo, hi, _k, _t in acc]) if acc else [cur]
+        for lo, hi, _k, txt in acc:
+            if removed is not None:
+                removed.append((sid, lo, hi))
+            if changes is not None:
+                changes.append("%s %.2f-%.2f: bo lan noi vap '%s' %.2f-%.2f" % (label, st, en, txt, lo, hi))
+        out.extend(pieces)
     return out
+
+
+def follow_removed(plan, removed, changes=None):
+    """Moc DIEM (meme chen, SFX) nam trong khoang vua bi cat bo -> dat o mep cat (cho noi tren timeline)."""
+    if not removed:
+        return plan
+    for key in ("inserts", "audio"):
+        for n, it in enumerate(plan.get(key) or []):
+            if not isinstance(it, dict) or it.get("src_time") is None or (it.get("role") or "") == "bgm":
+                continue
+            try:
+                t = float(it["src_time"])
+            except (TypeError, ValueError):
+                continue
+            for sid, a, b in removed:
+                if (not it.get("source_id") or it.get("source_id") == sid) and a + 1e-3 < t < b - 1e-3:
+                    it["src_time"] = round(a, 3)
+                    if changes is not None:
+                        changes.append("%s%d: moc %.2f nam trong khoang da cat -> mep cat %.2f" % (key, n, t, a))
+                    break
+    return plan
+
+
+def quiet_point(plan, sid, t, reach=0.8):
+    """Diem nam TRONG khoang lang that gan `t` nhat — de cat ngang chen meme: dang co tieng -> uu tien cho tieng
+    TAT ngay sau (chu dang noi duoc noi het), khong thi khoang lang ngay truoc; duoi am giu tron (nguong mem).
+    Da o trong lang (sau duoi am) -> giu nguyen `t` (on dinh). Khong co lang trong `reach` -> None."""
+    au = _audio_for(plan, sid, {})
+    if au.thr is None:
+        return None
+    q0 = au.quiet_start(t)
+    if q0 is not None:
+        q1 = au.quiet_end(t)
+        lo = min(au.sound_end(q0) + CUT_TAIL_KEEP, (q0 + q1) / 2.0)
+        return round(t if t >= lo - 1e-3 else lo, 3)
+    cands = []
+    after = au.quiet_runs(t, t + reach, 0.08)
+    if after:
+        cands.append((after[0][0] - t, after[0]))
+    before = au.quiet_runs(max(0.0, t - reach), t, 0.08)
+    if before:
+        cands.append((t - before[-1][1], before[-1]))
+    if not cands:
+        return None
+    a, b = min(cands)[1]
+    return round(min(au.sound_end(a) + CUT_TAIL_KEEP, (a + b) / 2.0), 3)
+
+
+# ----------------------------------------------------------------------------
+# KIEM LAI tren timeline (sau moi buoc cat)
+# ----------------------------------------------------------------------------
+def _edge_kind(ws, t, side):
+    """Mep cat tai `t` dang co tieng: 'giua_chu' (nam TRONG chu Whisper) | 'noi_lien' (ranh gioi hai chu noi lien
+    khong co khoang lang — cat o cho nho tieng nhat la tot nhat co the, chu duoc giu van tron) | 'duoi_am' (tieng
+    keo dai sau chu cuoi / truoc chu dau ma Whisper khong tinh vao chu: duoi am, hoi xuong giong -> phai giu)."""
+    if any(w[1] + 0.05 < t < w[2] - 0.05 for w in ws):
+        return "giua_chu"
+    if side == "end":
+        prv = [w for w in ws if w[2] <= t + 0.05]
+        nxt = [w for w in ws if w[1] >= t - 0.05]
+        if prv and nxt and t - prv[-1][2] <= 0.08 and nxt[0][1] - t <= 0.1:
+            return "noi_lien"
+    else:
+        prv = [w for w in ws if w[2] <= t + 0.05]
+        nxt = [w for w in ws if w[1] >= t - 0.05]
+        if prv and nxt and nxt[0][1] - t <= 0.08 and t - prv[-1][2] <= 0.1:
+            return "noi_lien"
+    return "duoi_am"
+
+
+def _tail_end(au, t, limit=0.35):
+    """Duoi am dang keo o `t` -> gio cat sau khi tieng tat (nguong mem; nen nhac / on lam nguong mem khong toi
+    duoc thi lay khoang lang theo nguong chinh) + dem. None neu tieng van con qua `limit`."""
+    e = au.sound_end(t, limit)
+    if e < t + limit - 1e-6:
+        return round(e + CUT_TAIL_KEEP, 3)
+    runs = au.quiet_runs(t, t + limit, 0.04)
+    return round(runs[0][0] + CUT_TAIL_KEEP, 3) if runs else None
+
+
+def audit_cuts(plan, segs, max_pause, changes=None, fix=True, label="seg"):
+    """KIEM LAI timeline (theo thu tu target_start, gom hook): (1) khoang lang nguoi xem nghe thay > max_pause
+    (+ AUDIT_TOL), (2) mep cat roi vao TIENG (cat cut duoi am / vao giua tieng). fix=True: mep cat roi vao duoi am
+    -> keo toi khi tieng tat han / lui ve dau am (chi khi khong chen them chu khac, khong de len doan nguon khac).
+    Tra {"im_lang": [...], "cat_vao_tieng": [...], "da_sua": n} (moi muc la chuoi mo ta, gio timeline)."""
+    rep = {"im_lang": [], "cat_vao_tieng": [], "da_sua": 0}
+    words = words_by_source(plan)
+    if not words or not segs:
+        return rep
+    srcs = {sv.get("id") for sv in plan.get("source_videos") or [] if isinstance(sv, dict)}
+    audios = {}
+    order = sorted([s for s in segs if isinstance(s, dict)], key=lambda s: float(s.get("target_start") or 0))
+
+    def au_of(s):
+        sid = s.get("source_id")
+        if s.get("kind") == "insert" or sid not in srcs or not words.get(sid):
+            return None
+        try:
+            au = _audio_for(plan, sid, audios)
+        except Exception:
+            return None
+        return au if au.thr is not None else None
+
+    def same(a, b):
+        return (b is not None and b.get("kind") != "insert" and a.get("source_id") == b.get("source_id")
+                and abs(float(a.get("speed", 1) or 1) - float(b.get("speed", 1) or 1)) < 1e-6)
+
+    def tl(s, t):
+        return float(s.get("target_start") or 0) + (t - float(s["start"])) / float(s.get("speed", 1.0) or 1.0)
+
+    body = [s for s in order if s.get("kind") not in ("insert", "hook")]
+    for i, s in enumerate(order):
+        au = au_of(s)
+        if au is None:
+            continue
+        sid, ws = s.get("source_id"), words.get(s.get("source_id")) or []
+        st, en = float(s["start"]), float(s["end"])
+        prv = order[i - 1] if i > 0 else None
+        nxt = order[i + 1] if i + 1 < len(order) else None
+        c_prev = same(s, prv) and abs(float(prv["end"]) - st) < CONTIG
+        c_next = same(s, nxt) and abs(en - float(nxt["start"])) < CONTIG
+        others = [o for o in body if o is not s and o.get("source_id") == sid] if s.get("kind") != "hook" else []
+        # doan nguon DANG DUNG o cho khac: chan cung (tranh lap tieng). hard_hi / hard_lo (phan B1 da bo): duoi am cua
+        # chu cuoi duoc vuot TAIL_PAST_HARD (do that 2026-10-01: 'Shigen' keu toi 55.17, doan bi chan o hard_hi 55.03
+        # -> mat 0.14s cuoi chu); vuot nhieu hon se lay tieng cua phan da bo (tieng 'ờ' sau 38.15).
+        lim_hi = min([float(o["start"]) for o in others if float(o["start"]) >= en - 1e-3] or [float("inf")])
+        lim_lo = max([float(o["end"]) for o in others if float(o["end"]) <= st + 1e-3] or [0.0])
+        if s.get("hard_hi") is not None:          # duoc vuot it thoi (duoi am), khong toi tieng cua phan da bo
+            lim_hi = min(lim_hi, max(en, float(s["hard_hi"])) + TAIL_PAST_HARD)
+        if s.get("hard_lo") is not None:
+            lim_lo = max(lim_lo, min(st, float(s["hard_lo"])) - TAIL_PAST_HARD)
+        # (2a) cuoi doan cat vao tieng
+        if not c_next and au.loud_at(en - 0.025, en - 0.005):    # cat dung chuan = het tieng + 30ms -> 25ms cuoi lang
+            kind_, new = _edge_kind(ws, en, "end"), None
+            if kind_ == "duoi_am":
+                new = _tail_end(au, en)
+                chen = [w for w in ws if en + 0.02 < w[1] < new] if new is not None else True
+                if fix and new is not None and not chen and new <= lim_hi + 1e-3:
+                    s["end"], s["quiet_end"] = new, True
+                    rep["da_sua"] += 1
+                    if changes is not None:
+                        changes.append("%s %.2f: kiem lai — cuoi doan cat vao duoi am -> keo toi %.2f (tieng tat han)"
+                                       % (label, en, new))
+                    en = new
+                    kind_ = None
+            if kind_ in ("giua_chu", "duoi_am"):
+                rep["cat_vao_tieng"].append("%.2fs: cuối đoạn nguồn %.2fs %s" % (
+                    tl(s, en), en, "cắt giữa chữ" if kind_ == "giua_chu" else "còn tiếng"))
+        # (2b) dau doan vao giua tieng
+        if not c_prev and st >= 0.05 and au.loud_at(st - 0.04, st - 0.005) and au.loud_at(st, st + 0.03):
+            kind_ = _edge_kind(ws, st, "start")
+            if kind_ == "duoi_am":
+                new = round(au.sound_start(st, 0.25) - CUT_HEAD_KEEP, 3)
+                chen = [w for w in ws if new < w[2] < st - 0.05]
+                if fix and not chen and st - new <= 0.31 and new >= lim_lo - 1e-3 and new >= 0:
+                    s["start"], s["quiet_start"] = new, True
+                    rep["da_sua"] += 1
+                    if changes is not None:
+                        changes.append("%s %.2f: kiem lai — dau doan vao giua tieng -> lui ve %.2f (dau am)" % (label, st, new))
+                    st = new
+                    kind_ = None
+            if kind_ in ("giua_chu", "duoi_am"):
+                rep["cat_vao_tieng"].append("%.2fs: đầu đoạn nguồn %.2fs %s" % (
+                    tl(s, st), st, "cắt giữa chữ" if kind_ == "giua_chu" else "vào giữa tiếng"))
+        # (1) lang nghe thay: giua doan
+        for a, b in au.quiet_runs(st + 0.05, en - 0.05, max_pause + AUDIT_TOL):
+            if au.has_sound(st, a - 0.01) and au.has_sound(b + 0.01, en):
+                rep["im_lang"].append("%.2fs: lặng %.2fs giữa đoạn (nguồn %.2f)" % (tl(s, a), b - a, a))
+        # (1) lang nghe thay: cho noi sang doan sau (duoi + dau)
+        q0 = au.quiet_start(en - 0.02)
+        tail = (en - max(st, q0)) if q0 is not None else 0.0
+        head = 0.0
+        nau = au_of(nxt) if nxt is not None else None
+        if nau is not None:
+            q1 = nau.quiet_end(float(nxt["start"]) + 0.02)
+            head = max(0.0, min(float(nxt["end"]), q1) - float(nxt["start"])) if q1 is not None else 0.0
+        lim = max_pause if nxt is not None else END_KEEP
+        if tail + head > lim + AUDIT_TOL and (tail > 0.05 or head > 0.05):
+            rep["im_lang"].append("%.2fs: lặng %.2fs %s" % (tl(s, en) - tail, tail + head,
+                                                           "ở chỗ nối hai đoạn" if nxt is not None else "cuối video"))
+    return rep
 
 
 def follow_anchors(plan, moves, changes=None):
@@ -992,3 +1481,106 @@ def snap_layers(plan, changes=None):
         if changes is not None:
             changes.append("audio%d %s: doi theo lop chu %.2f -> %.2f (gio nguon)" % (n, au.get("sfx_id"), t, nt))
     return plan
+
+
+# ----------------------------------------------------------------------------
+# DO TO KHI PHAT (LUFS momentary) — can SFX theo GIONG NOI cua chinh video (2026-10-01)
+# ----------------------------------------------------------------------------
+# User: "am thanh khi chu hien ra dang qua to, phai dong bo voi tang am thanh cua ca video (video tieng nho
+# ma SFX lai to)". SFX truoc day can theo muc TUYET DOI (-9..-18 LUFS, gia dinh giong noi ~-12) + san volume
+# 0.2 -> video thu am nho (giong -30) thi SFX to hon giong 15-20 dB. Gio do CA HAI bang cung mot thuoc:
+# ebur128 momentary (cua so 400ms) tren tieng da DOI SANG STEREO (giong luc render: file mono phat ra 2 loa).
+LOUD_HOP = 0.1
+_loud_cache = {}
+
+
+def loudness_series(path):
+    """Mang do to MOMENTARY (LUFS) moi 0.1s cua am thanh file khi phat stereo, hoac None. Cache dia + RAM."""
+    try:
+        import numpy as np
+    except ImportError:
+        return None
+    if not path or not os.path.isfile(path):
+        return None
+    try:
+        key = _src_key(path) + "-m2"
+    except OSError:
+        return None
+    with _lock:
+        if key in _loud_cache:
+            return _loud_cache[key]
+    cp = os.path.join(CACHE_DIR, key + ".npy")
+    arr = None
+    if os.path.isfile(cp):
+        try:
+            arr = np.load(cp)
+        except (OSError, ValueError):
+            arr = None
+    if arr is None:
+        import remotion_plan
+        try:
+            r = subprocess.run([remotion_plan._ffbin("ffmpeg"), "-v", "error", "-i", path, "-vn", "-af",
+                                # apad: SFX ngan hon cua so 400ms thi ebur128 khong ra so nao (do that: 'Pop SFX')
+                                "aformat=sample_rates=48000:channel_layouts=stereo,apad=pad_dur=0.5,ebur128=metadata=1,"
+                                "ametadata=mode=print:key=lavfi.r128.M:file=-", "-f", "null", "-"],
+                               capture_output=True, text=True, timeout=600)
+        except (OSError, subprocess.SubprocessError):
+            return None
+        vals = [float(x) for x in re.findall(r"lavfi\.r128\.M=(-?[\d.]+|-inf)", r.stdout or "") if x != "-inf"]
+        if not vals:
+            return None
+        arr = np.array(vals, dtype=np.float32)
+        try:
+            os.makedirs(CACHE_DIR, exist_ok=True)
+            np.save(cp, arr)
+        except OSError:
+            pass
+    with _lock:
+        _loud_cache[key] = arr
+    return arr
+
+
+def playback_lufs(path, t0=0.0, t1=None):
+    """Muc to MANH NHAT (momentary max, LUFS) cua file trong [t0, t1] khi phat — thuoc do cua SFX / meme."""
+    import numpy as np
+    arr = loudness_series(path)
+    if arr is None:
+        return None
+    i0 = max(0, int(t0 / LOUD_HOP))
+    i1 = len(arr) if t1 is None else min(len(arr), int(np.ceil(t1 / LOUD_HOP)) + 4)   # cua so 400ms tre 4 khung
+    v = arr[i0:i1]
+    v = v[v > -70]
+    return round(float(v.max()), 1) if v.size else None
+
+
+def voice_level(plan):
+    """Muc to GIONG / TIENG CHINH cua video (LUFS momentary): phan vi 90 cua cac khung CO TIENG trong nhung doan
+    nguon thuc su duoc dung (than video + hook), nhan volume cua doan. None neu khong do duoc."""
+    import numpy as np
+    paths = _src_paths(plan)
+    vals = []
+    for s in plan.get("segments") or []:
+        if not isinstance(s, dict) or s.get("kind") == "insert":
+            continue
+        arr = loudness_series(paths.get(s.get("source_id")))
+        if arr is None:
+            continue
+        try:
+            st, en = float(s["start"]), float(s["end"])
+            vol = float(s.get("volume", 1.0) if s.get("volume") is not None else 1.0)
+        except (KeyError, TypeError, ValueError):
+            continue
+        if vol <= 0.01 or en <= st:
+            continue
+        # M o khung k = cua so 400ms ket thuc o (k+1)*0.1 -> lay khung trong [st+0.3, en]
+        v = arr[int((st + 0.3) / LOUD_HOP):int(en / LOUD_HOP) + 1]
+        if v.size:
+            vals.append(v + 20.0 * np.log10(min(1.0, vol)))
+    if not vals:
+        return None
+    x = np.concatenate(vals)
+    x = x[x > -60]
+    if x.size < 10:
+        return None
+    x = x[x >= float(np.percentile(x, 95)) - 20.0]      # bo khoang lang / tieng nen
+    return round(float(np.percentile(x, 90)), 1)

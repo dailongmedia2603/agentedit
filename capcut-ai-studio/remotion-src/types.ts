@@ -22,6 +22,10 @@ export interface RSClip {
   /** cover = phu kin khung; blur = giu tron khung hinh, lap phan thua bang nen mo */
   fit: 'cover' | 'blur'
   scale: number // phong them tren nen fit (1 = khong)
+  /** ZOOM MUOT: clip bat dau o muc zoom nay (= muc clip truoc dang giu) roi ease in-out toi `scale` trong
+   *  `zoomDur` giay — khong bao gio nhay zoom o diem cat (sidecar remotion_plan._smooth_zoom). */
+  zoomFrom?: number
+  zoomDur?: number
   x: number // lech ngang, phan so cua canvas (-1..1)
   y: number
   /** Chuyen canh SANG clip ke tiep, nam giua diem cat `end`. */
@@ -272,6 +276,8 @@ export interface RSAudio {
   srcEnd: number | null
   role: 'sfx' | 'bgm'
   name?: string
+  /** do to khi phat so voi giong noi cua video (dB) — SFX da can theo giong (plan_guard.mix_sfx) */
+  rel?: number | null
 }
 
 export interface RSOverlay {

@@ -409,10 +409,12 @@ check("muc manh + AI khong tra loi -> du phong du 3 nhip, khong dung im qua 1.5s
       (pl["scene_effects"], hook_rule.check(sp, "manh", pl)["yeu"]))
 
 # siet khoang nghi
-print("\n[7] Siet khoang nghi theo nhip video")
-check("nhip: nhanh 0.30 / thuong 0.45 / nhe 0.75",
-      SC.pause_limit({"edit_request": {"style": "nhanh, vui"}}) == 0.30 and SC.pause_limit({"tone": "chia sẻ"}) == 0.45
-      and SC.pause_limit({"tone": "tâm sự nhẹ nhàng"}) == 0.75)
+print("\n[7] Siet khoang nghi — LUAT CUNG 2026-10-01 (moi khoang lang deu cat, cat khong mat tieng)")
+check("nhip: nhanh 0.22 / thuong 0.28 / nhe 0.40",
+      SC.pause_limit({"edit_request": {"style": "nhanh, vui"}}) == 0.22 and SC.pause_limit({"tone": "chia sẻ"}) == 0.28
+      and SC.pause_limit({"tone": "tâm sự nhẹ nhàng"}) == 0.40)
+check("plan cu khong co pause_limit -> theo tone da luu; gia tri la bi kep",
+      SC.plan_pause_limit({"_pipeline": {"tone": "vui"}}) == 0.22 and SC.plan_pause_limit({"pause_limit": 0.75}) == 0.40)
 W9 = [("một", 10.0, 10.3), ("hai", 10.3, 10.6), ("ba", 11.4, 11.7), ("bốn", 11.7, 12.0), ("năm", 12.8, 13.1), ("sáu", 13.1, 13.4)]
 db9 = np.full(int(40 / SC.HOP) + 1, -60.0, dtype=np.float32)
 for a, b in ((10.0, 10.62), (11.4, 12.02), (12.8, 13.42), (14.3, 15.0)):
@@ -422,17 +424,78 @@ SC.energy = lambda path: db9
 p9 = plan_of(W9, [])
 segs9 = [seg(9.9, 13.6, 0.0, scale=1.1), seg(13.6, 15.1, 3.7)]
 ch = []
-out9 = SC.tighten_pauses(p9, copy.deepcopy(segs9), 0.30, ch)
-check("khoang lang 0.78s giua doan -> tach doan, giu 80ms moi ben; doan sau doi khung (jump-cut)",
-      len(out9) >= 3 and abs(out9[0]["end"] - (10.62 + 0.08)) < 0.02 and abs(out9[1]["start"] - (11.4 - 0.08)) < 0.02
-      and out9[1]["scale"] != out9[0]["scale"], [(s["start"], s["end"], s.get("scale")) for s in out9])
+out9 = SC.tighten_pauses(p9, copy.deepcopy(segs9), 0.28, ch)
+check("khoang lang 0.78s giua doan -> tach doan, giu 60ms sau tieng / 50ms truoc tieng; KHONG doi khung (khong zoom giat)",
+      len(out9) >= 3 and abs(out9[0]["end"] - (10.62 + 0.06)) < 0.02 and abs(out9[1]["start"] - (11.4 - 0.05)) < 0.02
+      and out9[1]["scale"] == out9[0]["scale"] == 1.1, [(s["start"], s["end"], s.get("scale")) for s in out9])
 check("cho noi 2 doan (duoi 0.18s + dau 0.7s lang) -> cat", any("cho noi" in c for c in ch)
-      and abs(out9[-1]["start"] - (14.3 - 0.06)) < 0.02, (ch, out9[-1]))
+      and abs(out9[-1]["start"] - (14.3 - 0.05)) < 0.02, (ch, out9[-1]))
+check("cuoi video: lang sau tieng cuoi chi giu 0.2s", abs(out9[-1]["end"] - min(15.1, 15.0 + SC.END_KEEP)) < 0.02, out9[-1])
 ch2 = []
 SC.fix_segment_cuts(p9, out9, ch2)
 check("cat an toan chay lai khong noi lai khoang nghi (on dinh)", not ch2, ch2)
-out_slow = SC.tighten_pauses(p9, copy.deepcopy(segs9), 0.75, [])
-check("tone nhe (giu toi 0.75s) -> khoang 0.78s van cat, khoang ngan hon giu", len(out_slow) >= 2)
+again = SC.tighten_pauses(p9, copy.deepcopy(out9), 0.28, [])
+check("siet lai lan 2 khong doi gi (on dinh)", [(s["start"], s["end"]) for s in again] == [(s["start"], s["end"]) for s in out9],
+      [(s["start"], s["end"]) for s in again])
+out_slow = SC.tighten_pauses(p9, copy.deepcopy(segs9), 0.40, [])
+check("tone nhe (giu toi 0.40s) -> khoang 0.78s van cat", len(out_slow) >= 2)
+kq = SC.audit_cuts(p9, out9, 0.28)
+check("kiem lai sau khi siet: khong con lang dai, khong mep cat nao roi vao tieng",
+      not kq["im_lang"] and not kq["cat_vao_tieng"], kq)
+kq0 = SC.audit_cuts(p9, copy.deepcopy(segs9), 0.28, fix=False)
+check("kiem lai ban CHUA siet -> bao dung cac khoang lang (giua doan + cho noi)", len(kq0["im_lang"]) >= 3, kq0)
+
+# duoi am NHO (phu am cuoi / hoi xuong giong): duoi nguong chinh nhung van la tieng -> khong duoc cat mat
+dbt = db9[:int(16 / SC.HOP)].copy()                                          # 16s: tieng noi > 10% -> nguong that
+dbt[int(round(10.62 / SC.HOP)):int(round(10.80 / SC.HOP))] = -50.0          # duoi am nho 0.18s sau 'hai'
+SC.energy = lambda path: dbt
+au_t = SC.Audio(dbt)
+check("nguong mem nam giua nen va nguong chinh; duoi am -50 dB: duoi nguong chinh, tren nguong mem",
+      au_t.soft < -50.0 < au_t.thr, (au_t.soft, au_t.thr))
+out_t = SC.tighten_pauses(p9, copy.deepcopy(segs9), 0.28, [])
+check("duoi am nho 10.62-10.80 duoc phat HET (cat sau 10.80 + 60ms)", abs(out_t[0]["end"] - (10.80 + 0.06)) < 0.02,
+      [(s["start"], s["end"]) for s in out_t])
+SC.energy = lambda path: db9
+
+# doan ket thuc GIUA tieng (duoi am bi cup) -> kiem lai keo toi khi tieng tat han
+cup = [seg(9.9, 10.55, 0.0), seg(11.35, 12.1, 0.65)]
+chc = []
+kc = SC.audit_cuts(p9, cup, 0.28, chc)
+check("mep cat roi vao duoi am -> tu keo toi het tieng (10.62 + 60ms)", abs(cup[0]["end"] - 10.68) < 0.02 and kc["da_sua"] >= 1
+      and not kc["cat_vao_tieng"], (cup, kc, chc))
+cup2 = [seg(9.9, 10.15, 0.0), seg(11.35, 12.1, 0.25)]
+kc2 = SC.audit_cuts(p9, cup2, 0.28, [])
+check("mep cat giua chu, keo ra se chen chu moi -> KHONG tu sua, bao ro", cup2[0]["end"] == 10.15 or kc2["cat_vao_tieng"],
+      (cup2, kc2))
+
+# hook (ban sao dat len dau) cung bi siet khoang lang ben trong
+hk = dict(seg(10.0, 12.02, 0.0), kind="hook", transition="flash")
+pcs = SC.split_quiet(p9, hk, 0.28)
+check("hook co lang 0.78s ben trong -> 2 manh kind hook lien tiep",
+      len(pcs) == 2 and all(x["kind"] == "hook" for x in pcs) and abs(pcs[0]["end"] - 10.68) < 0.02
+      and abs(pcs[1]["start"] - 11.35) < 0.02, pcs)
+
+print("\n[8] Noi vap lap lai ngay ('cái này... cái này là') -> bo lan dau, khong mat tieng")
+W10 = [("Cái", 20.0, 20.2), ("này", 20.2, 20.5), ("cái", 21.0, 21.2), ("này", 21.2, 21.5), ("là", 21.5, 21.7),
+       ("tốt", 21.7, 22.0), ("lắm", 22.0, 22.4), ("từng", 23.0, 23.2), ("bước", 23.2, 23.5), ("từng", 23.5, 23.7),
+       ("bước", 23.7, 24.0), ("một", 24.0, 24.4)]
+db10 = np.full(int(40 / SC.HOP) + 1, -60.0, dtype=np.float32)
+for a, b in ((19.0, 19.6), (20.0, 20.52), (21.0, 22.42), (23.0, 24.42)):
+    db10[int(round(a / SC.HOP)):int(round(b / SC.HOP))] = -20.0
+W10 = [("Mở", 19.0, 19.6)] + W10
+SC.energy = lambda path: db10
+p10 = plan_of(W10, [])
+rm, ch10 = [], []
+o10 = SC.cut_restarts(p10, [seg(18.9, 24.5, 0.0)], ch10, removed=rm)
+check("bo lan dau 'Cái này' (vap, lang 0.48s roi noi lai) — cat trong khoang lang hai dau",
+      len(o10) == 2 and abs(o10[0]["end"] - (19.6 + 0.06)) < 0.02 and abs(o10[1]["start"] - (21.0 - 0.05)) < 0.02,
+      ([(s["start"], s["end"]) for s in o10], ch10))
+check("'từng bước từng bước' noi lien (nhan manh, khong ngap ngung) -> GIU", len(o10) == 2 and o10[1]["end"] == 24.5, o10)
+check("khoang da bo ghi lai cho moc meme / SFX", rm and abs(rm[0][1] - 19.66) < 0.02, rm)
+pa = {"audio": [{"source_id": "source_1", "src_time": 20.1}], "inserts": []}
+SC.follow_removed(pa, rm)
+check("SFX neo trong phan da bo -> dat o mep cat", abs(pa["audio"][0]["src_time"] - rm[0][1]) < 1e-6, pa)
+SC.energy = lambda path: db9
 SC.energy = orig_energy
 engine.resolve_plan_sfx = orig_resolve
 

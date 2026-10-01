@@ -1678,8 +1678,10 @@ _TIMELINE_SYSTEM = """Ban la EDITOR chuyen dung timeline video. Tu danh sach doa
 - target_start lien tuc, KHONG chong cheo, KHONG de khoang trong vo ly.
 - Diem cat (start/end moi segment) PHAI trung RANH GIOI CAU trong loi_thoai: start = start cua
   mot cau, end = end cua mot cau. Khong cat giua cau/giua tu.
-- Talking-head: chia doan dai thanh cac segment ~3-5s tai ranh gioi cau/cum tu (jump-cut),
-  scale 1.0-1.3 xen ke. Neu phong_cach_mau co average_shot_seconds thi bam theo do.
+- Talking-head: chia doan dai thanh cac segment ~3-5s tai ranh gioi cau/cum tu (jump-cut).
+  "scale" (1.0-1.3) = muc zoom khung cua doan; engine CHUYEN DONG MUOT tu muc doan truoc sang muc doan nay
+  (zoom in / zoom out ease in-out), khong nhay khung o diem cat -> chi doi scale khi muon zoom nhan / nhip moi,
+  khong xen ke may moc moi lan cat. Neu phong_cach_mau co average_shot_seconds thi bam theo do.
 - Khoang lang dai giua hai cau trong cung doan: cat bo bang cach tach thanh 2 segment
   (tru khi phong_cach_mau.pacing.pause_handling noi mau GIU khoang nghi).
 - B-roll/screen-recording: giu nguyen scale 1.0.

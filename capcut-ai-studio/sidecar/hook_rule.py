@@ -34,6 +34,8 @@ ORDER = ("nhe", "vua", "manh")
 BEAT_MIN = 0.35              # thay doi nho hon -> khong tinh la 1 nhip
 FULL_REACH = 0.35            # lop hinh phu >= 35% khung moi tinh la hieu ung TOAN KHUNG
 SND_MIN_VOL = 0.3            # SFX hook bi guard ha xuong duoi muc nay -> coi nhu khong nghe ro
+SND_MIN_REL = -8.0           # SFX da can theo giong noi (spec audio "rel", dB so voi giong): >= -8 dB la nghe ro
+                             # (2026-10-01: video thu am nho -> volume SFX dung la rat nho, khong dung SND_MIN_VOL)
 # hieu ung trong kho Remotion (deu la hieu ung TOAN KHUNG): do manh o cuong do 1.0 (bang tra, khong phai ep loai)
 CATALOG_STRENGTH = {"zoom_punch": 1.2, "shake": 1.4, "flash": 1.5, "rgb_split": 1.2, "fisheye": 1.3,
                     "zoom_out_reveal": 1.0, "focus": 0.8, "blur_focus": 0.9, "light_leak": 0.8, "letterbox": 0.6,
@@ -409,17 +411,26 @@ def check(spec, level=None, plan=None):
             harsh = sorted({str(m["id"]) for m in ev_hook if m["harsh"]})
             if harsh or (L["max"] and combined > L["max"]):
                 yeu_v.append("quá gắt với tone nhẹ nhàng (%s)" % (", ".join(harsh) or "quá mạnh %.2f" % combined))
-    snd_early = [x for x in snd if float(x["start"]) <= L["snd_hit"] and providers._f(x.get("volume"), 1.0) >= SND_MIN_VOL]
+    snd_early = [x for x in snd if float(x["start"]) <= L["snd_hit"] and _audible(x)]
     if snd and not snd_early:
         first = min(snd, key=lambda x: float(x["start"]))
-        yeu_s.append("SFX hook đầu tiên vào lúc %.2fs / âm lượng %.2f (cần vào <= %.1fs, không bị hạ quá nhỏ)" % (
-            float(first["start"]), providers._f(first.get("volume"), 1.0), L["snd_hit"]))
+        yeu_s.append("SFX hook đầu tiên vào lúc %.2fs / âm lượng %.2f%s (cần vào <= %.1fs, không bị hạ quá nhỏ)" % (
+            float(first["start"]), providers._f(first.get("volume"), 1.0),
+            "" if first.get("rel") is None else " = %+.1f dB so với giọng" % float(first["rel"]), L["snd_hit"]))
     return {"visual": vis, "sound": [x.get("name") or x.get("id") for x in snd], "thieu": thieu,
             "yeu": {"visual": yeu_v, "sound": yeu_s}, "window": (a, b),
             "do": {"muc": level, "manh_nhat": combined, "can": need, "cham": early, "so_nhip": len(beats),
                    "nhip_luc": beats, "dung_im_lau_nhat": gap[0], "than_video_max": body_max,
                    "hieu_ung_hook": [{k: m.get(k) for k in ("id", "kind", "type", "t0", "t1", "s", "full", "harsh")}
                                      for m in ev_hook]}}
+
+
+def _audible(x):
+    """SFX nghe ro so voi giong noi cua video: co "rel" (dB so voi giong, mix_sfx do) -> >= SND_MIN_REL; khong thi
+    theo volume nhu cu."""
+    if x.get("rel") is not None:
+        return providers._f(x.get("rel"), -99.0) >= SND_MIN_REL
+    return providers._f(x.get("volume"), 1.0) >= SND_MIN_VOL
 
 
 def _problems(res):

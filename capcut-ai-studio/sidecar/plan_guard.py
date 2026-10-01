@@ -533,7 +533,13 @@ def _cut_at(segs, t_body, tag):
             continue
         truoc = t_body - cursor
         if truoc < MIN_ELEMENT_SEC:
-            return i
+            # manh dau ngan nhung NOI LIEN voi doan truoc trong nguon (khong phai manh nhay) -> van cat dung cho: diem
+            # cat da duoc chot vao khoang lang that (speech_cut.quiet_point), lui ve dau doan se cat mat duoi am
+            prv = segs[i - 1] if i > 0 else None
+            lien = (prv is not None and prv.get("kind") not in ("insert", "hook") and prv.get("source_id") == s.get("source_id")
+                    and abs(float(prv.get("end", 0)) - float(s.get("start", 0))) < 0.05)
+            if not lien or truoc < 0.04:
+                return i
         if span - truoc < MIN_ELEMENT_SEC:
             return i + 1
         sp = float(s.get("speed", 1.0) or 1.0)
@@ -590,8 +596,23 @@ def apply_structure(plan, changes):
     hook_seg = _hook_segment(plan, speech, changes)
     hook_len = 0.0
     if hook_seg:
-        segs.insert(0, hook_seg)
-        hook_len = _span_of(hook_seg)
+        # khoang lang that ben trong ban sao hook cung bi cat (luat cung 2026-10-01) -> nhieu manh kind "hook"
+        # lien tiep; chuyen canh sang than video chi o manh CUOI
+        pieces = [hook_seg]
+        try:
+            import speech_cut
+            pieces = speech_cut.split_quiet(plan, hook_seg, speech_cut.plan_pause_limit(plan), changes) or [hook_seg]
+            # kiem lai mep cat cua hook: duoi am chu cuoi bi cup -> keo toi khi tieng tat han
+            speech_cut.audit_cuts(plan, pieces, speech_cut.plan_pause_limit(plan), changes, label="hook")
+        except Exception as ex:  # loi do am thanh khong duoc lam hong hook
+            changes.append("hook: bo qua siet khoang nghi (%s)" % str(ex)[:120])
+        for k, pc in enumerate(pieces):
+            if k < len(pieces) - 1:
+                pc["transition"] = None
+            pc.pop("quiet_start", None)
+            pc.pop("quiet_end", None)
+        segs[0:0] = pieces
+        hook_len = sum(_span_of(pc) for pc in pieces)
         changes.append("hook: dua doan nguon %.2f-%.2f len dau video (%.1fs) + transition %s"
                        % (hook_seg["start"], hook_seg["end"], hook_len, hook_seg["transition"]))
     plan["segments"] = segs
@@ -716,6 +737,22 @@ def prepare_inserts(plan, tmap, duration, changes):
                                    "khong cat giua chung mot tu)" % (i, float(t_src), moc))
                     anchor = max(0.0, min(doi, max(0.0, duration - MIN_ELEMENT_SEC)))
                     it["src_time"] = round(moc, 3)   # chot lai de lan sau khong keo nua
+        if placement == PLACEMENT_CUT and t_src is not None:
+            # ranh gioi cum tu Gemini co the nam GIUA tieng (do that 2026-10-01: meme cat o 40.52s khi dang noi)
+            # -> chot diem cat vao khoang lang THAT do bang am thanh: chu dang noi duoc noi het roi moi cat sang meme
+            cur = float(it.get("src_time", t_src))
+            try:
+                import speech_cut
+                q = speech_cut.quiet_point(plan, sid, cur)
+            except Exception:
+                q = None
+            if q is not None and abs(q - cur) > 0.01:
+                doi = source_to_timeline(plan, sid, q, tmap)
+                if doi is not None:
+                    changes.append("insert%d: diem cat %.2f dang co tieng -> %.2f (khoang lang that, khong cat mat tieng)"
+                                   % (i, cur, q))
+                    anchor = max(0.0, min(doi, max(0.0, duration - MIN_ELEMENT_SEC)))
+                    it["src_time"] = round(q, 3)
 
         # --- kich thuoc khung ----------------------------------------------
         mode, scale, blur, x, y = meme_layout(it.get("_w"), it.get("_h"), W, H,
@@ -810,6 +847,15 @@ SFX_CROWD_SEC = 1.5
 SFX_LOUD_MARK = 0.85          # tren muc nay coi la "tieng to"
 SFX_LOUD_EVERY_SEC = 10.0     # moi ~10s chi mot tieng to
 
+# CAN THEO GIONG NOI CUA CHINH VIDEO (2026-10-01, user: "video tieng nho ma SFX lai qua to — am thanh khi chu
+# hien phai dong bo voi tang am thanh ca video"). Do do to giong (speech_cut.voice_level) + do to SFX khi phat
+# (speech_cut.playback_lufs) bang CUNG mot thuoc -> muc SFX = giong + chenh lech theo loai (dB), khong vuot muc
+# tuyet doi SFX_MIX cu. Khong con san volume 0.2 (san do lam SFX to hon giong 15-20 dB o video thu am nho).
+SFX_REL = {"impact": 2.0, "comedy": 1.0, "whoosh": -2.0, "crowd": -2.0, "ui": -4.0, "riser": -7.0, "neutral": -1.0}
+SFX_ACCENT_REL = -3.0         # SFX tu gan khi CHU / HINH hien (lop do hoa, hieu ung tu viet): <= giong - 3 dB
+SFX_REL_MIN_VOL = 0.01
+MEME_REL = 0.0                # tieng meme cat vao: khong to hon giong noi cua video
+
 
 def sfx_family(item):
     """Xep loai SFX tu ten/nhan trong kho. Khong doan duoc -> 'neutral'."""
@@ -878,6 +924,15 @@ def mix_sfx(plan, changes):
     audio = plan.get("audio") or []
     if not audio:
         return
+    import math
+    import speech_cut
+    voice = plan.get("_voice_lufs")
+    if voice is None:
+        try:
+            voice = speech_cut.voice_level(plan)
+        except Exception:
+            voice = None
+        plan["_voice_lufs"] = voice
     noi = speech_on_timeline(plan)
     hook_len, _ = read_structure(plan)
     dem_lap = {}
@@ -890,8 +945,27 @@ def mix_sfx(plan, changes):
             continue
         st = float(a.get("start", 0) or 0)
         fam = sfx_family(a)
-        vol = sfx_base_volume(fam, a.get("_lufs"))
-        ly_do = [fam if a.get("_lufs") is None else "%s, do duoc %.1f LUFS" % (fam, float(a["_lufs"]))]
+        lufs = a.get("_play_lufs")
+        if lufs is None and a.get("file"):
+            try:
+                s0 = float(a.get("src_start") or 0)
+                lufs = speech_cut.playback_lufs(a["file"], s0, s0 + 3.0)
+            except Exception:
+                lufs = None
+            a["_play_lufs"] = lufs
+        accent = bool(a.get("_from_layer"))
+        if voice is not None and lufs is not None:
+            rel = SFX_ACCENT_REL if accent else SFX_REL.get(fam, SFX_REL["neutral"])
+            muc = min((SFX_MIX.get(fam) or SFX_MIX["neutral"])["lufs"], voice + rel)
+            if accent:
+                muc = min(muc, voice + SFX_REL.get(fam, SFX_REL["neutral"]))
+            vol, vmin = 10 ** ((muc - float(lufs)) / 20.0), SFX_REL_MIN_VOL
+            ly_do = ["%s%s %.1f LUFS -> muc %.1f (giong video %.1f)" % (fam, ", khi chu/hinh hien" if accent else "",
+                                                                        float(lufs), muc, voice)]
+        else:
+            lufs = a.get("_lufs") if lufs is None else lufs
+            vol, vmin = sfx_base_volume(fam, lufs), SFX_VOL_MIN
+            ly_do = [fam if lufs is None else "%s, do duoc %.1f LUFS" % (fam, float(lufs))]
         dang_noi = any(x <= st <= y for x, y in noi)
         if dang_noi:
             vol *= SFX_DUCK_OVER_SPEECH
@@ -908,8 +982,19 @@ def mix_sfx(plan, changes):
         if truoc_t is not None and st - truoc_t < SFX_CROWD_SEC:
             vol *= SFX_CROWD_DECAY
             ly_do.append("sat SFX truoc (%.1fs) -> nhuong" % (st - truoc_t))
-        vol = max(SFX_VOL_MIN, min(SFX_VOL_MAX, vol))
-        if vol >= SFX_LOUD_MARK:
+        vol = max(vmin, min(SFX_VOL_MAX, vol))
+        if voice is not None and lufs is not None:
+            # KIEM LAI: muc to THAT khi phat (Remotion khong khuech dai qua 1.0) khong vuot tran theo giong noi
+            tran = voice + (SFX_ACCENT_REL if accent else SFX_REL.get(fam, SFX_REL["neutral"]))
+            if hook_len and st < hook_len + EPS:
+                tran += 20 * math.log10(SFX_HOOK_BOOST)
+            that = float(lufs) + 20 * math.log10(max(1e-4, min(1.0, vol)))
+            if that > tran + 0.3:
+                vol = 10 ** ((tran - float(lufs)) / 20.0)
+                ly_do.append("kiem lai: %.1f > tran %.1f LUFS -> ha" % (that, tran))
+            a["_rel_db"] = round(float(lufs) + 20 * math.log10(max(1e-4, min(1.0, vol))) - voice, 1)
+        to = (a.get("_rel_db") >= -0.5) if a.get("_rel_db") is not None else vol >= SFX_LOUD_MARK
+        if to:
             gan = [t for t in to_gan_day if st - t < SFX_LOUD_EVERY_SEC]
             if gan:
                 vol = round(vol * SFX_CROWD_DECAY, 3)
@@ -919,6 +1004,8 @@ def mix_sfx(plan, changes):
         truoc_t = st
         cu = a.get("volume")
         vol = round(vol, 3)
+        if voice is not None and lufs is not None:
+            a["_rel_db"] = round(float(lufs) + 20 * math.log10(max(1e-4, min(1.0, vol))) - voice, 1)
         if cu is None or abs(float(cu) - vol) > 0.02:
             changes.append("audio%d(%s) %.2fs: volume %s -> %.2f (%s)"
                            % (i, a.get("sfx_id") or "sfx", st,

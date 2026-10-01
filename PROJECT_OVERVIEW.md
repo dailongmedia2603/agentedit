@@ -652,6 +652,45 @@ moi can file anh + chu anh.
   luot Claude chong thoi gian, nhat ky luong nen, canh bao anh loi).
 - Ban nguon truoc khi sua: `~/.capcut-studio/source-backup-20260930-before-parallel/`.
 
+## 11r. Zoom muot, LUAT CUNG khoang lang, SFX theo giong noi, chu anh AI cat ngang (2026-10-01)
+
+User: (1) zoom in/out "cat roi thay khung zoom" -> giat; (2) cat khoang lang / noi lap chua chat, cat phai giu tron
+tieng; (3) chu anh AI: duoi 'g' hang tren con du manh tren hang duoi; (4) SFX khi chu hien qua to so voi video tieng nho.
+- ZOOM MUOT: `remotion_plan._smooth_zoom` gan `zoomFrom`/`zoomDur` cho clip doi muc `scale` so clip truoc (khong tinh
+  meme); renderer `AutoEdit.clipZoomAt` = `remotion_plan.clip_zoom_at` (easeInOutCubic). Moi khung doi <= `ZOOM_MAX_STEP`
+  0.03; clip qua ngan -> zoom it hon. `look.ts` cameraAt: zoom_out_reveal / pan / fisheye / shake / ken_burns / zoom_punch
+  khong con bat-tat scale tuc thi. Hieu ung tu viet: `fx_flow.smooth_scale` (gioi han toc do, ve 1.0 o 2 dau) + luat
+  trong `_FX_CODE_SYSTEM`. `tighten_pauses` KHONG con xen ke +0.08 scale o cho cat lang. Prompt B2 mac dinh sua cau
+  "scale xen ke" (user co override `_TIMELINE_SYSTEM` -> dam bao bang code, khong bang prompt).
+- KHOANG LANG (`speech_cut`): gioi han nghe thay `pause_limit` nhanh 0.22 / thuong 0.28 / nhe 0.40s (truoc 0.30/0.45/0.75),
+  luu `plan.pause_limit` (plan cu: theo `_pipeline.tone`). Mep cat theo NGUONG MEM (`Audio.soft`, cuc bo `soft_in` =
+  trung vi khoang lang + 6 dB) + giu 60ms sau tieng / 50ms truoc tieng -> khong cup duoi am. Cat ca: giua doan, cho noi,
+  dau + CUOI video (giu 0.2s), ban sao hook (`split_quiet` -> nhieu manh kind hook, chuyen canh chi o manh cuoi), doan
+  Whisper bo sot chu (chi can NGUON co loi + doan co tieng; canh im hoan toan giu nguyen). Manh sat mep ngan: noi lien
+  -> gop vao doan ben canh; khong chu (hoi tho) -> bo. `cut_restarts`: vap noi lai ngay cum 2-8 chu (co ngap >= 0.15s)
+  -> bo lan dau, 2 diem cat deu trong lang. `follow_removed`: moc meme/SFX trong phan da cat -> mep cat.
+  `cut_after`: khoang lang ngan ma tieng vang lai TRUOC chu sau = con trong chu ('tính'); valley uu tien sau moc het chu.
+  `safe_end` khong co cho ngat cau -> ve ranh gioi chu (khong giua chu). Meme cat vao: `quiet_point` chot diem cat vao
+  lang that; `plan_guard._cut_at` cho manh dau ngan neu noi lien doan truoc.
+- KIEM LAI (`audit_cuts`): sau B2 (autoplan: siet -> restart -> cat an toan -> siet lai -> kiem; ghi run_log "Kiem tra cat")
+  va trong `build_spec` (body: fix; timeline cuoi gom hook + meme: chi bao). Phan loai mep cat co tieng: `giua_chu` (bao),
+  `noi_lien` (2 chu noi lien khong lang: chap nhan), `duoi_am` (keo toi khi tieng tat, vuot hard_hi/hard_lo toi 0.25s,
+  khong chen chu moi). Ket qua: `report.kiem_cat`, issue "Kiem tra cat: ..." (severity low).
+- SFX THEO GIONG: `speech_cut.loudness_series` (ebur128 momentary moi 0.1s tren tieng doi STEREO + apad 0.5s cho SFX ngan,
+  cache `-m2.npy`), `voice_level` (p90 khung co tieng cua doan dung), `playback_lufs`. `plan_guard.mix_sfx`: muc = min(muc
+  tuyet doi SFX_MIX, giong + `SFX_REL[loai]`); SFX khi chu/hinh hien (`_from_layer`) <= giong + `SFX_ACCENT_REL` (-3 dB);
+  bo san volume 0.2; kiem lai tran; `_rel_db` -> spec audio `rel`. Luat hook nghe ro = `rel >= SND_MIN_REL` (-8 dB).
+  Meme cat vao: `_meme_volume` <= giong. Do that (render): video nho (giong -35) SFX cu +8..+20.6 dB -> moi +0.6..+3.8.
+- CHU ANH AI: prompt them dai trong >= 1/8 anh giua 2 hang tinh ca duoi g/y/p, dau nang, dau thanh + `_ROW_GAP_RULE` LUON
+  noi vao prompt (ke ca ban user sua); `MAX_ROWS` 4; `slice_sheet` -> `row_masks`: gan TRON tung net (thanh phan lien
+  thong, `_components` khong can scipy) ve hang chua nhieu pixel nhat, pixel hang khac trong suot; net dinh 2 hang (>=20%
+  moi ben) chia theo duong cat. Do that tam 'tầng voucher / HỜI': khung cu hang HỜI chua 3077 pixel cua 'g' -> 0.
+  `ART_VERSION` 2.
+- `SPEC_MEDIA_VERSION` 8 -> du an cu mo lai tu dung lai spec (zoom muot + luat lang + SFX theo giong; khong goi AI). Chu anh
+  AI moi chi co khi lap ke hoach lai. Do 11 du an that (cu -> moi): lang con sot 42 -> 2, zoom nhay o diem cat 528 -> 0,
+  mep cat co tieng 42 -> 21 (con lai o ranh gioi phan B1/B2 da bo: tieng dem / cau lap, duoc bao ro).
+- Test: `tests/test_smooth_zoom_audio.py` (moi), `test_cut_hook_rules.py` [7][8], `test_speech_cut.py` [8].
+
 ## 10b. Thu vien phan tich video (sidecar/analysis_library.py, them 2026-09-26)
 
 Luu ket qua "Hieu nguon" (Gemini + gio loi noi Whisper) va "Video mau" (GPT/Codex) de lan sau
