@@ -41,6 +41,8 @@ interface Store {
   current: string | null
   /** project dang lam cua menu Video Remotion (`current` la con tro cu cua luong CapCut da go) */
   currentRemotion?: string | null
+  /** Cac the video dang mo o "Tao video" (nhieu video chay cung luc), theo thu tu the */
+  openRemotion?: string[]
   items: Record<string, Project>
 }
 
@@ -82,8 +84,10 @@ export function saveProject(p: Project): Project {
   if (!p.createdAt) p.createdAt = now
   p.updatedAt = now
   s.items[p.id] = p
-  if (isRemotion(p.mode)) s.currentRemotion = p.id
-  else s.current = p.id
+  // Nhieu the video (openRemotion) -> the dang xem do CreateVideo ghi (setOpenTabs); the chay nen luu khong duoc gianh
+  if (isRemotion(p.mode)) {
+    if (!Array.isArray(s.openRemotion)) s.currentRemotion = p.id
+  } else s.current = p.id
   write(s)
   return p
 }
@@ -215,6 +219,7 @@ export async function deleteProject(
   delete cur.items[id]
   if (cur.current === id) cur.current = null
   if (cur.currentRemotion === id) cur.currentRemotion = null
+  if (cur.openRemotion) cur.openRemotion = cur.openRemotion.filter((x) => x !== id)
   write(cur)
   return { ok: true, trashed }
 }
@@ -232,5 +237,21 @@ export function setCurrent(id: string | null, mode?: string): void {
   const s = read()
   if (isRemotion(mode)) s.currentRemotion = id
   else s.current = id
+  write(s)
+}
+
+/** The video dang mo o "Tao video" (chi du an Remotion con ton tai) + the dang xem */
+export function getOpenTabs(): { ids: string[]; active: string | null } {
+  const s = read()
+  const ok = (id: unknown): id is string => typeof id === 'string' && isRemotion(s.items[id]?.mode)
+  const ids = (Array.isArray(s.openRemotion) ? s.openRemotion : []).filter(ok)
+  const uniq = ids.filter((id, i) => ids.indexOf(id) === i)
+  return { ids: uniq, active: ok(s.currentRemotion) ? s.currentRemotion : null }
+}
+
+export function setOpenTabs(ids: string[], active?: string | null): void {
+  const s = read()
+  s.openRemotion = (Array.isArray(ids) ? ids : []).filter((id) => typeof id === 'string' && !!s.items[id])
+  if (active !== undefined) s.currentRemotion = active && s.items[active] ? active : null
   write(s)
 }

@@ -219,12 +219,12 @@ function DeleteDialog({
 
 export default function ProjectsPage({
   openProject,
-  busyId,
+  busyIds,
   onDeleted
 }: {
   openProject: (id: string) => void
-  /** Du an dang xu ly o Video Remotion — khong cho xoa */
-  busyId?: string | null
+  /** Du an dang xu ly o Tao video (nhieu video chay cung luc) — khong cho xoa */
+  busyIds?: string[]
   onDeleted?: (id: string) => void
 }) {
   const [items, setItems] = useState<Project[]>([])
@@ -290,8 +290,8 @@ export default function ProjectsPage({
               variant="danger"
               size="sm"
               onClick={() => setConfirmDel(p)}
-              disabled={busyId === p.id}
-              title={busyId === p.id ? 'Dự án đang xử lý ở Tạo video — đợi xong rồi xoá' : undefined}
+              disabled={!!busyIds?.includes(p.id)}
+              title={busyIds?.includes(p.id) ? 'Dự án đang xử lý ở Tạo video — đợi xong rồi xoá' : undefined}
             >
               <Trash2 className="h-4 w-4" /> Xoá
             </Button>

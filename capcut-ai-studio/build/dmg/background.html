@@ -1,0 +1,76 @@
+<!doctype html>
+<!-- Nen cua so DMG (660x480 diem). scripts/make-dmg-background.mjs chup trang nay bang Chrome headless ->
+     build/background.png + build/background@2x.png (electron-builder tu ghep thanh .tiff retina).
+     Vi tri icon trong electron-builder.yml (dmg.contents) PHAI khop cac o trong o day:
+     app (170,150) · Applications (490,150) · file huong dan (568,392). -->
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 660px; height: 480px; overflow: hidden; }
+  body {
+    font-family: -apple-system, "SF Pro Text", "Helvetica Neue", sans-serif;
+    color: #2b1a10;
+    background: linear-gradient(180deg, #fff7f0 0%, #fdeee2 100%);
+    position: relative;
+  }
+  .title {
+    position: absolute; top: 26px; left: 0; right: 0; text-align: center;
+    font-size: 17px; font-weight: 700; letter-spacing: -0.01em;
+  }
+  .title span { color: #e8590c; }
+  /* Mui ten giua icon app (x=170) va Applications (x=490), cung hang y=150 */
+  .arrow { position: absolute; left: 238px; top: 132px; width: 184px; height: 36px; }
+  .card {
+    position: absolute; left: 20px; right: 20px; top: 248px; bottom: 18px;
+    background: #ffffff; border: 1px solid #f4d3bb; border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(120, 50, 0, 0.06);
+    padding: 16px 150px 0 20px;
+  }
+  .card h2 { font-size: 14px; font-weight: 700; color: #c2410c; margin-bottom: 10px; }
+  .card h2 em { font-style: normal; font-weight: 500; color: #9a6a4b; font-size: 12.5px; }
+  ol { list-style: none; counter-reset: s; }
+  li {
+    counter-increment: s; position: relative; padding-left: 30px;
+    font-size: 12.5px; line-height: 1.45; margin-bottom: 9px;
+  }
+  li::before {
+    content: counter(s); position: absolute; left: 0; top: 0;
+    width: 20px; height: 20px; border-radius: 10px; background: #f76707; color: #fff;
+    font-size: 11.5px; font-weight: 700; text-align: center; line-height: 20px;
+  }
+  b { font-weight: 700; }
+  .warn { color: #b42318; }
+  /* O ben phai the: Finder dat icon file huong dan (568,392) vao day */
+  .side {
+    position: absolute; right: 0; top: 0; bottom: 0; width: 132px;
+    border-left: 1px dashed #f4d3bb;
+  }
+  .side p {
+    position: absolute; top: 14px; left: 10px; right: 10px; text-align: center;
+    font-size: 11px; line-height: 1.35; color: #9a6a4b;
+  }
+</style>
+</head>
+<body>
+  <div class="title">Kéo <span>Agent Edit</span> vào thư mục Applications</div>
+
+  <svg class="arrow" viewBox="0 0 184 36" aria-hidden="true">
+    <path d="M6 18 H160" stroke="#f76707" stroke-width="5" stroke-linecap="round" stroke-dasharray="1 11"/>
+    <path d="M154 6 L174 18 L154 30" fill="none" stroke="#f76707" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+
+  <div class="card">
+    <h2>Mở lần đầu <em>(chỉ làm 1 lần)</em></h2>
+    <ol>
+      <li>Mở <b>Agent Edit</b> trong Applications. Khi hiện “Apple không thể xác minh…”,
+        bấm <b>Xong</b> — <span class="warn">đừng bấm “Chuyển vào Thùng rác”</span>.</li>
+      <li>Mở <b>Cài đặt hệ thống → Quyền riêng tư &amp; Bảo mật</b>, kéo xuống cuối,
+        bấm <b>Vẫn mở</b> rồi nhập mật khẩu máy.</li>
+      <li>Từ lần sau Agent Edit mở bình thường, không hỏi lại.</li>
+    </ol>
+    <div class="side"><p>Không thấy nút “Vẫn&nbsp;mở”?<br>Mở file hướng dẫn này</p></div>
+  </div>
+</body>
+</html>

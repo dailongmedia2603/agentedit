@@ -156,6 +156,19 @@ try:
     check("Windows: khong file, khong muc Credential Manager -> chua", not C.agy_logged_in())
 finally:
     C.IS_WIN, C._windows_cred_has_agy = saved_win, saved_cred
+# macOS: agy 1.2.14 luu phien trong Keychain (service "gemini", account "antigravity"), khong co file (Mac moi 2026-10-02)
+saved_kc = C._mac_keychain_has_agy
+try:
+    C._mac_keychain_has_agy = lambda: True
+    check("macOS: muc Keychain gemini/antigravity -> da dang nhap", C.agy_logged_in() == (sys.platform == "darwin"))
+    C._mac_keychain_has_agy = lambda: False
+    check("macOS: khong file, khong muc Keychain -> chua", not C.agy_logged_in())
+finally:
+    C._mac_keychain_has_agy = saved_kc
+if sys.platform == "darwin":
+    # HOME tam -> security khong thay login keychain that -> ma 44 (test khong dung Keychain that)
+    C._KEYCHAIN["at"] = 0.0
+    check("macOS: lenh security that, HOME tam -> khong co muc", not C._mac_keychain_has_agy())
 
 # ---------------------------------------------------------------------------
 print("[3] winsupport")

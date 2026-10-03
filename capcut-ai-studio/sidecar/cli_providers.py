@@ -24,6 +24,7 @@ import shutil
 import tempfile
 import threading
 import subprocess
+import sys
 
 import winsupport
 from debug_log import log_step_call, log_step_response, log_step_note
@@ -174,6 +175,8 @@ def _augmented_env():
     # CLI chay trong app -> tat mau ANSI cho de parse
     env["NO_COLOR"] = "1"
     env.pop("ELECTRON_RUN_AS_NODE", None)
+    # agy khong tu cap nhat ngam khi app goi (ban moi co the doi cach dang nhap). Chi nhan "true" (khop env.ts).
+    env["AGY_CLI_DISABLE_AUTO_UPDATE"] = "true"
     return env
 
 
@@ -253,6 +256,139 @@ def _version_tuple(text):
     """"2.1.186 (Claude Code)" -> (2, 1, 186). () neu khong doc duoc."""
     m = re.search(r"(\d+)\.(\d+)\.(\d+)", text or "")
     return tuple(int(x) for x in m.groups()) if m else ()
+
+
+# ---------------------------------------------------------------------------
+# Codex: TAI KHOAN + HAN MUC qua giao thuc CHINH CHU `codex app-server` (JSON-RPC tung dong qua stdio): account/read
+# (email, goi) + account/rateLimits/read (% da dung + gio reset khung 5 gio / tuan). App KHONG doc ~/.codex/auth.json.
+# Da goi that 2026-10-02 (codex-cli 0.156.1): ~1s.
+# ---------------------------------------------------------------------------
+_CODEX_ACC = {"at": 0.0, "path": None, "data": None}
+_CODEX_ACC_LOCK = threading.Lock()
+CODEX_PLAN_NAMES = {"free": "Free", "go": "Go", "plus": "Plus", "pro": "Pro", "prolite": "Pro Lite", "team": "Team",
+                    "business": "Business", "enterprise": "Enterprise", "edu": "Edu"}
+
+
+def _codex_rpc(path, requests, timeout=15):
+    """Mo `codex app-server`, chao hoi, gui `requests` [(method, params)], tra {method: result}. Loi -> {}."""
+    import queue
+    argv = [path, "app-server"]
+    if IS_WIN and path.lower().endswith((".cmd", ".bat")):
+        argv = ["cmd", "/c"] + argv
+    kw = {"creationflags": 0x08000000} if IS_WIN else {}   # CREATE_NO_WINDOW
+    try:
+        p = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                             text=True, encoding="utf-8", env=_augmented_env(), cwd=tempfile.gettempdir(), **kw)
+    except OSError:
+        return {}
+    q = queue.Queue()
+
+    def _reader():
+        try:
+            for line in p.stdout:
+                q.put(line)
+        except Exception:
+            pass
+        q.put(None)
+    threading.Thread(target=_reader, daemon=True).start()
+    ids = {}
+    out = {}
+    try:
+        msgs = [{"id": 0, "method": "initialize",
+                 "params": {"clientInfo": {"name": "agent-edit", "title": "Agent Edit", "version": "1.0.0"}}},
+                {"method": "initialized"}]
+        for i, (method, params) in enumerate(requests, 1):
+            ids[i] = method
+            msg = {"id": i, "method": method}
+            if params is not None:
+                msg["params"] = params
+            msgs.append(msg)
+        p.stdin.write("".join(json.dumps(m) + "\n" for m in msgs))
+        p.stdin.flush()
+        end = time.time() + timeout
+        while len(out) < len(ids) and time.time() < end:
+            try:
+                line = q.get(timeout=max(0.1, end - time.time()))
+            except queue.Empty:
+                break
+            if line is None:
+                break
+            try:
+                m = json.loads(line)
+            except ValueError:
+                continue
+            if isinstance(m, dict) and m.get("id") in ids and isinstance(m.get("result"), dict):
+                out[ids[m["id"]]] = m["result"]
+    except (OSError, ValueError):
+        pass
+    finally:
+        try:
+            p.kill()
+        except OSError:
+            pass
+    return out
+
+
+def codex_account(path, fresh=False):
+    """{email, plan, limits: [{name, used, resets_at}], reached, reset_credits} cua tai khoan ChatGPT dang dang nhap
+    trong Codex CLI, hoac None (chua dang nhap / CLI cu khong co app-server / loi). Nho 20s (fresh = hoi lai)."""
+    if not path:
+        return None
+    with _CODEX_ACC_LOCK:
+        if not fresh and _CODEX_ACC["path"] == path and time.time() - _CODEX_ACC["at"] < 20:
+            return _CODEX_ACC["data"]
+    res = _codex_rpc(path, [("account/read", {}), ("account/rateLimits/read", None)])
+    acc = (res.get("account/read") or {}).get("account") or {}
+    data = None
+    if acc.get("type") == "chatgpt":
+        rl = res.get("account/rateLimits/read") or {}
+        lim = rl.get("rateLimits") or {}
+        limits = []
+        for key, name in (("primary", None), ("secondary", None)):
+            w = lim.get(key) or {}
+            if not isinstance(w, dict) or w.get("usedPercent") is None:
+                continue
+            mins = w.get("windowDurationMins") or 0
+            name = ("5 giờ" if mins == 300 else "tuần" if mins == 10080 else
+                    ("%d giờ" % round(mins / 60)) if mins and mins < 2880 else ("%d ngày" % round(mins / 1440)) if mins else key)
+            limits.append({"name": name, "used": w.get("usedPercent"), "resets_at": w.get("resetsAt")})
+        credits = (rl.get("rateLimitResetCredits") or {}).get("availableCount") or 0
+        data = {"email": acc.get("email"), "plan": acc.get("planType"), "limits": limits,
+                "reached": bool(lim.get("rateLimitReachedType")) or rl.get("ordinaryUsageAllowed") is False
+                           or any((x.get("used") or 0) >= 100 for x in limits),
+                "reset_credits": credits}
+    with _CODEX_ACC_LOCK:
+        _CODEX_ACC.update(at=time.time(), path=path, data=data)
+    return data
+
+
+def _fmt_reset(ts):
+    """Unix giay -> '21:46 hôm nay' / '09:00 ngày mai' / '14:20 ngày 05/10' (gio may)."""
+    try:
+        t = time.localtime(int(ts))
+    except (TypeError, ValueError, OverflowError, OSError):
+        return ""
+    now = time.localtime()
+    d = (time.mktime((t.tm_year, t.tm_mon, t.tm_mday, 0, 0, 0, 0, 0, -1))
+         - time.mktime((now.tm_year, now.tm_mon, now.tm_mday, 0, 0, 0, 0, 0, -1))) / 86400
+    hm = "%02d:%02d" % (t.tm_hour, t.tm_min)
+    if round(d) == 0:
+        return hm + " hôm nay"
+    if round(d) == 1:
+        return hm + " ngày mai"
+    return "%s ngày %02d/%02d" % (hm, t.tm_mday, t.tm_mon)
+
+
+def codex_usage_lines(acc):
+    """Dong han muc hien o Cai dat API: 'Hạn mức 5 giờ: đã dùng 100% — mở lại lúc 21:46 hôm nay'."""
+    lines = []
+    for x in (acc or {}).get("limits") or []:
+        used = x.get("used") or 0
+        when = _fmt_reset(x.get("resets_at")) if x.get("resets_at") else ""
+        lines.append("Hạn mức %s: đã dùng %d%%%s" % (
+            x["name"], round(used), (" — mở lại lúc %s" % when) if when and used >= 100 else
+            (" (làm mới lúc %s)" % when) if when else ""))
+    return lines
 
 
 def cli_status(name):
@@ -356,6 +492,19 @@ def cli_status(name):
     if rc == 0 and "logged in" in low:
         out["logged_in"] = True
         out["detail"] = text.splitlines()[0][:120] if text else "Da dang nhap"
+        # Email + goi + han muc qua `codex app-server` (CLI cu khong co -> giu dong chu cua `codex login status`)
+        acc = codex_account(path, fresh=True) if "api key" not in low else None
+        if acc:
+            out["account"] = acc.get("email")
+            out["plan"] = acc.get("plan")
+            plan = CODEX_PLAN_NAMES.get(acc.get("plan") or "", acc.get("plan") or "")
+            out["detail"] = "Đã đăng nhập%s%s" % ((" — %s" % acc["email"]) if acc.get("email") else "",
+                                                   (" (gói %s)" % plan) if plan else "")
+            out["usage"] = codex_usage_lines(acc)
+            out["limit_reached"] = acc.get("reached")
+            if acc.get("reached") and acc.get("reset_credits"):
+                out["usage"].append("Tài khoản còn %d lượt reset hạn mức miễn phí của OpenAI (dùng trong ứng dụng Codex: "
+                                    "nút “Reset usage”)." % acc["reset_credits"])
         if "api key" in low:
             out["logged_in"] = False
             out["detail"] = ("Codex dang dung API key chu khong phai goi ChatGPT. "
@@ -574,9 +723,27 @@ def _quota_hint(name, blob):
                 "phải lỗi cấu hình.\nCách xử lý: đợi một lúc rồi chạy lại, chọn model nhẹ hơn (Flash), hoặc "
                 "tạm chuyển Gemini về chế độ API Key trong Cài đặt API.\n\nCLI báo: %s" % (blob or "").strip()[:300])
     plan = SPEC[name]["plan_label"]
-    return ("Goi %s da HET HAN MUC trong khung gio nay — day khong phai loi cau hinh.\n"
-            "Cach xu ly: doi toi khi han muc reset, hoac tam doi provider nay ve "
-            "che do API Key trong Cai dat API.\n\nCLI bao: %s" % (plan, (blob or "").strip()[:300]))
+    head, extra = "Gói %s đã HẾT HẠN MỨC trong khung giờ này" % plan, ""
+    if name == "gpt":
+        # Codex: hoi han muc that (khung nao het + gio mo lai) qua app-server
+        acc = codex_account(find_bin(name))
+        if acc:
+            plan_name = CODEX_PLAN_NAMES.get(acc.get("plan") or "", acc.get("plan") or "")
+            full = [x for x in acc.get("limits") or [] if (x.get("used") or 0) >= 100]
+            if full:
+                last = max(full, key=lambda x: x.get("resets_at") or 0)
+                when = _fmt_reset(last.get("resets_at"))
+                head = "Gói ChatGPT %s đã hết hạn mức %s của Codex%s" % (
+                    plan_name, " + ".join(x["name"] for x in full), (" — mở lại lúc %s" % when) if when else "")
+            extra = "\n".join(codex_usage_lines(acc))
+            if acc.get("email"):
+                extra = "Tài khoản: %s\n%s" % (acc["email"], extra)
+            if acc.get("reset_credits"):
+                extra += ("\nTài khoản còn %d lượt reset hạn mức miễn phí của OpenAI (dùng trong ứng dụng Codex: nút "
+                          "“Reset usage”)." % acc["reset_credits"])
+    return ("%s.\nĐây không phải lỗi đăng nhập hay cấu hình.\n%s%s"
+            "Cách xử lý: đợi tới giờ mở lại, hoặc tạm chuyển provider này về chế độ API Key trong Cài đặt API."
+            "\n\nCLI báo: %s" % (head, extra, "\n" if extra else "", (blob or "").strip()[:300]))
 
 
 def _auth_hint(name, blob):
@@ -731,8 +898,9 @@ def _codex_chat(path, model, system, user, req_timeout, step_label, images=None,
 #   - Moi luot luu HAI ban sao video: conversations/<id>.db va brain/<id>/.tempmediaStorage/*.mp4
 #     -> sau moi luot xoa theo conversation_id. So file trong .tempmediaStorage = so video model DA XEM
 #     -> dung de kiem tra model co that xem video khong (khong thi ket qua la bia).
-#   - Dang nhap: giao dien toan man hinh (TUI) trong Terminal that, luu phien o
-#     ~/.gemini/antigravity-cli/antigravity-oauth-token (app chi kiem tra CO file, khong doc).
+#   - Dang nhap: agy luu phien qua go-keyring — macOS Keychain (service "gemini", account "antigravity"),
+#     Windows Credential Manager; agy ban cu de file ~/.gemini/antigravity-cli/antigravity-oauth-token
+#     (app chi kiem tra CO phien, khong doc — xem agy_logged_in).
 #     Bien SSH_CONNECTION/SSH_TTY -> agy in link + nhan ma (khong tu mo trinh duyet mac dinh) -> user
 #     dan link vao dung trinh duyet co tai khoan Pro. App mo Terminal bang file .command (Electron).
 #   - Google (dien dan chinh thuc): goi binary agy chinh chu headless tu app khac tren tai khoan AI Pro
@@ -783,10 +951,27 @@ def _windows_cred_has_agy():
     return hit
 
 
+_KEYCHAIN = {"at": 0.0, "hit": False}
+
+
+def _mac_keychain_has_agy():
+    """macOS: agy 1.2.14 luu phien trong Keychain (service "gemini", account "antigravity"). Khong -g / -w -> chi xem
+    thuoc tinh, khong doc mat khau, khong hoi quyen Keychain. Khong co muc -> ma 44."""
+    if time.time() - _KEYCHAIN["at"] < 2:
+        return _KEYCHAIN["hit"]
+    try:
+        hit = subprocess.run(["/usr/bin/security", "find-generic-password", "-s", "gemini", "-a", "antigravity"],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=8).returncode == 0
+    except (OSError, subprocess.TimeoutExpired):
+        hit = False
+    _KEYCHAIN.update(at=time.time(), hit=hit)
+    return hit
+
+
 def agy_logged_in():
-    """agy da co phien dang nhap chua (khong doc noi dung). agy luu phien qua go-keyring: macOS thuong ra FILE
-    antigravity-oauth-token (Keychain cham -> roi ve file); Windows luu trong CREDENTIAL MANAGER, KHONG co file (su co
-    that 2026-10-01: dang nhap xong app van bao chua) -> them file danh dau keyring-marker-* + `cmdkey /list`."""
+    """agy da co phien dang nhap chua (khong doc noi dung). agy luu phien qua go-keyring: Windows trong CREDENTIAL
+    MANAGER, macOS trong KEYCHAIN — KHONG co file (su co that 2026-10-01 Windows, 2026-10-02 Mac moi: `agy -p` SUCCESS ma
+    app van bao chua). File antigravity-oauth-token chi con o may tung chay agy ban cu."""
     if os.path.isfile(os.path.join(AGY_HOME, "antigravity-oauth-token")):
         return True
     try:
@@ -795,7 +980,9 @@ def agy_logged_in():
             return True
     except OSError:
         pass
-    return _windows_cred_has_agy() if IS_WIN else False
+    if IS_WIN:
+        return _windows_cred_has_agy()
+    return _mac_keychain_has_agy() if sys.platform == "darwin" else False
 
 
 def _agy_model_note(mid):

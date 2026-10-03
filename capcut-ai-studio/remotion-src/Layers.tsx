@@ -559,6 +559,19 @@ const ShapeLayer: React.FC<{ L: RSLayer; fx: FxState; W: number; H: number; loca
       const src = mediaUrl(base, L.path)
       const radius = L.mask === 'circle' ? '50%' : L.mask === 'round' ? (L.radius ?? 0.04) * W : 0
       const kb = L.loop?.preset === 'kenburns' ? 1 + 0.06 * local * 0.3 : 1
+      // ANH TACH NEN (sticker PNG trong suot): bong phai theo VIEN vat the (drop-shadow). box-shadow ve bong cua
+      // KHUNG CHU NHAT -> mang toi hinh hop de len mat nguoi noi (user 2026-10-03). Spec cu chua co co `cutout`
+      // -> nhan theo ten file ban tach (*_cut.png).
+      const sticker = !!L.cutout || (!L.mask && /_cut\.png$/i.test(L.path))
+      if (sticker) {
+        const k = W / 1080
+        const drop = (L.shadow || []).map((s) => `drop-shadow(${s.x * k}px ${s.y * k}px ${Math.min(s.blur, 24) * k * 0.5}px ${s.color})`).join(' ')
+        return (
+          <div style={{ width: w, height: L.h !== undefined ? h : undefined }}>
+            <Img src={src} style={{ width: '100%', height: L.h !== undefined ? '100%' : 'auto', display: 'block', objectFit: 'contain', transform: `scale(${kb})`, filter: drop || undefined }} />
+          </div>
+        )
+      }
       return (
         <div
           style={{

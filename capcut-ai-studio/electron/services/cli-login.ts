@@ -1,10 +1,10 @@
-import { execFile, spawn, ChildProcess } from 'child_process'
-import { installAgy, installClaude, installCodex, powershell } from './toolchain'
-import { existsSync, mkdirSync, writeFileSync, chmodSync } from 'fs'
+import { execFile, execFileSync, spawn, ChildProcess } from 'child_process'
+import { installAgy, installClaude, installCodex, manifest, powershell } from './toolchain'
+import { existsSync, mkdirSync, writeFileSync, chmodSync, readdirSync, rmSync } from 'fs'
 import { homedir } from 'os'
 import { basename, extname, isAbsolute, join } from 'path'
 import { shell } from 'electron'
-import { IS_WIN, agySessionPresent, augmentedEnv, claudeEnv, cmdQuote, killTree, needsShell } from './env'
+import { IS_WIN, agyCredentialPresent, agySessionPresent, augmentedEnv, claudeEnv, cmdQuote, killTree, needsShell } from './env'
 
 /**
  * DANG NHAP / CAI CLI CHINH CHU NGAY TRONG APP.
@@ -35,6 +35,9 @@ import { IS_WIN, agySessionPresent, augmentedEnv, claudeEnv, cmdQuote, killTree,
  * WINDOWS: khong co Terminal.app / file .command -> app ghi file .ps1 (UTF-8 co BOM: PowerShell 5.1 doc file khong
  * BOM theo bang ma ANSI -> chu Viet vo) roi mo 1 cua so PowerShell rieng (spawn detached = console moi). agy / Claude
  * van chay giao dien day du trong cua so do. Cai agy = install.ps1 chinh chu (toolchain.installAgy).
+ *
+ * DANG XUAT (doi sang tai khoan khac) — cung bang lenh chinh chu: `codex logout`, `claude auth logout`, agy `/logout`
+ * (agy chan /logout o che do -p -> chay giao dien day du `agy -i /logout`, xem startAgyLogout).
  */
 export type CliLoginMode = 'browser' | 'device'
 
@@ -53,6 +56,8 @@ export const CLI_PACKAGES: Record<string, { bin: string; label: string; script?:
 type TaskResult = { ok: boolean; canceled?: boolean; error?: string }
 
 let child: ChildProcess | null = null
+/** child la /usr/bin/script boc CLI (pseudo-terminal) — xem runTask opts.pty */
+let childPty = false
 let canceled = false
 /** Tien trinh dang nhap chay o cua so RIENG (Windows: agy giao dien day du, thu nho) — khong phai con truc tiep */
 let extPid = 0
@@ -69,11 +74,38 @@ export function cancelCliTask(): void {
   }
   if (!child) return
   canceled = true
-  const c = child
-  // Windows: dung CA CAY (codex.exe con chau) — kill() chi giet tien trinh truc tiep
-  killTree(c.pid, () => {
+  stopChild(child)
+}
+
+/** macOS: chay CLI trong pseudo-terminal. agy >= 1.2.16 chay bang ong dan (khong TTY) thi KHONG bat dau dang nhap
+ *  Google nua — in "authentication required. Run 'agy' to log in" roi thoat (su co that may Mac moi 2026-10-03); co
+ *  TTY thi van in link + cho dang nhap nhu 1.2.14. */
+const SCRIPT_BIN = '/usr/bin/script'
+// script doi stdin la ong pipe(2) THAT: ong 'pipe' cua Node (socket) va FIFO deu bi tu choi ("tcgetattr/ioctl: Operation
+// not supported on socket", da do that) -> bash noi stdin qua `cat` bang process substitution roi exec script.
+// pty cua script co kich thuoc 0x0 khi stdin khong phai terminal -> giao dien day du cua agy khong ve gi -> dat bang stty.
+const PTY_WRAP =
+  'exec /usr/bin/script -q /dev/null /bin/sh -c \'stty rows 40 cols 120 2>/dev/null; exec "$0" "$@"\' "$@" < <(exec /bin/cat 2>/dev/null)'
+
+function stopChild(proc: ChildProcess): void {
+  if (childPty && proc.pid) {
+    // script KHONG chuyen tin hieu cho CLI ben trong -> dung CLI truoc (khong thi agy mo coi, ppid 1 — da do that)
     try {
-      c.kill('SIGTERM')
+      execFileSync('/usr/bin/pkill', ['-TERM', '-P', String(proc.pid)], { stdio: 'ignore', timeout: 5000 })
+    } catch {
+      /* khong con tien trinh con */
+    }
+    try {
+      proc.kill('SIGTERM')
+    } catch {
+      /* da thoat */
+    }
+    return
+  }
+  // Windows: dung CA CAY (codex.exe con chau) — kill() chi giet tien trinh truc tiep
+  killTree(proc.pid, () => {
+    try {
+      proc.kill('SIGTERM')
     } catch {
       /* tien trinh da thoat */
     }
@@ -100,7 +132,10 @@ function runTask(
     onLine: (line: string) => void
     /** Chi Gemini can stdin (tra loi cau hoi dong y); Codex giu 'ignore' nhu truoc */
     stdin?: 'ignore' | 'pipe'
-    onChunk?: (text: string, proc: ChildProcess) => void
+    /** text = da bo ma ANSI; raw = nguyen ban (giao dien day du cua agy hoi terminal bang ma ANSI) */
+    onChunk?: (text: string, proc: ChildProcess, raw: string) => void
+    /** macOS: chay trong pseudo-terminal (/usr/bin/script) — CLI tuong dang o Terminal that */
+    pty?: boolean
     /** Hoi moi giay: tra true = viec da xong (vd da co file phien dang nhap) -> dung tien trinh, bao THANH CONG */
     doneWhen?: () => boolean
   }
@@ -108,26 +143,33 @@ function runTask(
   if (child || extPid) return Promise.resolve({ ok: false, error: 'Đang có một lượt đăng nhập / cài đặt chạy dở.' })
   return new Promise((resolve) => {
     canceled = false
-    const sh = needsShell(bin)
-    const proc = spawn(sh ? cmdQuote(bin) : bin, sh ? args.map(cmdQuote) : args, {
-      env: opts.env,
-      cwd: opts.cwd,
-      stdio: [opts.stdin || 'ignore', 'pipe', 'pipe'],
-      windowsHide: true,
-      shell: sh
-    })
+    const pty = !!opts.pty && !IS_WIN && existsSync(SCRIPT_BIN)
+    const sh = !pty && needsShell(bin)
+    const proc = pty
+      ? spawn('/bin/bash', ['-c', PTY_WRAP, 'agy-pty', bin, ...args], { env: opts.env, cwd: opts.cwd, stdio: ['pipe', 'pipe', 'pipe'] })
+      : spawn(sh ? cmdQuote(bin) : bin, sh ? args.map(cmdQuote) : args, {
+          env: opts.env,
+          cwd: opts.cwd,
+          stdio: [opts.stdin || 'ignore', 'pipe', 'pipe'],
+          windowsHide: true,
+          shell: sh
+        })
     child = proc
+    childPty = pty
     const tail: string[] = []
     let buf = ''
     const feed = (chunk: Buffer) => {
-      const text = chunk.toString('utf-8').replace(ANSI, '')
-      opts.onChunk?.(text, proc)
+      const raw = chunk.toString('utf-8')
+      const text = raw.replace(ANSI, '')
+      opts.onChunk?.(text, proc, raw)
       buf += text
       const parts = buf.split(/\r?\n/)
       buf = parts.pop() || ''
       for (const raw of parts) {
         const line = raw.trimEnd()
         if (!line.trim()) continue
+        // pty: script in ^D (EOF) khi dong stdin — khong phai chu cua CLI
+        if (pty && /^(\^D|\x04)[\b]*$/.test(line.trim())) continue
         tail.push(line)
         if (tail.length > 40) tail.shift()
         opts.onLine(line)
@@ -147,13 +189,7 @@ function runTask(
       ? setInterval(() => {
           if (!doneEarly && opts.doneWhen && opts.doneWhen()) {
             doneEarly = true
-            killTree(proc.pid, () => {
-              try {
-                proc.kill('SIGTERM')
-              } catch {
-                /* da thoat */
-              }
-            })
+            stopChild(proc)
           }
         }, 1000)
       : null
@@ -162,9 +198,12 @@ function runTask(
       if (poll) clearInterval(poll)
       if (buf.trim()) opts.onLine(buf.trim())
       child = null
+      childPty = false
       resolve(res)
     }
     proc.on('error', (e) => finish({ ok: false, error: String(e) }))
+    // pty: `cat` noi stdin con song toi khi app dong stdin -> dong ngay khi script thoat (khong thi 'close' khong toi)
+    if (pty) proc.on('exit', () => proc.stdin?.end())
     proc.on('close', (code) => {
       // Codex thoat EM voi ma 0 khi nhan SIGTERM -> phai xet "da huy" TRUOC ma thoat.
       // Ma 0 cung chua chac da dang nhap: noi goi (ipc) hoi lai trang thai qua sidecar.
@@ -228,19 +267,33 @@ function agyTokenPresent(): boolean {
   return agySessionPresent()
 }
 
-/**
- * Dang nhap agy NGAY TRONG APP (giong Codex): chay `agy -p` an — chua co phien thi agy tu bat dau OAuth: mo trinh duyet
- * mac dinh + cho ket qua qua may chu localhost (trang callback cua Google gui ve), in kem link du phong + "paste code".
- * Thay file phien -> dung agy ngay (khong can cho tra loi prompt). Da thu that 2026-10-01 (agy 1.2.14).
- * KHONG dat SSH_CONNECTION (bien do bat che do "in link + dan ma", khong tu xong).
- */
-export function startAgyLogin(bin: string, workdir: string, onLine: (line: string) => void): Promise<TaskResult> {
-  if (!validBin(bin, 'agy')) return Promise.resolve({ ok: false, error: 'Không tìm thấy Antigravity CLI (agy) trên máy.' })
+/** env + thu muc lam viec cho agy chay tu app (KHONG bien SSH_*: bien do bat che do "in link + dan ma") */
+function agyEnvCwd(workdir: string): { env: NodeJS.ProcessEnv; cwd: string } {
   if (workdir) mkdirSync(workdir, { recursive: true })
   const env = cleanEnv()
   for (const k of Object.keys(env)) if (/^SSH_(CONNECTION|CLIENT|TTY)$/i.test(k)) delete env[k]
-  const cwd = workdir && isAbsolute(workdir) ? workdir : homedir()
-  if (IS_WIN) return agyLoginWindow(bin, cwd, env, onLine)
+  return { env, cwd: workdir && isAbsolute(workdir) ? workdir : homedir() }
+}
+
+/**
+ * Dang nhap agy NGAY TRONG APP (giong Codex): chay `agy -p` — chua co phien thi agy tu bat dau OAuth: in link Google,
+ * cho ket qua ~60s, kem "paste code". Thay phien -> dung agy ngay (khong can cho tra loi prompt).
+ * agy 1.2.14 lam vay ca khi chay an; tu 1.2.16 CHI khi co TTY -> macOS chay trong pseudo-terminal (opts.pty).
+ */
+export function startAgyLogin(bin: string, workdir: string, onLine: (line: string) => void): Promise<TaskResult> {
+  if (!validBin(bin, 'agy')) return Promise.resolve({ ok: false, error: 'Không tìm thấy Antigravity CLI (agy) trên máy.' })
+  const { env, cwd } = agyEnvCwd(workdir)
+  if (IS_WIN) return agyWindow(bin, [], cwd, env, onLine, {
+    done: agyTokenPresent,
+    intro: [
+      'Đã mở cửa sổ Antigravity CLI (agy).',
+      'Nếu agy hỏi “Select login method”: bấm Enter để chọn “1. Google OAuth” — trình duyệt sẽ mở trang đăng nhập Google.',
+      'Đăng nhập xong app tự nhận ra và đóng cửa sổ agy.'
+    ],
+    okLine: 'Đã nhận phiên đăng nhập Google — đóng cửa sổ agy.',
+    closedError: 'Cửa sổ Antigravity CLI đã đóng trước khi đăng nhập xong.',
+    timeoutMs: LOGIN_TIMEOUT_MS
+  })
   // macOS: `agy -p` khong tu mo trinh duyet (chi in link) -> app tu mo link dang nhap dau tien agy in ra
   onLine('Đang mở trình duyệt để đăng nhập tài khoản Google…')
   let opened = false
@@ -257,22 +310,155 @@ export function startAgyLogin(bin: string, workdir: string, onLine: (line: strin
     cwd,
     timeoutMs: LOGIN_TIMEOUT_MS,
     stdin: 'pipe',
+    pty: true,
     onLine: onLineOpen,
     doneWhen: agyTokenPresent
   })
 }
 
+/** Tra loi cac cau hoi nhan dang terminal cua giao dien day du agy (khong tra loi -> agy dung cho mai, da do that) */
+function answerTerminalQueries(raw: string, proc: ChildProcess): void {
+  const reply = (s: string) => {
+    try {
+      proc.stdin?.write(s)
+    } catch {
+      /* da dong */
+    }
+  }
+  if (raw.includes('\x1b[>q')) reply('\x1bP>|xterm(370)\x1b\\')
+  if (raw.includes('\x1b[c') || raw.includes('\x1b[0c')) reply('\x1b[?62;22c')
+  if (raw.includes('\x1b[?u')) reply('\x1b[?0u')
+  if (raw.includes('\x1b[6n')) reply('\x1b[1;1R')
+}
+
+/**
+ * Dang xuat agy (doi tai khoan Google). `agy -p /logout` bi agy chan ("not available in print mode") -> chay giao dien
+ * day du `agy -i /logout`: macOS trong pseudo-terminal, app tu tra loi "Are you sure you want to sign out?" (va hoi tin
+ * cay thu muc lam viec cua app neu co); Windows trong cua so agy rieng, nguoi dung tu xac nhan.
+ * Xong = muc phien trong Keychain / Credential Manager bien mat -> dung agy, don file phien cu con sot.
+ */
+export function startAgyLogout(bin: string, workdir: string, onLine: (line: string) => void): Promise<TaskResult> {
+  if (!validBin(bin, 'agy')) return Promise.resolve({ ok: false, error: 'Không tìm thấy Antigravity CLI (agy) trên máy.' })
+  const { env, cwd } = agyEnvCwd(workdir)
+  const loggedOut = () => !agyCredentialPresent()
+  const finish = (r: TaskResult): TaskResult => {
+    if (r.ok) clearAgyLeftovers()
+    return r
+  }
+  if (IS_WIN) return agyWindow(bin, ['-i', '/logout'], cwd, env, onLine, {
+    done: loggedOut,
+    intro: [
+      'Đã mở cửa sổ Antigravity CLI (agy) để đăng xuất.',
+      'agy hỏi “Are you sure you want to sign out?”: gõ y rồi Enter trong cửa sổ đó.',
+      'Đăng xuất xong app tự đóng cửa sổ agy.'
+    ],
+    okLine: 'Đã đăng xuất tài khoản Google khỏi Antigravity CLI.',
+    closedError: 'Cửa sổ Antigravity CLI đã đóng trước khi đăng xuất xong.',
+    timeoutMs: 5 * 60 * 1000
+  }).then(finish)
+  onLine('Đang đăng xuất tài khoản Google khỏi Antigravity CLI…')
+  let seen = ''
+  let trusted = false
+  let confirmed = false
+  return runTask(bin, ['-i', '/logout'], {
+    env,
+    cwd,
+    timeoutMs: 90 * 1000,
+    stdin: 'pipe',
+    pty: true,
+    // Giao dien day du ve lai man hinh lien tuc -> khong dua ra nhat ky
+    onLine: () => {},
+    onChunk: (text, proc, raw) => {
+      answerTerminalQueries(raw, proc)
+      seen = (seen + text).slice(-4000)
+      if (!trusted && /Do you trust the contents of this project/i.test(seen)) {
+        // thu muc lam viec rieng cua app (~/.capcut-studio/agy-work) — chon dong dau "Yes, I trust this folder"
+        trusted = true
+        seen = ''
+        setTimeout(() => proc.stdin?.write('\r'), 400)
+      }
+      if (!confirmed && /Are you sure you want to sign out/i.test(seen)) {
+        confirmed = true
+        setTimeout(() => proc.stdin?.write('y'), 300)
+        setTimeout(() => proc.stdin?.write('\r'), 700)
+      }
+    },
+    doneWhen: loggedOut
+  }).then((r) => {
+    if (r.ok || r.canceled) return finish(r)
+    // agy tu thoat: hoi lai Keychain that (doneWhen hoi moi 1s, co the chua kip)
+    if (loggedOut()) return finish({ ok: true })
+    return { ok: false, error: r.error || 'Antigravity CLI chưa đăng xuất được.' }
+  })
+}
+
+/**
+ * Loi dang nhap / dang xuat agy -> cau de hieu (bo dong JSON tho agy in ra). agy may nay KHAC ban da kiem
+ * (toolchain.json cli.agy.tested) -> noi ro ban moi co the da doi cach dang nhap + chi cach lam thang trong agy.
+ */
+export function agyFailureText(raw: string | undefined, version: string | null | undefined, action: 'login' | 'logout'): string {
+  const text = String(raw || '')
+  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('{'))
+  let msg: string
+  if (/authentication required/i.test(text)) msg = 'Antigravity CLI không mở bước đăng nhập Google.'
+  else if (/invalid_grant/i.test(text)) msg = 'Mã đăng nhập dán vào không đúng hoặc đã hết hạn — bấm đăng nhập lại.'
+  else if (/auth(entication)? (failed or )?timed out/i.test(text)) msg = 'Quá thời gian chờ đăng nhập (agy chỉ chờ khoảng 1 phút) — bấm đăng nhập lại.'
+  else msg = lines.slice(0, 3).join('\n') || (action === 'login' ? 'Antigravity CLI chưa ghi nhận đăng nhập.' : 'Antigravity CLI chưa đăng xuất được.')
+  const tested = manifest().cli.agy.tested
+  const v = String(version || '').trim()
+  if (tested && v && v !== tested) {
+    const term = IS_WIN ? 'PowerShell' : 'Terminal'
+    msg += `\nAntigravity CLI trên máy là bản ${v}, app đã kiểm với bản ${tested} — bản này có thể đã đổi cách ${
+      action === 'login' ? 'đăng nhập' : 'đăng xuất'}. ` + (action === 'login'
+      ? `Bấm “Không đăng nhập được? Mở cửa sổ ${term}” để đăng nhập thẳng trong agy.`
+      : `Đăng xuất thẳng trong agy: mở ${term}, chạy agy rồi gõ /logout.`)
+  }
+  return msg
+}
+
+/** Sau khi agy da dang xuat: xoa file phien kieu cu (agy <= 1.2.x truoc Keychain; agy hien tai khong doc nua) + dau
+ *  keyring-marker con sot -> app khong con bao "da dang nhap" nham. */
+function clearAgyLeftovers(): void {
+  const dir = join(homedir(), '.gemini', 'antigravity-cli')
+  try {
+    for (const n of readdirSync(dir)) {
+      if (n === 'antigravity-oauth-token' || /^keyring-marker/i.test(n)) rmSync(join(dir, n), { force: true })
+    }
+  } catch {
+    /* khong co thu muc */
+  }
+}
+
+/** Dang xuat Codex (`codex logout`) / Claude Code (`claude auth logout`) — lenh chinh chu, khong can trinh duyet */
+export function startCliLogout(id: string, bin: string, workdir: string, onLine: (line: string) => void): Promise<TaskResult> {
+  if (id === 'gemini') return startAgyLogout(bin, workdir, onLine)
+  if (id === 'claude') {
+    if (!validBin(bin, 'claude')) return Promise.resolve({ ok: false, error: 'Không tìm thấy Claude Code CLI trên máy.' })
+    return runTask(bin, ['auth', 'logout'], { env: claudeEnv(cleanEnv()), cwd: homedir(), timeoutMs: 60 * 1000, onLine })
+  }
+  if (!validBin(bin, 'codex')) return Promise.resolve({ ok: false, error: 'Không tìm thấy Codex CLI trên máy.' })
+  return runTask(bin, ['logout'], { env: cleanEnv(), timeoutMs: 60 * 1000, onLine })
+}
+
 /**
  * Windows: agy CHAY AN (console an) ghi link / doc ma qua CONSOLE cua no (CONOUT$ / CONIN$) chu khong qua ong dan
  * -> app khong nhan duoc gi, trinh duyet cung khong mo (su co that may Windows 2026-10-01). Giao dien day du cua agy
- * (`agy` khong tham so, KHONG bien SSH_*) TU MO trinh duyet dang nhap Google -> chay no trong cua so RIENG, THU NHO
- * (Start-Process -WindowStyle Minimized); co file phien -> app tu dong cua so do. Nguoi dung chi dang nhap tren trinh duyet.
+ * (KHONG bien SSH_*) chay trong cua so RIENG. Tu agy 1.2.16 giao dien do hoi "Select login method" (Enter = Google
+ * OAuth) va /logout hoi xac nhan -> cua so de HIEN (khong thu nho) cho nguoi dung bam. done() dung -> app dong cua so.
  */
-function agyLoginWindow(bin: string, cwd: string, env: NodeJS.ProcessEnv, onLine: (line: string) => void): Promise<TaskResult> {
+function agyWindow(
+  bin: string,
+  args: string[],
+  cwd: string,
+  env: NodeJS.ProcessEnv,
+  onLine: (line: string) => void,
+  o: { done: () => boolean; intro: string[]; okLine: string; closedError: string; timeoutMs: number }
+): Promise<TaskResult> {
   if (child || extPid) return Promise.resolve({ ok: false, error: 'Đang có một lượt đăng nhập / cài đặt chạy dở.' })
   return new Promise((resolve) => {
     extCancel = false
-    const script = `$p = Start-Process -FilePath ${psq(bin)} -WorkingDirectory ${psq(cwd)} -WindowStyle Minimized -PassThru; $p.Id`
+    const argList = args.length ? ` -ArgumentList ${args.map(psq).join(',')}` : ''
+    const script = `$p = Start-Process -FilePath ${psq(bin)}${argList} -WorkingDirectory ${psq(cwd)} -PassThru; $p.Id`
     execFile(powershell(), ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', script],
       { env, windowsHide: true, timeout: 30000 }, (err, stdout) => {
         const pid = Number(String(stdout || '').trim().split(/\r?\n/).pop())
@@ -281,8 +467,7 @@ function agyLoginWindow(bin: string, cwd: string, env: NodeJS.ProcessEnv, onLine
           return
         }
         extPid = pid
-        onLine('Đã mở Antigravity CLI (cửa sổ thu nhỏ ở thanh tác vụ) — trình duyệt sẽ mở trang đăng nhập Google.')
-        onLine('Trình duyệt không mở? Bấm vào cửa sổ agy ở thanh tác vụ để xem link đăng nhập.')
+        o.intro.forEach((l) => onLine(l))
         const t0 = Date.now()
         const alive = () => {
           try {
@@ -299,12 +484,12 @@ function agyLoginWindow(bin: string, cwd: string, env: NodeJS.ProcessEnv, onLine
           resolve(res)
         }
         const timer = setInterval(() => {
-          if (agyTokenPresent()) {
-            onLine('Đã nhận phiên đăng nhập Google — đóng cửa sổ agy.')
+          if (o.done()) {
+            onLine(o.okLine)
             done({ ok: true })
           } else if (extCancel) done({ ok: false, canceled: true })
-          else if (!alive()) done({ ok: false, error: 'Cửa sổ Antigravity CLI đã đóng trước khi đăng nhập xong.' })
-          else if (Date.now() - t0 > LOGIN_TIMEOUT_MS) done({ ok: false, error: 'Quá 10 phút chưa đăng nhập xong — bấm lại “Đăng nhập Google”.' })
+          else if (!alive()) done(o.done() ? { ok: true } : { ok: false, error: o.closedError })
+          else if (Date.now() - t0 > o.timeoutMs) done({ ok: false, error: `Quá ${Math.round(o.timeoutMs / 60000)} phút chưa xong — bấm lại.` })
         }, 1000)
       })
   })
@@ -331,12 +516,13 @@ function agyLoginScript(bin: string, workdir: string): string {
     'clear',
     'echo "=== Đăng nhập Antigravity CLI (agy) cho Agent Edit ==="',
     'echo ""',
-    'echo "1. agy sẽ hiện một đường link đăng nhập Google (không tự mở trình duyệt)."',
+    'echo "1. agy hỏi “Select login method”: bấm Enter (1. Google OAuth) — agy hiện một đường link đăng nhập Google."',
     'echo "2. Copy link, dán vào trình duyệt ĐANG đăng nhập tài khoản Google (AI Pro) của bạn."',
     'echo "3. Đăng nhập xong: nếu trang hiện mã (authorization code) thì dán vào cửa sổ này rồi Enter."',
     'echo "4. Khi agy hiện ô chat là xong — app tự nhận ra; gõ /exit để đóng cửa sổ này."',
     'echo ""',
     '# Che do dang nhap tu xa: agy in link + nhan ma, khong tu mo trinh duyet mac dinh',
+    'export AGY_CLI_DISABLE_AUTO_UPDATE=true',
     'export SSH_CONNECTION="127.0.0.1 22 127.0.0.1 22"',
     'export SSH_CLIENT="127.0.0.1 22 22"',
     'export SSH_TTY="$(tty)"',
@@ -363,12 +549,13 @@ export async function openAgyLogin(bin: string, workdir: string): Promise<TaskRe
       'Clear-Host',
       'Write-Host "=== Đăng nhập Antigravity CLI (agy) cho Agent Edit ==="',
       'Write-Host ""',
-      'Write-Host "1. agy sẽ hiện một đường link đăng nhập Google (không tự mở trình duyệt)."',
+      'Write-Host "1. agy hỏi “Select login method”: bấm Enter (1. Google OAuth) — agy hiện một đường link đăng nhập Google."',
       'Write-Host "2. Copy link (bôi đen rồi chuột phải), dán vào trình duyệt ĐANG đăng nhập tài khoản Google (AI Pro) của bạn."',
       'Write-Host "3. Đăng nhập xong: nếu trang hiện mã (authorization code) thì dán vào cửa sổ này rồi Enter."',
       'Write-Host "4. Khi agy hiện ô chat là xong — app tự nhận ra; gõ /exit rồi đóng cửa sổ này."',
       'Write-Host ""',
       '# Che do dang nhap tu xa: agy in link + nhan ma, khong tu mo trinh duyet mac dinh',
+      '$env:AGY_CLI_DISABLE_AUTO_UPDATE = "true"',
       '$env:SSH_CONNECTION = "127.0.0.1 22 127.0.0.1 22"',
       '$env:SSH_CLIENT = "127.0.0.1 22 22"',
       '$env:SSH_TTY = "windows-console"',

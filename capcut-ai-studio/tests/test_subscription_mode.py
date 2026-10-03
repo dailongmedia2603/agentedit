@@ -225,9 +225,10 @@ try:
     check("het han muc -> nem loi", False, "khong nem")
 except cli_providers.CliError as e:
     msg = str(e)
-    check("het han muc -> goi dung ten van de", "HET HAN MUC" in msg, msg[:100])
+    # 2026-10-02: thong bao co dau tieng Viet (Codex con kem khung het + gio mo lai — cli_providers.codex_account)
+    check("het han muc -> goi dung ten van de", "HẾT HẠN MỨC" in msg or "hết hạn mức" in msg, msg[:100])
     check("het han muc -> khong do cho cau hinh",
-          "khong phai loi cau hinh" in msg, msg[:160])
+          "không phải lỗi đăng nhập hay cấu hình" in msg, msg[:160])
     check("het han muc -> goi y tam doi sang API Key", "API Key" in msg, msg[:200])
 
 # 4d. timeout
@@ -443,6 +444,39 @@ check("thoi gian cho bi chan tran MAX_CLI_TIMEOUT", codex_calls()[-1]["timeout"]
 restore()
 cli_providers._CATALOG["data"] = None
 reset_providers()
+
+# ---------------------------------------------------------------------------
+print("\n[codex] Tai khoan + han muc qua `codex app-server` (2026-10-02, du lieu mau — khong goi Codex that)")
+import time as _time  # noqa: E402
+_RESET = int(_time.time()) + 3 * 3600
+_SAMPLE = {
+    "account/read": {"account": {"type": "chatgpt", "email": "ban@vidu.com", "planType": "plus"}},
+    "account/rateLimits/read": {"ordinaryUsageAllowed": False, "rateLimits": {
+        "primary": {"usedPercent": 100, "windowDurationMins": 300, "resetsAt": _RESET},
+        "secondary": {"usedPercent": 40, "windowDurationMins": 10080, "resetsAt": _RESET + 86400 * 2},
+        "rateLimitReachedType": "rate_limit_reached"}, "rateLimitResetCredits": {"availableCount": 1}},
+}
+ORIG_RPC = cli_providers._codex_rpc
+try:
+    cli_providers._codex_rpc = lambda path, reqs, timeout=15: dict(_SAMPLE)
+    acc = cli_providers.codex_account("/fake/codex", fresh=True)
+    check("codex: email + goi", acc and acc["email"] == "ban@vidu.com" and acc["plan"] == "plus", acc)
+    check("codex: 2 khung han muc (5 gio, tuan) + da het", acc and [x["name"] for x in acc["limits"]] == ["5 giờ", "tuần"]
+          and acc["reached"], acc)
+    lines = cli_providers.codex_usage_lines(acc)
+    check("codex: dong han muc co gio mo lai", "Hạn mức 5 giờ: đã dùng 100% — mở lại lúc" in lines[0], lines)
+    cli_providers.find_bin = lambda name: "/fake/codex"
+    hint = cli_providers._quota_hint("gpt", "ERROR: You've hit your usage limit.")
+    check("codex het han muc -> noi khung + gio mo lai + email",
+          hint and "hết hạn mức 5 giờ của Codex — mở lại lúc" in hint and "ban@vidu.com" in hint, hint)
+    cli_providers._codex_rpc = lambda path, reqs, timeout=15: {}
+    check("codex: CLI cu khong co app-server -> None", cli_providers.codex_account("/fake/codex2", fresh=True) is None)
+    hint = cli_providers._quota_hint("gpt", "usage limit reached")
+    check("codex: khong doc duoc han muc -> van bao het han muc chung", hint and "HẾT HẠN MỨC" in hint, hint)
+finally:
+    cli_providers._codex_rpc = ORIG_RPC
+    cli_providers.find_bin = ORIG_FIND
+    cli_providers._CODEX_ACC.update(at=0.0, path=None, data=None)
 
 # ---------------------------------------------------------------------------
 print("\n" + "=" * 60)

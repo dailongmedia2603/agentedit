@@ -1,0 +1,38 @@
+AGENT EDIT — HƯỚNG DẪN MỞ LẦN ĐẦU TRÊN MAC
+==========================================
+
+Vì sao có cảnh báo?
+  Agent Edit chưa được Apple "công chứng" (notarize), nên lần đầu mở macOS sẽ báo
+  "Apple không thể xác minh rằng Agent Edit không chứa phần mềm độc hại".
+  Đây là cảnh báo chung cho mọi app ngoài App Store chưa đăng ký với Apple, KHÔNG phải app bị hỏng.
+
+Yêu cầu: Mac chip Apple (M1, M2, M3, M4…). Mac chip Intel không chạy được bản này.
+
+
+BƯỚC 1 — Cài
+  Kéo biểu tượng Agent Edit vào thư mục Applications (trong cửa sổ cài đặt).
+
+BƯỚC 2 — Mở lần đầu
+  Mở Agent Edit trong Applications. Khi hiện hộp thoại cảnh báo:
+    -> bấm "Xong"
+    -> ĐỪNG bấm "Chuyển vào Thùng rác" (bấm nhầm thì vào Thùng rác kéo app ra lại, hoặc cài lại).
+
+BƯỚC 3 — Cho phép
+  Mở Cài đặt hệ thống (System Settings) -> Quyền riêng tư & Bảo mật (Privacy & Security).
+  Kéo xuống cuối trang, ở dòng "Agent Edit đã bị chặn…" bấm "Vẫn mở" (Open Anyway),
+  rồi nhập mật khẩu máy. Bấm "Mở" thêm một lần nữa nếu được hỏi.
+
+  Nút "Vẫn mở" chỉ hiện trong khoảng 1 giờ sau lần mở bị chặn. Không thấy thì làm lại BƯỚC 2.
+
+Từ lần sau Agent Edit mở bình thường, không hỏi lại.
+
+
+CÁCH KHÁC (nếu không thấy nút "Vẫn mở")
+  Mở ứng dụng Terminal (Launchpad -> gõ "Terminal"), dán dòng lệnh dưới đây rồi nhấn Enter:
+
+    xattr -dr com.apple.quarantine "/Applications/Agent Edit.app"
+
+  Sau đó mở Agent Edit như bình thường.
+
+Lưu ý: Cài bản mới đè lên bản cũ thì làm lại các bước trên một lần. Dự án, kho SFX / meme và
+đăng nhập AI vẫn được giữ nguyên.

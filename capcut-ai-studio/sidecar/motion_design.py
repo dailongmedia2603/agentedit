@@ -591,9 +591,20 @@ def _asset_path(assets_by_id, aid, want_cutout=None):
     a = assets_by_id.get(aid)
     if not a or not a.get("path") or not os.path.isfile(a["path"]):
         return None
-    if (want_cutout if want_cutout is not None else a.get("cutout")) and a.get("cutout_path") and os.path.isfile(a["cutout_path"]):
-        return a["cutout_path"]
+    if (want_cutout if want_cutout is not None else a.get("cutout")) and a.get("cutout_path"):
+        # ban tach cua plan cu (truoc khi lam sach bong / lop mo) -> tach lai dung cho do (co bo nho dem)
+        cut = media_vision.lift_subject(a["path"], a["cutout_path"])
+        if cut and os.path.isfile(cut):
+            return cut
+        if os.path.isfile(a["cutout_path"]):
+            return a["cutout_path"]          # may khong tach lai duoc -> giu ban cu
     return a["path"]
+
+
+def is_cutout(assets_by_id, aid, path):
+    """Lop anh dang dung ban TACH NEN (PNG trong suot) -> bong theo VIEN vat the, khong theo khung chu nhat."""
+    a = assets_by_id.get(aid) or {}
+    return bool(path) and (path == a.get("cutout_path") or bool(a.get("alpha")))
 
 
 # ---------------------------------------------------------------------------
@@ -1064,6 +1075,8 @@ def layers_to_spec(p, duration, scenes, assets_by_id, faces, changes, kit=None):
                 changes.append("layer%d: anh '%s' khong co (tai nguyen hong/thieu) -> bo" % (i, L0.get("asset")))
                 continue
             L["path"] = path
+            if is_cutout(assets_by_id, L0.get("asset"), path):
+                L["cutout"] = True
         # chu "sau nguoi" (behind_subject): nam giua nen video va nguoi -> DUOC dat ngang dau/mat
         if L0.get("behind_subject") or L0.get("behind"):
             if media_vision.available() and typ in ("text", "counter", "image", "box", "circle", "ring", "speedlines"):
@@ -2342,6 +2355,250 @@ def dodge_subtitles(spec, changes):
         changes.append("phu de '%s': khong con cho trong -> chi hien ngoai luc chu noi bat hien" % (c.get("text") or "")[:24])
     out.sort(key=lambda c: c["start"])
     spec["captions"] = out
+
+
+# ---------------------------------------------------------------------------
+# BAO VE MAT NGUOI NOI (user 2026-10-03: o HOOK chu '1 NUT LA XONG' de ngang mat — caption hero / chu anh AI cua
+# hook sinh SAU buoc ne mat cu (_avoid_faces chi xet lop chu cua R4), anh / huy hieu thi khong buoc nao xet).
+# Chay tren SPEC CUOI: moi thu hien len (lop chu, chu anh AI, huy hieu, bo dem, anh, hinh, tu lieu, caption hero,
+# phu de) — khung THAT theo co chu / kich thuoc anh / keyframe phong to — doi chieu voi mat o TUNG thoi diem lop
+# hien (bo cuc + jump-cut zoom + camera rung / phong cua hieu ung). HOOK: khong gi duoc de len mat. Than video:
+# toi da FACE_BODY_MAX dien tich mat. Thu: tren dau -> duoi cam -> canh ben -> thu nho dan. Lop 'sau nguoi'
+# (behind: nguoi ve de len chu) va lop toan khung (anh B-roll phu kin) khong tinh.
+# ---------------------------------------------------------------------------
+FACE_HOOK_MAX = 0.02        # hook: cham vien mat toi da 2% (sai so uoc luong khung chu)
+FACE_BODY_MAX = 0.15        # than video: che toi da 15% khung mat (nhu tu lieu nguoi dung)
+FACE_SAFE = (0.06, 0.82)    # vung dat duoc (tren 6% / duoi 82% bi giao dien TikTok che)
+FACE_FULL_AREA = 0.55       # lop phu > 55% khung = canh phu toan man hinh, khong phai vat de len mat
+_GUARD_TYPES = ("text", "counter", "badge", "image", "video", "box", "circle")   # vong (ring) khoanh mat: co y
+
+
+def _img_ratio(path, _cache={}):
+    """cao / rong cua anh (doc header)."""
+    if path not in _cache:
+        r = None
+        try:
+            from PIL import Image
+            with Image.open(path) as im:
+                r = im.size[1] / float(max(1, im.size[0]))
+        except Exception:
+            r = None
+        _cache[path] = r
+    return _cache[path]
+
+
+def _kf_scale(L):
+    s = float(L.get("scale") or 1.0)
+    ks = [float(k.get("scale")) for k in L.get("keyframes") or [] if isinstance(k, dict) and k.get("scale") is not None]
+    return s * max([1.0] + ks)
+
+
+def _guard_box(L, W=1080, H=1920):
+    """Khung (x0, y0, x1, y1) 0..1 lop chiem khi to nhat (keyframe phong to), theo diem neo. Khong uoc duoc -> None."""
+    typ = L.get("type")
+    if typ in ("text", "counter"):
+        w, h = _text_width(L), _text_height(L) if typ == "text" else (L.get("size") or 120) * 1.1 / 1920
+        if typ == "counter":
+            w = max(w, (L.get("size") or 120) * 0.6 * 4 / 1080)
+        if L.get("maxWidth") and not L.get("art"):
+            w = min(w, float(L["maxWidth"]))
+    elif typ == "badge" and L.get("art"):
+        w, h = float(L["art"][0].get("w") or 0) / W, float(L["art"][0].get("h") or 0) / H
+    elif typ in ("badge", "box", "circle", "ring", "image", "video"):
+        w = float(L.get("w") or 0.3)
+        if L.get("h") is not None:
+            h = float(L["h"])
+        elif typ == "image" and L.get("path"):
+            r = _img_ratio(L["path"])
+            if not r:
+                return None
+            h = w * W * r / H
+        else:
+            h = w * W / H
+    else:
+        return None
+    k = _kf_scale(L)
+    w, h = w * k, h * k
+    x, y = float(L.get("x", 0.5)), float(L.get("y", 0.5))
+    a = L.get("anchor") or "center"
+    x0 = x if a == "left" else x - w if a == "right" else x - w / 2
+    y0 = y if a == "top" else y - h if a == "bottom" else y - h / 2
+    return (x0, y0, x0 + w, y0 + h)
+
+
+def _cap_box(c, W=1080, H=1920):
+    """Caption (hero / phu de) — khoi chu giua khung, rong theo noi dung (toi da 86%)."""
+    size = float(c.get("size") or 48)
+    tw = min(0.86, len(str(c.get("text") or "")) * size * 0.56 / W)
+    cy, h2 = (float(c.get("y") or 0) + 1) / 2, _caption_half(c, W, H)
+    return (0.5 - tw / 2, cy - h2, 0.5 + tw / 2, cy + h2)
+
+
+def _cam_at(spec, t, fps=30):
+    """(phong, dich x, dich y px) cua video luc t: hieu ung camera (look.ts cameraAt — lay DINH) x khung tu viet."""
+    s, tx, ty = 1.0, 0.0, 0.0
+    peak = {"zoom_punch": 0.2, "ken_burns": 0.13, "zoom_out_reveal": 0.32, "shake": 0.04, "pulse": 0.045,
+            "fisheye": 0.06, "pan_left": 0.12, "pan_right": 0.12}
+    for e in spec.get("effects") or []:
+        if e.get("type") in peak and e["start"] <= t <= e["end"]:
+            I = RP._clamp(float(e.get("intensity") if e.get("intensity") is not None else 0.7), 0, 1)
+            s *= 1 + (peak[e["type"]] if e["type"] == "shake" else peak[e["type"]] * I)
+            if e["type"] == "shake":
+                tx, ty = tx + 26 * I, ty + 26 * I
+            elif e["type"] in ("pan_left", "pan_right"):
+                tx += 0.045 * 1080 * I
+    for f in spec.get("fxTransforms") or []:
+        if not (f["start"] <= t <= f["end"]) or not f.get("values"):
+            continue
+        i = max(0, int(round((t - f["start"]) * fps)))
+        v = lambda k, d: (f["values"].get(k) or [d])[min(i, len(f["values"].get(k) or [d]) - 1)]  # noqa: E731
+        s *= float(v("scale", 1.0))
+        tx += abs(float(v("x", 0.0)))
+        ty += abs(float(v("y", 0.0)))
+    return s, tx, ty
+
+
+def _face_rect(spec, t, W, H):
+    """Khung mat (tran -> cam) 0..1 luc t tren man hinh, gom camera phong / rung. Khong co mat -> None."""
+    import fx_flow
+    fp = fx_flow._face_px(spec, t, W, H)
+    if not fp:
+        return None
+    s, tx, ty = _cam_at(spec, t, int(spec.get("fps") or 30))
+    cx, cy = W / 2 + (fp["x"] - W / 2) * s, H / 2 + (fp["y"] - H / 2) * s
+    fw, fh = fp["w"] * s, fp["h"] * s
+    # Vision: khung mat tu long may toi cam -> them tran (0.75) va 2 ben (0.55)
+    return ((cx - fw * 0.55 - tx) / W, (cy - fh * 0.75 - ty) / H, (cx + fw * 0.55 + tx) / W, (cy + fh * 0.62 + ty) / H)
+
+
+def _hook_end(spec):
+    return max([c["end"] for c in spec.get("clips") or [] if c.get("kind") == "hook"] or [0.0])
+
+
+def protect_face(spec, changes):
+    """Khong chu / anh / do hoa nao de len mat nguoi noi — tuyet doi o HOOK, toi da FACE_BODY_MAX o than video."""
+    import user_media as UM
+    W, H = int(spec.get("width") or 1080), int(spec.get("height") or 1920)
+    if not any(c.get("face") for c in spec.get("clips") or []):
+        return
+    hook_end = _hook_end(spec)
+    behind_groups = {L.get("group") for L in spec.get("layers") or [] if L.get("behind") and L.get("group")}
+    units = {}
+    for L in spec.get("layers") or []:
+        if L.get("group") and L["group"] in behind_groups:
+            continue          # to hop co tang sau nguoi: da neo theo dinh dau (attach_subject_mattes)
+        if L.get("type") not in _GUARD_TYPES or L.get("behind") or float(L.get("opacity") if L.get("opacity") is not None else 1) < 0.3:
+            continue
+        if L["type"] in ("box", "circle") and not L.get("group"):
+            continue          # khung / hinh rieng le (vd nen mo, khoanh vung) — chi xet khi la nen cua to hop chu
+        units.setdefault(("g", L["group"]) if L.get("group") else ("l", L["id"]), []).append(("L", L))
+    for i, c in enumerate(spec.get("captions") or []):
+        # phu de chi xet o hook (than video: dodge_subtitles da tranh mat khi doi cho)
+        if c.get("role") == "hero" or c["start"] < hook_end:
+            units[("c", i)] = [("C", c)]
+    for key, mem in units.items():
+        boxes = [(_guard_box(x, W, H) if kind == "L" else _cap_box(x, W, H)) for kind, x in mem]
+        if any(b is None for b in boxes):
+            continue
+        st, en = min(x["start"] for _, x in mem), max(x["end"] for _, x in mem)
+        box = (min(b[0] for b in boxes), min(b[1] for b in boxes), max(b[2] for b in boxes), max(b[3] for b in boxes))
+        if (box[2] - box[0]) * (box[3] - box[1]) > FACE_FULL_AREA:
+            continue
+        in_hook = st < hook_end - 0.05
+        lim = FACE_HOOK_MAX if in_hook else FACE_BODY_MAX
+        ts = [st + 0.05 + 0.2 * j for j in range(max(1, int((en - st - 0.1) / 0.2) + 1))] + [max(st, en - 0.05)]
+        faces = [f for f in (_face_rect(spec, t, W, H) for t in ts) if f]
+        if not faces:
+            continue
+
+        def cover(b):
+            return max(UM._inter(b, f) / max(1e-6, (f[2] - f[0]) * (f[3] - f[1])) for f in faces)
+
+        if cover(box) <= lim:
+            continue
+        F = (min(f[0] for f in faces), min(f[1] for f in faces), max(f[2] for f in faces), max(f[3] for f in faces))
+        fh = F[3] - F[1]
+        hair = F[1] - fh * 0.3                 # dinh toc (khong de chu len toc cho de doc)
+        bw, bh = box[2] - box[0], box[3] - box[1]
+        cx0, cy0 = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
+        m = 0.015
+        moved = None
+        for k in (1.0, 0.88, 0.76, 0.64, 0.52, 0.42):
+            ww, hh = bw * k, bh * k
+            cands = []
+            for top in (hair, F[1]):
+                if top - m - hh >= FACE_SAFE[0]:
+                    cands.append(("tren dau" if top == hair else "tren tran", cx0, top - m - hh / 2))
+            if F[3] + m + hh <= FACE_SAFE[1]:
+                cands.append(("duoi cam", cx0, F[3] + m + hh / 2))
+            if F[0] - m - ww >= 0.02:
+                cands.append(("ben trai", F[0] - m - ww / 2, cy0))
+            if F[2] + m + ww <= 0.98:
+                cands.append(("ben phai", F[2] + m + ww / 2, cy0))
+            best = None
+            for note, cx, cy in cands:
+                cx = RP._clamp(cx, 0.02 + ww / 2, 0.98 - ww / 2) if ww < 0.96 else 0.5
+                cy = RP._clamp(cy, FACE_SAFE[0] + hh / 2, FACE_SAFE[1] - hh / 2)
+                b = (cx - ww / 2, cy - hh / 2, cx + ww / 2, cy + hh / 2)
+                if cover(b) <= lim:
+                    d = abs(cx - cx0) + abs(cy - cy0)
+                    if best is None or d < best[0]:
+                        best = (d, note, cx, cy)
+            if best:
+                moved = (best[1], best[2], best[3], k)
+                break
+        if not moved:
+            if in_hook:
+                # khong con cho nao (mat chiem gan het khung): bo lop khoi hook con hon che mat
+                for kind, x in mem:
+                    if kind == "L":
+                        spec["layers"] = [y for y in spec["layers"] if y is not x]
+                    else:
+                        spec["captions"] = [y for y in spec["captions"] if y is not x]
+                changes.append("%s: hook — khong con cho trong ngoai mat nguoi noi -> bo" % _guard_name(mem))
+            else:
+                changes.append("%s: de len mat nguoi noi, khong con cho ne — giu vi tri" % _guard_name(mem))
+            continue
+        note, cx, cy, k = moved
+        # doi ca khoi quanh tam (to hop nhieu tang giu nguyen bo cuc tuong doi), thu nho quanh tam khoi
+        for kind, x in mem:
+            if kind == "L":
+                ox, oy = float(x.get("x", 0.5)), float(x.get("y", 0.5))
+                x["x"] = round(cx + (ox - cx0) * k, 4)
+                x["y"] = round(cy + (oy - cy0) * k, 4)
+                for kf in x.get("keyframes") or []:
+                    if isinstance(kf, dict) and kf.get("x") is not None:
+                        kf["x"] = round(cx + (float(kf["x"]) - cx0) * k, 4)
+                    if isinstance(kf, dict) and kf.get("y") is not None:
+                        kf["y"] = round(cy + (float(kf["y"]) - cy0) * k, 4)
+                if k < 0.999:
+                    _scale_layer(x, k)
+            else:
+                oy = (float(x.get("y") or 0) + 1) / 2
+                x["y"] = round(2 * (cy + (oy - cy0) * k) - 1, 3)
+                if k < 0.999 and x.get("size"):
+                    x["size"] = round(float(x["size"]) * k, 1)
+        changes.append("%s: %s de len mat nguoi noi -> %s%s" % (
+            _guard_name(mem), "hook —" if in_hook else "", note, ", thu nho %.0f%%" % (k * 100) if k < 0.999 else ""))
+
+
+def _guard_name(mem):
+    return ",".join(("caption '%s'" % (x.get("text") or "")[:20]) if kind == "C" else x["id"] for kind, x in mem)
+
+
+def _scale_layer(L, k):
+    """Thu nho mot lop k lan (chu: co chu; chu anh / huy hieu anh: kich thuoc anh; hinh / anh: be ngang)."""
+    if L.get("type") in ("text", "counter"):
+        _scale_text(L, k)
+    for a in L.get("art") or []:
+        for key in ("w", "h", "mt"):
+            if a.get(key):
+                a[key] = round(float(a[key]) * k, 1)
+    if L.get("type") in ("badge", "box", "circle", "ring", "image", "video"):
+        if L.get("w"):
+            L["w"] = round(float(L["w"]) * k, 4)
+        if L.get("h") is not None:
+            L["h"] = round(float(L["h"]) * k, 4)
 
 
 def _beats(items, gap=0.6):

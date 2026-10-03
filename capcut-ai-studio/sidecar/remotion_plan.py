@@ -1066,11 +1066,12 @@ def _overlays_to_spec(p, duration):
 
 # 2 = video HDR -> ban SDR + lop tach nguoi khop khung; 3 = cat an toan theo tieng noi + lop chu
 # khop loi (2026-09-26). UI dung lai spec cu hon tu plan khi mo du an.
-SPEC_MEDIA_VERSION = 8     # 4 = quy tac chu 2026-09-27; 5 = phu de cach chu noi bat + chu khong tu xuong dong;
+SPEC_MEDIA_VERSION = 9     # 4 = quy tac chu 2026-09-27; 5 = phu de cach chu noi bat + chu khong tu xuong dong;
                            # 6 = chu khop loi theo cau phu de + SFX hook khong roi khoi hook;
                            # 7 = tach nguoi tung khung (tach chu the + loc vung nguoi + trung vi 3 khung)
                            # 8 = zoom muot (zoomFrom/zoomDur), luat cung khoang lang + kiem lai diem cat,
                            #     SFX / meme can theo giong noi cua video (2026-10-01)
+                           # 9 = bao ve mat nguoi noi (hook tuyet doi) + anh tach nen sach bong / lop mo (2026-10-03)
 
 
 def build_spec(plan, log=None):
@@ -1335,6 +1336,12 @@ def build_spec(plan, log=None):
             FX.fx_to_spec(p, spec, changes)
         except Exception as ex:
             changes.append("bo qua hieu ung tu viet (%s)" % str(ex)[:160])
+    # MAT NGUOI NOI khong bi che (user 2026-10-03): chu / chu anh hook / anh / huy hieu — tuyet doi o hook. Chay sau
+    # khi moi lop da co (caption hero -> chu anh, hieu ung tu viet), truoc tach nguoi + do tuong phan (tinh tren vi tri moi)
+    try:
+        MD.protect_face(spec, changes)
+    except Exception as ex:
+        changes.append("bo qua bao ve mat nguoi noi (%s)" % str(ex)[:120])
     if motion or spec.get("fx") or spec.get("layers"):
         MD.attach_subject_mattes(spec, changes, log=log)
         # chu de len nhau -> lop tach ro; chu phai ro tren NEN THAT (do do sang khung video / anh)
@@ -1364,6 +1371,10 @@ def build_spec(plan, log=None):
                     if isinstance(w, dict) and w.get("text"):
                         w["text"] = f_(w["text"])
         MD.dodge_subtitles(spec, changes)
+        try:
+            MD.protect_face(spec, changes)     # kiem lai sau khi phu de doi cho (phu de o hook)
+        except Exception as ex:
+            changes.append("bo qua kiem lai mat nguoi noi (%s)" % str(ex)[:120])
     if not spec["clips"]:
         issues.append({"severity": "high", "area": "structure", "problem": "Khong con doan video nao dung duoc"})
     elif abs(spec["clips"][-1]["end"] - spec["duration"]) > 0.1:

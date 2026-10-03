@@ -123,24 +123,44 @@ def face_box(video_path, samples=9, duration=None):
 
 
 def lift_subject(img_path, out_path=None):
-    """Tach chu the khoi nen -> PNG RGBA cat sat chu the. Tra duong dan, hoac None."""
+    """Tach chu the khoi nen -> PNG RGBA cat sat chu the. Tra duong dan, hoac None.
+    Mat na AI (Vision / BiRefNet) duoc LAM SACH (cutout_refine): xoa bong do + lop mo du, lay lai phan vat bi sot.
+    Ban tach cu (khac cutout_refine.VERSION) tu tach lai."""
+    import cutout_refine
     if not img_path or not os.path.isfile(img_path):
         return None
     out_path = out_path or os.path.splitext(img_path)[0] + "_cut.png"
+    if cutout_refine.fresh(out_path, img_path):
+        return out_path
+    own = cutout_refine.own_alpha(img_path)
+    if own is not None:          # anh da trong suot san (Codex) -> giu alpha cua anh, chi lam sach
+        try:
+            return cutout_refine.cutout(img_path, own, out_path)
+        except Exception:
+            return None
     if not _vision():
         if not vision_onnx.has(vision_onnx.CUT):
             return None
-        if os.path.isfile(out_path) and os.path.getmtime(out_path) >= os.path.getmtime(img_path):
-            return out_path
         try:
             return vision_onnx.cutout(img_path, out_path)
         except Exception:
             return None
+    mask = _vision_mask(img_path)
+    if mask is None:
+        return None
+    try:
+        return cutout_refine.cutout(img_path, mask, out_path)
+    except Exception:
+        return None
+
+
+def _vision_mask(img_path):
+    """Mat na 'tach chu the' (moi chu the) cua Vision, CUNG kich thuoc anh, 0..1 — hoac None."""
+    import numpy as np
     import Vision
     import Quartz
     from Foundation import NSURL
-    if os.path.isfile(out_path) and os.path.getmtime(out_path) >= os.path.getmtime(img_path):
-        return out_path
+    from PIL import Image
     req = Vision.VNGenerateForegroundInstanceMaskRequest.alloc().init()
     h = Vision.VNImageRequestHandler.alloc().initWithURL_options_(NSURL.fileURLWithPath_(img_path), None)
     ok, _err = h.performRequests_error_([req], None)
@@ -148,16 +168,25 @@ def lift_subject(img_path, out_path=None):
     if not res:
         return None
     obs = res[0]
-    buf, _e = obs.generateMaskedImageOfInstances_fromRequestHandler_croppedToInstancesExtent_error_(
-        obs.allInstances(), h, True, None)
+    buf, _e = obs.generateScaledMaskForImageForInstances_fromRequestHandler_error_(obs.allInstances(), h, None)
     if buf is None:
         return None
-    ci = Quartz.CIImage.imageWithCVPixelBuffer_(buf)
-    ctx = Quartz.CIContext.contextWithOptions_(None)
-    cs = Quartz.CGColorSpaceCreateWithName(Quartz.kCGColorSpaceSRGB)
-    ok2, _e2 = ctx.writePNGRepresentationOfImage_toURL_format_colorSpace_options_error_(
-        ci, NSURL.fileURLWithPath_(out_path), Quartz.kCIFormatRGBA8, cs, {}, None)
-    return out_path if ok2 and os.path.isfile(out_path) else None
+    fd, tmp = tempfile.mkstemp(suffix=".png", prefix="mask-")
+    os.close(fd)
+    try:
+        ci = Quartz.CIImage.imageWithCVPixelBuffer_(buf)
+        ctx = Quartz.CIContext.contextWithOptions_(None)
+        ok2, _e2 = ctx.writePNGRepresentationOfImage_toURL_format_colorSpace_options_error_(
+            ci, NSURL.fileURLWithPath_(tmp), Quartz.kCIFormatL8, Quartz.CGColorSpaceCreateDeviceGray(), {}, None)
+        if not ok2:
+            return None
+        with Image.open(tmp) as m:
+            return np.asarray(m.convert("L")).astype(np.float32) / 255.0
+    finally:
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass
 
 
 MATTE_MAX_SEC = 20.0

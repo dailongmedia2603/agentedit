@@ -15,15 +15,18 @@ import {
   AlertTriangle,
   Download,
   LogIn,
+  LogOut,
   ExternalLink,
   ArrowUpCircle,
-  X
+  X,
+  Layers
 } from 'lucide-react'
 import { Button, Input, Spinner, Badge } from '@/components/ui/primitives'
 import { GeminiMark, OpenAIMark, ClaudeMark } from '@/components/BrandIcons'
 import { cn } from '@/lib/utils'
 import { IS_WIN, KEY_STORE, TERM } from '../lib/platform'
 import { isFullUi } from '@/lib/clientUi'
+import { DEFAULT_LIMITS, MAX_LIMITS, clampLimit, setLimits } from '@/lib/jobQueue'
 
 interface ProviderMeta {
   id: string
@@ -138,7 +141,7 @@ function EffortPicker({
 interface LoginRun {
   /** provider: 'gpt' | 'gemini' | 'claude' */
   id: string
-  kind: 'login' | 'install' | 'update'
+  kind: 'login' | 'install' | 'update' | 'logout'
   mode: 'browser' | 'device'
   running: boolean
   lines: string[]
@@ -147,7 +150,7 @@ interface LoginRun {
 
 /** Huong dan hien trong khung cho khi dang nhap Antigravity CLI (dien ra trong Terminal) */
 const AGY_LOGIN_STEPS = [
-  `1. Trong cửa sổ ${TERM} vừa mở, agy hiện một đường link đăng nhập Google.`,
+  `1. Trong cửa sổ ${TERM} vừa mở: agy hỏi “Select login method” thì bấm Enter (1. Google OAuth) — agy hiện link đăng nhập Google.`,
   '2. Copy link, dán vào trình duyệt đang đăng nhập tài khoản Google (AI Pro) của bạn.',
   `3. Nếu trang hiện mã (authorization code): dán vào ${TERM} rồi Enter.`,
   `4. Thấy ô chat của agy là xong — app tự nhận ra. Gõ /exit để đóng ${TERM}.`
@@ -441,6 +444,7 @@ function CliPanel({
   onLogin,
   onInstall,
   onUpdate,
+  onLogout,
   onCancelLogin
 }: {
   provider: string
@@ -453,6 +457,8 @@ function CliPanel({
   onInstall?: () => void
   /** Claude: cap nhat Claude Code khi co model can ban CLI moi hon */
   onUpdate?: () => void
+  /** Dang xuat CLI (de dang nhap tai khoan khac) */
+  onLogout?: () => void
   onCancelLogin?: () => void
 }) {
   if (loading && !status) {
@@ -499,6 +505,19 @@ function CliPanel({
           <div className="mt-0.5 whitespace-pre-line text-[12.5px] leading-relaxed text-ink-800/60">
             {status.detail}
           </div>
+          {!!status.usage?.length && (
+            <div
+              className={cn(
+                'mt-1.5 space-y-0.5 rounded-lg px-2.5 py-1.5 text-[12px] leading-relaxed',
+                status.limit_reached ? 'bg-red-500/[0.07] text-red-700' : 'bg-black/[0.03] text-ink-800/60'
+              )}
+            >
+              {status.limit_reached && <div className="font-semibold">Đã hết hạn mức — tạo ảnh AI tạm không chạy được</div>}
+              {status.usage.map((u, i) => (
+                <div key={i}>{u}</div>
+              ))}
+            </div>
+          )}
 
           {!status.installed && status.install_cmd && (
             <>
@@ -574,6 +593,25 @@ function CliPanel({
               )}
             </div>
           )}
+          {status.installed && onLogout && (ready || login?.kind === 'logout') && (
+            <div className="mt-2.5 space-y-2">
+              {login?.kind === 'logout' && login.running ? (
+                <TaskLog run={login} title={`Đang đăng xuất ${status.label}…`} onCancel={onCancelLogin} />
+              ) : (
+                ready && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button size="sm" variant="outline" onClick={onLogout} disabled={!!login?.running}>
+                      <LogOut className="h-4 w-4" /> Đăng xuất
+                    </Button>
+                    <span className="text-[11.5px] text-ink-800/50">để đăng nhập tài khoản khác</span>
+                  </div>
+                )
+              )}
+              {login?.kind === 'logout' && !login.running && login.result && !login.result.ok && (
+                <div className="whitespace-pre-line text-[12px] text-red-600">{login.result.text}</div>
+              )}
+            </div>
+          )}
           {status.installed && login?.result?.ok && (login.kind !== 'login' || status.logged_in) && (
             <div className="mt-1.5 text-[12px] font-medium text-emerald-700">{login.result.text}</div>
           )}
@@ -581,6 +619,97 @@ function CliPanel({
         <Button variant="ghost" size="sm" onClick={onRefresh} disabled={loading} title="Kiểm tra lại">
           {loading ? <Spinner /> : <RefreshCw className="h-4 w-4" />}
         </Button>
+      </div>
+    </div>
+  )
+}
+
+/** So video chay cung luc o "Tao video" (src/lib/jobQueue.ts) — NGUOI DUNG TU NHAP so (1..20); roi o / Enter la luu +
+ *  ap dung ngay, khong cho "Luu tat ca". */
+function JobLimitsCard() {
+  const [v, setV] = useState<{ gemini: number; claude: number } | null>(null)
+  // chu dang go trong o (chua luu)
+  const [draft, setDraft] = useState<{ gemini: string; claude: string }>({ gemini: '', claude: '' })
+  const [savedAt, setSavedAt] = useState(0)
+  useEffect(() => {
+    window.studio
+      .settingsGetJobLimits()
+      .catch(() => ({ gemini: DEFAULT_LIMITS.gemini, claude: DEFAULT_LIMITS.claude }))
+      .then((l) => {
+        setV(l)
+        setDraft({ gemini: String(l.gemini), claude: String(l.claude) })
+      })
+  }, [])
+  const commit = async (k: 'gemini' | 'claude') => {
+    if (!v) return
+    const n = clampLimit(k, draft[k])
+    if (n === v[k]) {
+      setDraft((d) => ({ ...d, [k]: String(n) })) // go rac / ngoai khoang -> hien lai so dang dung
+      return
+    }
+    const next = await window.studio.settingsSetJobLimits({ [k]: n })
+    setV(next)
+    setDraft({ gemini: String(next.gemini), claude: String(next.claude) })
+    setLimits(next)
+    setSavedAt(Date.now())
+  }
+  const row = (k: 'gemini' | 'claude', title: string, hint: string) => (
+    <div className="flex items-start gap-4">
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-medium text-ink-900">{title}</div>
+        <div className="mt-0.5 text-[12px] leading-relaxed text-ink-800/50">{hint}</div>
+      </div>
+      <div className="flex shrink-0 items-center gap-2">
+        <Input
+          type="number"
+          inputMode="numeric"
+          min={1}
+          max={MAX_LIMITS[k]}
+          step={1}
+          disabled={!v}
+          value={draft[k]}
+          onChange={(e) => setDraft((d) => ({ ...d, [k]: e.target.value }))}
+          onBlur={() => commit(k)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+          }}
+          className="w-20 text-center font-semibold"
+        />
+        <span className="text-xs text-ink-800/45">video</span>
+      </div>
+    </div>
+  )
+  return (
+    <div className="card-surface rounded-2xl px-5 py-4">
+      <div className="mb-3 flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-black/6 bg-white">
+          <Layers className="h-5 w-5 text-brand-500" />
+        </div>
+        <div className="flex-1">
+          <div className="text-[15px] font-semibold text-ink-900">Tạo nhiều video cùng lúc</div>
+          <div className="text-xs text-ink-800/45">
+            Ở “Tạo video”, bấm “Thêm video” để làm video khác trong lúc video trước đang chạy. Quá số dưới đây thì video
+            sau tự xếp hàng chờ, tới lượt sẽ tự chạy. Xuất video (render) luôn 1 video một lúc cho máy khỏi nặng. Nhập số
+            từ 1 đến {MAX_LIMITS.gemini}, bấm Enter (hoặc bấm ra ngoài) để lưu.
+          </div>
+        </div>
+        {savedAt > 0 && (
+          <span className="flex items-center gap-1 text-xs text-emerald-600">
+            <CheckCircle2 className="h-4 w-4" /> Đã lưu
+          </span>
+        )}
+      </div>
+      <div className="space-y-3 border-t border-black/6 pt-3">
+        {row(
+          'gemini',
+          'Số video phân tích cùng lúc (Gemini)',
+          'Bước Hiểu nguồn: Gemini xem video nguồn + video mẫu. Nhiều video cùng lúc dễ chạm giới hạn lượt gọi của tài khoản Google.'
+        )}
+        {row(
+          'claude',
+          'Số video lập kế hoạch cùng lúc (Claude)',
+          'Bước lập kế hoạch dựng video (mỗi video gọi Claude khoảng 9–12 lượt). Đã đo thật 10 lượt Claude cùng lúc vẫn chạy bình thường — giới hạn thật là hạn mức của gói Claude: càng nhiều video cùng lúc càng nhanh hết hạn mức.'
+        )}
       </div>
     </div>
   )
@@ -736,6 +865,27 @@ export default function SettingsPage() {
         : res.canceled
           ? { ok: false, text: 'Đã huỷ cập nhật.' }
           : { ok: false, text: 'Chưa cập nhật được: ' + (res.error || 'không rõ lỗi') }
+    }))
+    await refreshCli([id])
+  }
+
+  const startLogout = async (id: string) => {
+    const who = id === 'gemini' ? 'Antigravity CLI' : id === 'claude' ? 'Claude Code' : 'Codex'
+    const acct = id === 'gemini' ? 'tài khoản Google' : id === 'claude' ? 'tài khoản Claude' : 'tài khoản ChatGPT'
+    if (!window.confirm(`Đăng xuất ${acct} khỏi ${who}?\n\n${who} dùng trong ${TERM} trên máy này cũng bị đăng xuất. Sau đó bấm “Đăng nhập” để vào tài khoản khác.`)) return
+    setLogin({ id, kind: 'logout', mode: 'browser', running: true, lines: [] })
+    const res = await window.studio.settingsCliLogout(id).catch((e) => ({ ok: false, error: String(e) }) as const)
+    setLogin((cur) => ({
+      id,
+      kind: 'logout',
+      mode: 'browser',
+      running: false,
+      lines: cur?.lines || [],
+      result: res.ok
+        ? { ok: true, text: `Đã đăng xuất ${who} — bấm “Đăng nhập” để vào tài khoản khác.` }
+        : 'canceled' in res && res.canceled
+          ? { ok: false, text: 'Đã huỷ đăng xuất.' }
+          : { ok: false, text: 'Chưa đăng xuất được: ' + (res.error || 'không rõ lỗi') }
     }))
     await refreshCli([id])
   }
@@ -951,6 +1101,7 @@ export default function SettingsPage() {
                         onLogin={(mode) => startLogin(p.id, mode)}
                         onInstall={() => startInstall(p.id)}
                         onUpdate={p.id === 'claude' ? () => startUpdate(p.id) : undefined}
+                        onLogout={() => startLogout(p.id)}
                         onCancelLogin={() => {
                           // agy / Claude Code dang nhap trong Terminal cua nguoi dung -> chi dung viec cho;
                           // con lai huy tien trinh
@@ -1093,6 +1244,7 @@ export default function SettingsPage() {
             </div>
           )
         })}
+        <JobLimitsCard />
       </div>
     </div>
   )

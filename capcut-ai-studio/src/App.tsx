@@ -20,7 +20,7 @@ import ProjectsPage from '@/pages/Projects'
 import SfxPage from '@/pages/Sfx'
 import MemesPage from '@/pages/Memes'
 import PromptsPage from '@/pages/Prompts'
-import RemotionStudioPage from '@/pages/RemotionStudio'
+import CreateVideoPage from '@/pages/CreateVideo'
 import { IS_WIN } from './lib/platform'
 import { installSecretToggle, useFullUi } from './lib/clientUi'
 
@@ -61,8 +61,8 @@ export default function App() {
   const doctor = useDoctor()
   const ready = doctor.ready
   const [openReq, setOpenReq] = useState<{ id: string; nonce: number } | null>(null)
-  // Du an Video Remotion dang xu ly (khong cho xoa) + du an vua bi xoa (trang Remotion dong no lai)
-  const [rmBusyId, setRmBusyId] = useState<string | null>(null)
+  // Du an dang xu ly o Tao video (nhieu video chay cung luc — khong cho xoa) + du an vua bi xoa (the cua no dong lai)
+  const [rmBusyIds, setRmBusyIds] = useState<string[]>([])
   const [deletedReq, setDeletedReq] = useState<{ id: string; nonce: number } | null>(null)
   // Trang Prompt chi mount khi mo lan dau, sau do giu nguyen de khong mat ban dang sua khi doi tab
   const [promptsMounted, setPromptsMounted] = useState(false)
@@ -71,7 +71,7 @@ export default function App() {
   }, [tab])
 
   useEffect(() => {
-    window.studio.appInfo().then((i) => setAppVersion(i.version))
+    window.studio.appInfo().then((i) => setAppVersion(i.build ? `${i.version} · build ${i.build}` : i.version))
   }, [])
 
   // Tu dong dong bo kho SFX + Meme tu R2 MOT LAN khi san sang (chay nen, khong chan UI).
@@ -187,7 +187,7 @@ export default function App() {
           {tab === 'projects' && (
             <ProjectsPage
               openProject={openProject}
-              busyId={rmBusyId}
+              busyIds={rmBusyIds}
               onDeleted={(id) => setDeletedReq({ id, nonce: Date.now() })}
             />
           )}
@@ -196,9 +196,9 @@ export default function App() {
               <PromptsPage />
             </div>
           )}
-          {/* Video Remotion luon mounted: dang chay / render thi doi tab khong mat tien do */}
+          {/* Tao video luon mounted (moi the video cung vay): dang chay / render thi doi tab khong mat tien do */}
           <div className={tab === 'remotion' ? '' : 'hidden'}>
-            <RemotionStudioPage ready={ready} openReq={openReq} deletedReq={deletedReq} onBusy={setRmBusyId} />
+            <CreateVideoPage ready={ready} openReq={openReq} deletedReq={deletedReq} onBusyIds={setRmBusyIds} />
           </div>
         </main>
       </div>

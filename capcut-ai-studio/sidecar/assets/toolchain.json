@@ -125,6 +125,8 @@
     },
     "agy": {
       "min": "1.2.11",
+      "tested": "1.2.16",
+      "_tested_doc": "Ban agy da kiem dang nhap / dang xuat trong app (cli-login.ts). agy doi cach dang nhap giua cac ban (1.2.16 can TTY + menu Select login method) -> dang nhap / dang xuat loi ma may co ban KHAC -> app bao ro + chi cach Terminal (cliLoginHelp). Kiem ban moi xong thi nang so nay.",
       "installer": "https://antigravity.google/cli/install.sh"
     }
   },

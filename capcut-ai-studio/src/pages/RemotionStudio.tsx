@@ -22,7 +22,8 @@ import {
   Clapperboard,
   Download,
   Square,
-  Library
+  Library,
+  Hourglass
 } from 'lucide-react'
 import { Button, Card, CardBody, CardHeader, Spinner, Badge, Progress, Collapsible } from '@/components/ui/primitives'
 import { SourceBriefView, ReferenceAnalysisView, GuardView } from '@/components/ResultViews'
@@ -38,16 +39,19 @@ import { adoptProjectMedia, replacePaths, insideDir, baseName, type MissingMedia
 import { loadVideoMeta } from '@/lib/media'
 import type { RenderSpec } from '../../remotion-src/types'
 import { IS_WIN, REVEAL_LABEL } from '../lib/platform'
+import { acquire, cancelWait, waitPosition, QueueCancelled, type Lane } from '@/lib/jobQueue'
+import { useJobQueue } from '@/lib/useJobQueue'
 
 /** Khop sidecar remotion_plan.SPEC_MEDIA_VERSION — spec cu hon thi dung lai tu plan khi mo du an */
-const SPEC_MEDIA_VERSION = 7
+const SPEC_MEDIA_VERSION = 9
 
 type Step = 'understand-sources' | 'understand-reference' | 'plan' | 'render'
-type Stage = 'upload' | 'reference' | 'preview' | 'done'
+// 2026-10-02: buoc "Video mau" gop vao "Hieu nguon" (Gemini doc nguon + mau CUNG LUC) -> khong con stage 'reference';
+// du an cu luu status 'reference' duoc mo o 'upload' (hydrateFrom)
+type Stage = 'upload' | 'preview' | 'done'
 
 const STEPS = [
   { id: 'sources', label: 'Hiểu nguồn', icon: Brain },
-  { id: 'reference', label: 'Video mẫu', icon: ScanSearch },
   { id: 'plan', label: 'Plan', icon: FileText },
   { id: 'preview', label: 'Xem trước', icon: MonitorPlay },
   { id: 'render', label: 'Render', icon: Clapperboard },
@@ -55,7 +59,7 @@ const STEPS = [
 ]
 
 const STEP_LABEL: Record<Step, string> = {
-  'understand-sources': 'Hiểu các video nguồn (Gemini)',
+  'understand-sources': 'Hiểu video nguồn + video mẫu (Gemini)',
   'understand-reference': 'Phân tích video mẫu (Gemini)',
   plan: 'Lập kế hoạch dựng video',
   render: 'Xuất video MP4'
@@ -85,6 +89,27 @@ const RENDER_STAGE: Record<string, string> = {
 
 const emptyEditRequest: EditRequest = { purpose: '', style: '', audience: '', duration: '' }
 
+/** Ten lan cua hang doi (src/lib/jobQueue.ts) — chu tren UI / nhat ky */
+const LANE_LABEL: Record<Lane, { full: string; client: string }> = {
+  gemini: { full: 'phân tích video (Gemini)', client: 'phân tích' },
+  claude: { full: 'lập kế hoạch (Claude)', client: 'tạo video' },
+  render: { full: 'xuất video (render)', client: 'xuất video' }
+}
+
+/** Trang thai 1 video (1 the) bao len CreateVideo: ten the, chip trang thai, dang ban (khong cho dong / xoa) */
+export interface JobInfo {
+  projectId: string
+  title: string
+  /** empty = the trong; idle = da co video, chua chay; waiting = dang cho luot o hang doi */
+  status: 'empty' | 'idle' | 'waiting' | 'running' | 'preview' | 'done' | 'error'
+  step: Step | null
+  lane: Lane | null
+  renderPct: number | null
+  busy: boolean
+  /** Da doc xong du an cua the (initialProjectId) */
+  loaded: boolean
+}
+
 function compactEditRequest(req: EditRequest): EditRequest | undefined {
   const cleaned: EditRequest = {
     purpose: req.purpose?.trim(),
@@ -108,18 +133,30 @@ function deriveTopic(brief?: SourceBrief | null): string {
   return words.join(' ') || 'Video'
 }
 
+/**
+ * 1 VIDEO (1 the trong src/pages/CreateVideo.tsx). Nhieu the cung mounted -> nhieu video chay cung luc, moi the giu
+ * nguyen co che cu; chi xin luot o hang doi dung chung (src/lib/jobQueue.ts): phan tich (Gemini), lap plan (Claude),
+ * render (1 video 1 luc).
+ */
 export default function RemotionStudioPage({
   ready,
-  openReq,
+  jobKey,
+  initialProjectId,
   deletedReq,
-  onBusy
+  onInfo,
+  onNewVideo
 }: {
   ready: boolean
-  openReq: { id: string; nonce: number } | null
+  /** Khoa cua the (CreateVideo) */
+  jobKey: string
+  /** Du an mo khi the duoc tao (null = the trong) */
+  initialProjectId: string | null
   /** Du an vua bi xoa o "Video da tao" — dang mo thi dong lai (khong tu luu nguoc lai vao danh sach) */
   deletedReq?: { id: string; nonce: number } | null
-  /** Bao du an dang chay 1 buoc (hieu nguon / video mau / plan / render) de "Video da tao" khong cho xoa */
-  onBusy?: (projectId: string | null) => void
+  /** Bao trang thai the (ten, buoc, dang cho luot, dang ban -> "Video da tao" khong cho xoa, khong dong the) */
+  onInfo?: (jobKey: string, info: JobInfo) => void
+  /** Mo them 1 the video moi (chay song song voi video nay) */
+  onNewVideo?: () => void
 }) {
   const [stage, setStage] = useState<Stage>('upload')
   // Ban cai cho may khac: an thanh cac buoc, nhat ky, khung ket qua tung buoc, ten AI (src/lib/clientUi.ts)
@@ -168,6 +205,15 @@ export default function RemotionStudioPage({
   userMediaRef.current = userMedia
   const pendingMedia = useRef(new Set<Promise<void>>())
   const hydrated = useRef(false)
+  // Hang doi dung chung: lan dang cho luot (null = khong cho) + anh chup hang doi de hien vi tri
+  const [waitLane, setWaitLane] = useState<Lane | null>(null)
+  const queue = useJobQueue()
+  // The nay DANG render (giu luot render) -> chi the nay nhan tien do / duoc huy render cua Electron
+  const renderingRef = useRef(false)
+  // Doi moi lan "Lam moi" / mo du an khac: buoc dang chay do (cu) xong sau do thi bo ket qua, khong ghi de du an moi
+  const genRef = useRef(0)
+  // Da doc xong du an mo cung the (bao CreateVideo: truoc do giu id du an se mo khi luu danh sach the)
+  const [loaded, setLoaded] = useState(!initialProjectId)
 
   useEffect(() => {
     window.studio.remotionMediaBase().then(setMediaBase).catch(() => setMediaBase(''))
@@ -192,8 +238,8 @@ export default function RemotionStudioPage({
     return () => clearInterval(t)
   }, [running])
 
-  // Tien do render (worker -> main -> day)
-  useEffect(() => window.studio.onRemotionProgress((ev) => setRenderEv(ev)), [])
+  // Tien do render (worker -> main -> day) — chi the dang giu luot render (Electron chi chay 1 render 1 luc)
+  useEffect(() => window.studio.onRemotionProgress((ev) => renderingRef.current && setRenderEv(ev)), [])
 
   // URL phat video hoan chinh qua may chu media cuc bo
   useEffect(() => {
@@ -205,6 +251,7 @@ export default function RemotionStudioPage({
   }, [render])
 
   const hydrateFrom = (p: Project) => {
+    genRef.current++
     setProjectId(p.id)
     setVideos(p.videos || [])
     setReferenceVideo(p.referenceVideo || null)
@@ -233,10 +280,11 @@ export default function RemotionStudioPage({
           ? 'Phiên trước bị gián đoạn. Bấm Tiếp tục để chạy lại bước này.'
           : 'Lần chạy trước bị gián đoạn. Bấm Thử lại để tiếp tục.'
       })
-      setStage(step === 'understand-sources' ? 'upload' : step === 'render' ? 'preview' : 'reference')
+      setStage(step === 'render' ? 'preview' : 'upload')
     } else {
       setError((p.error as { step: Step; message: string } | null) || null)
-      setStage((['upload', 'reference', 'preview', 'done'].includes(p.status) ? p.status : 'upload') as Stage)
+      // 'reference' (du an cu: hieu nguon xong, chua chon video mau) -> 'upload' (video mau nay nam o buoc Hieu nguon)
+      setStage((['upload', 'preview', 'done'].includes(p.status) ? p.status : 'upload') as Stage)
     }
   }
 
@@ -264,24 +312,24 @@ export default function RemotionStudioPage({
     setStaleTick(r.specStale ? 1 : 0)
   }
 
+  // Mo du an cua the (CreateVideo quyet dinh du an nao mo o the nao)
   useEffect(() => {
-    window.studio.projectCurrent('remotion').then(async (p) => {
-      if (p && p.videos?.length) await openProject(p)
+    if (!initialProjectId) {
       hydrated.current = true
-    })
+      return
+    }
+    window.studio
+      .projectGet(initialProjectId)
+      .then(async (p) => {
+        if (p && p.videos?.length) await openProject(p)
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        hydrated.current = true
+        setLoaded(true)
+      })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  useEffect(() => {
-    if (!openReq) return
-    window.studio.projectGet(openReq.id).then(async (p) => {
-      if (p) {
-        await openProject(p)
-        window.studio.projectSetCurrent(p.id, 'remotion')
-      }
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [openReq?.nonce])
 
   // Project cu co plan nhung chua co spec (vd doi danh muc), HOAC spec lam bang cach dung cu
   // (media < SPEC_MEDIA_VERSION: 2 = mau HDR + tach nguoi khop khung, 3 = cat theo loi noi + chu khop loi,
@@ -299,7 +347,7 @@ export default function RemotionStudioPage({
     if (old)
       setNotice(
         outdated
-          ? 'Đang cập nhật bản dựng theo cách dựng mới (màu video HDR, cắt đúng lúc hết lời, chữ khớp lời nói)…'
+          ? 'Đang cập nhật bản dựng theo cách dựng mới (chữ không che mặt, ảnh tách nền sạch, cắt đúng lúc hết lời)…'
           : 'Đang dựng lại bản xem trước với video trong thư mục dự án…'
       )
     window.studio.remotionSpec({ plan }).then((r) => {
@@ -354,14 +402,62 @@ export default function RemotionStudioPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [videos, referenceVideo, editRequest, brandGuide, workDir, brief, referenceAnalysis, plan, spec, summary, render, guard, stage, error, running, projectId, userMedia])
 
+  // Bao trang thai the len CreateVideo (ten the, chip, dang ban). mediaBusy = dang chep / chuyen SDR video vao du an
+  const renderPctInfo = running === 'render' && !waitLane ? Math.round(((renderEv?.progress ?? 0) as number) * 100) : null
   useEffect(() => {
-    // mediaBusy = dang chep / chuyen SDR video vao thu muc du an
-    onBusy?.((running || mediaBusy) && projectId ? projectId : null)
-  }, [running, mediaBusy, projectId, onBusy])
+    const title = brief ? deriveTopic(brief) : videos[0]?.name || (referenceVideo ? 'Video mới' : '')
+    const status: JobInfo['status'] = !videos.length && !brief
+      ? 'empty'
+      : error
+        ? 'error'
+        : running
+          ? waitLane
+            ? 'waiting'
+            : 'running'
+          : stage === 'done'
+            ? 'done'
+            : stage === 'preview'
+              ? 'preview'
+              : 'idle'
+    onInfo?.(jobKey, {
+      projectId,
+      title: title || 'Video mới',
+      status,
+      step: running,
+      lane: waitLane,
+      renderPct: renderPctInfo,
+      busy: !!(running || mediaBusy),
+      loaded
+    })
+  }, [jobKey, onInfo, projectId, brief, videos, referenceVideo, error, running, waitLane, stage, mediaBusy, renderPctInfo, loaded])
+
+  /** Ten video trong hang doi (the khac thay "video X dang ...") */
+  const jobLabel = (b?: SourceBrief | null) => (b || brief ? deriveTopic(b || brief) : videos[0]?.name || 'Video')
+
+  /**
+   * Xin luot o hang doi dung chung. Het cho -> hien "dang cho luot" (+ nhat ky), den luot tu chay tiep.
+   * Nguoi dung huy cho -> nem QueueCancelled (buoc goi tu thoat, khong bao loi).
+   */
+  const waitTurn = async (lane: Lane, rid: string, b?: SourceBrief | null): Promise<() => void> => {
+    const turn = acquire(lane, rid, jobLabel(b))
+    if (waitPosition(lane, rid) < 0) return turn // con cho -> chay ngay (y nhu truoc khi co hang doi)
+    setWaitLane(lane)
+    logUi(rid, `Đang chờ lượt ${LANE_LABEL[lane].full} — có video khác đang chạy, tới lượt sẽ tự chạy tiếp`, 'info')
+    try {
+      const release = await turn
+      logUi(rid, `Đã tới lượt ${LANE_LABEL[lane].full}`, 'info')
+      return release
+    } finally {
+      setWaitLane(null)
+    }
+  }
 
   const reset = async () => {
-    if (running === 'render') await window.studio.remotionCancel()
-    await window.studio.projectSetCurrent(null, 'remotion')
+    genRef.current++
+    // Dang cho luot -> roi hang doi; dang render THAT (giu luot) -> huy render (khong dung render cua the khac)
+    if (projectId) cancelWait(projectId)
+    if (running === 'render' && renderingRef.current) await window.studio.remotionCancel()
+    setWaitLane(null)
     setStage('upload')
     setVideos([])
     setReferenceVideo(null)
@@ -659,39 +755,108 @@ export default function RemotionStudioPage({
   }
 
   // ----- Cac buoc -----
-  const runUnderstand = async (fresh = false) => {
+  /** Buoc nhan ket qua sau khi du an da "Lam moi" / doi du an khac -> bo (khong ghi de du an moi) */
+  const stale = (g: number) => g !== genRef.current
+
+  /**
+   * HIEU NGUON (2026-10-02 gop buoc "Video mau"): Gemini doc video nguon VA video mau CUNG LUC (khong co video mau
+   * thi chi nguon), xong thi lap plan luon. Hai phan dung route / thu vien / cache y nhu truoc khi gop; da co ket
+   * qua (brief / phan tich mau trong du an, vd du an cu) thi khong goi lai. Ca luot giu 1 cho "phan tich" o hang doi.
+   */
+  const runAnalyze = async (fresh = false) => {
     if (!videos.length) return
+    const g = genRef.current
     setError(null)
+    setNotice(null)
     const rid = ensureRunId()
+    const refVid = referenceVideo
+    const haveBrief = !fresh && brief ? brief : null
+    const haveRef = !fresh && refVid && referenceAnalysis ? referenceAnalysis : null
     setRunning('understand-sources')
-    logUi(rid, `Bấm "Hiểu nguồn" với ${videos.length} video`, 'info', {
-      videos: videos.map((v) => ({ id: v.id, name: v.name, duration: v.duration, path: v.path }))
+    logUi(rid, `Bấm "Hiểu nguồn" với ${videos.length} video${refVid ? ' + video mẫu ' + refVid.name : ' (không có video mẫu)'}`, 'info', {
+      videos: videos.map((v) => ({ id: v.id, name: v.name, duration: v.duration, path: v.path })),
+      video_mau: refVid ? { name: refVid.name, duration: refVid.duration, path: refVid.path } : null,
+      dung_lai: { nguon: !!haveBrief, mau: !!haveRef },
+      fresh
     })
+    let release: (() => void) | null = null
+    let src: PromiseSettledResult<SourceBrief>
+    let ref: PromiseSettledResult<RemotionReferenceAnalysis | null>
     try {
+      release = await waitTurn('gemini', rid)
+      if (stale(g)) return
       await ensureWorkDir()
-      const u = await window.studio.understandSources({
-        videos: videos.map(({ id, path, name, duration }) => ({ id, path, name, duration })),
-        fresh,
-        _run: runCtx(rid)
-      })
-      if (!u.ok || !u.brief) throw new Error(u.error || 'Lỗi đọc hiểu video')
-      const nReused = Object.keys(u.reused || {}).length
-      if (nReused) logUi(rid, `Dùng lại phân tích đã lưu cho ${nReused}/${videos.length} video (không gọi lại Gemini)`, 'info', u.reused)
-      setBrief(u.brief)
-      srcLib.refresh()
-      setRunning(null)
-      setStage('reference')
+      const sources = async (): Promise<SourceBrief> => {
+        if (haveBrief) return haveBrief
+        const u = await window.studio.understandSources({
+          videos: videos.map(({ id, path, name, duration }) => ({ id, path, name, duration })),
+          fresh,
+          _run: runCtx(rid)
+        })
+        if (!u.ok || !u.brief) throw new Error(u.error || 'Lỗi đọc hiểu video')
+        const nReused = Object.keys(u.reused || {}).length
+        if (nReused) logUi(rid, `Dùng lại phân tích đã lưu cho ${nReused}/${videos.length} video (không gọi lại Gemini)`, 'info', u.reused)
+        return u.brief
+      }
+      const reference = async (): Promise<RemotionReferenceAnalysis | null> => {
+        if (!refVid) return null
+        if (haveRef) return haveRef
+        const r = await window.studio.remotionUnderstandReference({
+          video: { path: refVid.path, name: refVid.name, duration: refVid.duration },
+          fresh,
+          _run: runCtx(rid)
+        })
+        if (!r.ok || !r.analysis) throw new Error(r.error || 'Lỗi phân tích video mẫu')
+        return r.analysis
+      }
+      ;[src, ref] = await Promise.allSettled([sources(), reference()])
     } catch (e) {
+      if (stale(g)) return
       setRunning(null)
+      if (e instanceof QueueCancelled) {
+        logUi(rid, 'Đã huỷ chờ lượt phân tích', 'warn')
+        return
+      }
       const message = String((e as Error).message || e)
       logUi(rid, 'Lỗi ở bước Hiểu nguồn', 'error', message)
       setError({ step: 'understand-sources', message })
+      return
+    } finally {
+      release?.()
     }
+    if (stale(g)) return
+    // Phan nao xong thi giu (lan chay lai dung luon, khong goi lai AI)
+    if (ref.status === 'fulfilled' && ref.value) {
+      setReferenceAnalysis(ref.value)
+      refLib.refresh()
+    }
+    if (src.status === 'rejected') {
+      setRunning(null)
+      const message = String((src.reason as Error)?.message || src.reason)
+      logUi(rid, 'Lỗi ở bước Hiểu nguồn', 'error', message)
+      if (ref.status === 'rejected') logUi(rid, 'Lỗi ở phần Video mẫu (Gemini)', 'error', String((ref.reason as Error)?.message || ref.reason))
+      setError({ step: 'understand-sources', message })
+      return
+    }
+    const newBrief = src.value
+    setBrief(newBrief)
+    srcLib.refresh()
+    if (ref.status === 'rejected') {
+      // Nguon xong, mau loi: giu loi rieng cua video mau (nut "Bo qua video mau" / "Tiep tuc" chi chay lai phan mau)
+      setRunning(null)
+      const message = String((ref.reason as Error)?.message || ref.reason)
+      logUi(rid, 'Lỗi ở phần Video mẫu (Gemini)', 'error', message)
+      setError({ step: 'understand-reference', message })
+      return
+    }
+    await runPlan(newBrief, ref.value, false, g)
   }
 
-  const runPlan = async (b?: SourceBrief, reference?: RemotionReferenceAnalysis | null, fresh = false) => {
+  const runPlan = async (b?: SourceBrief, reference?: RemotionReferenceAnalysis | null, fresh = false, g0?: number) => {
     const useBrief = b || brief
     if (!useBrief) return
+    const g = g0 ?? genRef.current
+    if (stale(g)) return
     const refAn = reference === undefined ? referenceAnalysis : reference
     setError(null)
     setNotice(null)
@@ -705,12 +870,16 @@ export default function RemotionStudioPage({
       co_video_mau: !!refAn,
       tu_lieu: userMediaRef.current.map((m) => ({ id: m.id, name: m.name, use: m.use, placement: m.placement, note: m.note }))
     })
+    let release: (() => void) | null = null
     try {
       // Gemini dang doc tu lieu -> doi xong (sidecar van tu doc neu thieu, co luu theo noi dung file)
       if (pendingMedia.current.size) {
         await Promise.allSettled([...pendingMedia.current])
         await new Promise((r) => setTimeout(r, 50)) // cho React ghi ket qua Gemini vao state (ref doc ban moi)
       }
+      if (stale(g)) return
+      release = await waitTurn('claude', rid, useBrief)
+      if (stale(g)) return
       const um = userMediaRef.current
       const r = await window.studio.remotionAutoplan({
         _run: runCtx(rid),
@@ -733,6 +902,7 @@ export default function RemotionStudioPage({
         title: deriveTopic(useBrief),
         fresh
       })
+      if (stale(g)) return
       if (!r.ok || !r.plan || !r.spec) throw new Error(r.error || 'Lỗi lập kế hoạch')
       if (r.brief) setBrief(r.brief) // brief cu vua duoc can lai gio loi noi
       setPlan(r.plan)
@@ -745,36 +915,58 @@ export default function RemotionStudioPage({
       setRunning(null)
       setStage('preview')
     } catch (e) {
+      if (stale(g)) return
       setRunning(null)
+      if (e instanceof QueueCancelled) {
+        logUi(rid, 'Đã huỷ chờ lượt lập kế hoạch', 'warn')
+        return
+      }
       const message = String((e as Error).message || e)
       logUi(rid, 'Lỗi ở bước lập kế hoạch', 'error', message)
       setError({ step: 'plan', message })
+    } finally {
+      release?.()
     }
   }
 
+  /** Chi chay lai PHAN video mau (nguon da xong — loi rieng cua video mau / du an cu dung giua chung) roi lap plan */
   const runReference = async (fresh = false) => {
     if (!referenceVideo || !brief) return
+    const g = genRef.current
     setError(null)
     const rid = ensureRunId()
     setRunning('understand-reference')
     logUi(rid, `Bấm phân tích video mẫu bằng Gemini: ${referenceVideo.name}`)
+    let release: (() => void) | null = null
+    let analysis: RemotionReferenceAnalysis
     try {
+      release = await waitTurn('gemini', rid)
+      if (stale(g)) return
       const r = await window.studio.remotionUnderstandReference({
         video: { path: referenceVideo.path, name: referenceVideo.name, duration: referenceVideo.duration },
         fresh,
         _run: runCtx(rid)
       })
+      if (stale(g)) return
       if (!r.ok || !r.analysis) throw new Error(r.error || 'Lỗi phân tích video mẫu')
-      refLib.refresh()
-      setReferenceAnalysis(r.analysis)
-      setRunning(null)
-      await runPlan(brief, r.analysis)
+      analysis = r.analysis
     } catch (e) {
+      if (stale(g)) return
       setRunning(null)
+      if (e instanceof QueueCancelled) {
+        logUi(rid, 'Đã huỷ chờ lượt phân tích video mẫu', 'warn')
+        return
+      }
       const message = String((e as Error).message || e)
       logUi(rid, 'Lỗi ở bước Video mẫu (Gemini)', 'error', message)
       setError({ step: 'understand-reference', message })
+      return
+    } finally {
+      release?.()
     }
+    refLib.refresh()
+    setReferenceAnalysis(analysis)
+    await runPlan(brief, analysis, false, g)
   }
 
   const skipReference = async () => {
@@ -786,20 +978,29 @@ export default function RemotionStudioPage({
 
   const runRender = async () => {
     if (!spec) return
+    const g = genRef.current
     setError(null)
     setNotice(null)
     setRenderEv(null)
     const rid = ensureRunId()
     setRunning('render')
     logUi(rid, `Bấm Render MP4 (${fmtTime(spec.duration)}, ${spec.clips.length} đoạn)`)
+    let release: (() => void) | null = null
     try {
+      // Render nang may -> 1 video 1 luc: video khac dang render thi cho, xong tu render
+      release = await waitTurn('render', rid)
+      if (stale(g)) return
       const wd = await ensureWorkDir()
+      renderingRef.current = true
+      setRenderEv(null)
       const ev = await window.studio.remotionRender({
         spec,
         workDir: wd,
         name: `${todayStr()} ${deriveTopic(brief)}`,
         _run: runCtx(rid)
       })
+      renderingRef.current = false
+      if (stale(g)) return
       setRunning(null)
       if (ev.type === 'done' && ev.output) {
         setRender({ output: ev.output, size: ev.size, seconds: ev.seconds, at: Date.now() })
@@ -813,11 +1014,27 @@ export default function RemotionStudioPage({
         throw new Error(ev.message || 'Render lỗi')
       }
     } catch (e) {
+      renderingRef.current = false
+      if (stale(g)) return
       setRunning(null)
+      if (e instanceof QueueCancelled) {
+        logUi(rid, 'Đã huỷ chờ lượt render', 'warn')
+        setNotice('Đã huỷ chờ render. Bản xem trước vẫn còn nguyên.')
+        setStage('preview')
+        return
+      }
       const message = String((e as Error).message || e)
       logUi(rid, 'Lỗi khi render MP4', 'error', message)
       setError({ step: 'render', message })
+    } finally {
+      release?.()
     }
+  }
+
+  /** Nut huy tren khung "dang chay": dang cho luot -> roi hang doi; dang render that -> huy render */
+  const cancelRunning = () => {
+    if (waitLane && projectId) cancelWait(projectId, waitLane)
+    else if (running === 'render' && renderingRef.current) window.studio.remotionCancel()
   }
 
   const resume = () => {
@@ -825,9 +1042,12 @@ export default function RemotionStudioPage({
     const step = error.step
     if (projectId) logUi(projectId, `Bấm "Tiếp tục" — chạy lại bước ${STEP_LABEL[step]}`)
     setError(null)
-    if (step === 'understand-sources') runUnderstand()
-    else if (step === 'understand-reference') runReference()
-    else if (step === 'plan') runPlan()
+    if (step === 'understand-sources') runAnalyze()
+    else if (step === 'understand-reference') {
+      // phan mau hong (nguon da xong) — du an cu dung giua chung khong co brief thi chay lai ca buoc Hieu nguon
+      if (brief) runReference()
+      else runAnalyze()
+    } else if (step === 'plan') runPlan()
     else if (step === 'render') runRender()
   }
 
@@ -848,35 +1068,30 @@ export default function RemotionStudioPage({
   }
 
   const stepState = (idx: number): 'done' | 'active' | 'error' | 'todo' => {
+    // 0 Hieu nguon (nguon + video mau) · 1 Plan · 2 Xem truoc · 3 Render · 4 Xem video
     const errIdx =
-      error?.step === 'understand-sources'
+      error?.step === 'understand-sources' || error?.step === 'understand-reference'
         ? 0
-        : error?.step === 'understand-reference'
+        : error?.step === 'plan'
           ? 1
-          : error?.step === 'plan'
-            ? 2
-            : error?.step === 'render'
-              ? 4
-              : -1
+          : error?.step === 'render'
+            ? 3
+            : -1
     if (errIdx === idx) return 'error'
     switch (idx) {
       case 0:
-        return running === 'understand-sources' ? 'active' : brief ? 'done' : 'todo'
-      case 1:
-        return running === 'understand-reference'
+        return running === 'understand-sources' || running === 'understand-reference'
           ? 'active'
-          : referenceAnalysis || (brief && stage !== 'reference')
+          : brief && (!referenceVideo || referenceAnalysis || plan)
             ? 'done'
-            : stage === 'reference'
-              ? 'active'
-              : 'todo'
-      case 2:
+            : 'todo'
+      case 1:
         return running === 'plan' ? 'active' : plan ? 'done' : 'todo'
-      case 3:
+      case 2:
         return spec ? (stage === 'preview' ? 'active' : 'done') : 'todo'
-      case 4:
+      case 3:
         return running === 'render' ? 'active' : render ? 'done' : 'todo'
-      case 5:
+      case 4:
         return stage === 'done' ? 'active' : 'todo'
       default:
         return 'todo'
@@ -890,7 +1105,34 @@ export default function RemotionStudioPage({
   const refSavedAt = referenceVideo
     ? refLib.found[referenceVideo.path]?.ref_video_at || refLib.found[referenceVideo.path]?.ref_gpt_at
     : undefined
-  const busyMsg = !fullUi
+  // Nut chinh o buoc Hieu nguon: noi ro phan nao goi Gemini, phan nao dung lai ban da luu / da co
+  const analyzeLabel = (() => {
+    const src = brief
+      ? 'Dùng phân tích nguồn đã có'
+      : nSrcSaved === videos.length
+        ? 'Dùng phân tích đã lưu'
+        : nSrcSaved > 0
+          ? `Phân tích ${videos.length - nSrcSaved} video mới · dùng lại ${nSrcSaved}`
+          : `Phân tích ${videos.length} video nguồn`
+    const ref = !referenceVideo ? '' : referenceAnalysis || refSavedAt ? ' + mẫu đã phân tích' : ' + video mẫu'
+    return `${src}${ref} & ${fullUi ? 'lập plan' : 'tạo video'}`
+  })()
+  // Dang cho luot o hang doi: bao dang cho video nao + dung thu may
+  const lane = waitLane ? queue[waitLane] : null
+  const waitAhead = waitLane && projectId ? Math.max(0, queue[waitLane].queue.findIndex((w) => w.jobId === projectId)) : 0
+  const waitMsg = (() => {
+    if (!waitLane || !lane) return ''
+    const others = lane.active.filter((a) => a.jobId !== projectId).map((a) => `“${a.label}”`)
+    const who = others.length ? (others.length === 1 ? `video ${others[0]}` : `${others.length} video (${others.join(', ')})`) : 'video khác'
+    const name = fullUi ? LANE_LABEL[waitLane].full : LANE_LABEL[waitLane].client
+    const pos = waitAhead > 0 ? ` · còn ${waitAhead} video chờ trước` : ''
+    return waitLane === 'render'
+      ? `Đang chờ lượt xuất video — ${who} đang xuất (mỗi lần chỉ xuất 1 video cho máy khỏi nặng)${pos}. Tới lượt sẽ tự xuất.`
+      : `Đang chờ lượt ${name} — ${who} đang chạy (tối đa ${lane.limit} video cùng lúc${fullUi ? ', đổi ở Cài đặt API' : ''})${pos}. Tới lượt sẽ tự chạy.`
+  })()
+  const busyMsg = waitMsg
+    ? waitMsg
+    : !fullUi
     ? running === 'understand-sources' || running === 'understand-reference'
       ? 'Đang phân tích'
       : running === 'plan'
@@ -901,7 +1143,9 @@ export default function RemotionStudioPage({
             : RENDER_STAGE[renderEv?.stage || 'prepare'] || 'Đang xuất video...'
           : ''
     : running === 'understand-sources'
-      ? `Gemini đang phân tích ${videos.length} video nguồn, rồi Whisper căn lại giờ lời nói...`
+      ? referenceVideo
+        ? `Gemini đang phân tích cùng lúc ${videos.length} video nguồn và video mẫu (máy đo nhịp cắt, bóc bộ phong cách), rồi Whisper căn lại giờ lời nói...`
+        : `Gemini đang phân tích ${videos.length} video nguồn, rồi Whisper căn lại giờ lời nói...`
       : running === 'understand-reference'
         ? 'Máy đo nhịp cắt, Gemini đang xem + nghe video mẫu rồi bóc bộ phong cách...'
         : running === 'plan'
@@ -1151,8 +1395,8 @@ export default function RemotionStudioPage({
       {running && (
         <Card className="mt-5">
           <CardBody className="flex flex-col items-center py-10">
-            <Spinner className="h-7 w-7" />
-            <div className="mt-4 text-center font-semibold text-ink-900">{busyMsg}</div>
+            {waitLane ? <Hourglass className="h-7 w-7 text-brand-500" /> : <Spinner className="h-7 w-7" />}
+            <div className="mt-4 max-w-xl text-center font-semibold text-ink-900">{busyMsg}</div>
             <div className="mt-1 text-sm text-ink-800/45">
               Đã chạy {Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, '0')}
               {running === 'render' && renderEv?.totalFrames
@@ -1164,21 +1408,36 @@ export default function RemotionStudioPage({
             <div className="mt-5 w-72">
               <Progress
                 value={
-                  running === 'render'
-                    ? renderPct
-                    : running === 'understand-sources'
-                      ? 20
-                      : running === 'understand-reference'
-                        ? 40
-                        : 62
+                  waitLane
+                    ? 0
+                    : running === 'render'
+                      ? renderPct
+                      : running === 'understand-sources'
+                        ? 20
+                        : running === 'understand-reference'
+                          ? 40
+                          : 62
                 }
               />
             </div>
-            {running === 'render' && (
-              <Button variant="ghost" size="sm" className="mt-4" onClick={() => window.studio.remotionCancel()}>
-                <Square className="h-3.5 w-3.5" /> Huỷ render
-              </Button>
-            )}
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              {waitLane ? (
+                <Button variant="ghost" size="sm" onClick={cancelRunning}>
+                  <X className="h-3.5 w-3.5" /> Huỷ chờ
+                </Button>
+              ) : (
+                running === 'render' && (
+                  <Button variant="ghost" size="sm" onClick={cancelRunning}>
+                    <Square className="h-3.5 w-3.5" /> Huỷ render
+                  </Button>
+                )
+              )}
+              {onNewVideo && (
+                <Button variant="outline" size="sm" onClick={onNewVideo} title="Video này vẫn chạy tiếp — làm video khác trong lúc chờ">
+                  <Plus className="h-4 w-4" /> Tạo thêm video khác
+                </Button>
+              )}
+            </div>
           </CardBody>
         </Card>
       )}
@@ -1216,6 +1475,81 @@ export default function RemotionStudioPage({
               <Library className="h-4 w-4" /> Chọn từ thư viện video đã phân tích
             </Button>
           </div>
+
+          {/* VIDEO MAU (khong bat buoc) — Gemini phan tich CUNG LUC voi video nguon (2026-10-02 gop buoc) */}
+          <Card>
+            <CardHeader className="flex items-center gap-2">
+              <ScanSearch className="h-5 w-5 text-brand-500" />
+              <span className="text-sm font-semibold text-ink-900">Video mẫu</span>
+              <span className="text-xs text-ink-800/45">(không bắt buộc)</span>
+            </CardHeader>
+            <CardBody className="space-y-3">
+              {!fullUi ? (
+                <p className="text-sm text-ink-800/60">
+                  Thêm một video mẫu để AI dựng theo phong cách tương tự — phân tích cùng lúc với video nguồn. Không có
+                  video mẫu thì AI tự thiết kế theo nội dung video của bạn.
+                </p>
+              ) : (
+                <p className="text-sm text-ink-800/60">
+                  Phân tích <b className="text-ink-900">cùng lúc</b> với video nguồn: máy đo nhịp cắt cảnh và độ to âm thanh
+                  bằng ffmpeg, rồi <b className="text-ink-900">Gemini</b> xem + nghe video mẫu để bóc tách kiểu chữ, nhịp
+                  dựng, hiệu ứng, màu, âm thanh; thêm một lượt xem dải khung hình dày (~6 khung/giây) để bóc chuyển động
+                  chữ + camera thành bộ phong cách. Không có video mẫu thì AI tự thiết kế theo nội dung.
+                </p>
+              )}
+              {!referenceVideo ? (
+                <div className="flex gap-3">
+                  <button
+                    onClick={pickReference}
+                    className="flex flex-1 items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-black/12 bg-white/50 p-6 hover:border-brand-400 hover:bg-brand-50/50"
+                  >
+                    <Upload className="h-5 w-5 text-brand-500" />
+                    <span className="font-medium text-ink-900">Chọn video mẫu tham khảo</span>
+                  </button>
+                  <button
+                    onClick={() => setLibOpen('reference')}
+                    className="flex items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-black/12 bg-white/50 px-6 py-6 hover:border-brand-400 hover:bg-brand-50/50"
+                  >
+                    <Library className="h-5 w-5 text-brand-500" />
+                    <span className="font-medium text-ink-900">Từ thư viện</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 rounded-xl border border-black/6 bg-ink-50 p-3">
+                  {referenceVideo.thumb ? (
+                    <img src={referenceVideo.thumb} className="h-16 w-12 rounded-lg object-cover" alt="" />
+                  ) : (
+                    <div className="flex h-16 w-12 items-center justify-center rounded-lg bg-black/5">
+                      <Film className="h-5 w-5 text-ink-800/40" />
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-medium text-ink-900">{referenceVideo.name}</div>
+                    <div className="mt-0.5 flex items-center gap-2 text-xs text-ink-800/45">
+                      {fmtTime(referenceVideo.duration)}
+                      <SavedBadge at={refSavedAt} label="Đã phân tích" />
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => setLibOpen('reference')}>
+                    <Library className="h-4 w-4" /> Thư viện
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={pickReference}>
+                    Đổi video
+                  </Button>
+                  <button
+                    onClick={() => {
+                      setReferenceVideo(null)
+                      setReferenceAnalysis(null)
+                    }}
+                    className="rounded-lg p-1.5 text-ink-800/30 hover:bg-red-50 hover:text-red-500"
+                    title="Bỏ video mẫu"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+            </CardBody>
+          </Card>
 
           <EditRequestForm value={editRequest} onChange={setEditRequest} />
 
@@ -1281,123 +1615,28 @@ export default function RemotionStudioPage({
                   </div>
                 ))}
                 <div className="flex items-center justify-end gap-2 pt-2">
-                  {nSrcSaved > 0 && (
-                    <Button variant="ghost" onClick={() => runUnderstand(true)} title={fullUi ? 'Bỏ qua bản đã lưu, gọi lại Gemini + Whisper' : 'Bỏ bản đã lưu, phân tích lại'}>
+                  {(nSrcSaved > 0 || !!brief || !!refSavedAt || !!referenceAnalysis) && (
+                    <Button
+                      variant="ghost"
+                      onClick={() => runAnalyze(true)}
+                      title={
+                        fullUi
+                          ? 'Bỏ qua bản đã lưu, gọi lại Gemini + Whisper cho video nguồn (và video mẫu nếu có)'
+                          : 'Bỏ bản đã lưu, phân tích lại'
+                      }
+                    >
                       <RotateCcw className="h-4 w-4" /> Phân tích lại từ đầu
                     </Button>
                   )}
-                  <Button onClick={() => runUnderstand()}>
+                  <Button onClick={() => runAnalyze()}>
                     <Sparkles className="h-4 w-4" />
-                    {nSrcSaved === videos.length
-                      ? 'Dùng phân tích đã lưu'
-                      : nSrcSaved > 0
-                        ? `Phân tích ${videos.length - nSrcSaved} video mới · dùng lại ${nSrcSaved}`
-                        : `Phân tích ${videos.length} video nguồn`}
+                    {analyzeLabel}
                   </Button>
                 </div>
               </CardBody>
             </Card>
           )}
         </div>
-      )}
-
-      {/* VIDEO MAU */}
-      {!running && !error && stage === 'reference' && brief && (
-        <>
-        <Card className="mt-5">
-          <CardHeader className="flex items-center gap-2">
-            <ScanSearch className="h-5 w-5 text-brand-500" />
-            <span className="font-semibold text-ink-900">
-              {fullUi ? 'Bước 2 — Phân tích video mẫu bằng Gemini' : 'Video mẫu (không bắt buộc)'}
-            </span>
-          </CardHeader>
-          <CardBody className="space-y-4">
-            {!fullUi ? (
-              <p className="text-sm text-ink-800/60">
-                Thêm một video mẫu để AI dựng theo phong cách tương tự. Không có video mẫu thì AI tự thiết kế theo nội
-                dung video của bạn.
-              </p>
-            ) : (
-            <p className="text-sm text-ink-800/60">
-              Máy đo nhịp cắt cảnh và độ to âm thanh bằng ffmpeg, rồi <b className="text-ink-900">Gemini</b> xem + nghe
-              video mẫu để bóc tách kiểu chữ, nhịp dựng, hiệu ứng, màu, âm thanh; thêm một lượt xem dải khung hình dày
-              (~6 khung/giây) để bóc chuyển động chữ + camera thành bộ phong cách.
-            </p>
-            )}
-            {!referenceVideo ? (
-              <div className="flex gap-3">
-                <button
-                  onClick={pickReference}
-                  className="flex flex-1 items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-black/12 bg-white/50 p-8 hover:border-brand-400 hover:bg-brand-50/50"
-                >
-                  <Upload className="h-6 w-6 text-brand-500" />
-                  <span className="font-medium text-ink-900">Chọn video mẫu tham khảo</span>
-                </button>
-                <button
-                  onClick={() => setLibOpen('reference')}
-                  className="flex items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-black/12 bg-white/50 px-6 py-8 hover:border-brand-400 hover:bg-brand-50/50"
-                >
-                  <Library className="h-6 w-6 text-brand-500" />
-                  <span className="font-medium text-ink-900">Từ thư viện</span>
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-3 rounded-xl border border-black/6 bg-ink-50 p-3">
-                {referenceVideo.thumb ? (
-                  <img src={referenceVideo.thumb} className="h-16 w-12 rounded-lg object-cover" alt="" />
-                ) : (
-                  <div className="flex h-16 w-12 items-center justify-center rounded-lg bg-black/5">
-                    <Film className="h-5 w-5 text-ink-800/40" />
-                  </div>
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-medium text-ink-900">{referenceVideo.name}</div>
-                  <div className="mt-0.5 flex items-center gap-2 text-xs text-ink-800/45">
-                    {fmtTime(referenceVideo.duration)}
-                    <SavedBadge at={refSavedAt} label="Đã phân tích" />
-                  </div>
-                </div>
-                <Button variant="outline" size="sm" onClick={() => setLibOpen('reference')}>
-                  <Library className="h-4 w-4" /> Thư viện
-                </Button>
-                <Button variant="outline" size="sm" onClick={pickReference}>
-                  Đổi video
-                </Button>
-                <button
-                  onClick={() => {
-                    setReferenceVideo(null)
-                    setReferenceAnalysis(null)
-                  }}
-                  className="rounded-lg p-1.5 text-ink-800/30 hover:bg-red-50 hover:text-red-500"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            )}
-            <div className="flex justify-end gap-2">
-              <Button variant="ghost" onClick={skipReference}>
-                Bỏ qua video mẫu
-              </Button>
-              {refSavedAt && (
-                <Button variant="ghost" onClick={() => runReference(true)} title={fullUi ? 'Bỏ qua bản đã lưu, gọi lại Gemini' : 'Bỏ bản đã lưu, phân tích lại'}>
-                  <RotateCcw className="h-4 w-4" /> Phân tích lại mẫu
-                </Button>
-              )}
-              <Button onClick={() => runReference()} disabled={!referenceVideo}>
-                <ScanSearch className="h-4 w-4" />{' '}
-                {fullUi
-                  ? refSavedAt
-                    ? 'Dùng phân tích mẫu đã lưu & lập plan'
-                    : 'Phân tích mẫu & lập plan'
-                  : refSavedAt
-                    ? 'Dùng mẫu đã phân tích & tạo video'
-                    : 'Phân tích mẫu & tạo video'}
-              </Button>
-            </div>
-          </CardBody>
-        </Card>
-        <div className="mt-4">{userMediaPanel(false)}</div>
-        </>
       )}
 
       {/* XEM TRUOC */}

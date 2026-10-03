@@ -176,13 +176,13 @@ def person_masks(frames):
 # Chu the anh tinh (BiRefNet-lite)
 # ---------------------------------------------------------------------------
 def cutout(img_path, out_path, min_cover=0.01):
-    """PNG RGBA chi giu chu the, CAT SAT khung chu the. Tra out_path hoac None."""
+    """PNG RGBA chi giu chu the, CAT SAT khung chu the (mat na da lam sach — cutout_refine). Tra out_path hoac None."""
     import numpy as np
     from PIL import Image
+    import cutout_refine
     s = _session(CUT)
-    img = Image.open(img_path)
-    img.load()
-    rgb = img.convert("RGB")
+    with Image.open(img_path) as img:
+        rgb = img.convert("RGB")
     W, H = rgb.size
     x = np.asarray(rgb.resize((1024, 1024), Image.BILINEAR), np.float32) / 255.0
     x = ((x - np.array([0.485, 0.456, 0.406])) / np.array([0.229, 0.224, 0.225])).astype(np.float32)
@@ -191,17 +191,7 @@ def cutout(img_path, out_path, min_cover=0.01):
     a = np.asarray(Image.fromarray((np.clip(m, 0, 1) * 255).astype(np.uint8)).resize((W, H), Image.BILINEAR))
     if (a > 128).mean() < min_cover:
         return None
-    if img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info):
-        a = np.minimum(a, np.asarray(img.convert("RGBA"))[..., 3])        # giu phan trong suot san co
-    rgba = np.dstack([np.asarray(rgb), a])
-    ys, xs = np.nonzero(a > 8)
-    if not ys.size:
-        return None
-    crop = rgba[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
-    tmp = out_path + ".tmp.png"
-    Image.fromarray(crop, "RGBA").save(tmp)
-    os.replace(tmp, out_path)
-    return out_path
+    return cutout_refine.cutout(img_path, a.astype(np.float32) / 255.0, out_path)
 
 
 # ---------------------------------------------------------------------------

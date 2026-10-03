@@ -793,14 +793,15 @@ def prepare_cutouts(assets, design, log=None):
         if a.get("kind") != "user_image" or a["id"] not in want or a.get("alpha") or not a.get("path"):
             continue
         import media_vision
+        import cutout_refine
         stem = os.path.splitext(os.path.basename(a["path"]))[0]
         fp = analysis_library.fingerprint(a["path"]) or stem
         out = os.path.join(WORK_DIR, "%s_cut.png" % fp)
-        if not os.path.isfile(out):
+        if not cutout_refine.fresh(out, a["path"]):
             os.makedirs(WORK_DIR, exist_ok=True)
             if log:
                 log("Tach nen tu lieu %s de dat nhu sticker..." % a.get("name"))
-            out = media_vision.lift_subject(a["path"], out)
+        out = media_vision.lift_subject(a["path"], out)
         if out and os.path.isfile(out) and _cutout_ok(a["path"], out):
             a["cutout_path"] = out
         elif out and log:
@@ -895,6 +896,7 @@ def layer_spec(L, L0, a, duration, changes, label):
     if sticker:
         for k in ("mask", "border", "shadow", "radius"):
             L.pop(k, None)
+        L["cutout"] = True
     elif not L.get("mask"):
         L["mask"] = "round"
     mw, mh = float(a.get("mw") or 0), float(a.get("mh") or 0)

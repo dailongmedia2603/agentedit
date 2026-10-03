@@ -124,7 +124,7 @@ Bao mat noi bo:
 
 - `src/App.tsx`: shell, sidebar, readiness gate (moi truong + Gemini + GPT).
 - `src/pages/Doctor.tsx`, `Settings.tsx` (Gemini, GPT, Claude + chon AI lap ke hoach), `Sfx.tsx`, `Memes.tsx`, `Prompts.tsx`.
-- `src/pages/RemotionStudio.tsx`: menu "Video Remotion" (xem muc 11).
+- `src/pages/CreateVideo.tsx` (the nhieu video, muc 11v) -> `src/pages/RemotionStudio.tsx` (1 video, muc 11).
 - `src/pages/Projects.tsx`: danh sach + chi tiet project Remotion (an du an CapCut cu).
 
 ### Sidecar
@@ -163,9 +163,10 @@ target_start, beat, `rm_transition`), `hook`, `captions`, `caption_theme`, `scen
 
 ## 7. State machine UI (Video Remotion)
 
-Stage: `upload` -> `reference` -> `preview` -> `done`. Dang chay duoc persist thanh
-`understanding` / `analyzing_reference` / `planning` / `rendering`; mo lai app thi bao gian doan
-va co nut chay lai dung buoc. Trang luon mounted khi doi tab nen render khong mat tien do.
+Stage: `upload` -> `preview` -> `done` (tu 2026-10-02 buoc video mau nam TRONG `upload`, xem 11v; du an cu
+status `reference` mo o `upload`). Dang chay duoc persist thanh `understanding` / `analyzing_reference` / `planning` /
+`rendering` (ca luc DANG CHO LUOT o hang doi); mo lai app thi bao gian doan va co nut chay lai dung buoc. Moi the
+video luon mounted khi doi tab / doi the nen render khong mat tien do.
 
 ## 8. Diem can uu tien sua
 
@@ -762,6 +763,80 @@ tieng; (3) chu anh AI: duoi 'g' hang tren con du manh tren hang duoi; (4) SFX kh
   main.ts: menu Xem khong co DevTools + `webPreferences.devTools = false`.
 - Chuc nang KHONG doi (sidecar van ghi nhat ky ~/.capcut-studio/runs tren may khach, chi khong hien).
 
+## 11v. Hieu nguon + video mau CUNG LUC; NHIEU VIDEO chay cung luc (2026-10-02)
+
+- GOP BUOC: o man "Hieu nguon" co the "Video mau (khong bat buoc)". `RemotionStudio.runAnalyze`: xin 1 luot "gemini"
+  roi goi `/understand_sources` VA `/remotion/understand_reference` SONG SONG (Promise.allSettled; khong co video mau
+  thi chi nguon) -> xong goi thang `runPlan` (khong con man / buoc "Video mau"; stepper 5 buoc). Route, thu vien, cache
+  KHONG doi. Da co brief / phan tich mau trong du an (khong fresh) thi khong goi lai. Nguon loi -> loi
+  `understand-sources` (phan mau xong van giu); nguon xong + mau loi -> loi `understand-reference` (nut "Bo qua video
+  mau" / "Tiep tuc" = `runReference` chi chay lai phan mau). "Phan tich lai tu dau" = fresh ca hai.
+- NHIEU VIDEO: `src/pages/CreateVideo.tsx` = thanh THE + moi the 1 `RemotionStudioPage` (1 du an) LUON mounted (an khi
+  khong xem) -> moi the giu nguyen co che cu. "Them video" / "Tao them video khac" (tren khung dang chay) = the moi.
+  Dong the KHONG xoa du an; the dang chay / dang cho khong dong duoc. "Mo trong Tao video": the dang mo du an do ->
+  chuyen sang; the dang xem trong -> mo vao do; khong thi the moi. The dang mo luu `projects.json` `openRemotion`
+  (+ `currentRemotion` = the dang xem; `saveProject` khong con gianh con tro khi da co `openRemotion`).
+- HANG DOI `src/lib/jobQueue.ts` (renderer, dung chung moi the; FIFO; huy cho -> `QueueCancelled`, buoc thoat im):
+  `gemini` (hieu nguon + mau; tu lieu nguoi dung KHONG qua hang doi), `claude` (ca /remotion/autoplan), `render`
+  (LUON 1 — Electron chi chay 1 render). Gioi han o Cai dat API "Tao nhieu video cung luc" — nguoi dung NHAP SO
+  1..20 (state.json `video_jobs_gemini` mac dinh 2, `video_jobs_claude` mac dinh 1). DO THAT 2026-10-02 (Claude CLI
+  2.1.283, opus-5-5 high, prompt that cac buoc plan): 3 / 5 / 10 luot `claude -p` CUNG LUC deu xong, cho <= 2.1s (chi la
+  khoi dong CLI), tung luot khong cham hon -> loi chan ~900s cua 09-30 (muc 11q) KHONG con; gioi han that = han muc goi
+  Claude (moi video ~9-12 luot). Dang cho: khung chay hien "Dang cho luot ... video X dang ..., con N video cho truoc" + "Huy cho";
+  the hien chip trang thai; nhat ky ghi luc cho / toi luot.
+- An toan nhieu the: tien do render chi the giu luot render nhan (`renderingRef`); "Huy render" / "Lam moi" chi huy
+  render CUA THE DO; `genRef` — buoc cu xong sau khi "Lam moi" / mo du an khac thi bo ket qua. "Video da tao" khong
+  cho xoa MOI du an dang chay (`busyIds`). Sidecar da `threaded=True`, nhat ky theo luong; Whisper dung chung model
+  (CTranslate2 tu xep hang).
+- Test: `node tests/test_job_queue.mts` (FIFO, gioi han, kep, huy cho, doi gioi han); `tests/test_project_delete.mts`
+  [6] (the dang mo). E2E (tam, scratchpad): app dev + HOME tam + `sitecustomize.py` thay 3 route AI bang ban gia co do
+  tre + ghi gio -> 3 video: toi da 2 phan tich cung luc, plan 1 luc, nguon + mau cua 1 video chong thoi gian, render
+  that lan luot (khong chong), huy cho, video mau loi -> "Bo qua video mau", mo lai app con du the.
+
+## 11w. Mat nguoi noi khong bi che + anh tach nen SACH (2026-10-03)
+
+- LOI THAT: (1) hook '1 NUT LA XONG' de ngang mat — caption hero / chu anh AI cua hook sinh o `hero_captions_to_art`
+  SAU `_avoid_faces` (buoc nay chi xet lop chu R4, bo lop co keyframes), anh / huy hieu khong buoc nao xet mat;
+  (2) anh cot song: mang toi HINH CHU NHAT de len mat = `boxShadow` cua khung anh (Layers.tsx) ve bong cho ca khung
+  chu nhat cua sticker trong suot; them Vision giu BONG DO tren san (ban trong suot), BO SOT mang vat toi mau (de nut
+  bam do tham -> phan con lai trong nhu vet bong) va de lop alpha rat thap tren ca khung.
+- `MD.protect_face(spec)` (motion_design.py) chay tren SPEC CUOI trong `build_spec` 2 lan: sau `hero_captions_to_art`
+  + `fx_to_spec` (truoc tach nguoi / do tuong phan) va sau `dodge_subtitles` (phu de da doi cho). Xet lop chu / chu
+  anh / bo dem / huy hieu / anh / tu lieu / box-circle CUA TO HOP chu + caption hero + phu de (phu de chi o hook).
+  Khung that: `_guard_box` (co chu, kich thuoc anh doc header, keyframe phong to, diem neo); mat: `_face_rect` = 
+  `fx_flow._face_px` (bo cuc + jump-cut zoom) x camera `_cam_at` (DINH zoom_punch / shake / pan... nhu look.ts
+  cameraAt + fxTransforms), mau moi 0.2s suot luc lop hien. HOOK (clip kind hook): che <= FACE_HOOK_MAX 2%; than
+  video <= FACE_BODY_MAX 15%. Thu: tren dau -> tren tran -> duoi cam -> canh ben, x 1 / 0.88 / ... / 0.42 (gan nhat
+  thang); to hop doi ca khoi. Hook khong con cho -> BO lop (nhat ky ghi). Khong xet: lop `behind` + to hop cua no,
+  `ring` (khoanh mat co y), box / circle rieng le, lop phu > 55% khung, opacity < 0.3. Chay lai khong doi (on dinh).
+- `sidecar/cutout_refine.py` (chi numpy + PIL) — `media_vision.lift_subject` (Vision `generateScaledMask...` -> mat na
+  mem) va `vision_onnx.cutout` (BiRefNet) deu qua `refine`: anh co NEN TRON MOT MAU (>= 90% vien cung sac do, sang)
+  -> diem "giong nen" = cung sac do, do sang 22%..112% nen; NEN = vung giong nen + min (grad <= 6) noi lien vien
+  anh; BONG = nen toi hon 97% -> alpha 0 KE CA khi mat na AI tinh la vat. Phan vat AI bo sot = khac mau nen (xam
+  trung tinh KIN trong vat van tinh) + noi lien chu the -> lay lai. Mem vien CHI vao trong, diem vien dung mau nen ->
+  trong suot, khu mau nen o vien; alpha < 0.08 -> 0. Anh DA trong suot (Codex) -> dung alpha cua anh, khong qua
+  Vision. Nen phuc tap (khung video, anh chup) -> mat na AI + xoa lop mo. PNG ghi `studio_cut` = VERSION;
+  `fresh()` sai phien ban -> tach lai (asset_gen / user_media / `MD._asset_path` cua plan cu deu goi lift_subject).
+- Renderer: lop anh `cutout: true` (MD `is_cutout`, user_media sticker; spec cu: ten `*_cut.png`) -> `drop-shadow`
+  theo VIEN vat (blur <= 12px), khong khung / overflow / box-shadow.
+- SPEC_MEDIA_VERSION 9 (sidecar + RemotionStudio.tsx, truoc UI de 7): mo du an cu -> dung lai spec tu plan (khong goi AI).
+- Hieu ung tu viet (fx) VAN co the loe 1-2 khung qua mat (vd chuyen den trang -> mau tu mat) — prompt FX da cam ve de
+  len mat tru khi co y; khong kiem bang code.
+- Test: `tests/test_face_cutout.py` (anh gia lap: mat na AI om bong / bo sot vat / lop mo; Codex trong suot; phien
+  ban; hook + zoom_punch; caption hero + phu de; ring / behind giu nguyen; on dinh). Kiem bang mat: render cua so
+  ngan cua 2 du an that (hook '1 NUT LA XONG' -> duoi cam; cot song -> ben trai, het mang chu nhat).
+
+## 11x. Phien ban + MA BUILD trong app va ten file (2026-10-03)
+
+- `npm run dist` / `dist:dir` / `dist:win` / `dist:win:dir` = `node scripts/dist.mjs --mac|--win [--dir]`: dat
+  `STUDIO_BUILD_ID` = ngay-gio luc build (vd `20261003-2250`; `STUDIO_FULL_UI=1` them `-full`) roi chay lan luot cac
+  buoc cu (electron-vite build -> bundle remotion / ffmpeg / (models) / python -> compile-sidecar -> protect ->
+  electron-builder). `electron.vite.config.ts` define `__APP_BUILD__` (main) -> `app:info.build` -> thanh tieu de
+  "Agent Edit · v1.1.0 · build ..." + About panel + boot log. electron-builder.yml artifactName dung
+  `${env.STUDIO_BUILD_ID}` -> `Agent Edit-1.1.0-b<ma>-arm64.dmg`, `Agent Edit-Setup-1.1.0-b<ma>-x64.exe` (chay
+  electron-builder TRUC TIEP khong qua dist.mjs se loi vi thieu bien). So phien ban = package.json `version`
+  (1.1.0 tu 2026-10-03), tang tay. `npm run build` / dev: khong co ma build -> chi hien "v1.1.0".
+
 ## 10b. Thu vien phan tich video (sidecar/analysis_library.py, them 2026-09-26)
 
 Luu ket qua "Hieu nguon" (Gemini + gio loi noi Whisper) va "Video mau" (GPT/Codex) de lan sau
@@ -995,6 +1070,28 @@ macOS giu nguyen hanh vi (moi nhanh Windows deu co dieu kien nen tang); da kiem 
   (2) Claude bao "dang dung API key" du da dang nhap: may co bien router (ANTHROPIC_AUTH_TOKEN + ANTHROPIC_BASE_URL, vd
   9Router) -> `auth status` ra "oauth_token". App BO cac bien nay cho tien trinh claude (`_claude_env` / `claudeEnv`);
   router dat trong ~/.claude/settings.json -> nhan phien Claude.ai trong .credentials.json (`claudeAiOauth`).
+- agy 1.2.16 (2026-10-03, may Mac khac bao "authentication required. Run 'agy' to log in"): `agy -p` chi bat dau dang nhap
+  Google khi CO TTY; qua ong dan thi bao loi roi thoat ngay. macOS: `runTask({pty:true})` chay CLI qua
+  `/bin/bash -c 'exec /usr/bin/script -q /dev/null /bin/sh -c "stty rows 40 cols 120; exec agy ..." < <(cat)'` — script doi
+  stdin la pipe(2) THAT (ong 'pipe' cua Node = socket, FIFO deu bi tu choi "tcgetattr/ioctl"), pty 0x0 lam giao dien day
+  du khong ve gi (-> stty), giet script KHONG giet agy (-> `pkill -P` truoc, `stopChild`). Giao dien day du `agy` (khong -p)
+  tu 1.2.16 hoi "Select login method" (Enter = Google OAuth) -> Windows: cua so agy de HIEN (khong thu nho) + huong dan bam
+  Enter; Terminal du phong cung them buoc nay.
+- DANG XUAT (2026-10-03, user yeu cau de doi tai khoan): nut "Dang xuat" trong CliPanel khi da dang nhap ->
+  `settings:cliLogout` -> `startCliLogout`: `codex logout`, `claude auth logout` (claudeEnv), agy `/logout`. agy CHAN
+  `/logout` o `-p` ("clears stored credentials") -> `agy -i /logout` giao dien day du: macOS trong pty, app tu tra loi cac
+  cau hoi nhan dang terminal (khong tra loi -> agy treo), hoi tin cay thu muc (Enter) va "Are you sure you want to sign
+  out?" (y + Enter); Windows trong cua so agy, nguoi dung tu go y. Xong = muc Keychain / Credential Manager mat
+  (`agyCredentialPresent`, khong cache) -> dung agy, xoa file `antigravity-oauth-token` cu + `keyring-marker*` con sot.
+  Thanh cong chi khi sidecar `cli_status` xac nhan het phien. Test: `tests/test_cli_login.mts` [4].
+  CHUA chay `/logout` that (may dev dang dang nhap that; /logout bao "Signed out from server" -> khong thu bang ban sao token).
+- CHONG agy DOI CACH DANG NHAP KHI TU CAP NHAT (2026-10-03, user chon): (1) `AGY_CLI_DISABLE_AUTO_UPDATE=true` trong
+  `env.augmentedEnv` (sidecar ke thua) + `cli_providers._augmented_env` + file Terminal / PowerShell du phong — agy CHI nhan
+  dung "true" ("1"/"yes"/"on" van "Spawned background update process", da do log auto_updater). May cai moi van lay ban moi
+  nhat; `agy` nguoi dung tu chay trong Terminal van tu cap nhat. (2) `toolchain.json cli.agy.tested` = ban da kiem dang nhap /
+  dang xuat; loi dang nhap / dang xuat Gemini -> `agyFailureText` (ipc): cau de hieu thay JSON tho + neu ban agy may nay KHAC
+  ban da kiem: noi ro 2 ban + chi cach Terminal (dang nhap) / `agy` -> `/logout` (dang xuat). Kiem ban agy moi (HOME tam +
+  sandbox-exec chan /usr/bin/open + Keychain, xem bo nho) xong thi nang `tested`. Test `tests/test_cli_login.mts` [5].
 - CHUA kiem tren may Windows that (khong co may): ten file phien dang nhap agy tren Windows (chap nhan *oauth*token*), sandbox
   Codex Windows khi tao anh (co du phong lay anh tu ~/.codex/generated_images), SmartScreen / Smart App Control (app chua ky so).
 

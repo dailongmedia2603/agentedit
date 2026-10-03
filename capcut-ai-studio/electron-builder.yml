@@ -58,9 +58,11 @@ mac:
     - target: dmg
       arch:
         - arm64
-  artifactName: ${productName}-${version}-${arch}.${ext}
+  # ma build (scripts/dist.mjs) trong ten file -> nhan ra ngay ban nao
+  artifactName: ${productName}-${version}-b${env.STUDIO_BUILD_ID}-${arch}.${ext}
   darkModeSupport: true
-  # Khong co Apple Developer cert -> build unsigned (khach mo lan dau: chuot phai > Open)
+  # Khong co Apple Developer cert -> ad-hoc ky, khong notarize: khach mo lan dau bi Gatekeeper chan, lam theo
+  # huong dan ve tren nen DMG + file "Hướng dẫn mở lần đầu.txt" (xem dmg: ben duoi)
   identity: null
   hardenedRuntime: false
   gatekeeperAssess: false
@@ -78,7 +80,7 @@ win:
       arch:
         - x64
   icon: build/icon.ico
-  artifactName: ${productName}-Setup-${version}-${arch}.${ext}
+  artifactName: ${productName}-Setup-${version}-b${env.STUDIO_BUILD_ID}-${arch}.${ext}
   # Cai cho RIENG nguoi dung (khong can quyen admin) -> app chay quyen thuong
   requestedExecutionLevel: asInvoker
   # Chua co chung chi ky ma (Authenticode) -> SmartScreen bao "Windows protected your PC" lan dau
@@ -103,18 +105,28 @@ nsis:
   language: '1066'
   # Go cai dat KHONG xoa du lieu nguoi dung (khoa API da ma hoa, du an, kho SFX / meme o ~/.capcut-studio)
   deleteAppDataOnUninstall: false
-  artifactName: ${productName}-Setup-${version}-${arch}.${ext}
+  artifactName: ${productName}-Setup-${version}-b${env.STUDIO_BUILD_ID}-${arch}.${ext}
 
 dmg:
   title: ${productName}
   # Icon cua chinh file .dmg + icon o dia khi mount = logo app (build/icon.icns)
   icon: build/icon.icns
-  artifactName: ${productName}-${version}-${arch}.${ext}
+  # ma build (scripts/dist.mjs) trong ten file -> nhan ra ngay ban nao
+  artifactName: ${productName}-${version}-b${env.STUDIO_BUILD_ID}-${arch}.${ext}
+  # Nen cua so = build/background.png (+@2x), 660x480, ve HUONG DAN MO LAN DAU: app chua notarize ->
+  # Gatekeeper chan, khach phai bam "Xong" roi "Vẫn mở" trong Quyen rieng tu & Bao mat (macOS 15+ bo
+  # chuot phai > Open). Sua chu: build/dmg/background.html -> node scripts/make-dmg-background.mjs.
+  # Toa do x/y la TAM icon, phai khop cac o chua trong san tren nen.
   contents:
-    - x: 130
-      y: 220
+    - x: 170
+      y: 150
       type: file
-    - x: 410
-      y: 220
+    - x: 490
+      y: 150
       type: link
       path: /Applications
+    - x: 574
+      y: 380
+      type: file
+      path: dmg/huong-dan-mo-lan-dau.txt
+      name: Hướng dẫn mở lần đầu.txt

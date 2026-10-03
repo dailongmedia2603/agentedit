@@ -6,7 +6,8 @@ import react from '@vitejs/plugin-react'
 // Prompt & quy tac + DevTools (src/lib/clientUi.ts). `npm run dev` hoac STUDIO_FULL_UI=1 khi build -> giao dien day du.
 export default defineConfig(({ command }) => {
   const CLIENT_UI = command === 'build' && process.env.STUDIO_FULL_UI !== '1'
-  const define = { __CLIENT_UI__: JSON.stringify(CLIENT_UI) }
+  // MA BUILD (scripts/dist.mjs: ngay-gio luc dong goi) — hien canh so phien ban; build thuong / dev = ''
+  const define = { __CLIENT_UI__: JSON.stringify(CLIENT_UI), __APP_BUILD__: JSON.stringify(process.env.STUDIO_BUILD_ID || '') }
   return {
     main: {
       define,

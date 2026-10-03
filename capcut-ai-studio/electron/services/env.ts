@@ -60,6 +60,9 @@ export function augmentedEnv(): NodeJS.ProcessEnv {
   env[key] = merged
   env.PYTHONUTF8 = '1'
   env.PYTHONIOENCODING = 'utf-8'
+  // agy tu cap nhat ngam moi lan chay -> doi cach dang nhap giua chung (1.2.16, su co 2026-10-03). Tat cho moi lan app goi
+  // agy (sidecar ke thua env nay). Chi nhan dung chu "true" ("1"/"yes" bi bo qua — da do that tren log auto_updater).
+  env.AGY_CLI_DISABLE_AUTO_UPDATE = 'true'
   return env
 }
 
@@ -165,10 +168,11 @@ export function claudeOauthSaved(): boolean {
 }
 
 // ---- Phien dang nhap Antigravity CLI (agy) ----
-// agy luu phien qua go-keyring: macOS thuong ra FILE ~/.gemini/antigravity-cli/antigravity-oauth-token (Keychain cham -> roi
-// ve file); Windows luu trong CREDENTIAL MANAGER (khong co file — su co that 2026-10-01: dang nhap xong app van bao chua).
+// agy luu phien qua go-keyring: Windows trong CREDENTIAL MANAGER, macOS trong KEYCHAIN (muc service "gemini", account
+// "antigravity" — agy 1.2.14). File ~/.gemini/antigravity-cli/antigravity-oauth-token chi con o may tung chay agy ban cu
+// (su co that 2026-10-01 Windows, 2026-10-02 Mac moi: agy dang nhap roi — `agy -p` SUCCESS — app van bao chua).
 // Nhan biet: file phien | file danh dau keyring-marker-* | (Windows) muc antigravity / jetski trong `cmdkey /list`
-// (chi liet ke TEN muc, khong doc mat khau).
+// | (macOS) `security find-generic-password` CO muc tren (chi xem thuoc tinh, khong doc mat khau -> khong hoi Keychain).
 let cmdkeyCache: { at: number; hit: boolean } = { at: 0, hit: false }
 function windowsCredHasAgy(): boolean {
   if (Date.now() - cmdkeyCache.at < 2000) return cmdkeyCache.hit
@@ -187,6 +191,32 @@ function windowsCredHasAgy(): boolean {
   return hit
 }
 
+let keychainCache: { at: number; hit: boolean } = { at: 0, hit: false }
+function macKeychainHasAgy(): boolean {
+  if (Date.now() - keychainCache.at < 2000) return keychainCache.hit
+  let hit = false
+  try {
+    // Khong co muc -> thoat ma 44 -> nem loi. Khong -g / -w: khong doc bi mat.
+    execFileSync('/usr/bin/security', ['find-generic-password', '-s', 'gemini', '-a', 'antigravity'], { stdio: 'ignore', timeout: 8000 })
+    hit = true
+  } catch {
+    hit = false
+  }
+  keychainCache = { at: Date.now(), hit }
+  return hit
+}
+
+/** Muc phien THAT cua agy (Keychain / Credential Manager), khong qua cache — dung de biet /logout da xong chua. */
+export function agyCredentialPresent(): boolean {
+  if (IS_WIN) {
+    cmdkeyCache = { at: 0, hit: false }
+    return windowsCredHasAgy()
+  }
+  if (process.platform !== 'darwin') return false
+  keychainCache = { at: 0, hit: false }
+  return macKeychainHasAgy()
+}
+
 export function agySessionPresent(): boolean {
   const dir = join(homedir(), '.gemini', 'antigravity-cli')
   if (existsSync(join(dir, 'antigravity-oauth-token'))) return true
@@ -195,5 +225,6 @@ export function agySessionPresent(): boolean {
   } catch {
     /* bo qua */
   }
-  return IS_WIN ? windowsCredHasAgy() : false
+  if (IS_WIN) return windowsCredHasAgy()
+  return process.platform === 'darwin' ? macKeychainHasAgy() : false
 }

@@ -107,7 +107,7 @@ export interface Manifest {
   cli: {
     codex: CodexSpec
     claude: { min: string; install_version: string; installer: string }
-    agy: { min: string; installer: string }
+    agy: { min: string; installer: string; tested?: string }
   }
   platforms?: Record<string, PlatformOverride>
   vision_models?: Record<string, VisionModel>

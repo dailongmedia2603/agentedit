@@ -10,7 +10,7 @@ interface OpenDialogReturn {
 interface StudioBridge {
   /** process.platform cua main (darwin / win32) */
   platform: string
-  appInfo(): Promise<{ version: string; name: string; engineHome: string }>
+  appInfo(): Promise<{ version: string; build: string; name: string; engineHome: string }>
 
   doctorRun(): Promise<DoctorCheck[]>
   doctorFix(id: string): Promise<{ ok: boolean; error?: string }>
@@ -40,8 +40,13 @@ interface StudioBridge {
   /** AI lap ke hoach (B1..B7, R4, R5): GPT hoac Claude */
   settingsGetPlanner(): Promise<PlanProvider>
   settingsSetPlanner(v: PlanProvider): Promise<PlanProvider>
+  /** So video PHAN TICH (Gemini) / LAP PLAN (Claude) chay cung luc o "Tao video" (src/lib/jobQueue.ts) */
+  settingsGetJobLimits(): Promise<{ gemini: number; claude: number }>
+  settingsSetJobLimits(v: { gemini?: number; claude?: number }): Promise<{ gemini: number; claude: number }>
   /** Huy luot dang nhap / cai dat CLI dang chay */
   settingsCliLoginCancel(): Promise<{ ok: boolean }>
+  /** Dang xuat CLI (codex logout / claude auth logout / agy /logout) de dang nhap tai khoan khac */
+  settingsCliLogout(name: string): Promise<{ ok: boolean; already?: boolean; canceled?: boolean; error?: string }>
   /** Gui ma xac thuc nguoi dung dan vao toi CLI dang dang nhap (agy / Claude Code) */
   settingsCliLoginInput(text: string): Promise<{ ok: boolean }>
   /** Cai CLI (npm cho Codex; trinh cai chinh chu cho Antigravity CLI); dong chu in ra di qua onCliLoginLog */
@@ -107,6 +112,9 @@ interface StudioBridge {
   /** mode 'remotion' = project dang lam cua menu Video Remotion (con tro rieng) */
   projectCurrent(mode?: 'remotion'): Promise<Project | null>
   projectSetCurrent(id: string | null, mode?: 'remotion'): Promise<void>
+  /** Cac the video dang mo o "Tao video" (nhieu video chay cung luc) + the dang xem */
+  projectOpenTabs(): Promise<{ ids: string[]; active: string | null }>
+  projectSetOpenTabs(ids: string[], active?: string | null): Promise<void>
 
   // ---- Video Remotion ----
   remotionUnderstandReference(payload: { video: VideoFile; fresh?: boolean; _run?: RunCtx }): Promise<{
@@ -312,6 +320,9 @@ declare global {
     /** Claude Code: lenh cap nhat + cac model can ban CLI moi hon ban dang cai */
     update_cmd?: string
     outdated_models?: string[]
+    /** Codex: han muc goi ChatGPT (`codex app-server` account/rateLimits/read) — dong chu da dinh dang */
+    usage?: string[]
+    limit_reached?: boolean
   }
 
   interface Brief {

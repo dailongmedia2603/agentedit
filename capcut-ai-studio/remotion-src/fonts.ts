@@ -3,6 +3,7 @@
 // vao src/assets/fonts + local-fonts.css), import o day, them 1 muc "fonts" trong
 // sidecar/assets/remotion_catalog.json.
 import '@fontsource/be-vietnam-pro/500.css'
+import '@fontsource/be-vietnam-pro/600.css'
 import '@fontsource/be-vietnam-pro/700.css'
 import '@fontsource/be-vietnam-pro/900.css'
 import '@fontsource/be-vietnam-pro/900-italic.css'
@@ -19,6 +20,7 @@ import '@fontsource/baloo-2/800.css'
 import '@fontsource/lexend/500.css'
 import '@fontsource/lexend/700.css'
 import '@fontsource/bungee/400.css'
+import '@fontsource/dancing-script/500.css'
 import '@fontsource/dancing-script/700.css'
 import '@fontsource/roboto-condensed/600.css'
 import '@fontsource/roboto-condensed/800.css'
@@ -46,14 +48,14 @@ interface FontDef {
 }
 
 export const FONTS: Record<string, FontDef> = {
-  be_vietnam_pro: { family: 'Be Vietnam Pro', weights: { hero: 900, support: 700, micro: 500 }, available: [500, 700, 900], italic: true, width: 0.6 },
+  be_vietnam_pro: { family: 'Be Vietnam Pro', weights: { hero: 900, support: 700, micro: 500 }, available: [500, 600, 700, 900], italic: true, width: 0.6 },
   montserrat: { family: 'Montserrat', weights: { hero: 900, support: 800, micro: 600 }, available: [600, 800, 900], italic: true, width: 0.64 },
   anton: { family: 'Anton', weights: { hero: 400, support: 400, micro: 400 }, available: [400], italic: false, width: 0.47 },
   oswald: { family: 'Oswald', weights: { hero: 700, support: 700, micro: 500 }, available: [500, 700], italic: false, width: 0.48 },
   baloo_2: { family: 'Baloo 2', weights: { hero: 800, support: 800, micro: 600 }, available: [600, 800], italic: false, width: 0.56 },
   lexend: { family: 'Lexend', weights: { hero: 700, support: 700, micro: 500 }, available: [500, 700], italic: false, width: 0.62 },
   bungee: { family: 'Bungee', weights: { hero: 400, support: 400, micro: 400 }, available: [400], italic: false, width: 0.8 },
-  dancing_script: { family: 'Dancing Script', weights: { hero: 700, support: 700, micro: 700 }, available: [700], italic: false, width: 0.5 },
+  dancing_script: { family: 'Dancing Script', weights: { hero: 700, support: 700, micro: 700 }, available: [500, 700], italic: false, width: 0.5 },
   roboto_condensed: { family: 'Roboto Condensed', weights: { hero: 800, support: 800, micro: 600 }, available: [600, 800], italic: false, width: 0.5 },
   gilroy: { family: 'SVN-Gilroy', weights: { hero: 700, support: 700, micro: 600 }, available: [500, 600, 700], italic: false, width: 0.58 },
   great_vibes: { family: 'Great Vibes', weights: { hero: 400, support: 400, micro: 400 }, available: [400], italic: false, width: 0.42 },

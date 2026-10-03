@@ -8,6 +8,8 @@ import {
   openClaudeLogin,
   startAgyLogin,
   startClaudeLogin,
+  startCliLogout,
+  agyFailureText,
   sendCliInput,
   startClaudeUpdate,
   startCliInstall,
@@ -29,7 +31,7 @@ import {
   sidecarLog
 } from './services/sidecar'
 import { ENGINE_HOME } from './services/paths'
-import { readState, writeState, planProviderOf, PlanProvider } from './services/state'
+import { readState, writeState, planProviderOf, PlanProvider, jobLimitsOf, saveJobLimits, JobLimits } from './services/state'
 import { mediaBase, mediaUrl } from './services/media-server'
 import { startRender, cancelRender, renderStatus, browserInstalled } from './services/remotion'
 import { readRunLog, appendRunLog, clearRunLog, runDir } from './services/runlog'
@@ -48,6 +50,8 @@ import {
   projectDiskInfo,
   getCurrent,
   setCurrent,
+  getOpenTabs,
+  setOpenTabs,
   Project
 } from './services/projects'
 
@@ -55,6 +59,9 @@ import {
 // lam moi luot lau hon; hieu video nguon dai thi nen + cat + nhieu luot Gemini -> cho toi 2 gio
 // thay vi 30 phut mac dinh.
 const LONG_AI_MS = 2 * 60 * 60 * 1000
+// Ma build (scripts/dist.mjs, ngay-gio dong goi) — '' khi dev / build thuong
+declare const __APP_BUILD__: string
+const APP_BUILD = typeof __APP_BUILD__ !== 'undefined' ? __APP_BUILD__ : ''
 
 function slugify(s: string): string {
   return (
@@ -78,6 +85,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
   // ---- App / system ----
   ipcMain.handle('app:info', () => ({
     version: app.getVersion(),
+    build: APP_BUILD,
     name: 'Agent Edit',
     engineHome: ENGINE_HOME
   }))
@@ -128,6 +136,9 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
   })
   // AI lap ke hoach (GPT / Claude) — luu state.json, sidecar doc lai moi lan lap plan
   ipcMain.handle('settings:getPlanner', () => planProviderOf(readState()))
+  // Tao nhieu video cung luc: so video phan tich (Gemini) / lap plan (Claude) cung luc (src/lib/jobQueue.ts)
+  ipcMain.handle('settings:getJobLimits', () => jobLimitsOf(readState()))
+  ipcMain.handle('settings:setJobLimits', (_e, v: Partial<JobLimits>) => saveJobLimits(v || {}))
   ipcMain.handle('settings:setPlanner', (_e, v: PlanProvider) => {
     void v // lap ke hoach co dinh Claude (2026-10-01)
     writeState({ plan_provider: 'claude' })
@@ -188,7 +199,9 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
       // Ma thoat khong quyet dinh (agy bi dung som khi da co phien) -> hoi trang thai THAT
       const now = (await cliStatusOf(id)).st
       if (now?.logged_in) return { ok: true }
-      return res.ok ? { ok: false, error: now?.detail || `${label} chưa ghi nhận đăng nhập.` } : res
+      const err = res.ok ? now?.detail || `${label} chưa ghi nhận đăng nhập.` : res.error
+      // agy: loi de hieu + bao khi ban agy tren may KHAC ban da kiem (agy hay doi cach dang nhap giua cac ban)
+      return { ok: false, error: id === 'gemini' ? agyFailureText(err, now?.version || st.version, 'login') : err }
     }
     const res = await startCodexLogin(st.path, mode === 'device' ? 'device' : 'browser', send)
     if (!res.ok) return res
@@ -196,6 +209,24 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
     const now = (await cliStatusOf(id)).st
     if (now?.logged_in) return { ok: true }
     return { ok: false, error: now?.detail || `${label} chưa ghi nhận đăng nhập. Thử lại hoặc đăng nhập trong Terminal.` }
+  })
+  // Dang xuat CLI (de dang nhap tai khoan khac) bang lenh chinh chu: codex logout / claude auth logout / agy /logout.
+  // Chi bao thanh cong khi trang thai THAT (sidecar cli_status) xac nhan da het phien.
+  ipcMain.handle('settings:cliLogout', async (_e, name?: string) => {
+    const id = name === 'gemini' || name === 'claude' ? name : 'gpt'
+    const label = CLI_PACKAGES[id].label
+    const cur = await cliStatusOf(id)
+    if (cur.error) return { ok: false, error: cur.error }
+    const st = cur.st
+    if (!st?.installed || !st?.path) return { ok: false, error: `Chưa cài ${label} trên máy.` }
+    if (!st.logged_in) return { ok: true, already: true }
+    const win = getWindow()
+    const res = await startCliLogout(id, st.path, st.workdir, (line) => win?.webContents.send('settings:cliLoginLog', line))
+    if (res.canceled) return res
+    const now = (await cliStatusOf(id)).st
+    if (now && !now.logged_in) return { ok: true }
+    const err = res.ok ? `${label} vẫn báo đang đăng nhập — bấm “Kiểm tra lại” hoặc thử lại.` : res.error
+    return { ok: false, error: id === 'gemini' ? agyFailureText(err, now?.version || st.version, 'logout') : err }
   })
   // Ma xac thuc nguoi dung dan vao (trang dang nhap hien ma thay vi tu xong) -> stdin cua CLI dang chay
   ipcMain.handle('settings:cliLoginInput', (_e, text: string) => ({ ok: sendCliInput(text) }))
@@ -484,6 +515,9 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
   // mode: 'remotion' -> con tro "dang lam" rieng cua menu Video Remotion
   ipcMain.handle('projects:current', (_e, mode?: string) => getCurrent(mode))
   ipcMain.handle('projects:setCurrent', (_e, id: string | null, mode?: string) => setCurrent(id, mode))
+  // Cac the video dang mo o "Tao video" (mo lai app van con)
+  ipcMain.handle('projects:openTabs', () => getOpenTabs())
+  ipcMain.handle('projects:setOpenTabs', (_e, ids: string[], active?: string | null) => setOpenTabs(ids, active))
 
   // ---- Video Remotion ----
   const rmCall = async (path: string, payload?: unknown, timeoutMs?: number) => {

@@ -242,7 +242,8 @@ def gen_image(prompt, aspect="9:16", style="", cutout=False, model=None, log=Non
     if os.path.isfile(out):
         res = {"path": out, "cached": True, "seconds": 0}
         if cutout:
-            res["cutout"] = cut if os.path.isfile(cut) else media_vision.lift_subject(out, cut)
+            # lift_subject tu dung ban tach da co neu con moi + dung phien ban lam sach (cutout_refine.VERSION)
+            res["cutout"] = media_vision.lift_subject(out, cut)
         return res
     path = cli_providers.find_bin("gpt")
     if not path:
@@ -264,6 +265,10 @@ def gen_image(prompt, aspect="9:16", style="", cutout=False, model=None, log=Non
     if not src:
         log_step_response("asset-image", "cli:codex", tail, error="khong co file anh")
         shutil.rmtree(work, ignore_errors=True)
+        # Het han muc goi ChatGPT -> noi ro (khung nao, mo lai luc nao) thay vi loi chung chung
+        hint = cli_providers._quota_hint("gpt", tail)
+        if hint:
+            raise RuntimeError("Không tạo được ảnh AI: " + hint.split("\n")[0])
         raise RuntimeError("Codex khong tao duoc anh (ma %s): %s" % (rc, tail[-300:]))
     with _lock:
         _claimed.add(src)

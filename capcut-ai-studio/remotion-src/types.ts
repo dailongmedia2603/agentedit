@@ -208,6 +208,8 @@ export interface RSLayer {
   path?: string
   fit?: 'cover' | 'contain'
   mask?: 'none' | 'round' | 'circle'
+  /** anh TACH NEN (PNG trong suot): bong theo vien vat the, khong khung / bo goc */
+  cutout?: boolean
   border?: string
   emoji?: string
   label?: string

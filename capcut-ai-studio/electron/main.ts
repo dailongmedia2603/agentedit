@@ -33,7 +33,10 @@ const GPU_OFF = () => join(app.getPath('userData'), 'gpu-off')
 if (existsSync(GPU_OFF()) || process.argv.includes('--disable-gpu')) {
   app.disableHardwareAcceleration()
 }
-bootLog(`khoi dong v${app.getVersion()} ${process.platform}-${process.arch} gpu=${existsSync(GPU_OFF()) ? 'tat' : 'bat'}`)
+// Ma build (scripts/dist.mjs, ngay-gio dong goi) — '' khi dev / build thuong
+declare const __APP_BUILD__: string
+const APP_BUILD = typeof __APP_BUILD__ !== 'undefined' ? __APP_BUILD__ : ''
+bootLog(`khoi dong v${app.getVersion()}${APP_BUILD ? ' build ' + APP_BUILD : ''} ${process.platform}-${process.arch} gpu=${existsSync(GPU_OFF()) ? 'tat' : 'bat'}`)
 app.on('child-process-gone', (_e, d) => {
   bootLog(`tien trinh con ${d.type} dung: ${d.reason} (ma ${d.exitCode})`)
   if (d.type === 'GPU' && d.reason !== 'clean-exit' && d.reason !== 'killed') {
@@ -51,7 +54,10 @@ declare const __CLIENT_UI__: boolean
 const CLIENT_UI = typeof __CLIENT_UI__ !== 'undefined' && __CLIENT_UI__
 
 function setAppMenu() {
-  app.setAboutPanelOptions({ applicationName: APP_DISPLAY_NAME, applicationVersion: app.getVersion() })
+  app.setAboutPanelOptions({
+    applicationName: APP_DISPLAY_NAME,
+    applicationVersion: app.getVersion() + (APP_BUILD ? ` (build ${APP_BUILD})` : '')
+  })
   if (process.platform !== 'darwin') {
     // Windows: bo menu mac dinh cua Electron (Ctrl+R tai lai trang giua luc dung video, Ctrl+W, DevTools...).
     // Sao chep / dan trong o nhap van chay (Chromium tu xu ly, khong can menu).

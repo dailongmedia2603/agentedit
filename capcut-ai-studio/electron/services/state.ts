@@ -14,7 +14,38 @@ export interface EngineState {
   venv_python?: string
   /** AI lap ke hoach (B1..B7, R4, R5) — Cai dat API ghi, sidecar config.plan_provider() doc */
   plan_provider?: PlanProvider
+  /** Tao nhieu video cung luc (src/lib/jobQueue.ts): so video PHAN TICH (Gemini) / LAP PLAN (Claude) cung luc */
+  video_jobs_gemini?: number
+  video_jobs_claude?: number
   note?: string
+}
+
+/** Gioi han so video chay cung luc — khop src/lib/jobQueue.ts DEFAULT_LIMITS / MAX_LIMITS */
+export const JOB_LIMIT_DEFAULT = { gemini: 2, claude: 1 }
+export const JOB_LIMIT_MAX = { gemini: 20, claude: 20 }
+
+export type JobLimits = { gemini: number; claude: number }
+
+function clampJob(v: unknown, def: number, max: number): number {
+  const n = Math.round(Number(v))
+  return Number.isFinite(n) ? Math.min(max, Math.max(1, n)) : def
+}
+
+export function jobLimitsOf(s: EngineState): JobLimits {
+  return {
+    gemini: clampJob(s.video_jobs_gemini, JOB_LIMIT_DEFAULT.gemini, JOB_LIMIT_MAX.gemini),
+    claude: clampJob(s.video_jobs_claude, JOB_LIMIT_DEFAULT.claude, JOB_LIMIT_MAX.claude)
+  }
+}
+
+export function saveJobLimits(v: Partial<JobLimits>): JobLimits {
+  const cur = jobLimitsOf(readState())
+  const next = {
+    gemini: v.gemini === undefined ? cur.gemini : clampJob(v.gemini, cur.gemini, JOB_LIMIT_MAX.gemini),
+    claude: v.claude === undefined ? cur.claude : clampJob(v.claude, cur.claude, JOB_LIMIT_MAX.claude)
+  }
+  writeState({ video_jobs_gemini: next.gemini, video_jobs_claude: next.claude })
+  return next
 }
 
 export type PlanProvider = 'gpt' | 'claude'

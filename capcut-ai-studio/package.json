@@ -1,6 +1,6 @@
 {
   "name": "auto-capcut",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Agent Edit - AI video editing rendered with Remotion",
   "author": {
     "name": "Auto CapCut",
@@ -11,10 +11,10 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build && node scripts/bundle-remotion.mjs",
     "start": "electron-vite preview",
-    "dist": "electron-vite build && node scripts/bundle-remotion.mjs && node scripts/bundle-ffmpeg.mjs && node scripts/bundle-python.mjs && node scripts/compile-sidecar.mjs && node scripts/protect-electron.mjs && electron-builder --mac --arm64",
-    "dist:dir": "electron-vite build && node scripts/bundle-remotion.mjs && node scripts/bundle-ffmpeg.mjs && node scripts/bundle-python.mjs && node scripts/compile-sidecar.mjs && node scripts/protect-electron.mjs && electron-builder --mac --arm64 --dir",
-    "dist:win": "electron-vite build && node scripts/bundle-remotion.mjs && node scripts/bundle-ffmpeg.mjs && node scripts/bundle-models.mjs && node scripts/bundle-python.mjs && node scripts/compile-sidecar.mjs && node scripts/protect-electron.mjs && electron-builder --win --x64",
-    "dist:win:dir": "electron-vite build && node scripts/bundle-remotion.mjs && node scripts/bundle-ffmpeg.mjs && node scripts/bundle-models.mjs && node scripts/bundle-python.mjs && node scripts/compile-sidecar.mjs && node scripts/protect-electron.mjs && electron-builder --win --x64 --dir",
+    "dist": "node scripts/dist.mjs --mac",
+    "dist:dir": "node scripts/dist.mjs --mac --dir",
+    "dist:win": "node scripts/dist.mjs --win",
+    "dist:win:dir": "node scripts/dist.mjs --win --dir",
     "bundle:remotion": "node scripts/bundle-remotion.mjs",
     "bundle:python": "node scripts/bundle-python.mjs",
     "bundle:ffmpeg": "node scripts/bundle-ffmpeg.mjs",

@@ -48,7 +48,7 @@ Script làm lần lượt:
 1. Kiểm máy (Windows 64-bit, Node x64, MSVC).
 2. Cài thư viện Node bằng `npm ci`, đúng `package-lock.json`.
 3. Chuẩn bị `winCodeSign` (rcedit gắn icon vào `.exe`), tránh lỗi *"Cannot create symbolic link"* khi chưa bật Developer Mode.
-4. `npm run dist:win`:
+4. `npm run dist:win` (`scripts/dist.mjs --win`), mở đầu bằng việc đặt **mã build** = ngày-giờ lúc build:
    1. `electron-vite build`;
    2. bundle trang Remotion;
    3. nhúng ffmpeg (zip ghim SHA-256);
@@ -68,7 +68,10 @@ Script làm lần lượt:
 
 Kết quả:
 
-- `release\Agent Edit-Setup-1.0.0-x64.exe`: file gửi cho người dùng.
+- `release\Agent Edit-Setup-<phiên bản>-b<mã build>-x64.exe`, ví dụ `Agent Edit-Setup-1.1.0-b20261003-2250-x64.exe`:
+  file gửi cho người dùng. Mã build (ngày-giờ lúc build) cũng hiện trên thanh tiêu đề của app
+  (`Agent Edit · v1.1.0 · build 20261003-2250`), nên nhìn là biết máy khách đang chạy bản nào.
+  Số phiên bản nằm ở `package.json` → `"version"`; mã build tự sinh mỗi lần build.
 - `release\win-unpacked\Agent Edit.exe`: chạy thử không cần cài.
 
 Nếu bước nào báo **[LỖI]**, gửi lại toàn bộ nội dung cửa sổ PowerShell để xử lý.
@@ -82,7 +85,7 @@ cd capcut-ai-studio
 powershell -ExecutionPolicy Bypass -File .\build-windows.ps1
 ```
 
-Cài file `release\Agent Edit-Setup-<version>-x64.exe` mới đè lên bản cũ. Dự án, kho SFX / meme, đăng nhập AI (trong
+Cài file `release\Agent Edit-Setup-<phiên bản>-b<mã build>-x64.exe` mới đè lên bản cũ (lấy file có mã build mới nhất). Dự án, kho SFX / meme, đăng nhập AI (trong
 `%USERPROFILE%\.capcut-studio`) được giữ nguyên.
 
 ### Giao diện bản cài (ẩn quy trình)

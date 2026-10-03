@@ -8,7 +8,7 @@
 #      -Dir              chỉ đóng gói thư mục (release\win-unpacked), không tạo file Setup .exe
 #      -SkipSelfTest     bỏ bước tự kiểm bản đóng gói (không khuyến khích)
 #
-#  Kết quả: release\Agent Edit-Setup-<phiên bản>-x64.exe  (+ release\win-unpacked\ để chạy thử không cần cài)
+#  Kết quả: release\Agent Edit-Setup-<phiên bản>-b<mã build ngày-giờ>-x64.exe  (+ release\win-unpacked\ để chạy thử không cần cài)
 #  Chi tiết: BUILD-WINDOWS.md
 # =====================================================================================================
 param(

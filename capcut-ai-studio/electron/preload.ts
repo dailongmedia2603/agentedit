@@ -29,11 +29,14 @@ const api = {
   settingsCliStatus: (name?: string) => ipcRenderer.invoke('settings:cliStatus', name),
   settingsCliLogin: (mode?: 'browser' | 'device', name?: string) => ipcRenderer.invoke('settings:cliLogin', mode, name),
   settingsCliLoginCancel: () => ipcRenderer.invoke('settings:cliLoginCancel'),
+  settingsCliLogout: (name: string) => ipcRenderer.invoke('settings:cliLogout', name),
   settingsCliLoginInput: (text: string) => ipcRenderer.invoke('settings:cliLoginInput', text),
   settingsCliInstall: (name: string) => ipcRenderer.invoke('settings:cliInstall', name),
   settingsCliUpdate: (name: string) => ipcRenderer.invoke('settings:cliUpdate', name),
   settingsGetPlanner: () => ipcRenderer.invoke('settings:getPlanner'),
   settingsSetPlanner: (v: 'gpt' | 'claude') => ipcRenderer.invoke('settings:setPlanner', v),
+  settingsGetJobLimits: () => ipcRenderer.invoke('settings:getJobLimits'),
+  settingsSetJobLimits: (v: unknown) => ipcRenderer.invoke('settings:setJobLimits', v),
   openLoginUrl: (url: string) => ipcRenderer.invoke('settings:openLoginUrl', url),
   onCliLoginLog: (cb: (line: string) => void) => {
     const fn = (_e: unknown, line: string) => cb(line)
@@ -87,6 +90,8 @@ const api = {
   projectDiskInfo: (id: string) => ipcRenderer.invoke('projects:diskInfo', id),
   projectCurrent: (mode?: string) => ipcRenderer.invoke('projects:current', mode),
   projectSetCurrent: (id: string | null, mode?: string) => ipcRenderer.invoke('projects:setCurrent', id, mode),
+  projectOpenTabs: () => ipcRenderer.invoke('projects:openTabs'),
+  projectSetOpenTabs: (ids: string[], active?: string | null) => ipcRenderer.invoke('projects:setOpenTabs', ids, active),
 
   // Video Remotion
   remotionUnderstandReference: (payload: unknown) => ipcRenderer.invoke('remotion:understandReference', payload),
