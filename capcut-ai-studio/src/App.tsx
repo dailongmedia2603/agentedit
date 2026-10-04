@@ -23,6 +23,7 @@ import PromptsPage from '@/pages/Prompts'
 import CreateVideoPage from '@/pages/CreateVideo'
 import { IS_WIN } from './lib/platform'
 import { installSecretToggle, useFullUi } from './lib/clientUi'
+import { planLabel, fmtDate } from './components/LicenseGate'
 
 type Tab = 'doctor' | 'settings' | 'sfx' | 'memes' | 'prompts' | 'remotion' | 'projects'
 
@@ -57,6 +58,13 @@ export default function App() {
     if (!fullUi && tab === 'prompts') setTab('remotion')
   }, [fullUi, tab])
   const [appVersion, setAppVersion] = useState('')
+  // Thong tin key (nut tai khoan goc phai): da qua cong ban quyen thi trang thai luon la ok
+  const [license, setLicense] = useState<LicenseState | null>(null)
+  const [licOpen, setLicOpen] = useState(false)
+  useEffect(() => {
+    window.studio.licenseState().then(setLicense)
+    return window.studio.onLicenseChanged(setLicense)
+  }, [])
   // Doctor chay ngay khi mo app (kiem + tu cai cong cu thieu); san sang = khong con muc nao "fail"
   const doctor = useDoctor()
   const ready = doctor.ready
@@ -122,9 +130,35 @@ export default function App() {
           <button className="rounded-lg p-1.5 hover:bg-black/5 hover:text-ink-900">
             <Bell className="h-[18px] w-[18px]" />
           </button>
-          <button className="rounded-lg p-1.5 hover:bg-black/5 hover:text-ink-900">
-            <UserCircle2 className="h-[18px] w-[18px]" />
-          </button>
+          <div className="relative">
+            <button
+              className="rounded-lg p-1.5 hover:bg-black/5 hover:text-ink-900"
+              title="Bản quyền"
+              onClick={() => setLicOpen((v) => !v)}
+            >
+              <UserCircle2 className="h-[18px] w-[18px]" />
+            </button>
+            {licOpen && license && (
+              <div
+                className="card-surface absolute right-0 top-9 z-50 w-64 rounded-xl p-3.5 text-left text-[13px] text-ink-800/80"
+                onMouseLeave={() => setLicOpen(false)}
+              >
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-800/40">Bản quyền</div>
+                {license.dev ? (
+                  <div className="mt-1.5">Bản phát triển (không kiểm key)</div>
+                ) : (
+                  <div className="mt-1.5 space-y-1">
+                    {license.customer && <div className="font-semibold text-ink-900">{license.customer}</div>}
+                    <div>
+                      Key: <span className="font-mono">…{license.keyHint}</span>
+                    </div>
+                    <div>Gói: {planLabel(license.plan)}</div>
+                    <div>{license.plan === 'lifetime' || !license.expiresAt ? 'Không hết hạn' : `Hết hạn: ${fmtDate(license.expiresAt)}`}</div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

@@ -1,5 +1,3 @@
 {
-  "_doc": "Dong bo kho SFX + Meme tu Cloudflare R2 (cong khai, CHI DE TAI). base_url = URL r2.dev / custom domain cua bucket. App tai {base_url}/library-manifest.json + {base_url}/sfx/<file> + {base_url}/memes/<file>. Upload (publish) dung token rieng o may tac gia (~/.capcut-studio/r2-publish.json), KHONG nhung vao app. Doi bucket: sua base_url o day roi npm run dist.",
-  "base_url": "https://pub-e69822cf5f4d4111a131f7d13e08dc6c.r2.dev",
-  "manifest": "library-manifest.json"
+  "_doc": "Kho SFX + Meme nam o Cloudflare R2 bucket agent-edit (KHONG cong khai). App chi tai qua may chu ban quyen (license-server/, POST /v1/license op=library -> link tai tam). Publish: npm run publish:library (token rieng ~/.capcut-studio/r2-publish.json)."
 }

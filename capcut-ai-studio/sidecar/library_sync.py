@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""DONG BO KHO SFX + MEME tu Cloudflare R2 (cong khai, chi TAI ve).
+"""DONG BO KHO SFX + MEME tu Cloudflare R2 — CHI qua may chu ban quyen (bucket KHONG con cong khai).
 
 Tac gia (may co token) dung `scripts/publish-library.mjs` day kho + nhan (Gemini) len R2.
-May khac: `pull()` tai manifest -> tai file THIEU / SAI SHA-256 -> GOP vao kho local theo `id`
+May khach: Electron main xin manifest tu may chu ban quyen (ky bang khoa thiet bi, key phai dang kich hoat
+dung may nay) -> moi muc co `url` tai tam (token het han sau 2 gio, key bi khoa -> 403 ngay) -> `pull(manifest)`
+tai file THIEU / SAI SHA-256 -> GOP vao kho local theo `id`
 (muc tren R2 ghi de muc cung id; muc nguoi dung tu them GIU NGUYEN). Nhan (emotion/use_when/tags/
 summary) di theo manifest -> may khac KHONG phai goi Gemini lai.
 
@@ -12,7 +14,6 @@ loi / rong -> KHONG dong nao bi xoa (chi them/cap nhat). `file` trong kho luu du
 theo tung may -> pull viet lai theo thu muc local (manifest chi giu ten file).
 """
 import os
-import json
 import time
 import shutil
 import hashlib
@@ -22,19 +23,6 @@ import requests
 import engine       # kho SFX: SFX_DIR, SFX_LIB, _load_lib, _save_lib
 import meme_lib     # kho meme: MEME_DIR, MEME_LIB, load_lib, save_lib
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-
-
-def _cfg():
-    """base_url + ten manifest. Uu tien bien moi truong STUDIO_LIBRARY_URL (test)."""
-    cfg = {}
-    try:
-        with open(os.path.join(HERE, "assets", "library_sync.json"), encoding="utf-8") as f:
-            cfg = json.load(f)
-    except Exception:
-        cfg = {}
-    base = (os.environ.get("STUDIO_LIBRARY_URL") or cfg.get("base_url") or "").rstrip("/")
-    return base, cfg.get("manifest", "library-manifest.json")
 
 
 def _sha256(path):
@@ -91,7 +79,7 @@ def _backup(path):
             pass
 
 
-def _merge_kind(entries, media_dir, url_prefix, id_key, cur, log):
+def _merge_kind(entries, media_dir, cur, log):
     """Gop 1 loai (sfx/meme). `cur` = list muc local. Tra ve (list moi, added, updated, errors)."""
     by_id = {e.get("id"): dict(e) for e in cur if e.get("id")}
     added = updated = 0
@@ -99,7 +87,8 @@ def _merge_kind(entries, media_dir, url_prefix, id_key, cur, log):
     for m in entries:
         mid = m.get("id")
         fname = m.get("file")            # manifest luu TEN file (basename)
-        if not mid or not fname:
+        url = m.get("url")               # link tai tam do may chu ban quyen cap
+        if not mid or not fname or not url:
             continue
         fname = os.path.basename(fname)
         local = fname
@@ -110,7 +99,7 @@ def _merge_kind(entries, media_dir, url_prefix, id_key, cur, log):
         sha = m.get("sha256")
         try:
             if _need_download(dest, sha):
-                _download(url_prefix + "/" + requests.utils.quote(fname), dest, sha)
+                _download(url, dest, sha)
                 if log:
                     log("  tai %s" % fname)
         except Exception as e:
@@ -119,6 +108,7 @@ def _merge_kind(entries, media_dir, url_prefix, id_key, cur, log):
         row = dict(m)
         row["file"] = dest               # viet lai duong dan tuyet doi theo may nay
         row.pop("sha256", None)          # sha chi dung de kiem, khong luu vao kho
+        row.pop("url", None)             # link tai tam, het han -> khong luu
         if mid in by_id:
             updated += 1
         else:
@@ -127,17 +117,10 @@ def _merge_kind(entries, media_dir, url_prefix, id_key, cur, log):
     return list(by_id.values()), added, updated, errors
 
 
-def pull(log=None):
-    """Tai manifest R2 -> gop kho SFX + Meme. Tra ve summary. Khong bao gio xoa muc local."""
-    base, manifest_name = _cfg()
-    if not base:
-        return {"ok": False, "error": "Chua cau hinh base_url (assets/library_sync.json)."}
-    try:
-        r = requests.get(base + "/" + manifest_name, timeout=30)
-        r.raise_for_status()
-        manifest = r.json()
-    except Exception as e:
-        return {"ok": False, "error": "Khong tai duoc manifest: %s" % (str(e)[:160])}
+def pull(manifest, log=None):
+    """Gop kho SFX + Meme tu manifest (da kem link tai) do may chu ban quyen cap. Khong bao gio xoa muc local."""
+    if not isinstance(manifest, dict):
+        return {"ok": False, "error": "Thieu manifest kho (may chu ban quyen)."}
 
     if log:
         log("Manifest R2: %d SFX, %d meme" % (len(manifest.get("sfx") or []), len(manifest.get("memes") or [])))
@@ -145,7 +128,7 @@ def pull(log=None):
     # SFX
     sfx_lib = engine._load_lib()
     sfx_new, sfx_add, sfx_upd, sfx_err = _merge_kind(
-        manifest.get("sfx") or [], engine.SFX_DIR, base + "/sfx", "id", sfx_lib.get("sfx", []), log)
+        manifest.get("sfx") or [], engine.SFX_DIR, sfx_lib.get("sfx", []), log)
     _backup(engine.SFX_LIB)
     sfx_lib["sfx"] = sfx_new
     engine._save_lib(sfx_lib)
@@ -153,7 +136,7 @@ def pull(log=None):
     # Meme
     meme_lib_data = meme_lib.load_lib()
     meme_new, meme_add, meme_upd, meme_err = _merge_kind(
-        manifest.get("memes") or [], meme_lib.MEME_DIR, base + "/memes", "id", meme_lib_data.get("memes", []), log)
+        manifest.get("memes") or [], meme_lib.MEME_DIR, meme_lib_data.get("memes", []), log)
     _backup(meme_lib.MEME_LIB)
     meme_lib_data["memes"] = meme_new
     meme_lib.save_lib(meme_lib_data)

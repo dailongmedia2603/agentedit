@@ -1,3 +1,4 @@
+import { app } from 'electron'
 import { spawn, ChildProcess } from 'child_process'
 import { createServer } from 'net'
 import { request as httpRequest } from 'http'
@@ -13,6 +14,26 @@ let port = 0
 let token = ''
 let ready = false
 let logBuffer: string[] = []
+
+// ---- Ve ban quyen (license.ts lay tu server) -> sidecar tu kiem chu ky truoc moi viec AI ----
+let ticket = ''
+let refreshTicket: (() => Promise<boolean>) | null = null
+/** license.ts goi sau moi lan kiem key: ve moi ('' = thu hoi). Sidecar dang chay thi day ngay. */
+export function setSidecarTicket(t: string): void {
+  ticket = t
+  if (ready && port) rawSidecarRequest('/license/ticket', { ticket: t }).catch(() => {})
+}
+export function setTicketRefresher(fn: () => Promise<boolean>): void {
+  refreshTicket = fn
+}
+// Ban dev (chua dong goi): STUDIO_LICENSE=off / may chu thu -> bao sidecar (chi co tac dung khi sidecar chay tu .py)
+function licenseEnv(): Record<string, string> {
+  if (app.isPackaged) return {}
+  const env: Record<string, string> = {}
+  if (process.env.STUDIO_LICENSE === 'off') env.STUDIO_LICENSE_OFF = '1'
+  if (process.env.STUDIO_LICENSE_PUB) env.STUDIO_LICENSE_PUB = process.env.STUDIO_LICENSE_PUB
+  return env
+}
 
 export function sidecarLog(): string[] {
   return logBuffer.slice(-200)
@@ -85,6 +106,7 @@ async function doStartSidecar(onLog?: (l: string) => void): Promise<{ ok: boolea
       ...augmentedEnv(),
       STUDIO_TOKEN: token,
       STUDIO_NODE_BIN: process.execPath,
+      ...licenseEnv(),
       // model thi giac may ONNX nhung trong app (Windows — vision_onnx.model_dirs)
       ...(bundledModelsDir() ? { STUDIO_MODELS_DIR: bundledModelsDir() as string } : {})
     },
@@ -116,6 +138,7 @@ async function doStartSidecar(onLog?: (l: string) => void): Promise<{ ok: boolea
   ready = true
   // day config providers (keys) vao sidecar (giu trong RAM sidecar)
   await pushConfig()
+  if (ticket) await rawSidecarRequest('/license/ticket', { ticket }).catch(() => {})
   return { ok: true }
 }
 
@@ -140,8 +163,19 @@ export async function pushConfig(): Promise<void> {
   await sidecarRequest('/config', { providers })
 }
 
+/** Goi sidecar. Bi tu choi vi ve ban quyen het han (app mo > 3 ngay) -> lay ve moi tu server roi thu lai 1 lan. */
+export async function sidecarRequest(path: string, body?: unknown, timeoutMs = 1800000): Promise<any> {
+  try {
+    return await rawSidecarRequest(path, body, timeoutMs)
+  } catch (e) {
+    if (!(e as { license?: boolean }).license || !refreshTicket) throw e
+    if (!(await refreshTicket())) throw e
+    return rawSidecarRequest(path, body, timeoutMs)
+  }
+}
+
 // Dung Node http module (KHONG dung fetch/undici) de tranh "fetch failed" khi call AI chay lau.
-export function sidecarRequest(path: string, body?: unknown, timeoutMs = 1800000): Promise<any> {
+function rawSidecarRequest(path: string, body?: unknown, timeoutMs = 1800000): Promise<any> {
   if (!port) return Promise.reject(new Error('Sidecar chua khoi dong'))
   return new Promise((resolve, reject) => {
     const payload = body !== undefined ? Buffer.from(JSON.stringify(body)) : undefined
@@ -171,7 +205,9 @@ export function sidecarRequest(path: string, body?: unknown, timeoutMs = 1800000
             return
           }
           if (!res.statusCode || res.statusCode >= 400) {
-            reject(new Error(json?.error || `HTTP ${res.statusCode}`))
+            const err = new Error(json?.error || `HTTP ${res.statusCode}`)
+            if (res.statusCode === 403 && json?.code === 'license') (err as Error & { license?: boolean }).license = true
+            reject(err)
             return
           }
           resolve(json)

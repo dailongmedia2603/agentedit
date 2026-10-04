@@ -5,6 +5,17 @@ const api = {
   platform: process.platform,
   appInfo: () => ipcRenderer.invoke('app:info'),
 
+  // Ban quyen
+  licenseState: () => ipcRenderer.invoke('license:state'),
+  licenseCheck: () => ipcRenderer.invoke('license:check'),
+  licenseActivate: (key: string) => ipcRenderer.invoke('license:activate', key),
+  licenseForget: () => ipcRenderer.invoke('license:forget'),
+  onLicenseChanged: (cb: (s: unknown) => void) => {
+    const fn = (_e: unknown, s: unknown) => cb(s)
+    ipcRenderer.on('license:changed', fn)
+    return () => ipcRenderer.removeListener('license:changed', fn)
+  },
+
   // Doctor
   doctorRun: () => ipcRenderer.invoke('doctor:run'),
   doctorFix: (id: string) => ipcRenderer.invoke('doctor:fix', id),

@@ -5,9 +5,10 @@
 // nhung file MOI / DOI (so voi manifest tren R2) + manifest moi.
 //
 // Token R2 nam o ~/.capcut-studio/r2-publish.json (KHONG nhung vao app, KHONG len git):
-//   { "account_id","access_key_id","secret_access_key","bucket","public_base_url" }
-// (hoac bien moi truong R2_ACCOUNT_ID / R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY / R2_BUCKET / R2_PUBLIC_BASE_URL)
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+//   { "account_id","access_key_id","secret_access_key","bucket" }
+// (hoac bien moi truong R2_ACCOUNT_ID / R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY / R2_BUCKET)
+// Bucket KHONG con cong khai: app chi tai qua may chu ban quyen (license-server/) -> doc manifest cu bang S3.
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3'
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { homedir } from 'node:os'
@@ -27,13 +28,12 @@ function creds() {
     account_id: g('account_id', 'R2_ACCOUNT_ID'),
     access_key_id: g('access_key_id', 'R2_ACCESS_KEY_ID'),
     secret_access_key: g('secret_access_key', 'R2_SECRET_ACCESS_KEY'),
-    bucket: g('bucket', 'R2_BUCKET'),
-    public_base_url: (g('public_base_url', 'R2_PUBLIC_BASE_URL') || '').replace(/\/$/, '')
+    bucket: g('bucket', 'R2_BUCKET')
   }
   const miss = Object.entries(out).filter(([, v]) => !v).map(([k]) => k)
   if (miss.length) {
     console.error(`[publish-library] Thieu cau hinh: ${miss.join(', ')}`)
-    console.error(`  Tao ${join(ENGINE, 'r2-publish.json')} voi { account_id, access_key_id, secret_access_key, bucket, public_base_url }`)
+    console.error(`  Tao ${join(ENGINE, 'r2-publish.json')} voi { account_id, access_key_id, secret_access_key, bucket }`)
     process.exit(1)
   }
   return out
@@ -77,8 +77,8 @@ async function main() {
   let remote = { sfx: [], memes: [] }
   if (!DRY_RUN) {
     try {
-      const r = await fetch(`${c.public_base_url}/library-manifest.json`, { cache: 'no-store' })
-      if (r.ok) remote = await r.json()
+      const r = await client.send(new GetObjectCommand({ Bucket: c.bucket, Key: 'library-manifest.json' }))
+      remote = JSON.parse(await r.Body.transformToString())
     } catch {
       /* chua co manifest */
     }
@@ -125,7 +125,7 @@ async function main() {
     log(`THU xong. SFX ${manifest.sfx.length} + Meme ${manifest.memes.length}; se upload ${uploaded} file (tat ca, vi khong so voi R2). Khong co gi duoc gui len.`)
   } else {
     log(`Xong. SFX ${manifest.sfx.length} + Meme ${manifest.memes.length}; upload ${uploaded} file, bo qua ${skipped} (da co, trung SHA).`)
-    log(`Manifest: ${c.public_base_url}/library-manifest.json`)
+    log(`Manifest: r2://${c.bucket}/library-manifest.json (app tai qua may chu ban quyen)`)
   }
 }
 

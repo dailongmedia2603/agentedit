@@ -31,6 +31,16 @@ import {
   sidecarLog
 } from './services/sidecar'
 import { ENGINE_HOME } from './services/paths'
+import {
+  licenseState,
+  checkLicense,
+  activateLicense,
+  forgetLicense,
+  requireLicense,
+  assertLicensed,
+  libraryManifest,
+  onLicenseChange
+} from './services/license'
 import { readState, writeState, planProviderOf, PlanProvider, jobLimitsOf, saveJobLimits, JobLimits } from './services/state'
 import { mediaBase, mediaUrl } from './services/media-server'
 import { startRender, cancelRender, renderStatus, browserInstalled } from './services/remotion'
@@ -89,6 +99,13 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
     name: 'Agent Edit',
     engineHome: ENGINE_HOME
   }))
+
+  // ---- Ban quyen (1 key = 1 may): kiem online luc mo app + luc bam "Phan tich video" ----
+  onLicenseChange((st) => getWindow()?.webContents.send('license:changed', st))
+  ipcMain.handle('license:state', () => licenseState())
+  ipcMain.handle('license:check', () => checkLicense('open'))
+  ipcMain.handle('license:activate', (_e, key: string) => activateLicense(String(key || '')))
+  ipcMain.handle('license:forget', () => forgetLicense())
 
   // ---- Doctor ----
   // Chi dung khi tu kiem giao dien (chay kem --user-data-dir tam): coi moi dieu kien
@@ -354,6 +371,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
   // ---- Thu muc lam viec + hieu video nguon (Gemini) ----
   ipcMain.handle('pipeline:newWorkDir', (_e, name: string) => ensureWorkDir(name))
   ipcMain.handle('pipeline:understandSources', async (_e, payload: unknown) => {
+    await requireLicense() // bam "Phan tich video" -> hoi may chu ban quyen (key bi khoa = dung ngay)
     if (!sidecarInfo().ready) await startSidecar()
     // Video dai: nen 720p + cat nhieu phan + nhieu luot Gemini + buoc ghep -> co the qua 30 phut
     return sidecarRequest('/understand_sources', payload, LONG_AI_MS)
@@ -493,8 +511,17 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
   ipcMain.handle('library:list', () => libCall('/library/list'))
   ipcMain.handle('library:lookup', (_e, paths: string[]) => libCall('/library/lookup', { paths }))
   ipcMain.handle('library:delete', (_e, fp: string, part?: string) => libCall('/library/delete', { fp, part }))
-  // Dong bo kho SFX + Meme tu R2 (nut "Dong bo kho" + tu chay nen luc mo app)
-  ipcMain.handle('library:sync', () => libCall('/library/sync', {}))
+  // Dong bo kho SFX + Meme (nut "Dong bo kho" + tu chay nen luc mo app): CHI qua may chu ban quyen —
+  // key dang kich hoat dung may nay moi nhan duoc manifest + link tai tam (bucket R2 khong con cong khai)
+  ipcMain.handle('library:sync', async () => {
+    let manifest: unknown
+    try {
+      manifest = await libraryManifest()
+    } catch (e) {
+      return { ok: false, error: String((e as Error).message || e) }
+    }
+    return libCall('/library/sync', { manifest })
+  })
 
   // ---- Projects (luu/khoi phuc du an) ----
   ipcMain.handle('projects:list', () => listProjects())
@@ -524,13 +551,17 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
     if (!sidecarInfo().ready) await startSidecar()
     return sidecarRequest(path, payload, timeoutMs)
   }
-  ipcMain.handle('remotion:understandReference', (_e, payload: unknown) =>
-    rmCall('/remotion/understand_reference', payload, LONG_AI_MS)
-  )
+  // Video mau + tu lieu chay CUNG LUC voi video nguon khi bam "Phan tich video" -> cung kiem key
+  // (requireLicense dung lai ket qua vua kiem < 20s, khong hoi server 3 lan)
+  ipcMain.handle('remotion:understandReference', async (_e, payload: unknown) => {
+    await requireLicense()
+    return rmCall('/remotion/understand_reference', payload, LONG_AI_MS)
+  })
   // Tu lieu cua nguoi dung: Gemini doc tung anh / video + may do kich thuoc (moi tu lieu vai chuc giay)
-  ipcMain.handle('remotion:understandMedia', (_e, payload: unknown) =>
-    rmCall('/remotion/understand_media', payload, LONG_AI_MS)
-  )
+  ipcMain.handle('remotion:understandMedia', async (_e, payload: unknown) => {
+    await requireLicense()
+    return rmCall('/remotion/understand_media', payload, LONG_AI_MS)
+  })
   ipcMain.handle('remotion:autoplan', (_e, payload: unknown) => rmCall('/remotion/autoplan', payload, LONG_AI_MS))
   ipcMain.handle('remotion:spec', (_e, payload: unknown) => rmCall('/remotion/spec', payload))
   ipcMain.handle('remotion:catalog', () => rmCall('/remotion/catalog'))
@@ -543,6 +574,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
       _e,
       payload: { spec: Record<string, unknown>; workDir?: string; name?: string; _run?: { id: string } }
     ) => {
+      assertLicensed() // khong hoi server (chi 2 luc: mo app + phan tich) — lan kiem gan nhat phai OK
       const dir =
         payload.workDir && existsSync(payload.workDir) ? payload.workDir : ensureWorkDir(payload.name || 'remotion')
       const d = new Date()

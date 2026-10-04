@@ -1,0 +1,20 @@
+# Worker CONG KHAI cho app (kich hoat / kiem key / phat kho). Trien khai: npm run deploy:api
+name = "agent-edit-license"
+main = "src/api.js"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+[observability]
+enabled = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "agent-edit-license"
+# Dien sau khi `npx wrangler d1 create agent-edit-license` (xem README.md)
+database_id = "ead20a13-5d68-429e-afda-79603495ec9b"
+
+[[r2_buckets]]
+binding = "LIB"
+bucket_name = "agent-edit"
+
+# Bi mat (wrangler secret put ...): TICKET_SK, DL_SECRET

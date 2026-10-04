@@ -20,6 +20,7 @@ import subprocess
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "sidecar"))
 
+os.environ["STUDIO_LICENSE_OFF"] = "1"  # goi route truc tiep: bo cong ban quyen (chi co tac dung voi server.py nguon)
 import server          # noqa: E402
 import providers       # noqa: E402
 import engine          # noqa: E402

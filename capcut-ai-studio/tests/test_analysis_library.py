@@ -37,6 +37,7 @@ def main():
             vids.append(p)
         import analysis_library as AL
         import providers
+        os.environ["STUDIO_LICENSE_OFF"] = "1"  # goi route truc tiep: bo cong ban quyen (chi co tac dung voi server.py nguon)
         import server
         import speech_align
         speech_align.needs_retime = lambda brief: False      # khong chay Whisper trong test

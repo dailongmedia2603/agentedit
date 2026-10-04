@@ -41,6 +41,9 @@
 - Python tests (temp HOME so real data is untouched), from `capcut-ai-studio/`:
   `for t in tests/test_*.py; do HOME=$(mktemp -d) ../CapCutAPI/.venv/bin/python $t; done`
   (Windows ONNX vision path on macOS: `STUDIO_VISION=onnx STUDIO_MODELS_DIR=<models>`; see tests/test_windows_port.py)
+- License (1 key = 1 máy, PROJECT_OVERVIEW 13g): server `cd license-server && npm run dev:api` + `npm run dev:admin` rồi
+  `npm test`; app `cd capcut-ai-studio && HOME=$(mktemp -d) node tests/test_license.mts` (cần 2 worker trên). Dev app không
+  cần key: `STUDIO_LICENSE=off npm run dev`. Bí mật ký: `~/.capcut-studio/license-secrets.json` — KHÔNG đưa lên git.
 - Electron/renderer helpers test (Node >= 23): `cd capcut-ai-studio && node tests/test_project_media.mts`
   (and `HOME=$(mktemp -d) node tests/test_toolchain.mts`, `tests/test_project_delete.mts`)
 - Doctor / toolchain (tool versions pinned in `capcut-ai-studio/sidecar/assets/toolchain.json` +

@@ -6,6 +6,7 @@ Khoi dong: <venv_python> server.py --port <PORT> [--token <SECRET>]
 
 Endpoints chinh:
   GET  /health
+  POST /license/ticket    { ticket }             (ve ban quyen ky Ed25519 — thieu ve thi moi route khac tra 403)
   POST /config            { providers: {...} }   (Electron day key tu Keychain - giu trong RAM)
   GET  /providers
   POST /cli_status        { name? }              (CLI chinh chu cho che do goi subscription)
@@ -171,6 +172,230 @@ def require_token(fn):
 
 def err(e, code=500):
     return jsonify({"ok": False, "error": str(e)}), code
+
+
+# ----------------------------------------------------------------------------
+# BAN QUYEN — "ve" do may chu ban quyen ky (Ed25519), Electron main day sang qua /license/ticket.
+# Moi viec AI / kho deu can ve hop le: dung khoa cong khai, chua het han, DUNG MAY (ma phan cung khop).
+# Code de NGAY TRONG server.py (dong goi = server.so): tach ra module rieng thi chi can thay 1 file .py gia.
+# ----------------------------------------------------------------------------
+import base64 as _b64
+import hashlib as _hashlib
+import hmac as _hmac
+import re as _re
+import subprocess as _subprocess
+
+_LICENSE_PUB = "qsPtITJCcT/BcJQIVP0p4ILdenDc34yJ+8sA8txQeTA="
+_LIC = {"payload": None, "fp": None}
+# Duoc goi khi chua co ve: khoi dong, cau hinh AI, kiem dang nhap CLI (trang Cai dat + tu kiem dong goi)
+_LIC_OPEN = {"/health", "/config", "/license/ticket", "/cli_status", "/test_connection", "/providers"}
+_LIC_GRACE_MS = 86400000  # gio may lech toi 1 ngay van nhan ve
+
+
+def _lic_from_source():
+    """Chi ban dev (chay server.py nguon) moi doc bien moi truong cua ban quyen; ban dong goi la server.so."""
+    return __file__.endswith(".py")
+
+
+def _lic_pub():
+    if _lic_from_source() and os.environ.get("STUDIO_LICENSE_PUB"):
+        return os.environ["STUDIO_LICENSE_PUB"]
+    return _LICENSE_PUB
+
+
+# --- Ed25519 (RFC 8032) chi phan KIEM chu ky, thuan Python (khong them thu vien vao python nhung) ---
+_EP = 2 ** 255 - 19
+_EL = 2 ** 252 + 27742317777372353535851937790883648493
+_ED = -121665 * pow(121666, _EP - 2, _EP) % _EP
+_EI = pow(2, (_EP - 1) // 4, _EP)
+
+
+def _ed_x(y, sign):
+    if y >= _EP:
+        return None
+    x2 = (y * y - 1) * pow(_ED * y * y + 1, _EP - 2, _EP) % _EP
+    if x2 == 0:
+        return None if sign else 0
+    x = pow(x2, (_EP + 3) // 8, _EP)
+    if (x * x - x2) % _EP:
+        x = x * _EI % _EP
+    if (x * x - x2) % _EP:
+        return None
+    if (x & 1) != sign:
+        x = _EP - x
+    return x
+
+
+def _ed_add(P, Q):
+    a = (P[1] - P[0]) * (Q[1] - Q[0]) % _EP
+    b = (P[1] + P[0]) * (Q[1] + Q[0]) % _EP
+    c = 2 * P[3] * Q[3] * _ED % _EP
+    d = 2 * P[2] * Q[2] % _EP
+    e, f, g_, h = b - a, d - c, d + c, b + a
+    return (e * f % _EP, g_ * h % _EP, f * g_ % _EP, e * h % _EP)
+
+
+def _ed_mul(k, P):
+    Q = (0, 1, 1, 0)
+    while k > 0:
+        if k & 1:
+            Q = _ed_add(Q, P)
+        P = _ed_add(P, P)
+        k >>= 1
+    return Q
+
+
+def _ed_point(raw):
+    if len(raw) != 32:
+        return None
+    y = int.from_bytes(raw, "little")
+    sign = y >> 255
+    y &= (1 << 255) - 1
+    x = _ed_x(y, sign)
+    return None if x is None else (x, y, 1, x * y % _EP)
+
+
+_EGY = 4 * pow(5, _EP - 2, _EP) % _EP
+_EG = (_ed_x(_EGY, 0), _EGY, 1, _ed_x(_EGY, 0) * _EGY % _EP)
+
+
+def _ed_verify(pub, msg, sig):
+    if len(pub) != 32 or len(sig) != 64:
+        return False
+    A = _ed_point(pub)
+    R = _ed_point(sig[:32])
+    if not A or not R:
+        return False
+    k = int.from_bytes(sig[32:], "little")
+    if k >= _EL:
+        return False
+    h = int.from_bytes(_hashlib.sha512(sig[:32] + pub + msg).digest(), "little") % _EL
+    left = _ed_mul(k, _EG)
+    right = _ed_add(R, _ed_mul(h, A))
+    return (left[0] * right[2] - right[0] * left[2]) % _EP == 0 and (left[1] * right[2] - right[1] * left[2]) % _EP == 0
+
+
+def _b64url(s):
+    return _b64.urlsafe_b64decode(s + "=" * (-len(s) % 4))
+
+
+# --- Ma may: GIONG HET electron/services/license.ts (cung lenh, cung chuan hoa, cung HMAC) ---
+_FP_SALT = b"agent-edit/fp/v1"
+_FP_JUNK = {
+    "TO BE FILLED BY O.E.M.", "DEFAULT STRING", "NONE", "SYSTEM SERIAL NUMBER", "BASE BOARD SERIAL NUMBER",
+    "CHASSIS SERIAL NUMBER", "SERIAL NUMBER", "N/A", "NA", "NOT APPLICABLE", "NOT SPECIFIED", "NOT AVAILABLE",
+    "INVALID", "UNKNOWN", "DEFAULT", "123456789", "0123456789", "1234567890", "03000200-0400-0500-0006-000700080009",
+}
+_WIN_PS = (
+    "$ErrorActionPreference='SilentlyContinue';"
+    "$p=Get-CimInstance -ClassName Win32_ComputerSystemProduct | Select-Object -First 1;"
+    "$b=Get-CimInstance -ClassName Win32_BaseBoard | Select-Object -First 1;"
+    "$g=(Get-ItemProperty -Path 'HKLM:\\SOFTWARE\\Microsoft\\Cryptography' -Name MachineGuid).MachineGuid;"
+    "[pscustomobject]@{uuid=[string]$p.UUID;board=[string]$b.SerialNumber;guid=[string]$g} | ConvertTo-Json -Compress"
+)
+
+
+def _fp_clean(v):
+    s = str(v or "").strip().upper()
+    if len(s) < 4 or s in _FP_JUNK or _re.fullmatch(r"[0F\-\s]+", s) or "O.E.M" in s:
+        return None
+    return s
+
+
+def _lic_fp():
+    if _LIC["fp"] is not None:
+        return _LIC["fp"]
+    raw = {}
+    try:
+        if sys.platform == "darwin":
+            out = _subprocess.run(["/usr/sbin/ioreg", "-rd1", "-c", "IOPlatformExpertDevice"],
+                                  capture_output=True, text=True, timeout=20).stdout
+            for k, pat in (("mac.uuid", r'"IOPlatformUUID" = "([^"]+)"'), ("mac.serial", r'"IOPlatformSerialNumber" = "([^"]+)"')):
+                m = _re.search(pat, out)
+                raw[k] = m.group(1) if m else None
+        elif winsupport.IS_WIN:
+            ps = os.path.join(os.environ.get("SystemRoot") or "C:\\Windows", "System32", "WindowsPowerShell", "v1.0", "powershell.exe")
+            out = _subprocess.run([ps, "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", _WIN_PS],
+                                  capture_output=True, text=True, timeout=20).stdout
+            j = json.loads((out or "").strip() or "{}")
+            raw = {"win.uuid": j.get("uuid"), "win.board": j.get("board"), "win.guid": j.get("guid")}
+    except Exception as e:
+        logger.warning("license: khong doc duoc ma may: %s", e)
+    c = {}
+    for k, v in raw.items():
+        val = _fp_clean(v)
+        if val:
+            c[k] = _hmac.new(_FP_SALT, ("%s=%s" % (k, val)).encode("utf-8"), _hashlib.sha256).hexdigest()[:32]
+    _LIC["fp"] = {"platform": "win32" if winsupport.IS_WIN else "darwin", "c": c}
+    return _LIC["fp"]
+
+
+def _lic_fp_match(bound):
+    own = _lic_fp()
+    if not isinstance(bound, dict) or bound.get("platform") != own["platform"]:
+        return False
+    keys = list((bound.get("c") or {}).keys())
+    if not keys:
+        return True
+    hit = sum(1 for k in keys if own["c"].get(k) == bound["c"][k])
+    return hit >= min(2, len(keys))
+
+
+def _lic_parse(ticket):
+    """Ve hop le -> payload; khong -> (None, ly do)."""
+    parts = str(ticket or "").split(".")
+    if len(parts) != 3 or parts[0] != "v1":
+        return None, "ve sai dinh dang"
+    try:
+        pub = _b64.b64decode(_lic_pub())
+        if not _ed_verify(pub, ("v1." + parts[1]).encode("ascii"), _b64url(parts[2])):
+            return None, "chu ky sai"
+        p = json.loads(_b64url(parts[1]).decode("utf-8"))
+    except Exception as e:
+        return None, "ve hong: %s" % e
+    now = time.time() * 1000
+    if not isinstance(p, dict) or p.get("v") != 1:
+        return None, "ve sai phien ban"
+    if (p.get("until") or 0) + _LIC_GRACE_MS < now:
+        return None, "ve het han"
+    if p.get("exp") and p["exp"] + _LIC_GRACE_MS < now:
+        return None, "key het han"
+    if not _lic_fp_match(p.get("fp")):
+        return None, "ve cua may khac"
+    return p, None
+
+
+def _license_gate():
+    if request.path in _LIC_OPEN:
+        return None
+    if _lic_from_source() and os.environ.get("STUDIO_LICENSE_OFF") == "1":
+        return None
+    p = _LIC["payload"]
+    now = time.time() * 1000
+    if not p or (p.get("until") or 0) + _LIC_GRACE_MS < now or (p.get("exp") and p["exp"] + _LIC_GRACE_MS < now):
+        return jsonify({"ok": False, "code": "license",
+                        "error": "Bản quyền chưa được xác nhận — mở lại app hoặc kiểm tra key."}), 403
+    return None
+
+
+# Chay TRUOC moi before_request khac (nhat ky xu ly...) -> bi chan thi khong ghi gi
+app.before_request_funcs.setdefault(None, []).insert(0, _license_gate)
+
+
+@app.route("/license/ticket", methods=["POST"])
+@require_token
+def license_ticket():
+    b = request.get_json(force=True, silent=True) or {}
+    t = b.get("ticket") or ""
+    if not t:
+        _LIC["payload"] = None
+        return jsonify({"ok": True, "cleared": True})
+    p, why = _lic_parse(t)
+    _LIC["payload"] = p
+    if not p:
+        logger.warning("license: tu choi ve (%s)", why)
+        return jsonify({"ok": False, "error": why}), 400
+    return jsonify({"ok": True, "plan": p.get("plan"), "until": p.get("until")})
 
 
 def _source_rows(brief):
@@ -583,11 +808,12 @@ def meme_list_route():
 @app.route("/library/sync", methods=["POST"])
 @require_token
 def library_sync_route():
-    """Dong bo kho SFX + Meme tu R2 (cong khai, chi tai). Gop theo id, khong xoa muc local."""
+    """Dong bo kho SFX + Meme: manifest (kem link tai tam) do Electron xin tu may chu ban quyen. Gop theo id."""
     import library_sync
+    b = request.get_json(force=True, silent=True) or {}
     lines = []
     try:
-        res = library_sync.pull(log=lambda s: lines.append(s))
+        res = library_sync.pull(b.get("manifest"), log=lambda s: lines.append(s))
         res["log"] = lines
         return jsonify(res)
     except Exception as e:

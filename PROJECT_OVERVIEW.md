@@ -982,10 +982,11 @@ Muc tieu: tac gia them/gan nhan (Gemini) kho 1 lan -> may khac TU TAI ve ca medi
 (emotion/use_when/tags/summary) -> khong goi Gemini lai; them meme moi sau nay chi upload R2, khong
 phai phat hanh app moi.
 
-- **Config** `sidecar/assets/library_sync.json`: `base_url` (R2 cong khai, ship trong app) + `manifest`.
-  Bucket hien tai: `agent-edit`, `https://pub-e69822cf5f4d4111a131f7d13e08dc6c.r2.dev`.
-- **Pull (may nguoi dung)** `sidecar/library_sync.py` -> route `POST /library/sync` (server.py):
-  GET `{base}/library-manifest.json` -> tai file THIEU / SAI SHA-256 (`{base}/sfx/<ten>`, `/memes/<ten>`)
+- **2026-10-04: KHONG con cong khai.** Bucket `agent-edit` chi tai qua may chu ban quyen (muc 13g): Electron
+  `library:sync` -> `license.libraryManifest()` (op=library, ky khoa thiet bi) -> manifest kem `url` tai tam
+  (2 gio, key bi khoa -> 403) -> sidecar `POST /library/sync {manifest}`. `library_sync.json` khong con `base_url`.
+- **Pull (may nguoi dung)** `sidecar/library_sync.py` `pull(manifest)` -> route `POST /library/sync` (server.py):
+  tai file THIEU / SAI SHA-256 theo `url` tung muc
   -> GOP theo `id` (muc R2 ghi de muc cung id; muc nguoi dung tu them GIU NGUYEN). An toan: sao luu
   `*_library.json.bak` truoc khi ghi; `file` viet lai duong dan tuyet doi theo may (manifest chi giu ten);
   manifest loi/rong -> khong xoa gi. Dung `engine._load_lib/_save_lib` + `meme_lib.load_lib/save_lib`
@@ -995,10 +996,49 @@ phai phat hanh app moi.
 - **Publish (may tac gia)** `scripts/publish-library.mjs` (`npm run publish:library`; `--dry-run` de thu):
   doc `~/.capcut-studio/{sfx,memes}` + `*_library.json`, tinh SHA-256, tao manifest (file=ten co ban),
   upload file MOI/DOI (so voi manifest R2) + manifest. Token R2 o `~/.capcut-studio/r2-publish.json`
-  (account_id/access_key_id/secret_access_key/bucket/public_base_url) hoac env `R2_*` — CHI o may tac gia,
+  (account_id/access_key_id/secret_access_key/bucket) hoac env `R2_*` — CHI o may tac gia (doc manifest cu bang S3),
   KHONG nhung vao app, `.gitignore` chan `r2-publish.json`. Dung `@aws-sdk/client-s3` (devDependency).
 - **Da verify**: unit test merge (giu local-only, cap nhat nhan R2, viet lai path, kiem SHA, backup);
   test tich hop qua HTTP `/library/sync` voi mock R2 (HOME tam); `--dry-run` tren kho that (51 SFX + 18 meme).
+
+### 13g. BAN QUYEN: 1 key = 1 may (2026-10-04)
+
+May chu `license-server/` (Cloudflare Worker + D1, chi tiet + trien khai: `license-server/README.md`):
+`agent-edit-license` (`src/api.js`, app goi) + `agent-edit-admin` (`src/admin.js` + `admin.html`, trang quan ly key
+sau Cloudflare Access, email `dailongmedia.agency@gmail.com`). Bi mat o `~/.capcut-studio/license-secrets.json`
+(`gen-keys.mjs`, KHONG len git).
+
+- **Key**: 25 ky tu Crockford base32 (5 nhom, ky tu cuoi kiem tra go sai). D1 luu SHA-256 (tra cuu) + ban ma hoa
+  AES-GCM (trang quan tri xem lai). Goi thang / nam / vinh vien, han tinh tu lan kich hoat dau.
+- **Ma may** (`electron/services/license.ts` + `sidecar/server.py`, CUNG lenh / chuan hoa / HMAC
+  `agent-edit/fp/v1`): macOS IOPlatformUUID + serial; Windows UUID bo mach + serial bo mach + MachineGuid (1 lenh
+  PowerShell). Cung may = khop >= min(2, so thanh phan). Gia tri rac (O.E.M, toan 0/F...) bo qua.
+- **Khoa thiet bi** Ed25519 sinh tren may, khoa bi mat trong `<userData>/license.enc` (safeStorage: Keychain / DPAPI)
+  -> copy sang may khac khong giai ma duoc -> `need_key`. Moi yeu cau `{p: JSON, s: chu ky}`; gio lech > 10 phut ->
+  server tra `server_time`, app bu roi gui lai.
+- **Server**: chua gan -> `activate` gan; dung khoa thiet bi nhung khac phan cung -> `other_machine`; khoa thiet bi
+  moi + phan cung khop (cai lai app / Windows) -> `rekey` (3 lan / 7 ngay -> TU KHOA); may khac -> `other_machine`
+  + dem `conflicts`. Sai key 20 lan/gio/IP -> chan. Tra "ve" ky Ed25519 (`v1.<payload>.<sig>`, han 3 ngay, mang ma
+  may da gan) — app kiem chu ky bang `PROD_PUB` truoc khi tin.
+- **Khi nao hoi server (user chot)**: CHI mo app (`LicenseGate` -> `license:check`) + bam "Phan tich video"
+  (`pipeline:understandSources` / `remotion:understandReference` / `understandMedia` -> `requireLicense()`, dung lai
+  ket qua < 20s). KHONG hoi dinh ky, KHONG hoi o lap plan / render (render chi `assertLicensed()` tren trang thai gan
+  nhat). Khong mang = khong dung. Ve het han (app mo > 3 ngay) -> sidecar 403 -> main tu lay ve moi 1 lan.
+- **Sidecar** (`server.py`, phan BAN QUYEN — de ngay trong server.py de bien dich vao server.so): Ed25519 thuan Python
+  (RFC 8032, khong them thu vien), `before_request` dau tien: thieu ve -> 403 `code=license` cho moi route tru
+  `/health /config /license/ticket /cli_status /test_connection /providers`. `STUDIO_LICENSE_OFF` /
+  `STUDIO_LICENSE_PUB` CHI co tac dung khi chay `server.py` nguon (ban .so bo qua) — test goi route dat
+  `STUDIO_LICENSE_OFF=1`.
+- **UI**: `src/components/LicenseGate.tsx` boc App (main.tsx): chua kich hoat / khoa / het han / may khac / mat mang
+  -> man hinh rieng; bi khoa giua chung -> PHU LEN app (khong unmount). Nut tai khoan goc phai = thong tin key.
+- **Dev**: `STUDIO_LICENSE=off` bo qua; `STUDIO_LICENSE_URL` + `STUDIO_LICENSE_PUB` tro may chu thu (wrangler dev) —
+  chi ban chua dong goi; file rieng `license-dev.enc`. `STUDIO_LICENSE_PLAIN_STORE=1` = khong dung Keychain (tu kiem).
+- **Dong goi**: `scripts/adhoc-sign.cjs` (afterPack, mac + win) lat Electron Fuses: tat NODE_OPTIONS + --inspect,
+  GIU RunAsNode (hop cach ly FX `fx_flow.py` chay binary app voi ELECTRON_RUN_AS_NODE). selftest-packaged [5]: sidecar
+  bien dich PHAI tra 403 du co `STUDIO_LICENSE_OFF=1`.
+- **Test**: `license-server`: `npm test` (34 tinh huong, can `dev:api` + `dev:admin`); app: `tests/test_license.mts`
+  (noi may chu thu; ma may Python == Electron; Python kiem ve), `tests/test_license_ticket.py` (vector RFC 8032 +
+  cong chan route, khong can mang).
 
 ### 13f. May moi: ffmpeg nhung + mac dinh AI = CLI subscription (2026-10-01)
 

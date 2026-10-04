@@ -12,6 +12,15 @@ interface StudioBridge {
   platform: string
   appInfo(): Promise<{ version: string; build: string; name: string; engineHome: string }>
 
+  // ---- Ban quyen (1 key = 1 may) ----
+  licenseState(): Promise<LicenseState>
+  /** Hoi may chu ban quyen (mo app) */
+  licenseCheck(): Promise<LicenseState>
+  licenseActivate(key: string): Promise<LicenseState>
+  /** Xoa key tren may nay (khong go may tren server) */
+  licenseForget(): Promise<LicenseState>
+  onLicenseChanged(cb: (s: LicenseState) => void): () => void
+
   doctorRun(): Promise<DoctorCheck[]>
   doctorFix(id: string): Promise<{ ok: boolean; error?: string }>
   /** Tu cai moi cong cu con thieu / sai phien ban (1 luot, theo thu tu phu thuoc) -> ket qua kiem lai */
@@ -216,6 +225,16 @@ interface StudioBridge {
 }
 
 declare global {
+  interface LicenseState {
+    status: 'ok' | 'need_key' | 'invalid_key' | 'locked' | 'expired' | 'other_machine' | 'offline' | 'error'
+    message: string
+    plan?: 'month' | 'year' | 'lifetime'
+    expiresAt?: number | null
+    keyHint?: string
+    customer?: string
+    checkedAt?: number
+    dev?: boolean
+  }
   interface Window {
     studio: StudioBridge
   }

@@ -218,7 +218,8 @@ async function main() {
     const token = 'selftest' + Date.now()
     const sc = spawn(pyBin, [join(sidecar, 'server_launch.py'), '--port', String(port), '--token', token], {
       cwd: sidecar,
-      env: { ...env, STUDIO_TOKEN: token },
+      // STUDIO_LICENSE_OFF chi co tac dung voi server.py nguon -> ban bien dich PHAI van chan
+      env: { ...env, STUDIO_TOKEN: token, STUDIO_LICENSE_OFF: '1' },
       windowsHide: true
     })
     let log = ''
@@ -235,6 +236,21 @@ async function main() {
       }
     }
     record('Sidecar trả lời /health', ok, ok ? '' : log.slice(-400))
+    if (ok) {
+      // Cong ban quyen: khong co ve -> moi viec AI tra 403 code=license
+      let gate = ''
+      try {
+        const r = await fetch(`http://127.0.0.1:${port}/remotion/autoplan`, {
+          method: 'POST',
+          headers: { 'X-Studio-Token': token, 'Content-Type': 'application/json' },
+          body: '{}'
+        })
+        gate = r.status + ' ' + ((await r.json().catch(() => ({}))).code || '')
+      } catch (e) {
+        gate = String(e)
+      }
+      record('Sidecar chặn việc AI khi chưa có vé bản quyền', gate === '403 license', gate)
+    }
     try {
       if (IS_WIN) execFileSync('taskkill', ['/PID', String(sc.pid), '/T', '/F'], { stdio: 'ignore' })
       else sc.kill('SIGTERM')

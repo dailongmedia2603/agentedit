@@ -1,0 +1,21 @@
+# Worker TRANG QUAN TRI key — dat sau Cloudflare Access. Trien khai: npm run deploy:admin
+name = "agent-edit-admin"
+main = "src/admin.js"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+[observability]
+enabled = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "agent-edit-license"
+database_id = "ead20a13-5d68-429e-afda-79603495ec9b"
+
+[vars]
+ADMIN_EMAIL = "dailongmedia.agency@gmail.com"
+# Dien sau khi bat Cloudflare Access cho Worker nay (xem README.md)
+ACCESS_TEAM_DOMAIN = "dailongmedia.cloudflareaccess.com"
+ACCESS_AUD = "cee78646c1904bf370aaf11199bfba799767aba396220628f2eefb8e9b22622f"
+
+# Bi mat (wrangler secret put ... -c wrangler.admin.toml): KEY_ENC_SECRET
