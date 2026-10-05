@@ -426,10 +426,11 @@ export async function fxUpload(pl: {
     const form = new FormData()
     form.append('p', p)
     form.append('s', sign(null, Buffer.from(p), sk).toString('base64'))
-    form.append('meta', meta)
-    form.append('code', code)
+    // meta / code gui dang FILE: truong chuoi trong multipart bi doi "\n" -> "\r\n" (chuan HTML) -> sha lech chu ky
+    form.append('meta', new Blob([meta], { type: 'application/json' }), 'meta.json')
+    form.append('code', new Blob([code], { type: 'text/javascript' }), 'code.js')
     form.append('preview', new Blob([prev], { type: 'video/mp4' }), 'preview.mp4')
-    let j: { ok: boolean; status?: string; code?: string; message?: string; server_time?: number }
+    let j: { ok: boolean; status?: string; code?: string; message?: string; why?: string; server_time?: number }
     try {
       const res = await net.fetch(apiUrl() + '/v1/fx/upload', { method: 'POST', body: form, signal: AbortSignal.timeout(60000) })
       j = (await res.json()) as typeof j
@@ -439,7 +440,8 @@ export async function fxUpload(pl: {
     if (typeof j.server_time === 'number') clockOffset = j.server_time - Date.now()
     if (j.code === 'clock' && attempt === 0) continue
     const temp = ['offline', 'server', 'throttled', 'clock', 'fx_limit'].includes(String(j.code))
-    return { ok: !!j.ok, status: j.status, code: j.code, message: j.message, retry: !j.ok && temp }
+    const message = j.why ? `${j.message || j.code} (${j.why})` : j.message
+    return { ok: !!j.ok, status: j.status, code: j.code, message, retry: !j.ok && temp }
   }
   return { ok: false, retry: true, code: 'clock', message: 'Giờ trên máy bị lệch quá nhiều.' }
 }

@@ -138,7 +138,7 @@ console.log('Kho hieu ung chung')
 {
   const { fxIdOf } = await import('../src/fx.js')
   const sha = (b) => createHash('sha256').update(b).digest('hex')
-  async function fxUp(dev, fp, key, code, { tamper, idOverride, kind = 'overlay' } = {}) {
+  async function fxUp(dev, fp, key, code, { tamper, idOverride, kind = 'overlay', asBlob = false } = {}) {
     const id = idOverride || (await fxIdOf(kind, code))
     const meta = JSON.stringify({ id, kind, layer: 'front', duration: 1.5, params: { colors: ['#ffcc00', 'javascript:x'], intensity: 0.8 },
       works: { portrait: true, landscape: true }, label: { name: '<b>Tia</b> sang', summary: 'tia sang', quality: 4, tags: ['tia'] },
@@ -149,8 +149,14 @@ console.log('Kho hieu ung chung')
     const form = new FormData()
     form.append('p', p)
     form.append('s', sign(null, Buffer.from(p), dev.sk).toString('base64'))
-    form.append('meta', meta)
-    form.append('code', tamper ? code + '//x' : code)
+    const sent = tamper ? code + '//x' : code
+    if (asBlob) {
+      form.append('meta', new Blob([meta], { type: 'application/json' }), 'meta.json')
+      form.append('code', new Blob([sent], { type: 'text/javascript' }), 'code.js')
+    } else {
+      form.append('meta', meta)
+      form.append('code', sent)
+    }
     form.append('preview', new Blob([prev], { type: 'video/mp4' }), 'preview.mp4')
     const res = await fetch(API + '/v1/fx/upload', { method: 'POST', body: form })
     return { ...(await res.json()), id }
@@ -206,6 +212,20 @@ console.log('Kho hieu ung chung')
   check('tu choi -> xoa file', !cd3.ok, cd3)
   u = await fxUp(A2, fpA2, L1.key, CODE3)
   check('gui lai muc bi tu choi -> van rejected (khong vao hang cho lai)', u.ok && u.status === 'rejected', u)
+  // code NHIEU DONG (loi that 10-05: truong chuoi multipart doi \n -> \r\n -> sha lech -> fx_bad)
+  const ML = `function render(ctx) {\n  const k = ${stamp % 97};\n  return h('svg', {width: ctx.W, height: ctx.H},\n    h('rect', {x: k, y: 40, width: 9, height: 9}))\n}`
+  await admin(`/api/licenses/${L1.id}/trust`, {})
+  u = await fxUp(A2, fpA2, L1.key, ML)
+  check('code nhieu dong gui kieu CU (chuoi) -> van nhan', u.ok && u.status === 'approved', u)
+  r = await call(A2, fpA2, L1.key, 'library')
+  dl = await fetch(r.manifest.fx.find((x) => x.id === u.id).files.find((f) => f.path === 'code.js').url)
+  check('code luu dung ban goc (\n, khong \r\n)', (await dl.text()) === ML)
+  const ML2 = ML.replace('y: 40', 'y: 50')
+  u = await fxUp(A2, fpA2, L1.key, ML2, { asBlob: true })
+  check('code nhieu dong gui kieu MOI (file) -> nhan', u.ok && u.status === 'approved', u)
+  u = await fxUp(A2, fpA2, L1.key, ML.replace('y: 40', 'y: 60'), { asBlob: true, tamper: true })
+  check('code nhieu dong bi sua sau khi ky -> van chan', u.code === 'fx_bad', u)
+  await admin(`/api/licenses/${L1.id}/untrust`, {})
   const id2 = await fxIdOf('overlay', CODE2)
   await admin(`/api/fx/${id2}/reject`, { note: 'go' })
   r = await call(A2, fpA2, L1.key, 'library')

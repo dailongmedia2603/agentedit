@@ -330,20 +330,34 @@ async function handleFxUpload(req, env) {
   if (!lic.device_pub) return fail('not_activated')
   if (lic.device_pub !== p.dev || !fpMatch(lic.fp ? JSON.parse(lic.fp) : null, p.fp)) return fail('other_machine')
 
-  const meta = form.get('meta')
-  const code = form.get('code')
+  // meta / code: app moi gui dang FILE (byte giu nguyen); app 20261005-1100 gui dang CHUOI -> multipart/form-data
+  // (chuan HTML) doi moi "\n" thanh "\r\n" -> sha lech voi chu ky -> doi lai "\r\n" -> "\n" roi moi kiem (chu ky phu
+  // ban GOC nen van chan duoc moi sua doi khac)
+  const asText = async (v) => (typeof v === 'string' ? v : v && typeof v.text === 'function' && v.size <= FX_MAX_META * 4 ? await v.text() : null)
+  const metaRaw = await asText(form.get('meta'))
+  const codeRaw = await asText(form.get('code'))
   const preview = form.get('preview')
-  if (typeof meta !== 'string' || meta.length > FX_MAX_META || typeof code !== 'string' || !code.trim() || code.length > FX_MAX_CODE) {
+  if (typeof metaRaw !== 'string' || metaRaw.length > FX_MAX_META || typeof codeRaw !== 'string' || !codeRaw.trim() || codeRaw.length > FX_MAX_CODE * 1.2) {
     return fail('fx_bad', { why: 'meta/code' })
   }
   if (!preview || typeof preview === 'string' || !preview.size || preview.size > FX_MAX_PREVIEW) return fail('fx_bad', { why: 'preview' })
-  const codeBuf = new TextEncoder().encode(code)
+  const enc = new TextEncoder()
+  const pick = async (raw, want) => {
+    if ((await sha256bytes(enc.encode(raw))) === want) return raw
+    const lf = raw.replace(/\r\n/g, '\n')
+    return lf !== raw && (await sha256bytes(enc.encode(lf))) === want ? lf : null
+  }
+  const meta = await pick(metaRaw, p.meta_sha)
+  const code = await pick(codeRaw, p.code_sha)
   const prevBuf = await preview.arrayBuffer()
-  const metaSha = await sha256bytes(new TextEncoder().encode(meta))
-  const codeSha = await sha256bytes(codeBuf)
   const prevSha = await sha256bytes(prevBuf)
   // chu ky phu ca 3 phan (khong ai chen code / preview khac vao goi da ky)
-  if (metaSha !== p.meta_sha || codeSha !== p.code_sha || prevSha !== p.preview_sha) return fail('fx_bad', { why: 'sha' })
+  if (meta === null || code === null || prevSha !== p.preview_sha) {
+    return fail('fx_bad', { why: meta === null ? 'sha_meta' : code === null ? 'sha_code' : 'sha_preview' })
+  }
+  if (code.length > FX_MAX_CODE) return fail('fx_bad', { why: 'meta/code' })
+  const codeBuf = enc.encode(code)
+  const codeSha = p.code_sha
   let m
   try {
     m = JSON.parse(meta)
