@@ -1298,6 +1298,66 @@ def gemini_label_sfx(items, log=None):
     return out
 
 
+_GEMINI_TEXT_TEMPLATE_PROMPT = """Ban la MOTION DESIGNER dang PHAN LOAI 1 MAU CHU DONG (text template, chuyen tu
+preset CapCut) de dua vao kho tai su dung cho video short-form.
+
+File dinh kem la PREVIEW cua mau: hoat canh chu THAT (vi tri, chuyen dong, mau, nhip vao/ra, SFX kem theo nhu
+trong template). ⚠️ CHU HIEN TRONG PREVIEW CHI LA CHU MAU ("chu mau") de minh hoa bo cuc/hoat canh — khi mau nay
+duoc dung trong video thuc, chu mau se duoc THAY bang LOI THOAI THAT cua video. VI VAY: TUYET DOI khong suy
+use_when/avoid_when theo Y NGHIA cua chu mau (vd chu mau "Giam gia 50%" KHONG co nghia la mau nay chi dung cho
+chu de giam gia) — chi danh gia theo PHONG CACH HINH, NHIP CHUYEN DONG, BO CUC va CACH DUNG (hook / nhan tu
+khoa / chuyen y...).
+
+# TRA VE CHI JSON
+
+{
+  "summary": "mo ta hoat canh (1-2 cau tieng Viet): chu xuat hien the nao, chuyen dong gi, ra sao",
+  "style": "phong cach hinh (vd: tu toc do, chu noi vien day, chu bay vao tu canh...)",
+  "mood": "cam giac mau nay tao ra (vd: gay gat, vui tuoi, sang trong, hai huoc...)",
+  "energy": "nhe|vua|manh",
+  "motion": "mo ta chuyen dong chi tiet hon summary (toc do vao/ra, co nay/lac, rung, zoom...)",
+  "best_for": ["tinh huong NEN dung mau nay, vd: hook, tieu de, nhan manh tu khoa, chuyen y, ket luan, CTA"],
+  "use_when": "KHI NAO nen dung mau nay trong video — mo ta theo PHONG CACH/NHIP noi dung dang can, vd:
+               'Khi can mot cu nhan manh gay gat ngay sau cau chot' — KHONG duoc nhac lai nghia cua chu mau",
+  "avoid_when": ["tinh huong KHONG nen dung, vd: 'noi dung tram, can nhip cham'"],
+  "slot_roles": [
+    {"id": "<dung id o cua tung slot da cho>", "role": "LOAI chu o nay nen la gi, vd: 'tu dan ngan (1-2 tu)',
+     'cum nhan manh 2-3 tu', 'so lieu / con so'", "max_len": "goi y do dai toi da, vd: '<=3 tu'"}
+  ],
+  "tags": ["3-6 tu khoa TIENG VIET de tim kiem, vd: nhan manh, bung no, sang trong"],
+  "sound_notes": "mau co tieng (SFX) rieng kem theo khong, nghe thay gi (neu preview co tieng)"
+}
+
+# LUU Y
+- "energy" la 1 trong 3 muc CO DINH: "nhe" (tinh te, em) / "vua" (ro, dut khoat) / "manh" (gay gat, chiem man hinh).
+- "slot_roles": TRA DUNG so luong va DUNG "id" da cho trong danh sach o chu — dung de AI lap plan biet nen dien
+  loai chu gi (dan/nhan manh/so lieu...) vao TUNG o, khong phai dung lai chu mau.
+- Khong doan theo TEN FILE — chi doan theo nhung gi THAY trong preview.
+
+⚠️ TRA VE CHI JSON GOC. Khong ```json```. Ky tu dau la {, ky tu cuoi la }."""
+
+
+def gemini_label_text_template(path, name=None, duration=None, slots=None, log=None):
+    """Cho Gemini XEM preview.mp4 cua 1 mau chu (Kho Text) roi tu viet nhan (style/mood/use_when/
+    slot_roles...). AI lap plan sau nay KHONG xem duoc hoat canh, chi doc nhan nay de chon mau."""
+    prep = gemini_media.prepare(path, allow_split=False, log=log)
+    spec = _normalize_video_specs([{
+        "id": "text_template", "path": prep["pieces"][0]["path"], "name": name or os.path.basename(path),
+        "duration": duration,
+    }])
+    prompt = _p("_GEMINI_TEXT_TEMPLATE_PROMPT")
+    slot_desc = "\n".join(
+        '- id=%s%s, chu MAU (khong mang nghia, chi de minh hoa): "%s"' % (
+            s.get("id"), (", vai tro hien tai: %s" % s["role"]) if s.get("role") else "", s.get("sample") or "")
+        for s in (slots or []) if isinstance(s, dict)
+    )
+    if slot_desc:
+        prompt += "\n\nCAC O CHU (SLOT) co trong mau nay — tra slot_roles DUNG cac id sau:\n" + slot_desc
+    if duration:
+        prompt += "\n\nPreview dai %.1f giay." % float(duration)
+    return _gemini_analyze_videos(spec, prompt, "MAU CHU TEXT", log=log, step_label="Gemini-text")
+
+
 # ----------------------------------------------------------------------------
 # Helpers
 # ----------------------------------------------------------------------------

@@ -99,7 +99,21 @@ PROMPTS = [
      "info": "Gemini NGHE từng file SFX (5 file/lượt) và viết nhãn: nghe thấy gì, loại tiếng, có giọng người "
              "nói không (+ lời), cảm xúc, mức mạnh, dùng khi / tránh khi. Độ dài và mốc cú đậm (peak_time) do "
              "máy đo từ âm thanh thật. AI lập plan KHÔNG nghe được file nên chỉ chọn SFX dựa vào nhãn này."},
+    {"id": "_GEMINI_TEXT_TEMPLATE_PROMPT", "group": "understand", "title": "Gắn nhãn mẫu chữ (Kho Text)",
+     "used_in": "Kho Text → nút '✨ Gemini phân tích'",
+     "info": "Gemini XEM preview.mp4 của 1 mẫu chữ động (chuyển từ preset CapCut) và viết nhãn: phong cách/"
+             "cảm giác, mức độ (nhẹ/vừa/mạnh), chuyển động, hợp dùng khi nào (hook, nhấn từ khoá, chuyển ý, "
+             "CTA…), vai trò từng ô chữ. Chữ hiện trong preview CHỈ LÀ CHỮ MẪU minh hoạ bố cục — prompt nhắc "
+             "Gemini KHÔNG được suy 'dùng khi' theo Ý NGHĨA chữ mẫu, chỉ theo phong cách hình/nhịp. AI lập plan "
+             "KHÔNG xem được hoạt cảnh nên chỉ chọn mẫu dựa vào nhãn này."},
 
+    {"id": "_GEMINI_FX_PROMPT", "group": "understand", "module": "fx_lib", "own_key": True,
+     "title": "Gắn nhãn hiệu ứng (Kho hiệu ứng)",
+     "used_in": "Kho hiệu ứng — tự chạy nền sau khi video render xong (hoặc nút '✨ Gemini phân tích')",
+     "info": "Gemini XEM preview của hiệu ứng tự viết (vẽ trên nền trung tính + bóng người giả ở vị trí mặt, không "
+             "dùng hình video thật) và viết nhãn TỔNG QUÁT: tên, mô tả hình, dùng khi / tránh khi, cảm xúc, loại "
+             "khoảnh khắc, vị trí, độ mạnh, điểm chất lượng. AI lập plan ở video khác chỉ đọc nhãn này để tìm hiệu "
+             "ứng dùng lại; nhãn cũng là phần gửi lên kho chung (không tên sản phẩm / lời nói của video gốc)."},
     {"id": "_USER_MEDIA_PROMPT", "group": "understand", "module": "user_media", "own_key": True,
      "title": "Đọc hiểu tư liệu của bạn (ảnh / video chèn)",
      "used_in": "Video Remotion — mục 'Tư liệu của bạn', ngay khi thêm ảnh / video",
@@ -188,6 +202,15 @@ PROMPTS = [
              "cách video: 3 cụm / tấm, mỗi tầng một hàng cách xa, NỀN TRONG SUỐT; tấm đầu làm mẫu phong cách cho các "
              "tấm sau. Hệ thống cắt từng tầng, kiểm chính tả bằng OCR, tìm vị trí từng từ để chuyển động từng chữ. "
              "Hệ thống tự điền {chu_de} {phong_cach} {hang} {mau_tham_chieu} {out} — giữ nguyên {hang} và {out}."},
+    {"id": "_TEXT_LIB_SYSTEM", "group": "remotion", "module": "text_tpl", "own_key": True,
+     "title": "Kho Text · Chọn mẫu chữ cho từng cụm chữ (TXT-lib)",
+     "used_in": "Video Remotion — bước Plan, sau R5, TRƯỚC chữ ảnh AI",
+     "info": "Mỗi cụm chữ nổi bật được KIỂM TRA KHO TEXT TRƯỚC: AI đọc nhãn từng mẫu (phong cách, mức độ, hợp khi / tránh "
+             "khi, vai trò từng ô chữ) + bối cảnh cụm chữ (câu đang nói, hook, ý đồ) rồi chọn mẫu và điền CHỮ CỦA CỤM vào "
+             "các ô. Code kiểm: đọc theo thứ tự đọc của mẫu phải đúng nguyên chữ + đúng thứ tự lời nói, font đủ dấu tiếng "
+             "Việt, chữ không phải thu nhỏ dưới 60% để vừa ô, mỗi mẫu tối đa 2 lần / video — sai thì AI sửa 1 lượt. Cụm "
+             "dùng mẫu giữ NGUYÊN hoạt cảnh + font + âm thanh của mẫu, KHÔNG tạo chữ ảnh AI; cụm không có mẫu hợp mới tạo "
+             "chữ ảnh AI. Kho trống thì bước này không chạy."},
     {"id": "_GRAPHIC_ART_PROMPT", "group": "remotion", "module": "graphic_art", "own_key": True,
      "template": ["phan_tu", "out"],
      "title": "Đồ hoạ có chữ bằng ảnh AI (huy hiệu…)",
@@ -209,6 +232,13 @@ PROMPTS = [
      "info": "Bộ quy tắc code: AI tự kiểm lần 2 hiệu ứng có hợp bối cảnh không (không hợp -> bỏ), rồi viết "
              "render(ctx) / transform(ctx) bằng JS thuần với API cho phép. Code chạy trong HỘP CÁCH LY (không quyền "
              "của app), được kiểm (từ cấm, chạy thử, tất định, tốc độ) — lỗi thì AI sửa 1 lượt, vẫn lỗi thì bỏ."},
+    {"id": "_FX_REUSE_NOTE", "group": "remotion", "module": "fx_lib", "own_key": True,
+     "title": "FX · Dùng lại hiệu ứng trong Kho hiệu ứng (FX-code)",
+     "used_in": "Video Remotion — bước Plan, FX-code (chỉ khi kho có hiệu ứng giống)",
+     "info": "Hiệu ứng đã viết code ở video trước được đóng gói vào Kho hiệu ứng. Sau FX-plan, hệ thống tự lọc 1-3 "
+             "hiệu ứng trong kho giống mô tả của từng hiệu ứng mới và gửi kèm cho FX-code: AI dùng NGUYÊN (chỉ trả id + "
+             "màu / cường độ), SỬA NHẸ code có sẵn, hoặc viết mới nếu không cái nào hợp ngữ cảnh. Code dùng lại vẫn "
+             "qua hộp cách ly + tự kiểm lần 2 như code mới. Kho trống / không có cái giống thì phần này không gửi."},
     {"id": "_ASSET_IMAGE_PROMPT", "group": "remotion", "module": "asset_gen",
      "template": ["prompt", "context", "out"],
      "title": "Tạo ảnh AI (khung prompt chuẩn)",

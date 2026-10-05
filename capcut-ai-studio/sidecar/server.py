@@ -16,6 +16,8 @@ Endpoints chinh:
   POST /prompts/list|save|reset                  (menu "Prompt & quy tac")
   GET  /sfx/list, POST /sfx/*, /find_sfx         (kho am thanh; /sfx/label = Gemini nghe & gan nhan)
   GET  /meme/list, POST /meme/*                  (kho meme)
+  GET  /text/list, POST /text/*                  (kho text — mau chu dong)
+  POST /fxlib/*                                  (kho hieu ung tu viet: dong goi sau render, preview, Gemini nhan, kho chung)
   POST /remotion/understand_reference { video }  -> phan tich video mau (Gemini xem + nghe video)
   POST /remotion/autoplan { brief, ... }         -> {plan, spec, guard, summary}
   POST /remotion/spec     { plan }               -> dung lai RenderSpec tu plan da luu
@@ -878,6 +880,169 @@ def meme_delete_route():
 
 
 # ----------------------------------------------------------------------------
+# KHO TEXT (mau chu dong, chuyen tu preset CapCut)
+# ----------------------------------------------------------------------------
+@app.route("/text/list")
+@require_token
+def text_list_route():
+    import text_lib
+    b = request.args
+    return jsonify({"ok": True, "templates": text_lib.find_text(
+        search=b.get("search"), limit=int(b.get("limit", 200)))})
+
+
+@app.route("/text/register", methods=["POST"])
+@require_token
+def text_register_route():
+    b = request.get_json(force=True, silent=True) or {}
+    d = b.get("dir")
+    if not d:
+        return err("Thieu dir", 400)
+    try:
+        return jsonify({"ok": True, "template": engine.text_register_dir(d)})
+    except Exception as e:
+        return err(e)
+
+
+@app.route("/text/label", methods=["POST"])
+@require_token
+def text_label_route():
+    b = request.get_json(force=True, silent=True) or {}
+    tid = b.get("id")
+    if not tid:
+        return err("Thieu id", 400)
+    try:
+        return jsonify({"ok": True, "template": engine.text_label_with_ai(tid, log=logger.info)})
+    except Exception as e:
+        return err(e)
+
+
+# ---------------------------------------------------------------------------
+# KHO HIEU UNG TU VIET (fx_lib.py, 2026-10-05): dong goi sau khi render xong -> preview -> Gemini nhan -> kho chung.
+# Moi viec deu chay NEN do bo dieu phoi o renderer goi (src/lib/fxHarvest.ts) — khong buoc nao chan tao video.
+# ---------------------------------------------------------------------------
+@app.route("/fxlib/list", methods=["GET", "POST"])
+@require_token
+def fxlib_list_route():
+    import fx_lib
+    return jsonify({"ok": True, "effects": fx_lib.list_view(), "pending": fx_lib.pending_work()})
+
+
+@app.route("/fxlib/harvest", methods=["POST"])
+@require_token
+def fxlib_harvest_route():
+    import fx_lib
+    b = request.get_json(force=True, silent=True) or {}
+    fx = b.get("fx") if isinstance(b.get("fx"), list) else []
+    try:
+        res = fx_lib.harvest(fx, project=b.get("project"), orientation=b.get("orientation"), log=logger.info)
+        return jsonify({"ok": True, **res})
+    except Exception as e:
+        logger.warning("Kho hieu ung: dong goi loi: %s", e, exc_info=True)
+        return err(e)
+
+
+@app.route("/fxlib/preview_job", methods=["POST"])
+@require_token
+def fxlib_preview_job_route():
+    import fx_lib
+    b = request.get_json(force=True, silent=True) or {}
+    res = fx_lib.preview_job(str(b.get("id") or ""))
+    if not res.get("ok"):
+        fx_lib.set_preview(str(b.get("id") or ""), False, res.get("error"))
+    return jsonify(res)
+
+
+@app.route("/fxlib/preview_done", methods=["POST"])
+@require_token
+def fxlib_preview_done_route():
+    import fx_lib
+    b = request.get_json(force=True, silent=True) or {}
+    row = fx_lib.set_preview(str(b.get("id") or ""), bool(b.get("ok")), b.get("error"))
+    return jsonify({"ok": bool(row)})
+
+
+@app.route("/fxlib/label", methods=["POST"])
+@require_token
+def fxlib_label_route():
+    import fx_lib
+    b = request.get_json(force=True, silent=True) or {}
+    ids = [str(x) for x in b.get("ids") or [] if x]
+    if not ids:
+        return err("Thieu ids", 400)
+    try:
+        return jsonify({"ok": True, **fx_lib.label(ids, log=logger.info)})
+    except Exception as e:
+        return err(e)
+
+
+@app.route("/fxlib/share_payload", methods=["POST"])
+@require_token
+def fxlib_share_payload_route():
+    import fx_lib
+    b = request.get_json(force=True, silent=True) or {}
+    pl = fx_lib.share_payload(str(b.get("id") or ""))
+    return jsonify({"ok": bool(pl), "payload": pl})
+
+
+@app.route("/fxlib/share_done", methods=["POST"])
+@require_token
+def fxlib_share_done_route():
+    import fx_lib
+    b = request.get_json(force=True, silent=True) or {}
+    status = b.get("status") if b.get("status") in ("pending", "approved", "rejected", "error") else "error"
+    row = fx_lib.set_share(str(b.get("id") or ""), status, b.get("error"))
+    return jsonify({"ok": bool(row)})
+
+
+@app.route("/fxlib/retry", methods=["POST"])
+@require_token
+def fxlib_retry_route():
+    import fx_lib
+    b = request.get_json(force=True, silent=True) or {}
+    return jsonify({"ok": bool(fx_lib.reset_errors(str(b.get("id") or "")))})
+
+
+@app.route("/fxlib/toggle", methods=["POST"])
+@require_token
+def fxlib_toggle_route():
+    """Tat / bat 1 hieu ung (tat = khong con la ung vien dung lai, van giu trong kho)."""
+    import fx_lib
+    b = request.get_json(force=True, silent=True) or {}
+    off = bool(b.get("disabled"))
+    row = fx_lib._update(str(b.get("id") or ""), lambda e: e.update(disabled=off))
+    return jsonify({"ok": bool(row)})
+
+
+@app.route("/fxlib/delete", methods=["POST"])
+@require_token
+def fxlib_delete_route():
+    import fx_lib
+    b = request.get_json(force=True, silent=True) or {}
+    return jsonify({"ok": fx_lib.delete(str(b.get("id") or ""))})
+
+
+@app.route("/text/update", methods=["POST"])
+@require_token
+def text_update_route():
+    import text_lib
+    b = request.get_json(force=True, silent=True) or {}
+    tid = b.pop("id", None)
+    if not tid:
+        return err("Thieu id", 400)
+    row = text_lib.text_update(tid, **b)
+    return jsonify({"ok": bool(row), "template": row})
+
+
+@app.route("/text/delete", methods=["POST"])
+@require_token
+def text_delete_route():
+    import text_lib
+    b = request.get_json(force=True, silent=True) or {}
+    return jsonify({"ok": text_lib.text_delete(b.get("id"))})
+
+
+# ----------------------------------------------------------------------------
 # VIDEO REMOTION (menu rieng): hieu nguon dung chung /understand_sources (Gemini)
 #   -> video mau: Gemini xem + nghe video mau, dai khung day boc bo phong cach (reference_video.py)
 #   -> plan: B1/B2/B3/B6/B7 (providers.py) + R4 (hinh, motion_design) / R5 (chu, remotion_plan)
@@ -965,14 +1130,62 @@ def remotion_media_route():
 @app.route("/remotion/autoplan", methods=["POST"])
 @require_token
 def remotion_autoplan_route():
+    import canvas
+    b = request.get_json(force=True, silent=True) or {}
+    # KHUNG VIDEO (user 2026-10-04): "portrait" doc 9:16 (mac dinh, y nhu truoc) | "landscape" ngang 16:9 — dat cho CA
+    # luot lap ke hoach: moi buoc AI ve hinh + moi phep do bo cuc / khoi chu theo dung khung nay (canvas.py)
+    with canvas.use(*canvas.dims(b.get("orientation"))):
+        return _remotion_autoplan(b)
+
+
+def _text_lib_step(lk_meta, design, captions, hook_info, transcript_data, story, style, brand, step):
+    """Buoc TXT-lib: AI chon mau Kho Text cho tung cum chu noi bat (text_tpl.choose, code kiem). Tra {"items", "bo_qua"}
+    hoac None (khong co cum / kho trong / Brand Guideline ep font-mau / loi -> moi cum di chu anh AI nhu cu)."""
+    import text_tpl
+    if not lk_meta:
+        return None
+    rows = text_tpl.usable()
+    if not rows:
+        run_log.emit("note", "Kho Text trống (chưa có mẫu đã gắn nhãn) — mọi cụm chữ nổi bật dùng chữ ảnh AI", step="TXT-lib")
+        return None
+    if text_tpl.brand_blocks(brand):
+        run_log.emit("note", "Brand Guideline ép font / mã màu thương hiệu -> không dùng mẫu Kho Text (font + màu riêng "
+                     "của mẫu sẽ phá thương hiệu)", step="TXT-lib", level="warn")
+        return None
+    caps = captions.get("captions", [])
+    ctxs = text_tpl.contexts(lk_meta, design.get("layers") or [], caps, hook_info, transcript_data)
+    key = {"lk": ctxs, "kho": text_tpl.catalog_fp(rows), "p": text_tpl.prompt_fp(), "v": text_tpl.TPL_VERSION,
+           "story": story, "style": style, "hook": (hook_info or {}).get("y_tuong_gay_chu_y")}
+    res = step("TXT-lib", key, lambda: text_tpl.choose(
+        ctxs, rows, story=story, style=style, hook=hook_info, log=logger.info,
+        emit=lambda m: run_log.emit("note", m, step="TXT-lib")), optional=True)
+    if not isinstance(res, dict):
+        return None
+    src = {lk["key"]: lk.get("src") for lk in lk_meta}
+    txt = {c["key"]: " / ".join(t["text"] for t in c["cac_tang"]) for c in ctxs}
+    for k, it in (res.get("items") or {}).items():
+        it["src"] = src.get(k)
+        run_log.emit("note", "Kho Text: '%s' -> mẫu %s (%s) — %s" % (
+            txt.get(k), it["template"], ", ".join("%s='%s'" % kv for kv in it["texts"].items()), it.get("ly_do")),
+            step="TXT-lib", level="ok")
+    for x in res.get("bo_qua") or []:
+        run_log.emit("note", "Kho Text: '%s' không dùng mẫu (%s) -> chữ ảnh AI" % (txt.get(x["key"]), x.get("ly_do")),
+                     step="TXT-lib")
+    run_log.emit("result", "Kho Text: %d/%d cụm chữ dùng mẫu làm sẵn (không cần tạo chữ ảnh AI)" % (
+        len(res.get("items") or {}), len(ctxs)), step="TXT-lib", level="ok" if res.get("items") else "info",
+        output=res)
+    return res
+
+
+def _remotion_autoplan(b):
     import hashlib
+    import canvas
     import hook_rule
     import meme_lib
     import media_vision
     import motion_design
     import remotion_plan
     import user_media
-    b = request.get_json(force=True, silent=True) or {}
     brief = _normalize_source_brief(b.get("brief"))
     if not brief:
         return err("Thieu brief", 400)
@@ -1066,6 +1279,12 @@ def remotion_autoplan_route():
                 len(_bo), " | ".join("%.1fs \"%s\"" % (c["start"], c["text"][:60]) for c in _bo[:20])),
                 step="B1-select", level="warn", output=_bo)
         story = providers.ngu_canh_cau_chuyen(selection, edit_request)
+        if canvas.story_view():
+            # video NGANG: moi buoc sau B1 (timeline, hook, thiet ke, chu, hieu ung, anh, meme, SFX) biet khung + khoa
+            # cache doi theo. Video doc: story y nhu truoc (ket qua da luu van dung lai)
+            story["khung_hinh"] = canvas.story_view()
+            run_log.emit("note", "Khung video: NGANG 16:9 (%dx%d) — AI lập kế hoạch theo khung ngang" % canvas.size(),
+                         step="B1-select")
         duration_target = None
         try:
             duration_target = float((edit_request or {}).get("duration", 0)) or None
@@ -1286,8 +1505,13 @@ def remotion_autoplan_route():
         art_future, art_res = None, None
         # CHU ANH AI (chay nen, song song voi FX / B6 / B7: mot ben Codex tao anh, mot ben Claude viet code)
         import text_art
-        lockups = text_art.lockups_from(design.get("layers"), captions.get("captions", []),
-                                        (hook_info or {}).get("caption"))
+        lk_meta = text_art.lockups_from(design.get("layers"), captions.get("captions", []),
+                                        (hook_info or {}).get("caption"), meta=True)
+        # KHO TEXT TRUOC (user 2026-10-04): cum nao co mau chu lam san HOP boi canh -> dung mau (chi thay chu), KHONG tao
+        # chu anh AI; con lai moi tao chu anh AI. Kho trong / Brand Guideline ep font-mau -> buoc nay khong chay.
+        tpl_res = _text_lib_step(lk_meta, design, captions, hook_info, transcript_data, story, style_phien, brand, _step)
+        lockups = [{"key": lk["key"], "tiers": lk["tiers"]} for lk in lk_meta
+                   if lk["key"] not in ((tpl_res or {}).get("items") or {})]
         if lockups:
             run_log.emit("note", "Chữ ảnh AI: %d cụm chữ nổi bật (không gồm phụ đề karaoke) -> tạo ảnh chữ theo "
                          "phong cách video, cắt từng tầng + vị trí từng từ" % len(lockups), step="TXT-art",
@@ -1344,7 +1568,8 @@ def remotion_autoplan_route():
         fx_list = fx_flow.build_effects(
             fx_plan, moments, faces, (style_phien or {}).get("palette"),
             step=lambda n, pl, fn: _step(n, pl, fn, optional=True), changes=fx_changes, log=logger.info,
-            emit=lambda m, lvl, out: run_log.emit("note", m, step="FX-code", level=lvl, output=out), brand=brand)
+            emit=lambda m, lvl, out: run_log.emit("note", m, step="FX-code", level=lvl, output=out), brand=brand,
+            project=b.get("project"))
         for c in fx_changes:
             logger.info("FX: %s", c)
             run_log.emit("note", "FX: %s" % c, step="FX-code", level="warn")
@@ -1435,7 +1660,7 @@ def remotion_autoplan_route():
             "title": b.get("title") or "",
             "source_videos": source_videos,
             "source_video": source_videos[0]["path"] if source_videos else "",
-            "canvas": dict(remotion_plan.CANVAS), "fps": remotion_plan.FPS,
+            "canvas": {"w": canvas.size()[0], "h": canvas.size()[1]}, "fps": remotion_plan.FPS,
             "duration": timeline.get("duration", 0),
             "segments": segs,
             "captions": captions.get("captions", []),
@@ -1463,6 +1688,8 @@ def remotion_autoplan_route():
             "fx": fx_list,
             # chu noi bat ve bang anh AI (anh tung tang, vi tri tu) — build_spec dat vao lop chu
             "text_art": {"items": (art_res or {}).get("items") or {}} if art_res else None,
+            # cum chu dung MAU KHO TEXT (mau + chu tung o + cum nam o dau) — build_spec thay bang lop "tpl"
+            "text_lib": {"items": tpl_res["items"]} if (tpl_res or {}).get("items") else None,
             # do hoa co chu (huy hieu...) ve bang anh AI ca phan tu — build_spec dat vao lop badge
             "graphic_art": {"items": (gfx_res or {}).get("items") or {}} if gfx_res else None,
             # gio TUNG CHU (Whisper) -> build_spec bam caption + karaoke dung chu dang noi
@@ -1476,7 +1703,7 @@ def remotion_autoplan_route():
                 "thu_tu_video": selection.get("thu_tu_video"),
                 "thu_tu": ["B1-select", "B2-timeline", "B3-hook",
                            "R4-design" if visual is design else "R4-visual", "assets", "R5-captions",
-                           "TXT-art", "GFX-art", "FX-plan", "FX-code", "B6-inserts", "B7-audio"],
+                           "TXT-lib", "TXT-art", "GFX-art", "FX-plan", "FX-code", "B6-inserts", "B7-audio"],
                 # "v1" = du an lap ke hoach khi con luong cu (da go 2026-09-28)
                 "luong": "v2",
                 "transition_da_gan": n_tr,
@@ -1496,11 +1723,35 @@ def remotion_autoplan_route():
                 step=lambda n, pl, fn: _step(n, pl, fn, optional=True),
                 sfx_catalog=sfx_catalog, transcript_data=transcript_data, story=story,
                 fx_ctx={"moments": moments, "faces": faces, "palette": (style_phien or {}).get("palette"),
-                        "style": style_phien, "sources": src_desc, "hook": hook_info, "brand": brand},
+                        "style": style_phien, "sources": src_desc, "hook": hook_info, "brand": brand,
+                        "project": b.get("project")},
                 emit=lambda m, lvl: run_log.emit("note", m, step="Hook-check", level=lvl), log=logger.info)
             if _rep_hook is not None:
                 report = _rep_hook
             plan["_pipeline"]["luat_hook"] = _hook_notes or ["hook da du hieu ung hinh + am thanh"]
+        if spec and (report or {}).get("tpl_lost"):
+            # MAU KHO TEXT khong dat duoc (khoi mau to, khong con cho ngoai mat nguoi noi) -> cum do theo luat: KHONG co
+            # mau dung duoc thi tao CHU ANH AI (khong de chu ve bang code)
+            lost = set(report["tpl_lost"])
+            lk_lost = [{"key": lk["key"], "tiers": lk["tiers"]} for lk in lk_meta if lk["key"] in lost]
+            for k in lost:
+                ((plan.get("text_lib") or {}).get("items") or {}).pop(k, None)
+            if not ((plan.get("text_lib") or {}).get("items")):
+                plan["text_lib"] = None
+            run_log.emit("note", "Kho Text: %d cụm có mẫu nhưng khối chữ của mẫu không còn chỗ ngoài mặt người nói -> "
+                         "tạo chữ ảnh AI cho cụm đó" % len(lk_lost), step="TXT-lib", level="warn",
+                         output=[" / ".join(t["text"] for t in lk["tiers"]) for lk in lk_lost])
+            if lk_lost:
+                bu_key = {"lk": lk_lost, "style": style_phien, "story": story, "v": text_art.ART_VERSION}
+                if brand_guide.view(brand, "text_art"):
+                    bu_key["brand"] = brand_guide.view(brand, "text_art")
+                bu = _step("TXT-art", bu_key, lambda: text_art.make_text_art(
+                    lk_lost, style=style_phien, story=story, log=logger.info,
+                    emit=lambda m: run_log.emit("note", m, step="TXT-art"), brand=brand), True) or {}
+                items = dict(((plan.get("text_art") or {}).get("items")) or {})
+                items.update(bu.get("items") or {})
+                plan["text_art"] = {"items": items} if items else None
+            spec, report = remotion_plan.build_spec(plan, log=lambda m: run_log.emit("note", m, step="build"))
         if spec and um_items:
             # tu lieu nao hien o dau (gio timeline cua ban dung that) + ly do -> UI
             plan["_pipeline"]["tu_lieu"] = user_media.usage_report(spec, um_items, design, plan.get("assets"))

@@ -116,10 +116,18 @@ export function renderStatus() {
   }
 }
 
+/** Tuy chon render khac video chinh: composition khac (vd FxPreview cua Kho hieu ung) + thu nho + bo tieng. */
+export interface RenderOptions {
+  compositionId?: string
+  scale?: number
+  muted?: boolean
+}
+
 export async function startRender(
   spec: Record<string, unknown>,
   output: string,
-  onEvent: (e: RenderEvent) => void
+  onEvent: (e: RenderEvent) => void,
+  opts: RenderOptions = {}
 ): Promise<RenderEvent> {
   if (running) {
     return { jobId: running.jobId, type: 'error', message: 'Đang render một video khác — đợi xong hoặc bấm Huỷ.' }
@@ -147,6 +155,8 @@ export async function startRender(
   const state = readState() as Record<string, unknown>
   const concurrency = typeof state.remotion_concurrency === 'number' ? (state.remotion_concurrency as number) : null
   const licenseKey = typeof state.remotion_license_key === 'string' ? (state.remotion_license_key as string) : null
+  // Tang toc GPU + chip nen chi tren Mac; STUDIO_REMOTION_ACCEL=0 tat (do so sanh / may Mac loi hinh)
+  const accel = process.platform === 'darwin' && process.env.STUDIO_REMOTION_ACCEL !== '0'
 
   return new Promise<RenderEvent>((resolve) => {
     let finished = false
@@ -175,11 +185,14 @@ export async function startRender(
       type: 'render',
       jobId,
       serveUrl,
-      compositionId: COMPOSITION_ID,
+      compositionId: opts.compositionId || COMPOSITION_ID,
+      scale: opts.scale,
+      muted: opts.muted,
       spec: { ...spec, mediaBase: base },
       output,
       concurrency,
-      licenseKey
+      licenseKey,
+      accel
     })
   })
 }

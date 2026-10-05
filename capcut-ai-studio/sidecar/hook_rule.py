@@ -769,7 +769,7 @@ def ensure(plan, spec, build, step, sfx_catalog=None, transcript_data=None, stor
                         e["anchor"] = "hook"
             ch = []
             got = fx_flow.build_effects(res_p, hm, fx_ctx.get("faces"), fx_ctx.get("palette"), step=step, changes=ch,
-                                        log=log, brand=brand)[:2]
+                                        log=log, brand=brand, project=fx_ctx.get("project"))[:2]
             for c in ch:
                 notes.append("FX hook: %s" % c)
             if got:

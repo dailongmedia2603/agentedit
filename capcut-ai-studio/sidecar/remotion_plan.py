@@ -311,8 +311,9 @@ def gpt_rm_visual(segments, emotion_map_data, transcript_data=None, key_moments_
     if _hints(reference_analysis):
         payload["goi_y_remotion"] = _hints(reference_analysis)
     import hook_rule
+    import canvas
     sys_prompt = (_p("_RM_VISUAL_SYSTEM") + "\n\n# DANH MUC REMOTION (chi dung id trong nay):\n" + _catalog_block()
-                  + hook_rule.luat("R4") + creative.luat("R4"))
+                  + hook_rule.luat("R4") + creative.luat("R4") + canvas.note("visual"))
     import brand_guide
     if brand_guide.view(brand, "plan"):
         payload["brand_guideline"] = brand_guide.view(brand, "plan")
@@ -387,8 +388,10 @@ def gpt_rm_captions(segments, transcript_data, emotion_map_data, faces_regions, 
     if subtitle_style:
         payload["phong_cach_phu_de"] = {k: v for k, v in subtitle_style.items() if k in (
             "font", "weight", "size", "case", "style", "words_per_chunk", "rule")}
+    import canvas
     sys_prompt = (_p("_RM_CAPTION_SYSTEM") + (_RM_CAPTION_MOTION_NOTE if motion else "")
-                  + "\n\n# DANH MUC REMOTION (chi dung id trong nay):\n" + _catalog_block() + creative.luat("R5"))
+                  + "\n\n# DANH MUC REMOTION (chi dung id trong nay):\n" + _catalog_block() + creative.luat("R5")
+                  + canvas.note("captions"))
     import brand_guide
     if brand_guide.view(brand, "captions"):
         # Brand Guideline: font + mau thuong hieu cho phu de / chu hero theo loi noi (code ep lai o build_spec)
@@ -1042,6 +1045,8 @@ def _audio_to_spec(p, duration):
         if a.get("_auto_text"):
             # tieng code tu gan cho chu (luat chu co tieng) — luat hook KHONG tinh la tieng gay chu y cua hook
             row["textAuto"] = True
+        if a.get("_tpl"):
+            row["layer"] = a.get("_from_layer")     # tieng cua lop mau Kho Text (lop bi bo -> bo tieng theo)
         out.append(row)
     return out
 
@@ -1076,7 +1081,31 @@ SPEC_MEDIA_VERSION = 9     # 4 = quy tac chu 2026-09-27; 5 = phu de cach chu noi
 
 def build_spec(plan, log=None):
     """Plan Remotion (ban THO, gio than video) -> (spec, report). Ham thuan, chay lai bao nhieu
-    lan cung ra mot ket qua, khong sua `plan` truyen vao."""
+    lan cung ra mot ket qua, khong sua `plan` truyen vao. Khung (doc / ngang) lay tu plan["canvas"] — moi phep do
+    khoi chu / bo cuc / ne mat ben trong theo dung khung do (canvas.use)."""
+    import canvas
+    with canvas.use(*canvas.of_plan(plan)):
+        spec, report = _build_spec(plan, log=log)
+        # mau Kho Text bi bo vi khong con cho ngoai mat nguoi noi (khoi mau to hon chu thuong) -> dung lai voi cum do
+        # la chu thuong (khong de mat ca cum chu, nhat la chu hook)
+        lost = [k for k in (report or {}).get("_tpl_lost") or []]
+        if spec is not None and lost and (plan.get("text_lib") or {}).get("items"):
+            p2 = copy.deepcopy(plan)
+            for k in lost:
+                p2["text_lib"]["items"].pop(k, None)
+            spec2, rep2 = _build_spec(p2, log=log)
+            if spec2 is not None:
+                rep2["fixed"] = ["mau Kho Text cua %d cum khong con cho ngoai mat nguoi noi -> cum do dung chu thuong"
+                                 % len(lost)] + rep2["fixed"]
+                # autoplan doc "tpl_lost" -> tao chu anh AI bu cho dung cac cum nay roi dung lai
+                rep2["tpl_lost"] = lost
+                spec, report = spec2, rep2
+        if report:
+            report.pop("_tpl_lost", None)
+        return spec, report
+
+
+def _build_spec(plan, log=None):
     plan_guard.apply_overrides()
     p = copy.deepcopy(plan or {})
     changes, issues = [], []
@@ -1101,8 +1130,8 @@ def build_spec(plan, log=None):
         issues.append({"severity": "high", "area": "source",
                        "problem": "Không tìm thấy file video nguồn: %s — trả file về chỗ cũ rồi mở lại dự án." % ten})
         return None, {"fixed": changes, "issues": issues, "ok": False}
-    canvas = p.get("canvas") or {}
-    W, H = int(canvas.get("w") or CANVAS["w"]), int(canvas.get("h") or CANVAS["h"])
+    import canvas as CV
+    W, H = CV.size()
     p["canvas"] = {"w": W, "h": H}
     fps = int(p.get("fps") or FPS)
     if p.get("brand_guide"):
@@ -1243,6 +1272,9 @@ def build_spec(plan, log=None):
     faces = p.get("faces") if isinstance(p.get("faces"), dict) else {}
     scenes = MD.scenes_to_spec(p, duration, kit, assets_by_id, changes) if p.get("scenes") else []
     layers = MD.layers_to_spec(p, duration, scenes, assets_by_id, faces, changes, kit=kit) if p.get("layers") else []
+    if p.get("text_lib"):
+        # caption hero / hook da chon mau Kho Text -> lop mau (truoc khi gan tieng: tieng cua mau di theo lop)
+        MD.text_lib_captions(p, layers, duration, changes)
     motion = bool(scenes or layers)
     if layers:
         p["audio"] = list(p.get("audio") or []) + MD.layer_sfx(layers, changes)
@@ -1276,7 +1308,9 @@ def build_spec(plan, log=None):
     for a in auds:
         st = providers._f(a.get("start"))
         if (a.get("role") or "sfx") != "bgm":
-            if MD.is_text_sfx(a):
+            if a.get("_tpl"):
+                pass        # tieng cua mau Kho Text: gan lien hoat canh cua mau -> luon giu
+            elif MD.is_text_sfx(a):
                 # chu hien CUNG LUC voi mot tieng khac (< TEXT_SFX_SAME) -> dung chung tieng do, khong chong 2 tieng
                 if any(abs(st - providers._f(x.get("start"))) < MD.TEXT_SFX_SAME
                        for x in kept if (x.get("role") or "sfx") != "bgm"):
@@ -1346,6 +1380,7 @@ def build_spec(plan, log=None):
         MD.attach_subject_mattes(spec, changes, log=log)
         # chu de len nhau -> lop tach ro; chu phai ro tren NEN THAT (do do sang khung video / anh)
         MD.separate_group_overlaps(spec, kit, changes)
+        MD.separate_tpl_overlaps(spec, changes)
         try:
             MD.ensure_legible(spec, kit, changes)
         except Exception as ex:
@@ -1375,6 +1410,11 @@ def build_spec(plan, log=None):
             MD.protect_face(spec, changes)     # kiem lai sau khi phu de doi cho (phu de o hook)
         except Exception as ex:
             changes.append("bo qua kiem lai mat nguoi noi (%s)" % str(ex)[:120])
+    # lop mau Kho Text bi bo (protect_face) -> bo tieng cua no + bao build_spec dung lai voi cum do la chu thuong
+    tpl_ids = {L["id"] for L in spec.get("layers") or [] if L.get("type") == "tpl"}
+    tpl_lost = sorted({L.get("tplKey") for L in layers if L.get("type") == "tpl" and L["id"] not in tpl_ids
+                       and L.get("tplKey")})
+    spec["audio"] = [a for a in spec["audio"] if not a.get("layer") or a["layer"] in tpl_ids]
     if not spec["clips"]:
         issues.append({"severity": "high", "area": "structure", "problem": "Khong con doan video nao dung duoc"})
     elif abs(spec["clips"][-1]["end"] - spec["duration"]) > 0.1:
@@ -1392,6 +1432,8 @@ def build_spec(plan, log=None):
         "kiem_cat": p.get("_kiem_cat"),
         "giong_lufs": p.get("_voice_lufs"),
     }
+    if tpl_lost:
+        report["_tpl_lost"] = tpl_lost
     return spec, report
 
 

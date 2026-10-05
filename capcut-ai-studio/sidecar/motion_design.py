@@ -17,6 +17,7 @@ import os
 import copy
 import json
 
+import canvas as CV
 import plan_guard
 import creative
 import prompt_store
@@ -288,7 +289,7 @@ def gpt_rm_design(segments, transcript_data, emotion_map_data, key_moments_data,
                   + "\n\n# TAI LIEU NGON NGU DUNG (chi dung dung cac truong nay)\n" + dsl_doc()
                   + "\n\n# THUAT NGU EDIT (ap dung dung cho)\n" + glossary_doc()
                   + "\n\n# DANH MUC REMOTION (transition / effect / grade):\n" + RP._catalog_block()
-                  + _NEW_FLOW_NOTE + creative.luat("R4"))
+                  + _NEW_FLOW_NOTE + creative.luat("R4") + CV.note("design"))
     if user_media:
         import user_media as UM
         payload["tu_lieu_nguoi_dung"] = UM.planner_view(user_media)
@@ -465,7 +466,7 @@ def normalize_assets(assets, source_videos, user_assets=None):
             if n_ai >= MAX_AI_IMAGES or not (a.get("prompt") or "").strip():
                 continue
             n_ai += 1
-            asp = a.get("aspect") if a.get("aspect") in ("9:16", "1:1", "3:4", "4:3", "16:9", "2:3", "3:2") else "9:16"
+            asp = a.get("aspect") if a.get("aspect") in ("9:16", "1:1", "3:4", "4:3", "16:9", "2:3", "3:2") else CV.aspect_default()
             row = {"id": a["id"], "kind": kind, "prompt": a["prompt"].strip(), "aspect": asp, "cutout": bool(a.get("cutout"))}
             refs = [m for m in a.get("ref_media") or [] if m in user_imgs][:3] if isinstance(a.get("ref_media"), list) else []
             if refs:
@@ -515,6 +516,8 @@ def asset_contexts(design, transcript_data=None, story=None, sources=None, user_
         if role == "layer_cutout" and not a.get("cutout"):
             role = "layer"
         vai, vung = asset_gen._VAI_TRO.get(role, asset_gen._VAI_TRO["card"])
+        if CV.landscape():
+            vai, vung = asset_gen._VAI_TRO_NGANG.get(role, (vai, vung))
         loi, chu = [], []
         for _r, el in us:
             sid = el.get("source_id")
@@ -543,7 +546,9 @@ def asset_contexts(design, transcript_data=None, story=None, sources=None, user_
                "chu_de": str(story.get("story_arc") or "")[:400],
                "tone": str(story.get("tone") or "")[:120],
                "chu_tren_anh": " / ".join(chu)[:200],
-               "boi_canh_nguon": src_desc[:400]}
+               "boi_canh_nguon": src_desc[:400],
+               # chi co khi khung NGANG (canvas.py) -> anh cua video doc giu nguyen khoa cache cu
+               "khung_video": CV.story_view()}
         bv = brand_view
         if bv:
             # Brand Guideline: mau / ngon ngu do hoa / phong cach hinh anh (nam trong khoa cache cua anh)
@@ -714,7 +719,11 @@ def scenes_to_spec(p, duration, kit, assets_by_id, changes):
         if lay in ("split", "broll") and not media:
             changes.append("%s(%s): khong co hinh B-roll (tai nguyen hong/thieu) -> doi ve full" % (sc["id"], lay))
             lay = sc["layout"] = "full"
-        if lay == "split":
+        ngang = CV.landscape()
+        if ngang and lay in ("split", "card", "circle"):
+            # KHUNG NGANG (16:9): chia TRAI / PHAI thay vi tren / duoi — nguoi noi mot ben, minh hoa ben kia
+            _landscape_scene(sc, lay, r, media, p, kit, assets_by_id)
+        elif lay == "split":
             r_ = _num(r.get("panel_ratio"), 0.5, 0.35, 0.6)
             sc["panel"], sc["panelRect"] = media, {"x": 0, "y": 0, "w": 1, "h": r_, "radius": 0}
             sc["aroll"] = {"x": 0, "y": r_, "w": 1, "h": 1 - r_, "radius": 0}
@@ -729,7 +738,7 @@ def scenes_to_spec(p, duration, kit, assets_by_id, changes):
         elif lay == "circle":
             d = _num(r.get("circle_d"), 0.64, 0.4, 0.9)
             cy = _num(r.get("circle_y"), 0.32, 0.18, 0.62)
-            h = d * 1080 / 1920
+            h = d * CV.size()[0] / CV.size()[1]
             sc["aroll"] = {"x": 0.5 - d / 2, "y": cy - h / 2, "w": d, "h": h, "radius": d / 2,
                            "border": "6px solid rgba(255,255,255,0.92)", "shadow": True}
             if media:
@@ -758,7 +767,9 @@ def scenes_to_spec(p, duration, kit, assets_by_id, changes):
         # pop-out (dau troi khoi the) chi khi scene / bo phong cach video mau yeu cau — khong mac dinh
         kit_pop = any(isinstance(x, dict) and x.get("layout") == lay and x.get("popout")
                       for x in (kit or {}).get("layouts") or [])
-        if lay in ("card", "circle") and r.get("popout", kit_pop) and media_vision.available():
+        if ngang and lay in ("card", "circle") and r.get("popout", kit_pop):
+            changes.append("%s(%s): khung ngang khong du cho troi dau -> bo pop-out" % (sc["id"], lay))
+        elif lay in ("card", "circle") and r.get("popout", kit_pop) and media_vision.available():
             ext = _num(r.get("popout_ext"), 0.14, 0.04, 0.3)
             need = _popout_need(p, r.get("source_id"), sc["aroll"])
             if need:
@@ -769,8 +780,40 @@ def scenes_to_spec(p, duration, kit, assets_by_id, changes):
     return out
 
 
-def _popout_need(p, sid, rect, W=1080, H=1920):
+def _landscape_scene(sc, lay, r, media, p, kit, assets_by_id):
+    """Bo cuc split / card / circle tren KHUNG NGANG 16:9 (rect = phan be ngang / chieu cao canvas).
+    split: B-roll mot ben ("panel_side" left mac dinh | right), A-roll ben kia, panel_ratio = phan be NGANG panel.
+    card : the A-roll ben PHAI ("card_x" = mep trai the), anh minh hoa (neu co) ben trai tren nen.
+    circle: khung tron "circle_d" (phan be ngang) tai ("circle_x", "circle_y"), nam tron trong khung."""
+    def bg():
+        return _bg(r.get("bg"), kit, assets_by_id, _video_colors(p, r) if not (r.get("bg") or {}).get("colors") else None)
+    if lay == "split":
+        r_ = _num(r.get("panel_ratio"), 0.5, 0.35, 0.6)
+        right = r.get("panel_side") == "right"
+        sc["panel"], sc["panelRect"] = media, {"x": 1 - r_ if right else 0.0, "y": 0, "w": r_, "h": 1, "radius": 0}
+        sc["aroll"] = {"x": 0.0 if right else r_, "y": 0, "w": 1 - r_, "h": 1, "radius": 0}
+    elif lay == "card":
+        cx = _num(r.get("card_x"), 0.52, 0.4, 0.65)
+        sc["bg"] = bg()
+        sc["aroll"] = {"x": cx, "y": 0.08, "w": round(0.965 - cx, 4), "h": 0.84, "radius": 0.025, "shadow": True}
+        if media:
+            sc["panel"], sc["panelRect"] = media, {"x": 0.035, "y": 0.1, "w": round(cx - 0.07, 4), "h": 0.8, "radius": 0.02}
+    else:
+        d = _num(r.get("circle_d"), 0.34, 0.22, 0.5)
+        h = d * CV.wh()
+        cx = RP._clamp(_num(r.get("circle_x"), 0.5, 0.2, 0.8), d / 2 + 0.02, 1 - d / 2 - 0.02)
+        cy = RP._clamp(_num(r.get("circle_y"), 0.5, 0.3, 0.7), h / 2 + 0.02, 1 - h / 2 - 0.02)
+        sc["aroll"] = {"x": round(cx - d / 2, 4), "y": round(cy - h / 2, 4), "w": d, "h": round(h, 4), "radius": d / 2,
+                       "border": "6px solid rgba(255,255,255,0.92)", "shadow": True}
+        if media:
+            sc["panel"], sc["panelRect"] = media, {"x": 0, "y": 0, "w": 1, "h": 1, "radius": 0}
+        else:
+            sc["bg"] = bg()
+
+
+def _popout_need(p, sid, rect, W=None, H=None):
     """Khoang troi (phan canvas) du chua nua tren mat + toc khi mat dat 5% duoi mep the."""
+    W, H = W or CV.size()[0], H or CV.size()[1]
     faces = p.get("faces") if isinstance(p.get("faces"), dict) else {}
     fc = faces.get(sid) or next(iter(faces.values()), None)
     sv = next((v for v in p.get("source_videos") or [] if v.get("id") == sid), None) or \
@@ -814,7 +857,9 @@ def subtitle_y_for(scene, kit):
     sub = (kit or {}).get("subtitle") or {}
     y_full = providers._f(sub.get("y_full"), 0.77)
     frac = y_full
-    if scene:
+    if scene and CV.landscape() and scene["layout"] in ("split", "card"):
+        pass        # khung ngang: A-roll / the nam ben canh -> phu de giu dai duoi khung
+    elif scene:
         lay = scene["layout"]
         if lay == "split":
             frac = scene["aroll"]["y"] - 0.035
@@ -893,7 +938,7 @@ _NARROW = {"anton": 0.46, "barlow_condensed": 0.42, "oswald": 0.46, "roboto_cond
 def _text_width(L):
     """Uoc luong be ngang dong chu dai nhat (phan be ngang canvas). Chu anh AI: be ngang anh that."""
     if L.get("art"):
-        return max(float(t.get("w") or 0) for t in L["art"]) / 1080.0
+        return CV.fw(max(float(t.get("w") or 0) for t in L["art"]))
     lines, cur = [], 0.0
     for sp in L.get("spans") or [{"text": "%s%s%s" % (L.get("prefix") or "", int(L.get("to") or 0), L.get("suffix") or "")}]:
         if sp.get("newline") and cur:
@@ -901,7 +946,7 @@ def _text_width(L):
             cur = 0.0
         sz = sp.get("size") or L.get("size") or 80
         k = _NARROW.get(sp.get("font") or L.get("font"), 0.58)
-        cur += len(sp.get("text") or "") * sz * k / 1080
+        cur += CV.fw(len(sp.get("text") or "") * sz * k)
     lines.append(cur)
     return max(lines)
 
@@ -911,7 +956,7 @@ def _text_height(L):
     Dong = theo "newline" cua span; co maxWidth thi tinh them dong tu xuong khi chu dai hon khung.
     Chu anh AI: tong chieu cao cac tang anh (tru phan chong mep)."""
     if L.get("art"):
-        return sum(float(t.get("h") or 0) + float(t.get("mt") or 0) for t in L["art"]) / 1920.0
+        return CV.fh(sum(float(t.get("h") or 0) + float(t.get("mt") or 0) for t in L["art"]))
     lines, cur, cur_w = [], 0.0, 0.0
     mw = float(L.get("maxWidth") or 0)
     def close():
@@ -925,12 +970,12 @@ def _text_height(L):
             cur, cur_w = 0.0, 0.0
         cur = max(cur, sz)
         k = _NARROW.get(sp.get("font") or L.get("font"), 0.58)
-        cur_w += len(sp.get("text") or "") * sz * k / 1080
+        cur_w += CV.fw(len(sp.get("text") or "") * sz * k)
     close()
     if not lines:
         lines = [L.get("size") or 80]
     pad = 0.05 if L.get("box") else 0.0
-    return sum(lines) * float(L.get("lineHeight") or 1.1) / 1920 + pad
+    return CV.fh(sum(lines) * float(L.get("lineHeight") or 1.1)) + pad
 
 
 def layers_to_spec(p, duration, scenes, assets_by_id, faces, changes, kit=None):
@@ -962,7 +1007,7 @@ def layers_to_spec(p, duration, scenes, assets_by_id, faces, changes, kit=None):
         if st >= duration - 0.1 or en - st < 0.2:
             changes.append("layer%d: nam ngoai video / qua ngan -> bo" % i)
             continue
-        L = {"id": str(L0.get("id") or "layer%d" % i)[:40] + "_%d" % i, "type": typ,
+        L = {"id": str(L0.get("id") or "layer%d" % i)[:40] + "_%d" % i, "type": typ, "_i": i,
              "start": round(st, 3), "end": round(en, 3),
              "track": int(_num(L0.get("track"), 20, 0, 200)),
              "x": round(_num(L0.get("x"), 0.5, -0.3, 1.3), 4), "y": round(_num(L0.get("y"), 0.5, -0.3, 1.3), 4)}
@@ -1090,6 +1135,11 @@ def layers_to_spec(p, duration, scenes, assets_by_id, faces, changes, kit=None):
             L["y"] = 0.78
         L["_sfx"] = L0.get("sfx")
         out.append(L)
+    if p.get("text_lib"):
+        # cum chu da chon MAU KHO TEXT -> 1 lop "tpl" thay cac lop chu (+ nen chu) cua cum (ne mat: protect_face)
+        out = text_lib_layers(p, out, duration, changes)
+    for L in out:
+        L.pop("_i", None)
     dims = {}
     for sv in p.get("source_videos") or []:
         info = RP.probe(sv.get("path"))
@@ -1115,6 +1165,91 @@ def layers_to_spec(p, duration, scenes, assets_by_id, faces, changes, kit=None):
 
 
 # ---------------------------------------------------------------------------
+# MAU KHO TEXT — text_tpl.py chon + kiem (buoc TXT-lib); o day thay cum chu bang lop "tpl"
+# ---------------------------------------------------------------------------
+def _tpl_layer(it, info, start, cx, cy, duration, track, lid):
+    """Lop spec 'tpl': (x, y) = tam khoi chu cua mau tren khung; w / h = khoi chu (phan khung) — protect_face / phu de
+    ne theo khoi nay. Mau chay dung do dai cua no (hoat canh + tieng da khop nhau trong mau)."""
+    W, H = CV.size()
+    spec = info["spec"]
+    k = min(W, H) / 1080.0 * 1080.0 / float(spec.get("width") or 1080)
+    x0, y0, x1, y1 = info["box"]
+    w, h = (x1 - x0) * k / W, (y1 - y0) * k / H
+    cx = RP._clamp(cx, 0.02 + w / 2, 0.98 - w / 2) if w < 0.96 else 0.5
+    cy = RP._clamp(cy, FACE_SAFE[0] + h / 2, FACE_SAFE[1] - h / 2) if h < FACE_SAFE[1] - FACE_SAFE[0] else 0.45
+    L = {"id": lid, "type": "tpl", "start": round(start, 3), "end": round(min(duration, start + info["duration"]), 3),
+         "track": track, "x": round(cx, 4), "y": round(cy, 4), "w": round(w, 4), "h": round(h, 4), "scale": 1.0,
+         "tpl": spec, "tplDir": info["dir"], "texts": dict(it["texts"]), "tplBox": info["box"], "tplId": it["template"],
+         "tplKey": it.get("_key")}
+    if info.get("audio"):
+        L["_tpl_audio"], L["_tpl_name"] = info["audio"], info["name"]
+    return L
+
+
+def _chars(texts):
+    import text_tpl
+    return sorted("".join(text_tpl.nz(t) for t in texts))
+
+
+def text_lib_layers(p, out, duration, changes):
+    """Cum lop chu R4 da chon mau (plan['text_lib']) -> bo cac lop chu + nen chu (box) cua cum, them 1 lop 'tpl' dat
+    tai tam cum, vao luc lop dau cua cum hien. Lop thay doi so voi luc chon (chu khac) -> giu nguyen lop code."""
+    import text_tpl
+    drop, add = set(), []
+    for key, it in ((p.get("text_lib") or {}).get("items") or {}).items():
+        it["_key"] = key
+        idx = {i for sr in it.get("src") or [] if isinstance(sr, dict) and sr.get("kind") == "layers" for i in sr["idx"]}
+        if not idx:
+            continue
+        mem = [L for L in out if L.get("_i") in idx and L["type"] == "text"]
+        texts = [" ".join(strip_emoji(sp.get("text")) for sp in L.get("spans") or []) for L in mem]
+        if not mem or _chars(texts) != _chars(it.get("tiers") or []):
+            changes.append("kho text %s: cum chu da doi so voi luc chon mau -> giu chu code" % it.get("template"))
+            continue
+        info = text_tpl.layer_info(it)
+        if not info:
+            changes.append("kho text: mau %s khong con trong kho -> giu chu code" % it.get("template"))
+            continue
+        groups = {L.get("group") for L in mem if L.get("group")}
+        back = [L for L in out if L["type"] == "box" and L.get("group") and L.get("group") in groups]
+        boxes = [b for b in (_guard_box(L) for L in mem) if b]
+        if boxes:
+            cx = (min(b[0] for b in boxes) + max(b[2] for b in boxes)) / 2
+            cy = (min(b[1] for b in boxes) + max(b[3] for b in boxes)) / 2
+        else:
+            cx, cy = 0.5, float(mem[0].get("y") or 0.3)
+        st = min(L["start"] for L in mem)
+        add.append(_tpl_layer(it, info, st, cx, cy, duration, max(L.get("track", 20) for L in mem), "tpl_%s" % key[:8]))
+        drop |= {id(L) for L in mem + back}
+        changes.append("cum '%s' -> mau Kho Text %s (%s)" % (" / ".join(it.get("tiers") or [])[:60], it["template"],
+                                                            ", ".join("%s='%s'" % kv for kv in it["texts"].items())))
+    return [L for L in out if id(L) not in drop] + add
+
+
+def text_lib_captions(p, layers, duration, changes):
+    """Caption hero / hook co mau Kho Text -> lop 'tpl' tai vi tri + gio cua caption, bo caption do (ca tieng)."""
+    import text_tpl
+    for key, it in ((p.get("text_lib") or {}).get("items") or {}).items():
+        it["_key"] = key
+    items = [it for it in ((p.get("text_lib") or {}).get("items") or {}).values()
+             if any(isinstance(sr, dict) and sr.get("kind") in ("caption", "hook") for sr in it.get("src") or [])]
+    if not items:
+        return
+    keep = []
+    for c in p.get("captions") or []:
+        it = next((x for x in items if c.get("role") == "hero" and len(x.get("tiers") or []) == 1
+                   and text_tpl.nz(x["tiers"][0]) == text_tpl.nz(strip_emoji(c.get("text")))), None)
+        info = text_tpl.layer_info(it) if it else None
+        if not info:
+            keep.append(c)
+            continue
+        y = (RP.POS_Y.get(c.get("position") or "upper", RP.POS_Y["upper"]) + 1) / 2
+        layers.append(_tpl_layer(it, info, float(c["start"]), 0.5, y, duration, 40, "tpl_cap%d" % len(layers)))
+        changes.append("caption hero '%s' -> mau Kho Text %s" % ((c.get("text") or "")[:30], it["template"]))
+    p["captions"] = keep
+
+
+# ---------------------------------------------------------------------------
 # CHU ANH AI — text_art.py tao + cat; o day DAT vao lop chu
 # ---------------------------------------------------------------------------
 ART_CAP_RATIO = 0.74     # loi chu (chu in hoa) cao ~0.74 co chu -> quy doi anh ve dung co chu da tinh
@@ -1135,10 +1270,11 @@ def art_index(p):
     return out
 
 
-def _attach_art(L, lookup, changes, label, W=1080):
+def _attach_art(L, lookup, changes, label, W=None):
     """Lop chu -> cac tang ANH (theo dung thu tu dong hien tai + co chu da qua quy tac chu). Dong nao khong co
     anh -> giu CA lop la chu code (khong tron chu anh voi chu code trong mot lop)."""
     import text_art
+    W = W or CV.size()[0]
     lines = _lines(L.get("spans") or [])
     texts = [" ".join(strip_emoji(sp.get("text")) for sp in ln).strip() for ln in lines]
     if not texts or not all(text_art.norm(t) in lookup for t in texts if t):
@@ -1180,9 +1316,10 @@ def _attach_art(L, lookup, changes, label, W=1080):
     return True
 
 
-def _attach_graphic(L, lookup, changes, label, W=1080):
+def _attach_graphic(L, lookup, changes, label, W=None):
     """Lop badge -> anh phan tu do hoa AI (graphic_art). Than phan tu (phan dac) rong = be ngang thiet ke cua lop."""
     import graphic_art
+    W = W or CV.size()[0]
     it = lookup.get(graphic_art.item_key(L.get("type"), L.get("label"), L.get("value")))
     if not it:
         return False
@@ -1306,17 +1443,28 @@ def attach_subject_mattes(spec, changes, log=None):
             changes.append("%s: khong co ban tach nguoi -> chu de len tren" % L["id"])
 
 
-def clip_map(clip, W=1080, H=1920, fy=0.42):
+def fit_scale(clip, W, H):
+    """He so phong khung nguon -> canvas. Thuong la COVER (phu kin, cat bot). Khung NGANG + nguon khac chieu (fit
+    'blur', vd video doc quay dien thoai): video giu TRON khung (contain) giua nen mo — KHOP AutoEdit.tsx. Khung doc
+    giu cach tinh cu (ket qua video doc khong doi)."""
+    sw, sh = float(clip.get("srcW") or W), float(clip.get("srcH") or H)
+    if clip.get("fit") == "blur" and W > H:
+        return min(W / sw, H / sh)
+    return max(W / sw, H / sh)
+
+
+def clip_map(clip, W=None, H=None, fy=0.42):
     """Quy doi toa do (0..1) giua KHUNG HINH (canvas, A-roll full) va KHUNG NGUON cua clip — GIU KHOP
     remotion-src/AutoEdit.tsx: video cover + object-position theo mat (facePosition) roi
     translate(x*50%, y*50%) scale(scale) quanh tam. Truoc 2026-09-27 bo qua jump-cut zoom (scale 1.3)
     -> dau nguoi tren man hinh to/cao hon cho code tinh -> 'CHET NICK' sau dau bi che gan het.
     Tra (to_canvas, to_src, k_w): k_w = he so doi be ngang nguon -> canvas."""
+    W, H = W or CV.size()[0], H or CV.size()[1]
     sw, sh = float(clip.get("srcW") or W), float(clip.get("srcH") or H)
-    s0 = max(W / sw, H / sh)
+    s0 = fit_scale(clip, W, H)
     iw, ih = sw * s0, sh * s0
     face = clip.get("face") if isinstance(clip.get("face"), dict) else None
-    if face:
+    if face and iw >= W - 0.5 and ih >= H - 0.5:
         left = min(0.0, max(W - iw, W * 0.5 - float(face.get("cx", 0.5)) * iw))
         top = min(0.0, max(H - ih, H * fy - float(face.get("cy", 0.5)) * ih))
     else:
@@ -1340,7 +1488,7 @@ def _head_on_canvas(head, clip, spec):
     """Dau nguoi do tren file tach nen (toa do NGUON) -> toa do KHUNG HINH."""
     if not head:
         return head
-    to_c, _to_s, kw = clip_map(clip, spec.get("width") or 1080, spec.get("height") or 1920)
+    to_c, _to_s, kw = clip_map(clip, spec.get("width") or CV.size()[0], spec.get("height") or CV.size()[1])
     cx, top = to_c(head["cx"], head["top"])
     return {"top": round(top, 4), "cx": round(cx, 4), "w": round((head.get("w") or 0.3) * kw, 4)}
 
@@ -1364,7 +1512,7 @@ def _anchor_to_head(hits, clip, matte, spec, changes):
         if not head:
             continue
         top = head["top"]
-        th = _text_height(L) if L["type"] == "text" else (L.get("size") or 120) * 1.1 / 1920
+        th = _text_height(L) if L["type"] == "text" else CV.fh((L.get("size") or 120) * 1.1)
         # chu RONG hon dau nhieu: dau che phan giua-duoi (tam chu ngang dinh dau). Chu HEP: nang len
         # de dau chi cham mep duoi — khong thi dau che gan het chu.
         rong = _text_width(L) >= (head.get("w") or 0.4) * 1.5
@@ -1388,11 +1536,12 @@ def _anchor_to_head(hits, clip, matte, spec, changes):
                     M["y"] = round(RP._clamp(M["y"] + dy, 0.07, 0.8), 4)
 
 
-def face_in_canvas(sc, fc, sw, sh, W=1080, H=1920):
+def face_in_canvas(sc, fc, sw, sh, W=None, H=None):
     """Khuon mat (toa do 0..1 cua khung NGUON) -> vi tri tren CANVAS theo bo cuc luc do.
     Giu KHOP voi facePosition trong remotion-src/AutoEdit.tsx. broll/graphic (khong thay A-roll) -> None."""
     if not fc:
         return None
+    W, H = W or CV.size()[0], H or CV.size()[1]
     lay = sc["layout"] if sc else "full"
     if lay in ("broll", "graphic"):
         return None
@@ -1401,11 +1550,16 @@ def face_in_canvas(sc, fc, sw, sh, W=1080, H=1920):
     r = sc["aroll"]
     ext = sc.get("popout") or 0
     cw, ch = r["w"] * W, (r["h"] + ext) * H
-    s_ = max(cw / float(sw), ch / float(sh))
+    # khung NGANG + nguon khac chieu (clip fit 'blur'): video giu tron khung (contain) giua o A-roll — nhu clip_map
+    contain = W > H and RP._fit_for(sw, sh, W, H) == "blur"
+    s_ = (min if contain else max)(cw / float(sw), ch / float(sh))
     iw, ih = sw * s_, sh * s_
     fy = (ext + 0.05) * H / ch if ext else 0.42
-    left = min(0.0, max(cw - iw, cw * 0.5 - fc["cx"] * iw))
-    top = min(0.0, max(ch - ih, ch * fy - fc["cy"] * ih))
+    if contain:
+        left, top = (cw - iw) / 2, (ch - ih) / 2
+    else:
+        left = min(0.0, max(cw - iw, cw * 0.5 - fc["cx"] * iw))
+        top = min(0.0, max(ch - ih, ch * fy - fc["cy"] * ih))
     return {"cx": (r["x"] * W + left + fc["cx"] * iw) / W, "cy": ((r["y"] - ext) * H + top + fc["cy"] * ih) / H,
             "h": fc["h"] * ih / H, "w": fc.get("w", 0.4) * iw / W}
 
@@ -1449,7 +1603,7 @@ def _avoid_faces(layers, scenes, faces, behind_groups, changes, src_dims=None, k
         if abs(k_z - 1.0) > 0.01:     # A-roll full dang phong to (jump-cut) -> mat to + lech khoi tam theo
             fc = {"cx": 0.5 + (fc["cx"] - 0.5) * k_z, "cy": 0.5 + (fc["cy"] - 0.5) * k_z,
                   "h": fc["h"] * k_z, "w": fc.get("w", 0.4) * k_z}
-        ths = {id(L): _text_height(L) if L["type"] == "text" else (L.get("size") or 120) * 1.1 / 1920 for L in mem}
+        ths = {id(L): _text_height(L) if L["type"] == "text" else CV.fh((L.get("size") or 120) * 1.1) for L in mem}
         y0 = min(L["y"] - ths[id(L)] / 2 for L in mem)
         y1 = max(L["y"] + ths[id(L)] / 2 for L in mem)
         th, cyb = y1 - y0, (y0 + y1) / 2
@@ -1744,7 +1898,7 @@ def _separate(up, below, L, pal, changes, label, L_below=None, done=None):
 def _bbox(L):
     """Khung chu (x0, y0, x1, y1) phan canvas, theo diem neo."""
     w = min(1.2, _text_width(L)) if L.get("type") == "text" else min(1.2, _text_width(L))
-    h = _text_height(L) if L.get("type") == "text" else (L.get("size") or 120) * 1.1 / 1920
+    h = _text_height(L) if L.get("type") == "text" else CV.fh((L.get("size") or 120) * 1.1)
     if L.get("maxWidth"):
         w = min(w, L["maxWidth"])
     x, y, a = L["x"], L["y"], L.get("anchor") or "center"
@@ -1912,7 +2066,7 @@ def reading_order(p, changes):
             L.setdefault("y", 0.5)
             h = _text_height({"spans": [s for s in L.get("spans") or [] if isinstance(s, dict)],
                               "size": L.get("size"), "box": L.get("box")}) if L.get("type") == "text" \
-                else (L.get("size") or 120) * 1.1 / 1920
+                else CV.fh((L.get("size") or 120) * 1.1)
             geo.append((L, providers._f(L["x"], 0.5), providers._f(L["y"], 0.5), h))
         by_y = sorted(geo, key=lambda r: r[2])
         order_vis = [r[0] for r in by_y]
@@ -2029,7 +2183,7 @@ def _bg_under(spec, L):
     ts = clip["srcStart"] + (t - clip["start"]) * (clip.get("speed") or 1.0)
     if not sc or sc["layout"] == "full":
         # khung chu tren man hinh -> vung tuong ung trong khung nguon (cover + mat + jump-cut zoom)
-        _c, to_s, _k = clip_map(clip, spec.get("width") or 1080, spec.get("height") or 1920)
+        _c, to_s, _k = clip_map(clip, spec.get("width") or CV.size()[0], spec.get("height") or CV.size()[1])
         x0, y0 = to_s(x0, y0)
         x1, y1 = to_s(x1, y1)
     return _sample_region(clip["path"], ts, (x0, y0, x1, y1))
@@ -2124,6 +2278,68 @@ def separate_group_overlaps(spec, kit, changes):
                 _separate(sp, lo.get("spans") or [], up, pal, changes, up["id"], L_below=lo, done=done)
 
 
+def separate_tpl_overlaps(spec, changes):
+    """Lop MAU KHO TEXT va mot to hop chu khac hien CUNG luc, de len nhau (do that: R4 dat them tang phu 'chỉ bằng cây
+    tăm bông' dung luc cum do da thanh mau) -> moi luc mot khoi chu: to hop kia TRUNG chu voi mau -> bo; khac chu ->
+    vao sau >= 0.3s thi mau tat luc no vao / truoc do thi dich to hop kia ra ngoai khoi mau (tren / duoi, cho rong hon)."""
+    import text_tpl
+    layers = spec.get("layers") or []
+    tpls = [L for L in layers if L.get("type") == "tpl"]
+    if not tpls:
+        return
+    units = {}
+    for L in layers:
+        if L.get("type") in ("text", "counter", "badge") and not L.get("behind"):
+            units.setdefault(("g", L["group"]) if L.get("group") else ("l", L["id"]), []).append(L)
+    drop = set()
+    for T in tpls:
+        tb = _guard_box(T)
+        words = set(text_tpl.nz(" ".join(T.get("texts", {}).values())))
+        for key, mem in units.items():
+            if any(id(L) in drop for L in mem):
+                continue
+            st, en = min(L["start"] for L in mem), max(L["end"] for L in mem)
+            if min(en, T["end"]) - max(st, T["start"]) <= 0.1:
+                continue
+            txt = text_tpl.nz(" ".join(" ".join(str(sp.get("text") or "") for sp in L.get("spans") or [])
+                                       + str(L.get("label") or "") for L in mem))
+            name = ",".join(L["id"] for L in mem)
+            if txt and set(txt) <= words and txt in text_tpl.nz("".join(T.get("texts", {}).values())):
+                # cung cau hien 2 lan cung luc (du o 2 cho khac nhau) la thua -> bo ban chu thuong
+                drop |= {id(L) for L in mem}
+                changes.append("%s: trung chu voi mau Kho Text %s hien cung luc -> bo" % (name, T["id"]))
+                continue
+            bs = [b for b in (_guard_box(L) for L in mem) if b]
+            if not bs:
+                continue
+            ub = (min(b[0] for b in bs), min(b[1] for b in bs), max(b[2] for b in bs), max(b[3] for b in bs))
+            if min(ub[2], tb[2]) - max(ub[0], tb[0]) <= 0 or min(ub[3], tb[3]) - max(ub[1], tb[1]) <= 0:
+                continue
+            if st - T["start"] >= 0.3:
+                T["end"] = round(st + 0.05, 3)
+                changes.append("%s: %s vao de len -> mau tat luc %.2fs (moi luc mot khoi chu)" % (T["id"], name, T["end"]))
+            elif T["start"] - st >= 0.3:
+                for L in mem:
+                    L["end"] = min(L["end"], round(T["start"] + 0.05, 3))
+                changes.append("%s: mau Kho Text %s vao de len -> tat luc %.2fs" % (name, T["id"], T["start"] + 0.05))
+            else:
+                h = ub[3] - ub[1]
+                up, down = tb[1] - 0.015 - h, tb[3] + 0.015
+                if up >= FACE_SAFE[0] and (down + h > FACE_SAFE[1] or tb[1] - FACE_SAFE[0] >= FACE_SAFE[1] - tb[3]):
+                    dy = up - ub[1]
+                elif down + h <= FACE_SAFE[1]:
+                    dy = down - ub[1]
+                else:
+                    drop |= {id(L) for L in mem}
+                    changes.append("%s: de len mau Kho Text %s, khong con cho -> bo" % (name, T["id"]))
+                    continue
+                for L in mem:
+                    L["y"] = round(float(L["y"]) + dy, 4)
+                changes.append("%s: de len mau Kho Text %s -> dich %.3f" % (name, T["id"], dy))
+    if drop:
+        spec["layers"] = [L for L in layers if id(L) not in drop]
+
+
 # --- 5. CHU SAU NGUOI KHONG BI CHE NHIEU -------------------------------------
 def _cover(mask, box):
     """Phan khoi chu (x0,y0,x1,y1) bi nguoi che, toan khoi va nua tren."""
@@ -2159,7 +2375,7 @@ def _behind_clear(hits, clip, matte, spec, changes):
             continue
         head = _head_on_canvas(media_vision.matte_head(
             matte["path"], clip["srcStart"] + (ts[1] - clip["start"]) * sp_ - matte["srcStart"]), clip, spec)
-        _to_c, to_s, _kw = clip_map(clip, spec.get("width") or 1080, spec.get("height") or 1920)
+        _to_c, to_s, _kw = clip_map(clip, spec.get("width") or CV.size()[0], spec.get("height") or CV.size()[1])
         mem = [M for M in spec.get("layers") or [] if M is not L and L.get("group") and M.get("group") == L["group"]
                and not M.get("keyframes")]
         front = [M for M in mem if not M.get("behind") and M.get("type") in ("text", "counter", "badge")]
@@ -2236,11 +2452,13 @@ def _layer_band(L):
     if typ == "text":
         h = _text_height(L)
     elif typ == "counter":
-        h = (L.get("size") or 120) * 1.1 / 1920
+        h = CV.fh((L.get("size") or 120) * 1.1)
     elif typ == "badge":
-        h = (L.get("w") or 0.2) * 1080 / 1920 * 1.15
+        h = (L.get("w") or 0.2) * CV.size()[0] / CV.size()[1] * 1.15
     elif L.get("um") and L.get("h"):
         h = L["h"]          # tu lieu cua nguoi dung (anh / video) — chieu cao that theo ti le
+    elif typ == "tpl":
+        h = float(L.get("h") or 0.2)        # mau Kho Text: khoi chu cua mau
     else:
         return None
     return L["y"] - h / 2, L["y"] + h / 2
@@ -2251,12 +2469,13 @@ SUB_Y_RANGE = (0.10, 0.80)
 SUB_MAX_MOVE = 0.22     # doi phu de toi da 22% chieu cao khung — xa hon thi phu de nhay lung tung, kho theo doi
 
 
-def _caption_half(c, W=1080, H=1920):
-    """Nua chieu cao THAT cua khoi phu de (phan canvas): so dong theo co chu + be ngang 86% khung
-    (Captions.tsx), dong cao ~1.3 co chu, cong le hop nen / vien. Uoc hoi RONG de chac chan khong cham."""
+def _caption_half(c, W=None, H=None):
+    """Nua chieu cao THAT cua khoi phu de (phan canvas): so dong theo co chu + be ngang 86% khung doc / 70% khung
+    ngang (Captions.tsx), dong cao ~1.3 co chu, cong le hop nen / vien. Uoc hoi RONG de chac chan khong cham."""
+    W, H = W or CV.size()[0], H or CV.size()[1]
     size = float(c.get("size") or 48)
     text = str(c.get("text") or "")
-    per_line = max(1, int(0.86 * W / (size * 0.56)))
+    per_line = max(1, int(CV.caption_frac() * W / (size * 0.56)))
     lines = max(1, -(-len(text) // per_line))
     return (lines * size * 1.3 + size * 0.45) / H / 2
 
@@ -2279,19 +2498,19 @@ def dodge_subtitles(spec, changes):
       len mat nguoi); khong con cho -> AN phu de trong luc chu noi bat hien (chu noi bat thuong noi
       cung y) — chi giu phan phu de ngoai khoang do."""
     import fx_flow
-    layers = [L for L in spec.get("layers") or [] if L.get("type") in ("text", "counter", "badge") or L.get("um")]
+    layers = [L for L in spec.get("layers") or [] if L.get("type") in ("text", "counter", "badge", "tpl") or L.get("um")]
     caps = spec.get("captions") or []
     heroes_cap = [c for c in caps if c.get("role") == "hero"]
     keep_hero = []
     for c in heroes_cap:
-        if any(min(c["end"], L["end"]) - max(c["start"], L["start"]) > 0.05 and L.get("type") in ("text", "counter")
+        if any(min(c["end"], L["end"]) - max(c["start"], L["start"]) > 0.05 and L.get("type") in ("text", "counter", "tpl")
                for L in layers):
             changes.append("caption hero '%s': trung gio lop chu do hoa -> bo" % (c.get("text") or "")[:30])
             continue
         keep_hero.append(c)
     obstacles = [L for L in layers if not L.get("replacesSubtitle")] + [
         {"_cap": c, "start": c["start"], "end": c["end"], "id": "hero:" + str(c.get("text") or "")[:16]} for c in keep_hero]
-    W, H = spec.get("width") or 1080, spec.get("height") or 1920
+    W, H = spec.get("width") or CV.size()[0], spec.get("height") or CV.size()[1]
     out = []
     for c in caps:
         if c.get("role") == "hero":
@@ -2368,9 +2587,10 @@ def dodge_subtitles(spec, changes):
 # ---------------------------------------------------------------------------
 FACE_HOOK_MAX = 0.02        # hook: cham vien mat toi da 2% (sai so uoc luong khung chu)
 FACE_BODY_MAX = 0.15        # than video: che toi da 15% khung mat (nhu tu lieu nguoi dung)
+FACE_TPL_MAX = 0.05         # mau Kho Text (khoi chu to + glow): che toi da 5% — thu nho / dat tren dau thay vi de len mat
 FACE_SAFE = (0.06, 0.82)    # vung dat duoc (tren 6% / duoi 82% bi giao dien TikTok che)
 FACE_FULL_AREA = 0.55       # lop phu > 55% khung = canh phu toan man hinh, khong phai vat de len mat
-_GUARD_TYPES = ("text", "counter", "badge", "image", "video", "box", "circle")   # vong (ring) khoanh mat: co y
+_GUARD_TYPES = ("text", "counter", "badge", "image", "video", "box", "circle", "tpl")   # vong (ring) khoanh mat: co y
 
 
 def _img_ratio(path, _cache={}):
@@ -2393,15 +2613,18 @@ def _kf_scale(L):
     return s * max([1.0] + ks)
 
 
-def _guard_box(L, W=1080, H=1920):
+def _guard_box(L, W=None, H=None):
     """Khung (x0, y0, x1, y1) 0..1 lop chiem khi to nhat (keyframe phong to), theo diem neo. Khong uoc duoc -> None."""
+    W, H = W or CV.size()[0], H or CV.size()[1]
     typ = L.get("type")
     if typ in ("text", "counter"):
-        w, h = _text_width(L), _text_height(L) if typ == "text" else (L.get("size") or 120) * 1.1 / 1920
+        w, h = _text_width(L), _text_height(L) if typ == "text" else CV.fh((L.get("size") or 120) * 1.1)
         if typ == "counter":
-            w = max(w, (L.get("size") or 120) * 0.6 * 4 / 1080)
+            w = max(w, CV.fw((L.get("size") or 120) * 0.6 * 4))
         if L.get("maxWidth") and not L.get("art"):
             w = min(w, float(L["maxWidth"]))
+    elif typ == "tpl":
+        w, h = float(L.get("w") or 0.5), float(L.get("h") or 0.2)
     elif typ == "badge" and L.get("art"):
         w, h = float(L["art"][0].get("w") or 0) / W, float(L["art"][0].get("h") or 0) / H
     elif typ in ("badge", "box", "circle", "ring", "image", "video"):
@@ -2426,10 +2649,11 @@ def _guard_box(L, W=1080, H=1920):
     return (x0, y0, x0 + w, y0 + h)
 
 
-def _cap_box(c, W=1080, H=1920):
-    """Caption (hero / phu de) — khoi chu giua khung, rong theo noi dung (toi da 86%)."""
+def _cap_box(c, W=None, H=None):
+    """Caption (hero / phu de) — khoi chu giua khung, rong theo noi dung (toi da 86% khung doc / 70% khung ngang)."""
+    W, H = W or CV.size()[0], H or CV.size()[1]
     size = float(c.get("size") or 48)
-    tw = min(0.86, len(str(c.get("text") or "")) * size * 0.56 / W)
+    tw = min(CV.caption_frac(), len(str(c.get("text") or "")) * size * 0.56 / W)
     cy, h2 = (float(c.get("y") or 0) + 1) / 2, _caption_half(c, W, H)
     return (0.5 - tw / 2, cy - h2, 0.5 + tw / 2, cy + h2)
 
@@ -2446,7 +2670,7 @@ def _cam_at(spec, t, fps=30):
             if e["type"] == "shake":
                 tx, ty = tx + 26 * I, ty + 26 * I
             elif e["type"] in ("pan_left", "pan_right"):
-                tx += 0.045 * 1080 * I
+                tx += 0.045 * float(spec.get("width") or CV.size()[0]) * I
     for f in spec.get("fxTransforms") or []:
         if not (f["start"] <= t <= f["end"]) or not f.get("values"):
             continue
@@ -2468,7 +2692,20 @@ def _face_rect(spec, t, W, H):
     cx, cy = W / 2 + (fp["x"] - W / 2) * s, H / 2 + (fp["y"] - H / 2) * s
     fw, fh = fp["w"] * s, fp["h"] * s
     # Vision: khung mat tu long may toi cam -> them tran (0.75) va 2 ben (0.55)
-    return ((cx - fw * 0.55 - tx) / W, (cy - fh * 0.75 - ty) / H, (cx + fw * 0.55 + tx) / W, (cy + fh * 0.62 + ty) / H)
+    box = ((cx - fw * 0.55 - tx) / W, (cy - fh * 0.75 - ty) / H, (cx + fw * 0.55 + tx) / W, (cy + fh * 0.62 + ty) / H)
+    sc = scene_at(spec.get("scenes") or [], t)
+    r = (sc or {}).get("aroll") if (sc or {}).get("layout") not in (None, "full") else None
+    if r:
+        # bo cuc chia doi / the / tron: mat CHI hien trong o A-roll (+ phan dau troi ra ngoai the — popout). Mat quay can
+        # (mat to) cong them tran theo co mat se lan ra ngoai o, len vung anh B-roll — khong phai mat (do that 10-04:
+        # khung mat 0.18..1.15 trong khi o A-roll la nua duoi -> chu / mau o nua tren bi coi la de len mat)
+        top = float(r.get("y", 0)) - float(sc.get("popout") or 0)
+        x0, x1 = float(r.get("x", 0)), float(r.get("x", 0)) + float(r.get("w", 1))
+        y1 = float(r.get("y", 0)) + float(r.get("h", 1))
+        box = (max(box[0], x0), max(box[1], top), min(box[2], x1), min(box[3], y1))
+        if box[2] <= box[0] or box[3] <= box[1]:
+            return None
+    return box
 
 
 def _hook_end(spec):
@@ -2478,7 +2715,7 @@ def _hook_end(spec):
 def protect_face(spec, changes):
     """Khong chu / anh / do hoa nao de len mat nguoi noi — tuyet doi o HOOK, toi da FACE_BODY_MAX o than video."""
     import user_media as UM
-    W, H = int(spec.get("width") or 1080), int(spec.get("height") or 1920)
+    W, H = int(spec.get("width") or CV.size()[0]), int(spec.get("height") or CV.size()[1])
     if not any(c.get("face") for c in spec.get("clips") or []):
         return
     hook_end = _hook_end(spec)
@@ -2505,7 +2742,8 @@ def protect_face(spec, changes):
         if (box[2] - box[0]) * (box[3] - box[1]) > FACE_FULL_AREA:
             continue
         in_hook = st < hook_end - 0.05
-        lim = FACE_HOOK_MAX if in_hook else FACE_BODY_MAX
+        lim = FACE_HOOK_MAX if in_hook else (
+            FACE_TPL_MAX if any(kind == "L" and x.get("type") == "tpl" for kind, x in mem) else FACE_BODY_MAX)
         ts = [st + 0.05 + 0.2 * j for j in range(max(1, int((en - st - 0.1) / 0.2) + 1))] + [max(st, en - 0.05)]
         faces = [f for f in (_face_rect(spec, t, W, H) for t in ts) if f]
         if not faces:
@@ -2548,14 +2786,17 @@ def protect_face(spec, changes):
                 moved = (best[1], best[2], best[3], k)
                 break
         if not moved:
-            if in_hook:
+            if in_hook or any(kind == "L" and x.get("type") == "tpl" for kind, x in mem):
+                # hook / mau Kho Text (khoi chu to, khong co cho ne): bo lop — mau bi bo thi build_spec dung lai voi
+                # cum do la chu thuong (_tpl_lost)
                 # khong con cho nao (mat chiem gan het khung): bo lop khoi hook con hon che mat
                 for kind, x in mem:
                     if kind == "L":
                         spec["layers"] = [y for y in spec["layers"] if y is not x]
                     else:
                         spec["captions"] = [y for y in spec["captions"] if y is not x]
-                changes.append("%s: hook — khong con cho trong ngoai mat nguoi noi -> bo" % _guard_name(mem))
+                changes.append("%s: %s — khong con cho trong ngoai mat nguoi noi -> bo" % (
+                    _guard_name(mem), "hook" if in_hook else "mau Kho Text"))
             else:
                 changes.append("%s: de len mat nguoi noi, khong con cho ne — giu vi tri" % _guard_name(mem))
             continue
@@ -2594,7 +2835,9 @@ def _scale_layer(L, k):
         for key in ("w", "h", "mt"):
             if a.get(key):
                 a[key] = round(float(a[key]) * k, 1)
-    if L.get("type") in ("badge", "box", "circle", "ring", "image", "video"):
+    if L.get("type") == "tpl":
+        L["scale"] = round(float(L.get("scale") or 1.0) * k, 4)
+    if L.get("type") in ("badge", "box", "circle", "ring", "image", "video", "tpl"):
         if L.get("w"):
             L["w"] = round(float(L["w"]) * k, 4)
         if L.get("h") is not None:
@@ -2632,6 +2875,12 @@ def layer_sfx(layers, changes):
     lib = {e["id"]: e for e in engine.sfx_list()}
     out = []
     for L in layers:
+        tpl_audio, tpl_name = L.pop("_tpl_audio", None), L.pop("_tpl_name", None)
+        if tpl_audio:
+            # mau Kho Text: tieng da tron san dung nhip hoat canh -> 1 muc, can theo giong noi nhu tieng khi chu hien
+            out.append({"sfx_id": "tpl:%s" % L.get("tplId"), "file": tpl_audio, "start": L["start"], "purpose": "reveal",
+                        "_name": "Kho Text: %s" % tpl_name, "tags": [], "_from_layer": L["id"], "_text": True, "_tpl": True})
+            continue
         fam = L.pop("_sfx", None)
         if not fam:
             continue

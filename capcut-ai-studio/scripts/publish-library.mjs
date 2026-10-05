@@ -1,8 +1,11 @@
-// PUBLISH kho SFX + Meme (kem nhan Gemini) len Cloudflare R2 — CHI chay o may tac gia.
+// PUBLISH kho SFX + Meme + Text (kem nhan Gemini) len Cloudflare R2 — CHI chay o may tac gia.
 //   npm run publish:library
-// Doc kho tu ~/.capcut-studio (sfx_library.json + sfx/, meme_library.json + memes/), tinh SHA-256
-// tung file media, tao library-manifest.json (file=ten co ban, khong duong dan tuyet doi), roi upload
-// nhung file MOI / DOI (so voi manifest tren R2) + manifest moi.
+// Doc kho tu ~/.capcut-studio (sfx_library.json + sfx/, meme_library.json + memes/,
+// text_library.json + text_templates/<id>/ — thu muc NHIEU file: template.json, preview.mp4,
+// fonts/, audio/, assets/), tinh SHA-256 tung file, tao library-manifest.json (sfx/memes: file=ten
+// co ban; texts: files=[{path tuong doi, sha256, size}] vi 1 mau co nhieu file), roi upload nhung
+// file MOI / DOI (so voi manifest tren R2) + manifest moi. R2 key: `sfx/<file>`, `memes/<file>`,
+// `texts/<id>/<path tuong doi>`.
 //
 // Token R2 nam o ~/.capcut-studio/r2-publish.json (KHONG nhung vao app, KHONG len git):
 //   { "account_id","access_key_id","secret_access_key","bucket" }
@@ -10,7 +13,7 @@
 // Bucket KHONG con cong khai: app chi tai qua may chu ban quyen (license-server/) -> doc manifest cu bang S3.
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3'
 import { createHash } from 'node:crypto'
-import { existsSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { basename, join } from 'node:path'
 
@@ -62,6 +65,19 @@ function manifestEntry(e, mediaDir) {
   return { ...rest, file: fname, sha256: sha256(abs), size: statSync(abs).size }
 }
 
+/** Duyet 1 thu muc, tra ve duong dan TUONG DOI (dung "/", bo file an) cua moi file ben trong. */
+function walkFiles(dir, base = '') {
+  let out = []
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name.startsWith('.')) continue
+    const rel = base ? `${base}/${entry.name}` : entry.name
+    const abs = join(dir, entry.name)
+    if (entry.isDirectory()) out = out.concat(walkFiles(abs, rel))
+    else out.push(rel)
+  }
+  return out
+}
+
 async function main() {
   if (DRY_RUN) log('CHE DO THU (--dry-run): chi tao + kiem manifest, KHONG can token, KHONG upload.')
   const c = DRY_RUN ? {} : creds()
@@ -74,7 +90,7 @@ async function main() {
       })
 
   // manifest hien co tren R2 -> bo qua file trung SHA (tiet kiem bang thong)
-  let remote = { sfx: [], memes: [] }
+  let remote = { sfx: [], memes: [], texts: [] }
   if (!DRY_RUN) {
     try {
       const r = await client.send(new GetObjectCommand({ Bucket: c.bucket, Key: 'library-manifest.json' }))
@@ -85,12 +101,13 @@ async function main() {
   }
   const remoteSha = new Map()
   for (const kind of ['sfx', 'memes']) for (const e of remote[kind] || []) remoteSha.set(`${kind}/${e.file}`, e.sha256)
+  for (const e of remote.texts || []) for (const f of e.files || []) remoteSha.set(`texts/${e.id}/${f.path}`, f.sha256)
 
   const kinds = [
     { key: 'sfx', lib: 'sfx_library.json', libKey: 'sfx', dir: 'sfx' },
     { key: 'memes', lib: 'meme_library.json', libKey: 'memes', dir: 'memes' }
   ]
-  const manifest = { updated: new Date().toISOString(), sfx: [], memes: [] }
+  const manifest = { updated: new Date().toISOString(), sfx: [], memes: [], texts: [] }
   let uploaded = 0
   let skipped = 0
 
@@ -119,12 +136,46 @@ async function main() {
     }
   }
 
+  // Kho Text: moi mau la 1 THU MUC nhieu file (template.json, preview.mp4, fonts/, audio/, assets/)
+  const texts = readLib('text_library.json', 'templates')
+  for (const t of texts) {
+    if (!t.id) continue
+    const tdir = join(ENGINE, 'text_templates', t.id)
+    if (!existsSync(tdir)) {
+      log(`  bo qua (thieu thu muc mau): ${t.id}`)
+      continue
+    }
+    const relFiles = walkFiles(tdir)
+    if (!relFiles.length) {
+      log(`  bo qua (thu muc mau rong): ${t.id}`)
+      continue
+    }
+    const { dir, ...rest } = t // bo duong dan tuyet doi (viet lai theo may khi pull)
+    void dir
+    const files = relFiles.map((rel) => {
+      const abs = join(tdir, ...rel.split('/'))
+      return { path: rel, sha256: sha256(abs), size: statSync(abs).size }
+    })
+    manifest.texts.push({ ...rest, files })
+    for (const f of files) {
+      const objKey = `texts/${t.id}/${f.path}`
+      if (remoteSha.get(objKey) === f.sha256) {
+        skipped++
+        continue
+      }
+      await putObject(objKey, readFileSync(join(tdir, ...f.path.split('/'))), ctype(f.path))
+      uploaded++
+      log(`  ↑ ${objKey}`)
+    }
+  }
+
   // manifest cuoi cung
   await putObject('library-manifest.json', Buffer.from(JSON.stringify(manifest, null, 2)), 'application/json')
+  const tong = `SFX ${manifest.sfx.length} + Meme ${manifest.memes.length} + Text ${manifest.texts.length}`
   if (DRY_RUN) {
-    log(`THU xong. SFX ${manifest.sfx.length} + Meme ${manifest.memes.length}; se upload ${uploaded} file (tat ca, vi khong so voi R2). Khong co gi duoc gui len.`)
+    log(`THU xong. ${tong}; se upload ${uploaded} file (tat ca, vi khong so voi R2). Khong co gi duoc gui len.`)
   } else {
-    log(`Xong. SFX ${manifest.sfx.length} + Meme ${manifest.memes.length}; upload ${uploaded} file, bo qua ${skipped} (da co, trung SHA).`)
+    log(`Xong. ${tong}; upload ${uploaded} file, bo qua ${skipped} (da co, trung SHA).`)
     log(`Manifest: r2://${c.bucket}/library-manifest.json (app tai qua may chu ban quyen)`)
   }
 }

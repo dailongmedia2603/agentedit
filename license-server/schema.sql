@@ -49,3 +49,30 @@ CREATE TABLE IF NOT EXISTS throttle (
   window_start INTEGER NOT NULL,
   fails        INTEGER NOT NULL
 );
+
+-- KHO HIEU UNG CHUNG (2026-10-05): hieu ung tu viet (code + preview + nhan Gemini) cac may gui len.
+-- May trong trusted_licenses (may tac gia) -> tu duyet; may khach -> 'pending' cho quan tri duyet
+-- (hop cach ly Node vm khong phai ranh gioi bao mat -> code tu may khach phai qua nguoi duyet moi phat).
+-- File nam o R2: fx/<id>/code.js + fx/<id>/preview.mp4. Chi muc 'approved' vao manifest dong bo kho.
+CREATE TABLE IF NOT EXISTS fx_items (
+  id            TEXT PRIMARY KEY,                 -- 'fx-' + 12 hex (bam code) — trung code = trung muc
+  license_id    TEXT NOT NULL,
+  status        TEXT NOT NULL CHECK (status IN ('pending', 'approved', 'rejected')),
+  kind          TEXT NOT NULL,
+  meta          TEXT NOT NULL,                    -- JSON da loc (nhan Gemini, tham so, khung dung duoc...)
+  code_sha      TEXT NOT NULL,
+  preview_sha   TEXT NOT NULL,
+  code_size     INTEGER NOT NULL,
+  preview_size  INTEGER NOT NULL,
+  created_at    INTEGER NOT NULL,
+  decided_at    INTEGER,
+  decided_by    TEXT,
+  note          TEXT
+);
+CREATE INDEX IF NOT EXISTS fx_items_status ON fx_items (status, created_at DESC);
+CREATE INDEX IF NOT EXISTS fx_items_license ON fx_items (license_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS trusted_licenses (
+  license_id  TEXT PRIMARY KEY,
+  at          INTEGER NOT NULL
+);

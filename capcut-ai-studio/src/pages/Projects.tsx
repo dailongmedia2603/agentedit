@@ -43,7 +43,7 @@ function projectVideos(project: Project): SourceVideo[] {
 }
 
 /** Video MP4 da render — phat qua may chu media cuc bo cua app */
-function RenderedVideo({ info }: { info: RemotionRenderInfo }) {
+function RenderedVideo({ info, wide }: { info: RemotionRenderInfo; wide?: boolean }) {
   const [url, setUrl] = useState('')
   useEffect(() => {
     window.studio.remotionMediaUrl(info.output).then((u) => setUrl(`${u}&v=${info.at}`))
@@ -52,11 +52,16 @@ function RenderedVideo({ info }: { info: RemotionRenderInfo }) {
     <Card className="mt-4">
       <CardHeader className="text-sm font-semibold text-ink-900">Video đã xuất</CardHeader>
       <CardBody className="flex flex-col gap-4 sm:flex-row">
-        <div className="w-full max-w-[260px] shrink-0">
+        <div className={cn('w-full shrink-0', wide ? 'max-w-[460px]' : 'max-w-[260px]')}>
           {url ? (
-            <video src={url} controls playsInline className="aspect-[9/16] w-full rounded-xl bg-black object-contain" />
+            <video
+              src={url}
+              controls
+              playsInline
+              className={cn('w-full rounded-xl bg-black object-contain', wide ? 'aspect-video' : 'aspect-[9/16]')}
+            />
           ) : (
-            <div className="flex aspect-[9/16] items-center justify-center rounded-xl bg-black/80">
+            <div className={cn('flex items-center justify-center rounded-xl bg-black/80', wide ? 'aspect-video' : 'aspect-[9/16]')}>
               <Spinner className="h-5 w-5" />
             </div>
           )}
@@ -356,7 +361,9 @@ export default function ProjectsPage({
           )}
         </div>
 
-        {p.rmRender?.output && <RenderedVideo info={p.rmRender} />}
+        {p.rmRender?.output && (
+          <RenderedVideo info={p.rmRender} wide={(p.rmSpec?.width || 0) > (p.rmSpec?.height || 0)} />
+        )}
 
         {confirmDel && <DeleteDialog project={confirmDel} onClose={() => setConfirmDel(null)} onDone={deleted} />}
 

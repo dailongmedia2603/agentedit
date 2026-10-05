@@ -837,6 +837,30 @@ tieng; (3) chu anh AI: duoi 'g' hang tren con du manh tren hang duoi; (4) SFX kh
   electron-builder TRUC TIEP khong qua dist.mjs se loi vi thieu bien). So phien ban = package.json `version`
   (1.1.0 tu 2026-10-03), tang tay. `npm run build` / dev: khong co ma build -> chi hien "v1.1.0".
 
+## 11y. LOAI VIDEO: doc 9:16 (mac dinh) / ngang 16:9 (2026-10-04, `sidecar/canvas.py`)
+
+- UI: the "Loai video" (`src/components/OrientationPicker.tsx`) o man tao video; du an luu `orientation`
+  (vang mat = doc). `runPlan` gui `orientation` -> `/remotion/autoplan`. Xem truoc / video xong / "Video da tao"
+  lay khung tu spec (khung ngang: khung xem rong, xep doc).
+- Sidecar: route dat `canvas.use(W, H)` cho CA luot lap ke hoach (luong nen qua `run_log.carry` mang theo);
+  `build_spec` dat khung tu `plan.canvas`. Moi phep do trong motion_design / user_media / fx_flow doc khung qua
+  `canvas.size()` / `fw()` / `fh()` (khong con so 1080 / 1920 co dinh). Don vi px thiet ke = px tren CANH NGAN 1080
+  (Remotion `pxScale = min(W,H)/1080` — truoc la W/1080, khung ngang se phong chu 1.78 lan). Phu de rong 86% (doc)
+  / 70% (ngang) — `canvas.caption_frac` KHOP `look.ts captionFrac`.
+- AI biet khung ngang: `story.khung_hinh` (B2..B7, chu anh, do hoa anh — luong phu doc qua `canvas.note_for`),
+  ghi chu `canvas.note(step)` noi cuoi prompt R4 / R4-visual / R5 / FX-plan / FX-code, boi canh anh AI
+  `khung_video` + vai tro anh ben canh (asset_gen `_VAI_TRO_NGANG`), anh khong khai ti le -> 16:9. Khoa cache doi
+  theo (story / `canvas.keyed` cho FX-code). KHUNG DOC: khong them gi -> prompt, khoa cache, spec GIONG HET truoc
+  (da so spec tung byte ma cu vs moi).
+- Bo cuc khung ngang (`motion_design._landscape_scene`): split trai/phai (`panel_side`, `panel_ratio` = phan be
+  ngang), card = the A-roll ben phai (`card_x`), circle (`circle_x/y/d`, d <= 0.5) nam tron trong khung; KHONG
+  pop-out. Phu de split/card giu dai duoi.
+- Nguon khac chieu khung (vd video doc dien thoai -> khung ngang): clip fit 'blur' = contain giua nen mo;
+  `motion_design.fit_scale` / `clip_map` / `face_in_canvas` tinh mat theo contain (CHI khung ngang — khung doc giu
+  cach cu: nguon ngang tren khung doc van tinh mat theo cover, chua sua). Ban tach nguoi ve contain khi fit blur.
+- Test: `tests/test_landscape.py`, `tests/test_info_flow.py` [13] (route that, AI gia, ngang + doc). Render that
+  1920x1080 qua `STUDIO_REMOTION_RENDER` da kiem (nguon ngang + nguon doc).
+
 ## 10b. Thu vien phan tich video (sidecar/analysis_library.py, them 2026-09-26)
 
 Luu ket qua "Hieu nguon" (Gemini + gio loi noi Whisper) va "Video mau" (GPT/Codex) de lan sau
@@ -913,6 +937,14 @@ Media:      electron/services/media-server.ts (http 127.0.0.1 + token, ho tro Ra
   dau vao `~/.capcut-studio/remotion/node_modules/.remotion` (cwd cua worker).
 - Project Remotion luu cung `projects.json` voi `mode: "remotion"`, con tro rieng
   `currentRemotion`; truong `rmPlan`, `rmSpec`, `rmSummary`, `rmRender`.
+- Tang toc render CHI TREN MAC (2026-10-05): `chromiumOptions.gl='angle'` (Chrome ve bang GPU/Metal; mac dinh
+  Chrome Headless tu ve bang phan mem SwiftShader) + `hardwareAcceleration='if-possible'` (h264_videotoolbox).
+  Windows GIU CPU: tren win32 Remotion chon `h264_nvenc` (chi card NVIDIA) ma KHONG kiem tra may co card -> loi.
+  Render tang toc loi -> worker tu render lai bang CPU. Tat: `STUDIO_REMOTION_ACCEL=0`. Do tren M3 (45s dau video
+  1080x1920, 93 doan): CPU 388s -> GPU 273s (~30% nhanh hon), hinh nhu nhau (SSIM 0.985, do khac bo nen).
+  VideoToolbox mac dinh (khong khung B, khung I moi 0.4s) cho file to hon ~30% -> `ffmpegOverride` chen
+  `-q:v 70 -bf 2 -g 60` (Remotion cam CRF khi nen phan cung): 45s 81.6MB -> 50.5MB (x264 62.7MB), VMAF so x264
+  95.5 -> 96.0. Phong to 100% thi ban chip nen min da hon x264 mot chut (co tu truoc khi chinh q70).
 - Tuy chon `state.json`: `remotion_concurrency`, `remotion_license_key` (Remotion mien phi cho
   ca nhan / cong ty <= 3 nguoi; lon hon can license cua remotion.pro).
 - Tu kiem:
@@ -1039,6 +1071,179 @@ sau Cloudflare Access, email `dailongmedia.agency@gmail.com`). Bi mat o `~/.capc
 - **Test**: `license-server`: `npm test` (34 tinh huong, can `dev:api` + `dev:admin`); app: `tests/test_license.mts`
   (noi may chu thu; ma may Python == Electron; Python kiem ve), `tests/test_license_ticket.py` (vector RFC 8032 +
   cong chan route, khong can mang).
+
+### 13h. Menu "Tai nguyen" + KHO TEXT (mau chu dong tu preset CapCut, 2026-10-04)
+- Sidebar: "Kho am thanh" + "Kho meme" gop vao menu **Tai nguyen** (`src/pages/Resources.tsx`, 3 tab, tab nho
+  trong localStorage) — tab moi **Kho Text** (`src/pages/TextTemplates.tsx`).
+- LUAT: chu trong mau CHI LA CHU MAU (slot) — khi dung that, slot nhan loi noi that. Hien ro tren UI + prompt Gemini.
+- Du lieu: `~/.capcut-studio/text_templates/<id>/` (`template.json` + `preview.mp4` + `fonts/ audio/ assets/`),
+  chi muc `~/.capcut-studio/text_library.json` (`sidecar/text_lib.py`, `register_from_dir`). Route `/text/*`,
+  IPC `text:*`. Gemini XEM preview -> nhan (summary/style/energy/use_when/avoid_when/slot_roles/tags) qua
+  `_GEMINI_TEXT_TEMPLATE_PROMPT` (sua duoc o Prompt & quy tac).
+- Chuyen preset (may tac gia): `python sidecar/capcut_preset_import.py "<thu muc preset>" <thu muc mau> --id ...`
+  — doc `preset_draft/draft_content.json` (clip ghep long nhau) + goi Lumi (`LumiExportData.lua`: bang keyframe,
+  thanh truot `ae_sliderInfos` tinh dung `LumiParamsSetter`) -> spec du lieu (`remotion-src/textTemplate/spec.ts`).
+  Thanh phan chua ho tro -> BAO LOI, khong ve gan dung.
+- Ve: composition `TextTemplate` (`remotion-src/textTemplate/`): Canvas 2D + hieu ung tinh bang JS (khong GPU):
+  `deepGlow.ts` = port 1:1 shader LumiDeepGlow, `aeCurve.ts` = port AETools, `ae_trs_matte` = lop Lumi trs + luma
+  matte. Quy uoc CapCut DO TREN VIDEO XUAT THAT (preset LE VIP5-06): co chu = chieu cao DONG (ascent+descent
+  cua font) 6.21 px / 1 don vi font_size o khung rong 1080 (KHONG theo em — font viet tay dong cao -> chu nho);
+  toa do transform + mask: x = nua rong, y = nua cao, truc y huong LEN; mask elip vien mem = smoothstep
+  d=1-feather..1+feather. Ket qua: vi tri khop <1px, mask sai so 1.4%, glow dung cong thuc (quang sang +5-7%),
+  am thanh trung moc 0.02ms / 0.13dB. Bong + vien chu CHUA do (den tren nen den) — `DEFAULT_TUNE` tam.
+- Mo rong 2026-10-04 (8 preset LE VIP5 02/04/05/06/07/08/09/10 trong draft "1004", do tung khung voi video xuat that):
+  keyframe cong (FreeCurveIn/Out = bezier (thoi gian, gia tri), tay nam tuong doi), keyframe tren clip ghep,
+  chu nhieu kieu (runs) + chu nghieng (nghieng quanh TAM KHUNG NET MUC, italic_degree), letter_spacing (theo em),
+  chu dung global_alpha (bo clip.alpha cua lop chu), am thanh khuech dai >1 + fade, hoat anh clip kieu Transform.lua
+  ("Mo dan"), hieu ung "Mo" (2 luot 17 mau, blurSize = 4 x thanh truot) co keyframe, "Mo chrome" (nhoe huong tam +
+  tach mau, truc v cua GPU huong LEN), mask "Tach" (line) / "Cuon phim" (mirror) chep tu shader (u_diff = feather^2
+  — do), elip: nua do rong vien mem = 4.86 x feather^1.866 (do chung 2 preset). CapCut KHONG kern (bo kerning:
+  preset 09 sai khac 1.96 -> 0.93). Hoat anh chu co script MA HOA (.jsdat, vd "Kich ban xuat hien") va chinh mau
+  (brightness/contrast/highlight + duong cong) khong co cong thuc -> bang `KNOWN_CHAR_ANIMS` / `KNOWN_COLOR_ADJUST`
+  trong `capcut_preset_import.py` DO tren video; to hop chua do -> bao loi.
+  Kiem: `tests/test_capcut_preset_import.py`; khung thu so sanh + do o scratchpad (score.py / fit*.py) — chua dua vao repo.
+- Mo rong 2026-10-05 (goi LE VIP2, mau `levip2-01` "thị trường đang / THAY ĐỔI / Rất nhanh", do voi video CapCut that
+  `LE-VIP2-01.mov`, sai khac TB toan khung 0.71/255): (1) CLIP VIDEO THUONG trong preset -> importer trich KHUNG ANH
+  (chi doan thuc su hien, `frames/vN/0000.jpg|png`, vua khung "contain", .mov alpha cat sat vung co hinh) -> spec
+  `FramesNode` {type 'frames', seq: FrameSeq}; CapCut lay khung GAN NHAT (offset +0.5 — do tren net quet toc do 1.1);
+  hieu ung clip (vd "Phat sang 2" = deep_glow) + keyframe (nhap nhay alpha) nam o group boc. (2) MASK "Van ban" (chu lam
+  mask cho clip video) -> o chu THAT (slot) `TextNode.fillFrames` (chu to bang khung video, chu that thay vao van mang nen
+  video) + `emPx` (co theo EM: em = 0.8655 x text_config.scale, do) + `bold` (bold_width 1 = vien cung mau 0.0105 em moi
+  ben) + lech xuong 0.035 em; chu mau IN HOA -> `textCase: 'upper'`. (3) `border_color` RONG = KHONG vien (CapCut de
+  width 0.08 mac dinh; ve vien den lam chu viet tay thanh khoi den — do: 18 -> 7.6). (4) am luong clip ghep BOC NGOAI
+  nhan don vao tieng con (LE VIP2-01 boc 2.14 — khop tieng 0.988); tieng khong co file (path rong) -> bo + canh bao; tieng
+  cua clip video im lang -> bo, co tieng -> bao loi. (5) computeFit buoc NET MUC tinh khe theo TUNG KY TU chong nhau
+  theo chieu ngang (truoc: ca dong -> moc 'Ổ' nho len ngoai phan chu dong tren bi coi la "chong co chu dich", chu that
+  'TĂNG' de dau len 'giá vàng'). Chu mau -> bo cuc y het truoc (9 mau cu: fit vs khong fit sai khac 0).
+  Sidecar `text_tpl`: `_hits` / `missing_glyphs` chi lay node `text`; `_line_px` theo emPx. App cu: geometry loi ->
+  catalog bo mau (an toan) — muon dung phai build + cai ban moi. So sanh: `work/capcut-presets-LEVIP2/`.
+- Dong bo: `library_sync.py` + `publish-library.mjs` them `texts` (1 muc = nhieu file, R2 `texts/<id>/<path>`);
+  `license-server/src/api.js` ky link tam cho tung file (`/v1/lib/texts/<id>/<path>`, chan `..`). Smoke 40 ok.
+- Bay: ffmpeg trich khung video CapCut phai `scale=in_color_matrix=bt709` (mac dinh BT.601 lech mau);
+  Remotion ma hoa AAC lam tieng TRE ~43ms (WAV thi dung) — anh huong moi video app xuat, chua sua.
+
+### 13i. KHO TEXT KHI LAP KE HOACH — kiem kho truoc, chu anh AI sau (2026-10-04, `sidecar/text_tpl.py`)
+- User: moi cum chu noi bat (lop chu R4, caption hero / hook) phai KIEM KHO TEXT TRUOC; mau hop boi canh -> dung NGUYEN
+  mau (hoat canh + font + hieu ung + am thanh), chi THAY CHU + xep cho khong vo bo cuc; khong mau nao hop moi tao chu
+  anh AI. Buoc **TXT-lib** (Claude) chay sau R5, TRUOC TXT-art; cum dung mau bi loai khoi TXT-art (khong tao anh).
+  Kho trong / chua gan nhan -> buoc khong chay (nhu cu). Brand Guideline ep font / ma mau -> khong dung mau (pha thuong hieu).
+- AI de xuat, CODE QUYET (`text_tpl.check_choice`): cac o doc theo THU TU DOC cua mau (`geometry` + `reading_order`: tren
+  -> duoi, trai -> phai, do o khung "day du nhat" = nhieu o cung hien nhat; chu cai lon drop cap (o mau <= 2 ky tu) doc
+  cung tu ben phai; bo cuc bac thang = 2 dong) ghep lai = DUNG nguyen chu cua cum (giu dau tieng Viet, chi doi hoa/thuong +
+  bo dau cau) + dung thu tu LOI NOI (so voi cau dang noi); moi o co chu; font cua o du ky tu (PIL so voi glyph .notdef);
+  co chu sau khi vua o >= `MIN_FIT` 60%; moi mau <= `MAX_USES` 2 lan / video. Sai -> AI sua 1 luot (kem loi) -> van sai
+  thi cum do di chu anh AI. Prompt `_TEXT_LIB_SYSTEM` (sua duoc, `own_key` -> khong doi van tay chung; khoa rieng
+  `prompt_fp`). AI nhan nhan mau + vai tro / thu tu doc / so ky tu tung o (chu mau chi de minh hoa, KHONG gui duong dan).
+- plan["text_lib"]["items"][key] = {template, texts {slot: chu}, tiers, src (lop R4 idx / caption / hook), ly_do, fit}.
+  `text_art.lockups_from(meta=True)` tra kem `src`; meta=False giu NGUYEN dang cu (khoa cache TXT-art).
+- Dung (build_spec): `MD.text_lib_layers` (trong layers_to_spec, truoc _avoid_faces): bo cac lop chu + nen chu (box cung
+  group) cua cum -> 1 lop spec **`tpl`** {x, y = tam khoi chu mau tren khung; w, h = khoi chu; scale; tpl = template.json;
+  tplDir; texts; tplBox (px mau)}, vao luc lop dau cua cum, dai = do dai mau. Chu cum doi so voi luc chon -> giu chu code.
+  `MD.text_lib_captions`: caption hero / hook -> lop tpl o vi tri caption. protect_face / phu de ne theo w / h
+  (`_GUARD_TYPES`, `_guard_box`, `_scale_layer`, `_layer_band`). Lop tpl KHONG ne duoc mat (ca than video, khong chi
+  hook — mau 07 drop cap khoi 0.9 x 0.45 khung de len mat) -> protect_face BO -> `build_spec` dung lai voi cum do la chu
+  thuong + report `tpl_lost` -> autoplan TAO BU CHU ANH AI cho dung cac cum do (step TXT-art khoa rieng) roi dung lai.
+  `MD.separate_tpl_overlaps` (sau separate_group_overlaps): to hop chu khac hien cung luc de len mau -> trung chu thi
+  bo, vao sau >= 0.3s thi mau tat, con lai dich ra ngoai khoi mau. Plan khong co text_lib -> spec giong het truoc.
+- Sua sau khi xem bang mat (10-04 toi, build 20261004-2023-full): (1) khoi mau = NET CHU THAT cua chu thay vao da fit
+  (`text_tpl.ink_box`, PIL getbbox) thay vi dong font — drop cap dong cao gap ~2 lan net (mau 07: 0.90x0.45 -> ~0.78x0.22);
+  (2) `MD._face_rect` gioi han trong o A-roll (+ popout) o bo cuc split / card / circle — mat quay can cong tran lan len
+  vung B-roll (loi cu, anh huong MOI loai chu); (3) lop tpl che mat toi da `FACE_TPL_MAX` 5% (khoi to + glow) -> doi cho /
+  thu nho toi 42% -> khong duoc thi tao chu anh AI; (4) `dodge_subtitles` tinh ca tpl (phu de ne, caption hero trung gio
+  bo); (5) `separate_tpl_overlaps`: to hop TRUNG CHU trung GIO voi mau -> bo du o cho khac tren khung.
+- TIENG MAU: `text_tpl.premix` tron moi clip (gio, cat, khuech dai > 1, fade) thanh 1 WAV dinh -1 dBFS
+  (`~/.capcut-studio/cache/texttpl/`) -> `layer_sfx` 1 muc `_tpl` (+ `_text`, `_from_layer`) -> `mix_sfx` can theo giong
+  noi nhu tieng khi chu hien; KHONG bi luat "dung chung tieng" bo; spec audio `layer` = id lop (lop bo -> tieng bo theo).
+- Renderer: `Layers.tsx` `TplLayer` (Sequence + premount nhu lop video) ve `TextTemplate` voi `fit muted fileUrl`
+  (font / anh qua may chu media — them duoi .ttf/.otf/.woff). `TextTemplate.computeFit`: chu that <= be ngang chu mau
+  cua o (co lai, phong toi da `FIT_GROW_MAX` 1.12); cac o CUNG DONG (cao tuong duong, sat nhau) chia chung be ngang dong
+  + xep lai voi khe cu (cung dong = cao tuong duong, chong doc >= 50%, khe < 1.2 dong); o le NEO vao o ben canh (hang
+  xom trai -> giu mep trai, duoi -> giu mep duoi...); NET MUC (dau chong ấ ầ cao hon dong font): 2 o chong ngang phai
+  cach >= 6% dong (mau chong net co chu dich > 25% dong thi giu muc cua mau) -> day o nho hon CA DONG ra xa; ca to hop
+  ve tam cu; dich man hinh -> khung group cua tung node (nghich dao ma tran). Python `text_tpl.fit_scales` KHOP.
+- Do that (du an r_murux9ufhtuad4, phong van sẹo rỗ, lap lai plan 10-04 bang Claude ~27 phut): TXT-lib xet 13 cum, AI
+  chon 4 (05 x2, 07 x2) + ly do bo 9 cum (1 tu 'HAY', co so '2-3 ngày', mau hop da dung du 2 lan...); 2 mau 07 de len
+  mat -> tao bu chu anh AI -> ket qua 2 cum mau + 11 cum chu anh AI. Thu tu doc dung ca 8 mau. Han che: mau khong tu doi
+  mau theo nen (khong qua ensure_legible); render khung co mau cham hon (glow / mask tinh bang JS tren khung 1080x1920).
+- Test: `tests/test_text_tpl.py` (35 muc, AI gia). Kiem bang mat: render `TextTemplate` voi `texts` + `fit` (so voi
+  `fit: false`) va render cua so spec AutoEdit.
+
+### 13j. MAU CHU TU THIET KE (khong tu preset CapCut) — `capcut-ai-studio/text-designs/` (2026-10-04)
+- User dua ANH bo cuc -> thiet ke mau moi cung chuan Kho Text: `design_<id>.py` (so do + chuyen dong + am thanh) ->
+  `python text-designs/design_<id>.py [thu muc]` ghi `~/.capcut-studio/text_templates/<id>/` (template.json + fonts OFL +
+  audio WAV tong hop numpy) -> render preview (`render.mjs ... --video`) -> `text_lib.register_from_dir` -> Gemini gan nhan
+  (engine.text_label_with_ai) -> NGUOI DUYET nhan (energy / slot_roles sai thi sua bang text_update).
+- KHONG DAT TAY: font / co / vi tri / gian chu lay bang DO TUONG QUAN tung thanh phan voi anh mau (scratch fit: dung
+  thu tung font + co + lech + gian chu, chon tuong quan cao nhat). Bay da gap: chu nghieng trong anh co the la font THANG
+  nghieng gia lap (TK-01 "TAM TRANG": Italic that tuong quan 0.67, Regular thang nghieng 11 do = 0.948) -> thu ca hai.
+- SO SANH DOI CHIEU: `python text-designs/compare.py design_<id>` -> render khung nghi tren mau nen anh mau, cat dung vung,
+  ha ve do phan giai anh mau -> `.compare/<id>/compare.png` (mau | ban dung | ha phan giai | chong do/xanh) + report.json
+  (lech 4 canh tung thanh phan, tuong quan). TK-01: tuong quan toan khung 0.982, thanh phan lech <= 2 px anh mau.
+- Renderer mo rong (spec.ts / TextTemplate.tsx), mau cu KHONG doi (truong moi deu tuy chon):
+  `ShapeNode` (rect / sparkle) khung BAM o chu cung group qua `SlotRef` {slot, edge l|r|cx|t|b|cy|base|inkT|inkB, off}
+  o VI TRI NGHI cua chu sau computeFit (hop sau chu, gach ke tu sau chu nay toi het chu kia — chu that dai / ngan thi
+  hinh di theo; `minWidth` het cho thi an); `reveal` (lo dan trai / phai / giua, mep mem) cho chu + hinh; `colorSweep`
+  (mau `from` -> fill theo vet quet nghieng + vet sang); `textCase: 'upper'`; spec `readingOrder` (thu tu doc khai bao —
+  doan theo hinh sai voi so to canh 2 dong); slot `accept: 'number'` (code loai chu khong phai so) + `room` (chu that
+  rong toi room x chu mau truoc khi co: "10" thay "3").
+- Sidecar `text_tpl.py`: `_hits` chi lay node chu (hinh rieng), `_text_frame` / `_shape_box` -> khoi chu (geometry box,
+  ink_box) GOM hinh; `_shown` in hoa khi do; check_choice kiem `accept`; catalog gui `chi_nhan: con so`. App cu gap mau
+  co hinh: geometry loi -> catalog BO mau (AI khong thay) -> an toan, nhung muon dung phai cai ban moi.
+- TK-01 (`tk-01-3buoc`, 3.6s): "3" dap nhu con dau (vut + thump), "bước" hien theo net but + gach ke keo dai (sot soat),
+  "TẮM TRẮNG" truot vao mau da ram -> vet sang quet thanh trang + tia lap lanh (chuoi ting), hop trang bung tu giua (pop),
+  "ngay tại nhà!" nay len (chuong cua ding-dong), 3.3s ca khoi mo. Test: `tests/test_text_tpl.py` muc [7].
+
+### 13k. KHO HIEU UNG TU VIET — dong goi, dung lai, kho chung co duyet (2026-10-05, `sidecar/fx_lib.py`)
+
+User: hieu ung Claude viet code (plan.fx, FX-code / Hook-FX-plan; KHONG gom anh AI / chu anh AI / mau Kho Text) chi dung 1
+lan la lang phi -> tu dong goi vao kho, Gemini mo ta, day len kho chung R2; video sau kiem kho truoc, dung lai / sua nhe.
+Rang buoc: KHONG lam cham tao video. User chon (10-05): MOI may gui len kho chung, may tac gia tu duyet, may khach CHO DUYET
+(hop cach ly Node vm KHONG phai ranh gioi bao mat -> code tu may khach co the la code thoat vm, phai qua nguoi xem).
+
+- DUNG LAI khi lap plan — KHONG them luot AI: FX-plan giu nguyen (ngu canh truoc, cache cu dung lai). `fx_lib.candidates_for`
+  (code, ms): cung loai overlay/transform, khung dung duoc (`works`), do dai trong 0.5-2x, cosine tf-idf (tu + cap tu, bo dau)
+  giua visual/goal/sync cua hieu ung moi va nhan Gemini + thiet ke goc; <= 3 ung vien / hieu ung, <= 6 / lo; bo muc sinh tu
+  CHINH du an dang lap (autoplan nhan `project`), muc tat, chat luong 1, `needs_face` khi video khong co mat. Gop vao FX-code:
+  hieu ung co ung vien nhan `kho_ung_vien` (mo ta + CODE) + prompt `_FX_REUSE_NOTE` (own_key); AI tra `reuse: lib_id` (khong
+  code, mau / cuong do qua params) | `from: lib_id` + code sua nhe | code moi. Id la (khong nam trong ung vien) -> bo. Code kho
+  van qua hop cach ly voi mat / vung chu cua video MOI + FX-fix (sua -> thanh `adapt`). plan.fx[i].lib = {id, mode, name}.
+  KHO TRONG / KHONG UNG VIEN -> system prompt + payload + khoa cache FX-code Y HET truoc (test [3]). Co ung vien -> khoa them
+  `kho` (id + bam code ung vien + van tay prompt).
+- DONG GOI sau khi RENDER XONG (RemotionStudio runRender -> `harvestAfterRender`): `/fxlib/harvest` -> `fx_lib.harvest`
+  (khong AI): id = "fx-" + sha1(kind + code chuan hoa)[:12] (KHOP license-server `fxIdOf`), trung code -> chi tang `uses`
+  (moi du an 1 lan); reuse -> dem cho muc goc; adapt -> muc moi co `parent`. Kiem DI DONG trong hop cach ly (mat giua / mat
+  lech + vung chu / khong mat; khung doc + ngang): hong o chinh khung video -> khong dong goi; chi hong khi khong mat ->
+  `needs_face`. Luu `~/.capcut-studio/fx_library.json` + `fx_effects/<id>/code.js`. `design` (context / why_fit co trich loi
+  noi) + `projects` CHI o may nay, khong bao gio gui di.
+- VIEC NEN (`src/lib/fxHarvest.ts`, chay khi mo app + sau dong goi, moi lan 1 viec): (1) preview — lan render UU TIEN THAP
+  (`jobQueue.acquireIdle`: video bam sau van chen truoc) -> IPC `fxlib:renderPreview` -> `fx_lib.preview_job` ve khung voi mat
+  mau vao cache/fx -> composition `FxPreview` (remotion-src/FxPreview.tsx: nen trung tinh + bong nguoi gia, KHONG hinh video
+  that) render 540x960 khong tieng (`startRender` opts compositionId/scale/muted) -> fx_effects/<id>/preview.mp4 (~2-10s);
+  (2) Gemini (`_GEMINI_FX_PROMPT`, own_key, lan gemini uu tien thap, 4 / luot, step Gemini-fx) -> nhan tong quat (name,
+  summary, visual, use_when, avoid_when, moods, moments, placement, energy, tags, quality 1-5). Gemini loi CHUNG (chua dang
+  nhap / mat mang) -> khong danh dau muc, dung trong phien, lan mo app sau thu lai; (3) gui kho chung neu quality >= 3.
+  Trang thai tung muc trong fx_library.json -> tat app giua chung lam tiep. Loi rieng muc -> nut "Thu lai".
+- KHO CHUNG (license-server): `POST /v1/fx/upload` multipart (p ky khoa thiet bi, chu ky phu sha256 meta + code + preview;
+  key dang dung + DUNG may da gan; id phai = bam code; meta loc bang `cleanMeta`; <= 60 muc / key / ngay; trung id -> tra
+  trang thai, khong ghi de). R2 `fx/<id>/{code.js,preview.mp4}` + D1 `fx_items` (pending / approved / rejected) +
+  `trusted_licenses` (may tin cay -> tu duyet). Manifest `op=library` them `fx` = muc approved tu D1 (KHONG nam trong
+  library-manifest.json -> publish-library.mjs khong dung). Tai `/v1/lib/fx/<id>/<file>` chi muc approved. App:
+  `license.fxUpload` (net.fetch FormData) qua IPC `fxlib:share`; loi tam (mat mang / gioi han) -> thu lai lan sau.
+- Trang quan tri: tab "Kho hiệu ứng" (xem preview `/media/fx/<id>/preview.mp4`, xem code, Duyệt / Từ chối / Gỡ khỏi kho —
+  tu choi xoa file R2, giu dong de gui lai van rejected); trong chi tiet key: "Đặt máy tin cậy (hiệu ứng tự duyệt)".
+- Dong bo: `library_sync.pull` -> `fx_lib.merge_shared`: tai + kiem SHA-256, kiem lai id = bam code; muc cua chinh may nay ->
+  chi danh dau approved; muc chung bi go khoi manifest -> xoa o may nay (muc local khong bao gio xoa).
+- UI: Tai nguyen -> tab "Kho hiệu ứng" (src/pages/FxLibrary.tsx): preview, nhan, trang thai, so lan dung, Gemini xem lai, tat /
+  bat, xoa, thu lai, dong bo.
+- Test: `tests/test_fx_lib.py` (dong goi, ung vien, FX-code kho trong y het cu / reuse / adapt / id la / FX-fix, preview,
+  Gemini, goi cong khai, merge, own_key), `tests/test_job_queue.mts` [6] acquireIdle, license-server `npm test` (muc "Kho hieu
+  ung chung", 23 ca). Da kiem: render FxPreview that (overlay + transform), app that (HOME + user-data-dir tam) tu dung
+  preview qua worker Remotion khi mo app, net.fetch multipart toi server local.
+- DA TRIEN KHAI 2026-10-05: D1 remote them fx_items + trusted_licenses; deploy agent-edit-license + agent-edit-admin (admin
+  co them R2 LIB); key L6b49b2c91490d05839 (…KFHEN, may Long-Macbook-Air cua tac gia) = may tin cay. Cai /Applications ban
+  20261005-1100-full (selftest 21/21), ban truoc ~/.capcut-studio/app-backup-20261005-110422. App cu khong gui / nhan muc fx.
+  BAY: selftest-packaged chay Python nhung -> GHI .pyc vao release/mac-arm64/*.app -> chu ky ad-hoc hong ("sealed resource
+  is missing"); cai tu file .dmg (dong goi truoc selftest), kiem `codesign --verify --deep`.
 
 ### 13f. May moi: ffmpeg nhung + mac dinh AI = CLI subscription (2026-10-01)
 

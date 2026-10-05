@@ -75,6 +75,15 @@ tr.click:hover td{background:#FFFAF5}
 .inline>*{flex:1}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:10px;display:none;z-index:20}
 .hide{display:none}
+.fxgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.fx{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;display:flex;flex-direction:column}
+.fx video{width:100%;aspect-ratio:9/16;max-height:340px;background:#15171c;object-fit:contain;display:block}
+.fx .body{padding:10px;display:flex;flex-direction:column;gap:4px;flex:1}
+.fx .name{font-weight:600}
+.fx .tags{display:flex;flex-wrap:wrap;gap:4px}
+.fx .acts{display:flex;gap:6px;margin-top:auto;padding-top:8px}
+.fx .acts .btn{flex:1;padding:7px 0}
+pre.code{white-space:pre-wrap;word-break:break-word;font-size:12px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;max-height:70vh;overflow:auto}
 @media (max-width:900px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}.hide-sm{display:none}}
 </style>
 </head>
@@ -114,6 +123,7 @@ tr.click:hover td{background:#FFFAF5}
       <div class="tabs">
         <button data-tab="keys" class="on">Danh sách key</button>
         <button data-tab="events">Nhật ký</button>
+        <button data-tab="fx">Kho hiệu ứng <span class="badge b-warn hide" id="fxPend"></span></button>
       </div>
       <div id="tab-keys">
         <div class="toolbar">
@@ -133,6 +143,18 @@ tr.click:hover td{background:#FFFAF5}
         </table>
       </div>
       <div id="tab-events" class="hide"></div>
+      <div id="tab-fx" class="hide">
+        <div class="toolbar">
+          <select id="fxStatus" style="width:auto">
+            <option value="pending">Chờ duyệt</option>
+            <option value="approved">Đã duyệt (đang phát cho mọi máy)</option>
+            <option value="rejected">Đã từ chối</option>
+          </select>
+          <span class="sub" style="align-self:center">Hiệu ứng code do AI viết ở máy khách. Xem preview + code trước khi duyệt —
+            code đã duyệt sẽ chạy trên mọi máy (trong hộp cách ly).</span>
+        </div>
+        <div class="fxgrid" id="fxList"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -149,7 +171,9 @@ const EV = {
   activate_new: 'Kích hoạt lần đầu', activate: 'Kích hoạt (cùng máy)', rekey: 'Cài lại trên cùng máy', check: 'Mở app / phân tích video',
   library: 'Đồng bộ kho', other_machine: 'MÁY KHÁC thử dùng key', reject_locked: 'Bị chặn: key đã khoá', reject_expired: 'Bị chặn: hết hạn',
   auto_lock: 'TỰ KHOÁ', admin_create: 'Tạo key', admin_lock: 'Quản trị khoá', admin_unlock: 'Quản trị mở khoá', admin_reset: 'Quản trị reset máy',
-  admin_extend: 'Gia hạn', admin_set_expiry: 'Đặt ngày hết hạn', admin_update: 'Sửa thông tin'
+  admin_extend: 'Gia hạn', admin_set_expiry: 'Đặt ngày hết hạn', admin_update: 'Sửa thông tin',
+  fx_upload: 'Gửi hiệu ứng vào kho chung', admin_fx_approve: 'Duyệt hiệu ứng', admin_fx_reject: 'Từ chối hiệu ứng',
+  admin_trust: 'Đặt máy tin cậy (hiệu ứng tự duyệt)', admin_untrust: 'Bỏ máy tin cậy'
 }
 const fmtDate = (ms) => (ms ? new Date(ms).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '')
 const fmtTime = (ms) => (ms ? new Date(ms).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' }) : '')
@@ -256,6 +280,8 @@ function renderDrawer({ license: l, events }) {
       <div>Máy đang gán</div><div>${l.bound ? `${osName(l.platform)} · ${esc(l.hostname)} · app v${esc(l.app_version)}` : '—'}</div>
       <div>Lần dùng cuối</div><div>${fmtTime(l.last_seen_at) || '—'}${l.last_ip ? ` <span class="sub">${esc(l.last_ip)} ${esc(l.last_country)}</span>` : ''}</div>
       <div>Máy khác thử dùng</div><div>${l.conflicts ? `<b style="color:var(--warn)">${l.conflicts} lần</b>` : '0'}</div>
+      <div>Kho hiệu ứng</div><div>${l.trusted ? '<span class="badge b-ok">Máy tin cậy — hiệu ứng tự duyệt</span>' : '<span class="sub">Hiệu ứng gửi lên chờ duyệt</span>'}
+        <div class="sub">${['pending', 'approved', 'rejected'].map((k) => `${{ pending: 'chờ', approved: 'đã duyệt', rejected: 'từ chối' }[k]} ${(l.fx || {})[k] || 0}`).join(' · ')}</div></div>
       <div>Liên hệ</div><div>${esc(l.contact) || '—'}</div>
       <div>Ghi chú</div><div style="white-space:pre-wrap">${esc(l.note) || '—'}</div>
       <div>Tạo lúc</div><div>${fmtTime(l.created_at)}</div>
@@ -264,6 +290,7 @@ function renderDrawer({ license: l, events }) {
       ${l.status === 'locked' ? '<button class="btn ok" data-a="unlock">Mở khoá</button>' : '<button class="btn danger" data-a="lock">Khoá key</button>'}
       ${l.bound ? '<button class="btn" data-a="reset">Reset máy (cho đổi máy)</button>' : ''}
       ${!l.activated_at && !l.bound ? '<button class="btn danger" data-a="delete">Xoá key</button>' : ''}
+      ${l.trusted ? '<button class="btn" data-a="untrust">Bỏ máy tin cậy</button>' : '<button class="btn" data-a="trust">Đặt máy tin cậy (hiệu ứng tự duyệt)</button>'}
     </div>
     <div class="card">
       <h2>Gia hạn / đổi gói</h2>
@@ -310,6 +337,8 @@ async function act(l, a) {
   } else if (a === 'set_expiry') {
     const v = $('#exDate').value
     body = { expires_at: v ? new Date(v + 'T23:59:59').getTime() : null }
+  } else if (a === 'trust') {
+    if (!confirm('Hiệu ứng từ máy của key này sẽ TỰ DUYỆT và phát cho mọi máy, không qua bạn xem. Chỉ dùng cho máy của bạn. Tiếp tục?')) return
   } else if (a === 'update') {
     body = { customer: $('#edCustomer').value, contact: $('#edContact').value, note: $('#edNote').value }
   }
@@ -329,17 +358,77 @@ async function loadEvents() {
     ${e.detail ? `<div class="sub">${esc(e.detail)}</div>` : ''}</div>`).join('') : '<div class="empty">Chưa có</div>'
   document.querySelectorAll('#tab-events .ev').forEach((el) => (el.onclick = () => el.dataset.id && openLicense(el.dataset.id)))
 }
+// ---------- Kho hieu ung chung (duyet) ----------
+const ENERGY = { nhe: 'nhẹ', vua: 'vừa', manh: 'mạnh' }
+async function loadFx() {
+  const st = $('#fxStatus').value
+  const { items, counts } = await api('/api/fx?status=' + st)
+  const pend = (counts || {}).pending || 0
+  $('#fxPend').textContent = pend
+  $('#fxPend').classList.toggle('hide', !pend)
+  $('#fxList').innerHTML = items.length ? items.map((x) => {
+    const lb = (x.meta && x.meta.label) || {}
+    const works = x.meta && x.meta.works ? Object.entries(x.meta.works).filter(([, v]) => v).map(([k]) => (k === 'portrait' ? 'dọc' : 'ngang')).join(' + ') : ''
+    return `<div class="fx" data-id="${esc(x.id)}">
+      <video src="/media/fx/${esc(x.id)}/preview.mp4" muted loop playsinline preload="metadata" onmouseenter="this.play()" onmouseleave="this.pause()"></video>
+      <div class="body">
+        <div class="name">${esc(lb.name) || esc(x.id)}</div>
+        <div class="sub">${x.kind === 'transform' ? 'Biến đổi khung' : 'Lớp phủ'} · ${esc(works)} · ${ENERGY[lb.energy] || ''} · chất lượng ${esc(lb.quality ?? '?')}/5</div>
+        <div>${esc(lb.summary)}</div>
+        ${lb.use_when ? `<div class="sub">Dùng khi: ${esc(lb.use_when)}</div>` : ''}
+        <div class="tags">${(lb.tags || []).map((t) => `<span class="badge b-mute">${esc(t)}</span>`).join('')}</div>
+        <div class="sub">${esc(x.customer || '')} …${esc(x.key_hint || '')} ${esc(x.hostname || '')} · ${fmtTime(x.created_at)}${x.decided_by ? ` · ${esc(x.decided_by)}` : ''}</div>
+        ${x.note ? `<div class="sub">Ghi chú: ${esc(x.note)}</div>` : ''}
+        <div class="acts">
+          <button class="btn" data-fa="code">Code</button>
+          ${x.status !== 'approved' && x.status !== 'rejected' ? '<button class="btn ok" data-fa="approve">Duyệt</button>' : ''}
+          ${x.status === 'rejected' ? '' : '<button class="btn danger" data-fa="reject">' + (x.status === 'approved' ? 'Gỡ khỏi kho' : 'Từ chối') + '</button>'}
+        </div>
+      </div></div>`
+  }).join('') : '<div class="empty">Không có hiệu ứng nào</div>'
+  document.querySelectorAll('#fxList .fx').forEach((card) => card.querySelectorAll('[data-fa]').forEach((b) => (b.onclick = () => fxAct(card.dataset.id, b.dataset.fa))))
+}
+async function fxAct(id, a) {
+  try {
+    if (a === 'code') {
+      const { code } = await api(`/api/fx/${id}/code`)
+      const d = $('#drawer')
+      d.innerHTML = `<div style="display:flex;align-items:center;gap:8px"><h3>Code ${esc(id)}</h3><button class="btn" style="margin-left:auto" id="xClose">Đóng</button></div>
+        <div class="sub" style="margin:6px 0 10px">Chạy trong hộp cách ly (Node vm, không require / process / mạng). Từ chối nếu thấy cố truy cập ngoài API vẽ.</div>
+        <pre class="code">${esc(code)}</pre>`
+      d.classList.add('open'); $('#dbg').classList.add('open'); $('#xClose').onclick = closeDrawer
+      return
+    }
+    let note = ''
+    if (a === 'reject') {
+      const r = prompt('Lý do từ chối / gỡ (tuỳ chọn):', '')
+      if (r === null) return
+      note = r
+    }
+    await api(`/api/fx/${id}/${a}`, { note })
+    toast(a === 'approve' ? 'Đã duyệt — máy khác nhận khi đồng bộ kho' : 'Đã từ chối')
+    loadFx()
+  } catch (e) { toast(e.message) }
+}
+$('#fxStatus').onchange = () => loadFx().catch((e) => toast(e.message))
+
 document.querySelectorAll('.tabs button').forEach((b) => (b.onclick = () => {
   document.querySelectorAll('.tabs button').forEach((x) => x.classList.toggle('on', x === b))
   $('#tab-keys').classList.toggle('hide', b.dataset.tab !== 'keys')
   $('#tab-events').classList.toggle('hide', b.dataset.tab !== 'events')
+  $('#tab-fx').classList.toggle('hide', b.dataset.tab !== 'fx')
   if (b.dataset.tab === 'events') loadEvents()
+  if (b.dataset.tab === 'fx') loadFx().catch((e) => toast(e.message))
 }))
 
 $('#q').oninput = () => { clearTimeout(qTimer); qTimer = setTimeout(loadList, 250) }
 $('#status').onchange = loadList
 api('/api/me').then((r) => ($('#who').textContent = r.email)).catch(() => {})
 loadList().catch((e) => toast(e.message))
+api('/api/fx?status=pending').then(({ counts }) => {
+  const n = (counts || {}).pending || 0
+  $('#fxPend').textContent = n; $('#fxPend').classList.toggle('hide', !n)
+}).catch(() => {})
 </script>
 </body>
 </html>

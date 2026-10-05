@@ -18,6 +18,7 @@ import os
 import shutil
 import subprocess
 
+import canvas as CV
 import creative
 import prompt_store
 import providers
@@ -331,8 +332,9 @@ def sanitize_plan(res, moments, changes):
     return out
 
 
-def _avoid_from_moments(e, moments, W=1080, H=1920):
+def _avoid_from_moments(e, moments, W=None, H=None):
     """Vung chu (px) trong khoanh khac cua hieu ung — de luot kiem chay voi ctx.avoid giong luc dung."""
+    W, H = W or CV.size()[0], H or CV.size()[1]
     out = []
     for m in moments or []:
         if m.get("source_id") != e.get("source_id") or not providers._overlap(m["src_start"], m["src_end"], e["src_start"], e["src_end"]):
@@ -345,7 +347,8 @@ def _avoid_from_moments(e, moments, W=1080, H=1920):
     return out[:12]
 
 
-def _check_payload(e, faces, palette, W=1080, H=1920, fps=30, moments=None):
+def _check_payload(e, faces, palette, W=None, H=None, fps=30, moments=None):
+    W, H = W or CV.size()[0], H or CV.size()[1]
     fc = (faces or {}).get(e.get("source_id")) or next(iter((faces or {}).values()), None)
     face = {"x": round(fc["cx"] * W, 1), "y": round(fc["cy"] * H, 1), "w": round(fc.get("w", 0.35) * W, 1),
             "h": round(fc.get("h", 0.25) * H, 1)} if fc else None
@@ -371,17 +374,22 @@ def gpt_fx_plan(moments, story=None, style=None, sources=None, existing=None, lo
         log("FX-plan: %s de xuat hieu ung tu boi canh %d khoanh khac..." % (providers.plan_ai_name(), len(moments)))
     text = providers.plan_chat([
         {"role": "system", "content": _p("_FX_PLAN_SYSTEM") + hook_rule.luat("FX") + creative.luat("FX")
-         + (("\n\n" + note) if note else "")},
+         + CV.note("fx") + (("\n\n" + note) if note else "")},
         {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
     ], json_mode=True, max_tokens=12000, temperature=0.5, req_timeout=300, max_attempts=2, step_label=step_label)
     return providers._safe_json(text)
 
 
-def gpt_fx_code(effects, fix=None, log=None, brand=None):
-    """effects: hieu ung da loc (khong code). fix: {id: {"code", "errors"}} -> luot sua. Tra {id: {code, fit_check}}."""
+def gpt_fx_code(effects, fix=None, log=None, brand=None, cands=None):
+    """effects: hieu ung da loc (khong code). fix: {id: {"code", "errors"}} -> luot sua. Tra {id: {code, fit_check}}.
+    cands (Kho hieu ung, fx_lib.candidates_for): {id: [muc kho]} -> hieu ung co ung vien nhan kem "kho_ung_vien";
+    AI tra {"reuse": lib_id} (dung nguyen, khong code) / {"from": lib_id, "code"} (sua nhe) / code moi.
+    Lo khong co ung vien nao -> system prompt + payload y nhu truoc."""
+    import fx_lib
     out = {}
     for i in range(0, len(effects), CODE_BATCH):
         part = effects[i:i + CODE_BATCH]
+        part_cands = fx_lib.limit_batch(cands, [e["id"] for e in part]) if (cands and not fix) else {}
         rows = []
         for e in part:
             r = {k: e.get(k) for k in ("id", "kind", "layer", "context", "goal", "why_fit", "visual", "sync", "params")}
@@ -389,15 +397,22 @@ def gpt_fx_code(effects, fix=None, log=None, brand=None):
             if fix and e["id"] in fix:
                 r["code_truoc"] = fix[e["id"]].get("code")
                 r["loi_can_sua"] = fix[e["id"]].get("errors")
+            if part_cands.get(e["id"]):
+                r["kho_ung_vien"] = [fx_lib.prompt_view(c) for c in part_cands[e["id"]]]
             rows.append(r)
         if log:
-            log("%s: %s viet code %d hieu ung..." % ("FX-fix" if fix else "FX-code", providers.plan_ai_name(), len(part)))
+            log("%s: %s viet code %d hieu ung%s..." % (
+                "FX-fix" if fix else "FX-code", providers.plan_ai_name(), len(part),
+                " (%d co ung vien trong Kho hieu ung)" % len(part_cands) if part_cands else ""))
         import brand_guide
         user = {"effects": rows}
         if brand_guide.view(brand, "fx"):
             user["brand_guideline"] = brand_guide.view(brand, "fx")
+        system = _p("_FX_CODE_SYSTEM") + brand_guide.rule_text(brand, "fx") + CV.note("fx")
+        if part_cands:
+            system += "\n\n" + fx_lib._p("_FX_REUSE_NOTE")
         text = providers.plan_chat([
-            {"role": "system", "content": _p("_FX_CODE_SYSTEM") + brand_guide.rule_text(brand, "fx")},
+            {"role": "system", "content": system},
             {"role": "user", "content": json.dumps(user, ensure_ascii=False)},
         ], json_mode=True, max_tokens=16000, temperature=0.3, req_timeout=300, max_attempts=2,
             step_label="FX-fix" if fix else "FX-code")
@@ -405,14 +420,49 @@ def gpt_fx_code(effects, fix=None, log=None, brand=None):
         got = [x for x in (res or {}).get("effects") or [] if isinstance(x, dict)]
         for j, x in enumerate(got):
             fid = x.get("id") if x.get("id") in {e["id"] for e in part} else (part[j]["id"] if j < len(part) else None)
-            if fid:
-                out[fid] = {"code": str(x.get("code") or ""), "fit_check": x.get("fit_check") or {}}
+            if not fid:
+                continue
+            row = {"code": str(x.get("code") or ""), "fit_check": x.get("fit_check") or {}}
+            ok_ids = {c["id"] for c in part_cands.get(fid) or []}
+            if x.get("reuse") in ok_ids and not row["code"]:
+                row["reuse"] = x["reuse"]
+                if isinstance(x.get("params"), dict):
+                    row["params"] = x["params"]
+            elif x.get("from") in ok_ids and row["code"]:
+                row["from"] = x["from"]
+            elif x.get("reuse") and not row["code"]:
+                row["reuse_bad"] = str(x.get("reuse"))[:40]
+            out[fid] = row
     return out
 
 
-def build_effects(plan_res, moments, faces, palette, step, changes, log=None, emit=None, brand=None):
+def _lib_params(base, got):
+    """params AI tra khi dung nguyen hieu ung kho (mau / cuong do cho video nay) — loc nhu sanitize_plan."""
+    f = providers._f
+    out = dict(base or {})
+    if not isinstance(got, dict):
+        return out
+    cols = [c for c in (got.get("colors") or []) if isinstance(c, str) and c.strip().startswith(("#", "rgb", "hsl"))][:4]
+    if cols:
+        out["colors"] = cols
+    if got.get("intensity") is not None:
+        out["intensity"] = round(max(0.1, min(1.0, f(got.get("intensity"), out.get("intensity", 0.7)))), 2)
+    return out
+
+
+def _lib_candidates(effects, project, changes, faces=None):
+    """Ung vien Kho hieu ung cho tung hieu ung (loc bang code). Loi doc kho -> khong co ung vien (nhu truoc)."""
+    try:
+        import fx_lib
+        return fx_lib.candidates_for(effects, exclude_project=project, has_face=bool(faces))
+    except Exception as ex:          # kho hong khong duoc lam hong lap plan
+        changes.append("Kho hieu ung: khong doc duoc (%s) -> viet code moi nhu thuong" % str(ex)[:120])
+        return {}
+
+
+def build_effects(plan_res, moments, faces, palette, step, changes, log=None, emit=None, brand=None, project=None):
     """plan_res (FX-plan) -> hieu ung co code DA KIEM. `step(name, payload, fn)` = cache tung buoc (server._step).
-    emit(msg, level, output) -> nhat ky xu ly."""
+    emit(msg, level, output) -> nhat ky xu ly. project: du an dang lap plan (khong lay ung vien kho sinh tu chinh no)."""
     effects = sanitize_plan(plan_res, moments, changes)
     if not effects:
         return []
@@ -421,7 +471,12 @@ def build_effects(plan_res, moments, faces, palette, step, changes, log=None, em
     k_code = {"fx": effects, "v": FX_VERSION}
     if bv:
         k_code["brand"] = bv          # chi them khi co Brand Guideline -> du an khong co giu khoa cache cu
-    codes = step("FX-code", k_code, lambda: gpt_fx_code(effects, log=log, brand=brand)) or {}
+    cands = _lib_candidates(effects, project, changes, faces)
+    if cands:
+        import fx_lib
+        k_code["kho"] = fx_lib.cache_key(cands)    # chi khi co ung vien -> kho trong giu nguyen khoa cache cu
+    k_code = CV.keyed(k_code)         # khung ngang: code ve theo 1920x1080 (khung doc giu khoa cu)
+    codes = step("FX-code", k_code, lambda: gpt_fx_code(effects, log=log, brand=brand, cands=cands)) or {}
     kept = []
     for e in effects:
         c = codes.get(e["id"]) or {}
@@ -429,10 +484,32 @@ def build_effects(plan_res, moments, faces, palette, step, changes, log=None, em
         if fit.get("ok") is False:
             changes.append("%s: AI tu kiem lan 2 thay KHONG hop boi canh (%s) -> bo" % (e["id"], _txt(fit.get("reason"), 200)))
             continue
-        if not c.get("code"):
-            changes.append("%s: khong co code -> bo" % e["id"])
+        extra = {}
+        if c.get("reuse"):
+            import fx_lib
+            code = fx_lib.load_code(c["reuse"])
+            if not code:
+                changes.append("%s: hieu ung kho %s khong con code -> bo" % (e["id"], c["reuse"]))
+                continue
+            x = next((y for y in cands.get(e["id"]) or [] if y["id"] == c["reuse"]), {})
+            extra = {"code": code, "params": _lib_params(e.get("params"), c.get("params")),
+                     "lib": {"id": c["reuse"], "mode": "reuse", "name": ((x.get("label") or {}).get("name") or "")[:80]}}
+        elif c.get("from") and c.get("code"):
+            x = next((y for y in cands.get(e["id"]) or [] if y["id"] == c["from"]), {})
+            extra = {"code": c["code"], "lib": {"id": c["from"], "mode": "adapt",
+                                                "name": ((x.get("label") or {}).get("name") or "")[:80]}}
+        elif c.get("code"):
+            extra = {"code": c["code"]}
+        else:
+            changes.append("%s: khong co code%s -> bo" % (
+                e["id"], " (AI chon hieu ung kho '%s' khong nam trong ung vien)" % c["reuse_bad"] if c.get("reuse_bad") else ""))
             continue
-        kept.append(dict(e, code=c["code"], fit_reason=_txt(fit.get("reason"), 300)))
+        kept.append(dict(e, fit_reason=_txt(fit.get("reason"), 300), **extra))
+    if emit and any(k.get("lib") for k in kept):
+        emit("Kho hiệu ứng: %s" % "; ".join(
+            "%s %s '%s'" % (k["id"], "dùng lại nguyên" if k["lib"]["mode"] == "reuse" else "sửa nhẹ từ",
+                            k["lib"].get("name") or k["lib"]["id"]) for k in kept if k.get("lib")),
+             "ok", [{"id": k["id"], "lib": k["lib"]} for k in kept if k.get("lib")])
     res = run_runtime("check", [_check_payload(e, faces, palette, moments=moments) for e in kept])
     bad = {e["id"]: {"code": e["code"], "errors": (res.get(e["id"]) or {}).get("errors") or ["khong ro"]}
            for e in kept if not (res.get(e["id"]) or {}).get("ok")}
@@ -443,11 +520,13 @@ def build_effects(plan_res, moments, faces, palette, step, changes, log=None, em
         k_fix = {"bad": bad, "fx": [e for e in kept if e["id"] in bad], "v": FX_VERSION}
         if bv:
             k_fix["brand"] = bv
-        fixes = step("FX-fix", k_fix,
+        fixes = step("FX-fix", CV.keyed(k_fix),
                      lambda: gpt_fx_code([e for e in kept if e["id"] in bad], fix=bad, log=log, brand=brand)) or {}
         for e in kept:
             if e["id"] in bad and (fixes.get(e["id"]) or {}).get("code"):
                 e["code"] = fixes[e["id"]]["code"]
+                if (e.get("lib") or {}).get("mode") == "reuse":
+                    e["lib"] = dict(e["lib"], mode="adapt")     # code kho da bi sua -> la bien the moi
         res2 = run_runtime("check", [_check_payload(e, faces, palette, moments=moments) for e in kept if e["id"] in bad])
         for fid in list(bad):
             if (res2.get(fid) or {}).get("ok"):
@@ -481,7 +560,7 @@ def _face_px(spec, t, W, H):
                 "h": round(fcv["h"] * H, 1)}
     to_c, _to_s, _kw = MD.clip_map(clip, W, H)
     sw, sh = float(clip.get("srcW") or W), float(clip.get("srcH") or H)
-    s0 = max(W / sw, H / sh)
+    s0 = MD.fit_scale(clip, W, H)
     k = float(clip.get("scale") or 1.0)
     cx, cy = to_c(float(fc.get("cx", 0.5)), float(fc.get("cy", 0.42)))
     fh = float(fc.get("h", 0.25)) * sh * s0 * k                       # px

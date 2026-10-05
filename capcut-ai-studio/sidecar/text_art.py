@@ -123,13 +123,15 @@ def lockup_key(tiers):
                         .encode("utf-8")).hexdigest()[:16]
 
 
-def lockups_from(layers, captions=None, hook_caption=None):
+def lockups_from(layers, captions=None, hook_caption=None, meta=False):
     """Moi cum chu noi bat -> [{key, tiers}], bo trung. Cac lop CUNG group (to hop nhieu lop, vd 'tren chinh' +
-    'TAI KHOAN CUA MINH') gop thanh MOT cum de phan cap chinh / phu dung ca to hop. Khong lay phu de."""
+    'TAI KHOAN CUA MINH') gop thanh MOT cum de phan cap chinh / phu dung ca to hop. Khong lay phu de.
+    meta=True: moi cum them "src" = [{kind: layers, idx: [chi so lop]} | {kind: caption, idx} | {kind: hook}] (Kho Text
+    can biet cum nam o dau); meta=False giu dung dang cu (khoa cache TXT-art)."""
     import motion_design as MD
-    out, seen = [], set()
+    out, seen = [], {}
 
-    def add(tiers):
+    def add(tiers, src):
         if not tiers:
             return
         top = max(t["vis"] for t in tiers)
@@ -138,8 +140,12 @@ def lockups_from(layers, captions=None, hook_caption=None):
             return
         k = lockup_key(tiers)
         if k not in seen:
-            seen.add(k)
-            out.append({"key": k, "tiers": tiers})
+            seen[k] = {"key": k, "tiers": tiers}
+            if meta:
+                seen[k]["src"] = []
+            out.append(seen[k])
+        if meta:
+            seen[k]["src"].append(src)
 
     groups, order = {}, []
     for n, L in enumerate(layers or []):
@@ -152,19 +158,19 @@ def lockups_from(layers, captions=None, hook_caption=None):
             groups[key] = []
             order.append(key)
         # thu tu tren -> duoi theo y (reading_order luc dung se xep lai theo loi noi, o day chi can du tang)
-        groups[key].append((float(L.get("y") or 0.5), tiers))
+        groups[key].append((float(L.get("y") or 0.5), tiers, n))
     for key in order:
-        rows = [t for _y, ts in sorted(groups[key], key=lambda r: r[0]) for t in ts]
-        add(rows)
-    for c in captions or []:
+        rows = sorted(groups[key], key=lambda r: r[0])
+        add([t for _y, ts, _n in rows for t in ts], {"kind": "layers", "idx": sorted(n for _y, _t, n in rows)})
+    for i, c in enumerate(captions or []):
         if isinstance(c, dict) and c.get("role") == "hero":
             t = MD.strip_emoji(c.get("text"))
             if t and len(t) <= MAX_CHARS:
-                add([{"text": t, "vis": 120, "size": 120}])
+                add([{"text": t, "vis": 120, "size": 120}], {"kind": "caption", "idx": i})
     if hook_caption and MD.strip_emoji(hook_caption):
         t = MD.strip_emoji(hook_caption)
         if len(t) <= MAX_CHARS:
-            add([{"text": t, "vis": 120, "size": 120}])
+            add([{"text": t, "vis": 120, "size": 120}], {"kind": "hook"})
     return out
 
 
@@ -210,7 +216,8 @@ def sheet_prompt(lockups, style, story, has_ref, out, brand=None):
                               mau_tham_chieu=ref, out=out)
     # luat cat ngang + Brand Guideline NOI THEM bang code (prompt tren sua duoc trong menu — ban da sua van phai co)
     import brand_guide
-    extra = _ROW_GAP_RULE + brand_guide.rule_text(brand, "text_art")
+    import canvas
+    extra = _ROW_GAP_RULE + brand_guide.rule_text(brand, "text_art") + canvas.note_for(story, "text_art")
     return txt.replace("\nTao xong:", "\n" + extra + "\nTao xong:", 1) if "\nTao xong:" in txt else txt + "\n" + extra
 
 

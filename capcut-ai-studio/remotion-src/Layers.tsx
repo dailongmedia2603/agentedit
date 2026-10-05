@@ -6,6 +6,8 @@ import React, { useMemo } from 'react'
 import { AbsoluteFill, Easing, Img, OffthreadVideo, random, Sequence, useCurrentFrame, useVideoConfig } from 'remotion'
 import type { RSLayer, RSKeyframe, RSMotion, RSSpan, RSWord } from './types'
 import { fontCss } from './fonts'
+import { pxScale } from './look'
+import { TextTemplate } from './textTemplate/TextTemplate'
 
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v))
 
@@ -394,8 +396,9 @@ const ArtText: React.FC<{ L: RSLayer; local: number; base?: string }> = ({ L, lo
 }
 
 const TextLayer: React.FC<{ L: RSLayer; local: number; W: number; base?: string }> = ({ L, local, W, base }) => {
+  const { height: H } = useVideoConfig()
   if (L.art && L.art.length) return <ArtText L={L} local={local} base={base} />
-  const scaleW = W / 1080
+  const scaleW = pxScale(W, H)
   const spans: RSSpan[] = L.spans && L.spans.length ? L.spans : [{ text: '' }]
   const enter = L.enter || null
   const unit = enter && UNIT_PRESETS.has(enter.preset) ? enter.preset : null
@@ -542,7 +545,7 @@ const ShapeLayer: React.FC<{ L: RSLayer; fx: FxState; W: number; H: number; loca
     case 'circle':
       return <div style={{ width: w, height: w, borderRadius: '50%', background: fillOf(L) || '#FFFFFF', border: L.border }} />
     case 'ring': {
-      const sw = (L.strokeWidth ?? 6) * (W / 1080)
+      const sw = (L.strokeWidth ?? 6) * pxScale(W, H)
       const r = w / 2 - sw
       const c = 2 * Math.PI * r
       return (
@@ -564,7 +567,7 @@ const ShapeLayer: React.FC<{ L: RSLayer; fx: FxState; W: number; H: number; loca
       // -> nhan theo ten file ban tach (*_cut.png).
       const sticker = !!L.cutout || (!L.mask && /_cut\.png$/i.test(L.path))
       if (sticker) {
-        const k = W / 1080
+        const k = pxScale(W, H)
         const drop = (L.shadow || []).map((s) => `drop-shadow(${s.x * k}px ${s.y * k}px ${Math.min(s.blur, 24) * k * 0.5}px ${s.color})`).join(' ')
         return (
           <div style={{ width: w, height: L.h !== undefined ? h : undefined }}>
@@ -692,7 +695,7 @@ const PathLayer: React.FC<{ L: RSLayer; fx: FxState; W: number; H: number }> = (
   const ny = (b[0] - a[0]) / (len || 1)
   const c = (L.curve ?? 0.25) * len
   const d = pts.length > 2 ? 'M ' + pts.map((p) => p.join(' ')).join(' L ') : `M ${a[0]} ${a[1]} Q ${mx + nx * c} ${my + ny * c} ${b[0]} ${b[1]}`
-  const sw = (L.strokeWidth ?? 8) * (W / 1080)
+  const sw = (L.strokeWidth ?? 8) * pxScale(W, H)
   const color = L.strokeColor || L.color || '#E53935'
   // huong dau mui ten = tiep tuyen tai diem cuoi
   const cx = pts.length > 2 ? pts[pts.length - 2][0] : mx + nx * c
@@ -814,14 +817,42 @@ const VideoLayerAt: React.FC<{ L: RSLayer; from: number; base?: string }> = ({ L
   return <Layer L={L} t={(frame + from) / fps} base={base} />
 }
 
+/** Lop MAU CHU KHO TEXT: ve nguyen mau (font, hieu ung) voi chu that; tam khoi chu cua mau dat tai (x, y).
+ *  Tieng cua mau da tron san thanh 1 file trong spec.audio (sidecar can theo giong noi) -> o day tat tieng. */
+const TplLayer: React.FC<{ L: RSLayer; base?: string }> = ({ L, base }) => {
+  const { width: W, height: H } = useVideoConfig()
+  const spec = L.tpl!
+  const [x0, y0, x1, y1] = L.tplBox || [0, 0, spec.width, spec.height]
+  // mau dung o khung rong 1080 (doc) -> 1 px mau = 1 px thiet ke; khung ngang giu dung co (pxScale)
+  const s = (L.scale ?? 1) * pxScale(W, H) * (1080 / spec.width)
+  const dir = L.tplDir || ''
+  const fileUrl = useMemo(() => (rel: string) => mediaUrl(base, dir.replace(/[\\/]$/, '') + '/' + rel), [base, dir])
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: L.x * W - ((x0 + x1) / 2) * s,
+        top: L.y * H - ((y0 + y1) / 2) * s,
+        width: spec.width,
+        height: spec.height,
+        transform: `scale(${s})`,
+        transformOrigin: '0 0',
+        opacity: L.opacity ?? 1
+      }}
+    >
+      <TextTemplate spec={spec} assetBase="" fileUrl={fileUrl} texts={L.texts} fit muted />
+    </div>
+  )
+}
+
 export const LayersLayer: React.FC<{ layers: RSLayer[]; base?: string; minTrack?: number; maxTrack?: number }> = ({ layers, base, minTrack = -Infinity, maxTrack = Infinity }) => {
   const frame = useCurrentFrame()
   const { fps } = useVideoConfig()
   const t = frame / fps
   const inTrack = (L: RSLayer) => (L.track ?? 10) >= minTrack && (L.track ?? 10) < maxTrack
   // lop video luon gan san (Sequence tu an / hien + tai truoc 1s) -> video vao dung khung, xem truoc khong khung den
-  const vids = layers.filter((L) => L.type === 'video' && !!L.path && inTrack(L))
-  const vis = [...layers.filter((L) => L.type !== 'video' && t >= L.start && t <= L.end && inTrack(L)), ...vids].sort(
+  const vids = layers.filter((L) => ((L.type === 'video' && !!L.path) || (L.type === 'tpl' && !!L.tpl)) && inTrack(L))
+  const vis = [...layers.filter((L) => L.type !== 'video' && L.type !== 'tpl' && t >= L.start && t <= L.end && inTrack(L)), ...vids].sort(
     (a, b) => (a.track ?? 10) - (b.track ?? 10)
   )
   // chu anh AI sap hien (<= 2.5s): tai + giai ma anh truoc -> xem truoc khong tre nhip khi anh moi tai
@@ -830,11 +861,11 @@ export const LayersLayer: React.FC<{ layers: RSLayer[]; base?: string; minTrack?
   return (
     <AbsoluteFill style={{ pointerEvents: 'none', overflow: 'hidden' }}>
       {vis.map((L) => {
-        if (L.type !== 'video') return <Layer key={L.id} L={L} t={t} base={base} />
+        if (L.type !== 'video' && L.type !== 'tpl') return <Layer key={L.id} L={L} t={t} base={base} />
         const from = Math.round(L.start * fps)
         return (
           <Sequence key={L.id} from={from} durationInFrames={Math.max(1, Math.round((L.end - L.start) * fps))} premountFor={Math.round(fps)}>
-            <VideoLayerAt L={L} from={from} base={base} />
+            {L.type === 'tpl' ? <TplLayer L={L} base={base} /> : <VideoLayerAt L={L} from={from} base={base} />}
           </Sequence>
         )
       })}

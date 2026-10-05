@@ -5,7 +5,7 @@ import React from 'react'
 import { AbsoluteFill, spring, useCurrentFrame, useVideoConfig } from 'remotion'
 import type { RSCaption, RSWord } from './types'
 import { fontOf } from './fonts'
-import { clamp01, easeOut } from './look'
+import { captionFrac, clamp01, easeOut, pxScale } from './look'
 
 const MAX_LINES: Record<string, number> = { hero: 3, support: 3, micro: 2 }
 
@@ -33,12 +33,12 @@ export function wordTimings(c: RSCaption): RSWord[] {
 }
 
 /** Co chu vua khung: khong vuot so dong toi da, chu dai nhat vua 1 dong. */
-export function fitSize(c: RSCaption, W: number): number {
+export function fitSize(c: RSCaption, W: number, H: number = 1920): number {
   const f = fontOf(c.font)
-  const avail = W * 0.86
+  const avail = W * captionFrac(W, H)
   const upper = c.uppercase ? 1.12 : 1
   const cw = f.width * upper
-  const scaleW = W / 1080
+  const scaleW = pxScale(W, H)
   let size = c.size * scaleW
   const text = c.uppercase ? c.text.toLocaleUpperCase('vi') : c.text
   const longest = Math.max(...text.split(/\s+/).map((w) => w.length), 1)
@@ -72,7 +72,7 @@ const Caption: React.FC<{ c: RSCaption }> = ({ c }) => {
   const local = t - c.start
   const dur = Math.max(0.1, c.end - c.start)
   const f = fontOf(c.font)
-  const size = fitSize(c, W)
+  const size = fitSize(c, W, H)
   const weight = f.weights[c.role] ?? 700
   const text = c.uppercase ? c.text.toLocaleUpperCase('vi') : c.text
   // moc tung chu co san (Whisper) giu chu goc -> viet hoa o day cho giong ca cau
@@ -97,8 +97,8 @@ const Caption: React.FC<{ c: RSCaption }> = ({ c }) => {
   const top = (0.5 + c.y / 2) * H
   const base: React.CSSProperties = {
     position: 'absolute',
-    left: W * 0.07,
-    width: W * 0.86,
+    left: (W * (1 - captionFrac(W, H))) / 2,
+    width: W * captionFrac(W, H),
     top,
     transform: 'translateY(-50%)',
     textAlign: 'center',

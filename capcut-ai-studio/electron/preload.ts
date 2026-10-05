@@ -69,6 +69,7 @@ const api = {
   pickReferenceVideo: () => ipcRenderer.invoke('dialog:pickReferenceVideo'),
   pickOneVideo: (title?: string) => ipcRenderer.invoke('dialog:pickOneVideo', title),
   pickInsertMedia: () => ipcRenderer.invoke('dialog:pickInsertMedia'),
+  pickFolder: (title?: string) => ipcRenderer.invoke('dialog:pickFolder', title),
   // Duong dan that cua file keo-tha (Electron 32+ bo File.path -> keo-tha khong lay duoc duong dan)
   pathForFile: (file: File) => {
     try {
@@ -108,6 +109,15 @@ const api = {
   remotionUnderstandReference: (payload: unknown) => ipcRenderer.invoke('remotion:understandReference', payload),
   remotionUnderstandMedia: (payload: unknown) => ipcRenderer.invoke('remotion:understandMedia', payload),
   remotionAutoplan: (payload: unknown) => ipcRenderer.invoke('remotion:autoplan', payload),
+  // Kho hieu ung tu viet
+  fxlibList: () => ipcRenderer.invoke('fxlib:list'),
+  fxlibHarvest: (payload: unknown) => ipcRenderer.invoke('fxlib:harvest', payload),
+  fxlibRenderPreview: (id: string) => ipcRenderer.invoke('fxlib:renderPreview', id),
+  fxlibLabel: (ids: string[]) => ipcRenderer.invoke('fxlib:label', ids),
+  fxlibShare: (id: string) => ipcRenderer.invoke('fxlib:share', id),
+  fxlibRetry: (id: string) => ipcRenderer.invoke('fxlib:retry', id),
+  fxlibToggle: (id: string, disabled: boolean) => ipcRenderer.invoke('fxlib:toggle', id, disabled),
+  fxlibDelete: (id: string) => ipcRenderer.invoke('fxlib:delete', id),
   remotionSpec: (payload: unknown) => ipcRenderer.invoke('remotion:spec', payload),
   remotionCatalog: () => ipcRenderer.invoke('remotion:catalog'),
   remotionMediaBase: () => ipcRenderer.invoke('remotion:mediaBase'),
@@ -141,6 +151,11 @@ const api = {
   memeLabel: (id: string) => ipcRenderer.invoke('meme:label', id),
   memeUpdate: (payload: unknown) => ipcRenderer.invoke('meme:update', payload),
   memeDelete: (id: string) => ipcRenderer.invoke('meme:delete', id),
+  textList: () => ipcRenderer.invoke('text:list'),
+  textRegister: (dir: string) => ipcRenderer.invoke('text:register', dir),
+  textLabel: (id: string) => ipcRenderer.invoke('text:label', id),
+  textUpdate: (payload: unknown) => ipcRenderer.invoke('text:update', payload),
+  textDelete: (id: string) => ipcRenderer.invoke('text:delete', id),
   sfxList: () => ipcRenderer.invoke('sfx:list'),
   sfxSearchOnline: (query: string) => ipcRenderer.invoke('sfx:searchOnline', query),
   sfxAddOnline: (payload: unknown) => ipcRenderer.invoke('sfx:addOnline', payload),

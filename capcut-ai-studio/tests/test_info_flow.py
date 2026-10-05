@@ -269,7 +269,7 @@ try:
     check("plan la cua Remotion", plan.get("engine") == "remotion", plan.get("engine"))
     check("_pipeline co story_arc + tone", pip.get("story_arc") == STORY_ARC and pip.get("tone"), pip)
     check("_pipeline ghi dung thu tu buoc", pip.get("thu_tu") == ["B1-select", "B2-timeline", "B3-hook", "R4-design",
-                                                                  "assets", "R5-captions", "TXT-art", "GFX-art", "FX-plan",
+                                                                  "assets", "R5-captions", "TXT-lib", "TXT-art", "GFX-art", "FX-plan",
                                                                   "FX-code", "B6-inserts", "B7-audio"],
           pip.get("thu_tu"))
     body = [s for s in plan.get("segments", []) if s.get("beat")]
@@ -441,6 +441,52 @@ try:
     check("nhat ky co ket qua tai nguyen hinh 1/2", ("assets", "Tài nguyên hình: 1/2 xong") in tieu_de, tieu_de)
     check("ket qua tai nguyen hinh ghi SAU khi anh xong", next(e["ts"] for e in ev if e.get("step") == "assets"
                                                               and e.get("kind") == "result") >= ANH["t1"])
+
+    print("\n[13] LOAI VIDEO NGANG 16:9 (2026-10-04): moi buoc AI sau B1 biet khung ngang, spec 1920x1080")
+    CTX13 = {}
+
+    def fake_res13(assets, source_videos, style="", log=None, contexts=None):
+        CTX13.update(contexts or {})
+        for a in assets:
+            a["path"] = IMG
+        return assets
+
+    _goc13 = motion_design.resolve_assets
+    motion_design.resolve_assets = fake_res13
+    TRA_LOI["R4-design"] = dict(DESIGN, assets=[{"id": "anh_ng", "kind": "ai_image", "prompt": "the ngan hang bi khoa"}])
+    NHAN.clear()
+    SYS.clear()
+    try:
+        with server.app.test_client() as c:
+            r = c.post("/remotion/autoplan", json={"brief": BRIEF, "fresh": True, "orientation": "landscape",
+                                                   "edit_request": {"purpose": "canh bao lua dao"}})
+        d13 = r.get_json() or {}
+    finally:
+        motion_design.resolve_assets = _goc13
+    check("chay xong", r.status_code == 200 and d13.get("ok"), d13.get("error"))
+    sp13, p13 = d13.get("spec") or {}, d13.get("plan") or {}
+    check("spec + plan khung 1920x1080", (sp13.get("width"), sp13.get("height")) == (1920, 1080)
+          and p13.get("canvas") == {"w": 1920, "h": 1080}, (sp13.get("width"), sp13.get("height"), p13.get("canvas")))
+    biet = [lab for lab in ("B2-timeline", "B3-hook", "R4-design", "R5-captions", "FX-plan", "B6-inserts", "B7-audio")
+            if "NGANG" in str((NHAN.get(lab, {}).get("cau_chuyen") or {}).get("khung_hinh") or "")]
+    check("cau_chuyen cua B2..B7 ghi khung ngang", len(biet) == 7, biet)
+    check("prompt R4 / R5 / FX-plan co ghi chu khung ngang",
+          all("KHUNG VIDEO: NGANG" in SYS.get(lab, "") for lab in ("R4-design", "R5-captions", "FX-plan")),
+          {lab: "KHUNG VIDEO: NGANG" in SYS.get(lab, "") for lab in ("R4-design", "R5-captions", "FX-plan")})
+    check("anh AI khong khai ti le -> 16:9", [a.get("aspect") for a in p13.get("assets") or []] == ["16:9"], p13.get("assets"))
+    check("boi canh anh AI co khung video", "khung_video" in (CTX13.get("anh_ng") or {}), CTX13)
+    card13 = [s for s in sp13.get("scenes") or [] if s.get("layout") == "card"]
+    check("bo cuc card: the A-roll ben phai khung ngang", card13 and card13[0]["aroll"]["x"] >= 0.4, card13)
+    NHAN.clear()
+    SYS.clear()
+    with server.app.test_client() as c:
+        r = c.post("/remotion/autoplan", json={"brief": BRIEF, "fresh": True, "orientation": "portrait",
+                                               "edit_request": {"purpose": "canh bao lua dao"}})
+    d13b = r.get_json() or {}
+    check("chon doc: spec 1080x1920, khong buoc nao nhan ghi chu khung ngang",
+          ((d13b.get("spec") or {}).get("width"), (d13b.get("spec") or {}).get("height")) == (1080, 1920)
+          and not any("khung_hinh" in (p.get("cau_chuyen") or {}) for p in NHAN.values())
+          and not any("KHUNG VIDEO: NGANG" in s for s in SYS.values()), d13b.get("error"))
 finally:
     shutil.rmtree(TMP, ignore_errors=True)
 

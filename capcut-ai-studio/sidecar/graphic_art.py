@@ -162,7 +162,9 @@ def sheet_prompt(group, style, story, has_ref, out, brand=None, attempt=1):
                               mau_tham_chieu=ref, out=out)
     # Brand Guideline NOI THEM bang code (prompt tren sua duoc trong menu — ban da sua van phai co)
     import brand_guide
-    extra = brand_guide.rule_text(brand, "text_art") + (_RETRY_NOTE if attempt > 1 else "")
+    import canvas
+    extra = (brand_guide.rule_text(brand, "text_art") + canvas.note_for(story, "text_art")
+             + (_RETRY_NOTE if attempt > 1 else ""))
     if not extra:
         return txt
     return txt.replace("\nTao xong:", "\n" + extra + "\nTao xong:", 1) if "\nTao xong:" in txt else txt + "\n" + extra

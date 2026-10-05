@@ -73,6 +73,8 @@ interface StudioBridge {
   pickOneVideo(title?: string): Promise<OpenDialogReturn>
   /** Chon anh / video (nhieu file) de chen LEN video dang edit */
   pickInsertMedia(): Promise<OpenDialogReturn>
+  /** Kho Text: chon 1 thu muc mau (template.json + preview.mp4 + fonts/ + audio/ + assets/) */
+  pickFolder(title?: string): Promise<OpenDialogReturn>
   /** duong dan that cua File keo-tha vao app ('' neu khong co) */
   pathForFile(file: File): string
   /** Chep video vao thu muc du an (<workDir>/video-nguon | video-mau | tu-lieu-chen); ket qua theo thu tu `paths` */
@@ -107,6 +109,9 @@ interface StudioBridge {
     error?: string
     sfx?: { added: number; updated: number; total: number; errors: string[] }
     memes?: { added: number; updated: number; total: number; errors: string[] }
+    texts?: { added: number; updated: number; total: number; errors: string[] }
+    /** kho hieu ung chung (muc da duyet); null = may chu chua co kho hieu ung */
+    fx?: { added: number; updated: number; removed: number; total: number; errors: string[] } | null
     log?: string[]
     manifest_updated?: string
   }>
@@ -152,7 +157,11 @@ interface StudioBridge {
     brand_guide?: BrandGuide
     /** tu lieu cua nguoi dung (anh / video hien LEN video) + muc dich + phan tich Gemini */
     user_media?: UserMediaPayload[]
+    /** khung video xuat ra: doc 9:16 1080x1920 (mac dinh) | ngang 16:9 1920x1080 — sidecar canvas.py */
+    orientation?: VideoOrientation
     title?: string
+    /** du an dang lap plan — Kho hieu ung khong lay ung vien sinh tu chinh du an nay */
+    project?: string
     fresh?: boolean
     _run?: RunCtx
   }): Promise<{
@@ -167,6 +176,28 @@ interface StudioBridge {
     brief?: SourceBrief
     error?: string
   }>
+  // ---- Kho hieu ung tu viet (sidecar fx_lib.py) ----
+  fxlibList(): Promise<{ ok: boolean; effects?: FxLibItem[]; pending?: FxLibPending; error?: string }>
+  fxlibHarvest(payload: { fx: unknown[]; project?: string; orientation?: VideoOrientation }): Promise<{
+    ok: boolean
+    added?: string[]
+    reused?: string[]
+    skipped?: { id: string; src?: string; ly_do?: string }[]
+    error?: string
+  }>
+  fxlibRenderPreview(id: string): Promise<{ ok: boolean; busy?: boolean; cancelled?: boolean; error?: string }>
+  fxlibLabel(ids: string[]): Promise<{
+    ok: boolean
+    labeled?: string[]
+    errors?: Record<string, string>
+    /** Gemini loi chung (chua dang nhap / mat mang) -> dung gan nhan trong phien nay */
+    stop?: boolean
+    error?: string
+  }>
+  fxlibShare(id: string): Promise<{ ok: boolean; status?: 'pending' | 'approved' | 'rejected'; error?: string; retry?: boolean }>
+  fxlibRetry(id: string): Promise<{ ok: boolean }>
+  fxlibToggle(id: string, disabled: boolean): Promise<{ ok: boolean }>
+  fxlibDelete(id: string): Promise<{ ok: boolean }>
   remotionSpec(payload: { plan: RemotionPlan; _run?: RunCtx }): Promise<{
     ok: boolean
     spec?: RenderSpec
@@ -201,6 +232,13 @@ interface StudioBridge {
   memeLabel(id: string): Promise<{ ok: boolean; meme?: MemeItem; error?: string }>
   memeUpdate(payload: { id: string; [k: string]: unknown }): Promise<{ ok: boolean; meme?: MemeItem }>
   memeDelete(id: string): Promise<{ ok: boolean }>
+  // ---- Kho Text (mau chu dong, chuyen tu preset CapCut) ----
+  textList(): Promise<{ ok: boolean; templates: TextTemplateItem[] }>
+  /** dir = thu muc tuyet doi chua template.json (vd ~/.capcut-studio/text_templates/<id>) */
+  textRegister(dir: string): Promise<{ ok: boolean; template?: TextTemplateItem; error?: string }>
+  textLabel(id: string): Promise<{ ok: boolean; template?: TextTemplateItem; error?: string }>
+  textUpdate(payload: { id: string; [k: string]: unknown }): Promise<{ ok: boolean; template?: TextTemplateItem }>
+  textDelete(id: string): Promise<{ ok: boolean }>
   sfxList(): Promise<{ ok: boolean; sfx: SfxItem[] }>
   sfxSearchOnline(query: string): Promise<{ ok: boolean; results: SfxOnline[]; error?: string }>
   sfxAddOnline(payload: { name: string; mp3: string; slug?: string; emotion?: string; use_when?: string }): Promise<{ ok: boolean; entry?: SfxItem; error?: string }>
@@ -482,6 +520,9 @@ declare global {
     ref_gpt?: { at: string; summary?: string; format?: string; style_kit?: boolean }
   }
 
+  /** Loai video tao ra: doc 9:16 (TikTok / Reels, mac dinh) hoac ngang 16:9 (YouTube / Facebook) */
+  type VideoOrientation = 'portrait' | 'landscape'
+
   interface EditRequest {
     purpose?: string
     style?: string
@@ -652,6 +693,104 @@ declare global {
     labeled_by?: 'title' | 'gemini'
   }
 
+  /** 1 o chu (slot) trong mau — "sample" la CHU MAU, khong bao gio dung nguyen trong video thuc */
+  interface TextSlot {
+    id: string
+    role?: string
+    sample?: string
+  }
+
+  /** Vai tro AI nen dien cho 1 slot — do Gemini viet sau khi xem preview (xem _GEMINI_TEXT_TEMPLATE_PROMPT) */
+  interface TextSlotRole {
+    id: string
+    role?: string
+    max_len?: string
+  }
+
+  /** 1 mau chu dong trong Kho Text (chuyen tu preset CapCut) — AI chon mau HOAN TOAN dua tren nhan,
+   * KHONG xem duoc hoat canh. Chu trong `slots[].sample` CHI LA CHU MAU minh hoa bo cuc. */
+  interface TextTemplateItem {
+    id: string
+    name: string
+    source: string
+    /** thu muc tuyet doi chua template.json + preview.mp4 + fonts/ + audio/ + assets/ — rieng tung may */
+    dir: string
+    duration: number
+    width?: number
+    height?: number
+    slots: TextSlot[]
+    sample_texts?: string[]
+    /** ten file preview trong `dir` (thuong "preview.mp4") */
+    preview?: string | null
+    // ---- Nhan Gemini (phan tich; GIU NGUYEN qua cac lan register_from_dir cau truc) ----
+    summary?: string
+    style?: string
+    mood?: string
+    energy?: 'nhe' | 'vua' | 'manh'
+    motion?: string
+    best_for?: string[]
+    use_when?: string | string[]
+    avoid_when?: string[]
+    slot_roles?: TextSlotRole[]
+    tags?: string[]
+    sound_notes?: string
+    /** 'gemini' = AI da xem preview; khong co = chua gan nhan */
+    labeled_by?: 'gemini'
+    labeled_at?: string
+  }
+
+  /** Nhan Gemini cua 1 hieu ung trong Kho hieu ung (tong quat, khong ten san pham / loi noi video goc) */
+  interface FxLibLabel {
+    name?: string
+    summary?: string
+    visual?: string
+    use_when?: string
+    avoid_when?: string[]
+    moods?: string[]
+    moments?: string[]
+    placement?: string
+    energy?: 'nhe' | 'vua' | 'manh'
+    tags?: string[]
+    quality?: number
+    quality_note?: string
+  }
+
+  /** 1 hieu ung tu viet da dong goi (kho may nay + kho chung tai ve) */
+  interface FxLibItem {
+    id: string
+    kind: 'overlay' | 'transform'
+    layer?: 'front' | 'behind'
+    duration?: number
+    params?: { colors?: string[]; intensity?: number }
+    canvas?: VideoOrientation
+    works?: Partial<Record<VideoOrientation, boolean>>
+    origin: 'local' | 'shared'
+    label?: FxLibLabel | null
+    /** thiet ke goc (CHI may nay) */
+    design?: { visual?: string; goal?: string } | null
+    uses?: number
+    created?: string
+    parent?: string
+    sfx?: string
+    disabled?: boolean
+    preview?: string | null
+    has_code?: boolean
+    state?: {
+      preview?: 'ok' | 'error' | null
+      preview_err?: string | null
+      label?: 'ok' | 'error' | null
+      label_err?: string | null
+      share?: 'pending' | 'approved' | 'rejected' | 'error' | null
+      share_err?: string | null
+    }
+  }
+
+  interface FxLibPending {
+    preview: string[]
+    label: string[]
+    share: string[]
+  }
+
   interface SfxItem {
     id: string
     name: string
@@ -711,6 +850,8 @@ declare global {
     referenceVideo?: VideoFile | null
     editRequest?: EditRequest
     brandGuide?: BrandGuide
+    /** Khung video chon khi tao (vang mat = doc, du an cu) */
+    orientation?: VideoOrientation
     workDir?: string
     sourceBrief?: SourceBrief
     referenceAnalysis?: ReferenceAnalysis

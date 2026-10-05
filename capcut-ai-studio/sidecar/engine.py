@@ -6,6 +6,7 @@ import os
 import re
 import json
 import subprocess
+import time
 
 from config import venv_python, ENGINE_HOME
 
@@ -519,6 +520,56 @@ def meme_label_with_ai(mid, log=None):
         audio_reason=meme_lib.as_text(res.get("audio_reason")) or None,
         notes=meme_lib.as_text(res.get("notes")),
         labeled_by="gemini",
+    )
+    return updated
+
+
+# ----------------------------------------------------------------------------
+# KHO TEXT (mau chu dong, chuyen tu preset CapCut) — bao quanh text_lib.py
+# ----------------------------------------------------------------------------
+import text_lib
+
+
+def text_register_dir(dir_path):
+    """Doc 1 thu muc mau (template.json + preview.mp4 + fonts/ + audio/ + assets/) vao kho."""
+    if not dir_path or not os.path.isdir(dir_path):
+        raise RuntimeError("Khong thay thu muc mau: %s" % dir_path)
+    return text_lib.register_from_dir(dir_path)
+
+
+def text_label_with_ai(tid, log=None):
+    """Cho Gemini XEM preview.mp4 cua 1 mau chu roi tu viet nhan (style/mood/use_when/slot_roles...).
+    Chu trong preview CHI LA CHU MAU — prompt nhac Gemini khong duoc suy use_when theo nghia chu."""
+    import providers
+    row = text_lib.get_template(tid)
+    if not row:
+        raise RuntimeError("Khong co mau chu id=%s" % tid)
+    preview = row.get("preview")
+    if not preview:
+        raise RuntimeError("Mau %s chua co preview.mp4" % tid)
+    path = os.path.join(row["dir"], preview)
+    if not os.path.isfile(path):
+        raise RuntimeError("Mat file preview: %s" % path)
+    res = providers.gemini_label_text_template(
+        path, name=row.get("name"), duration=row.get("duration"), slots=row.get("slots"), log=log)
+    energy = text_lib.as_text(res.get("energy")).lower()
+    if energy not in text_lib.ENERGIES:
+        energy = row.get("energy")
+    updated = text_lib.text_update(
+        tid,
+        summary=text_lib.as_text(res.get("summary")) or None,
+        style=text_lib.as_text(res.get("style")) or None,
+        mood=text_lib.as_text(res.get("mood")) or None,
+        energy=energy,
+        motion=text_lib.as_text(res.get("motion")) or None,
+        best_for=text_lib.as_list(res.get("best_for")) or None,
+        use_when=text_lib.as_text(res.get("use_when")) or row.get("use_when"),
+        avoid_when=text_lib.as_list(res.get("avoid_when")) if "avoid_when" in res else None,
+        slot_roles=res.get("slot_roles") if isinstance(res.get("slot_roles"), list) else None,
+        tags=text_lib.as_list(res.get("tags")) or row.get("tags"),
+        sound_notes=text_lib.as_text(res.get("sound_notes")) or None,
+        labeled_by="gemini",
+        labeled_at=time.strftime("%Y-%m-%dT%H:%M:%S"),
     )
     return updated
 

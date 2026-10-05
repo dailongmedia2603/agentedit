@@ -2,6 +2,7 @@
 // lai JWT cua Access (khong tin moi header) -> cau hinh Access sai cung khong lo trang.
 import html from './admin.html'
 import { newKey, normalizeKey, keyHash, encryptText, decryptText, addPlan, json, newId, logEvent, unb64url } from './shared.js'
+import { FX_ID_RE } from './fx.js'
 
 // ---------- Cloudflare Access ----------
 let jwksCache = { at: 0, keys: [] }
@@ -153,6 +154,8 @@ async function createLicenses(env, req, admin, b) {
 async function licenseDetail(env, id) {
   const r = await env.DB.prepare('SELECT * FROM licenses WHERE id = ?').bind(id).first()
   if (!r) return json({ ok: false, error: 'Không tìm thấy key' }, 404)
+  const tr = await env.DB.prepare('SELECT 1 AS t FROM trusted_licenses WHERE license_id = ?').bind(id).first()
+  const fxn = await env.DB.prepare('SELECT status, COUNT(*) AS n FROM fx_items WHERE license_id = ? GROUP BY status').bind(id).all()
   const ev = await env.DB.prepare('SELECT at, type, ip, country, detail FROM events WHERE license_id = ? ORDER BY at DESC LIMIT 200')
     .bind(id)
     .all()
@@ -162,7 +165,8 @@ async function licenseDetail(env, id) {
   } catch {
     key = '(không giải mã được)'
   }
-  return json({ ok: true, license: { ...licenseRow(r), key }, events: ev.results || [] })
+  const fx = Object.fromEntries((fxn.results || []).map((x) => [x.status, x.n]))
+  return json({ ok: true, license: { ...licenseRow(r), key, trusted: !!tr, fx }, events: ev.results || [] })
 }
 
 async function licenseAction(env, req, admin, id, action, b) {
@@ -200,6 +204,11 @@ async function licenseAction(env, req, admin, id, action, b) {
   } else if (action === 'update') {
     await run('UPDATE licenses SET customer = ?, contact = ?, note = ? WHERE id = ?', str(b.customer), str(b.contact), str(b.note, 1000), id)
     await logEvent(env, id, 'admin_update', req, admin)
+  } else if (action === 'trust' || action === 'untrust') {
+    // May tin cay (may cua tac gia): hieu ung gui len kho chung TU DUYET, khong vao hang cho
+    if (action === 'trust') await run('INSERT OR REPLACE INTO trusted_licenses (license_id, at) VALUES (?, ?)', id, Date.now())
+    else await run('DELETE FROM trusted_licenses WHERE license_id = ?', id)
+    await logEvent(env, id, 'admin_' + action, req, admin)
   } else if (action === 'delete') {
     // Chi xoa key CHUA tung kich hoat (tao nham). Key da ban thi khoa, khong xoa (giu lich su).
     if (r.activated_at || r.device_pub) return json({ ok: false, error: 'Key đã kích hoạt — hãy khoá thay vì xoá.' }, 400)
@@ -210,6 +219,66 @@ async function licenseAction(env, req, admin, id, action, b) {
     return json({ ok: false, error: 'Thao tác không hợp lệ' }, 400)
   }
   return licenseDetail(env, id)
+}
+
+// ---------- Kho hieu ung chung (duyet) ----------
+async function listFx(env, url) {
+  const st = ['pending', 'approved', 'rejected'].includes(url.searchParams.get('status')) ? url.searchParams.get('status') : 'pending'
+  const r = await env.DB.prepare(
+    `SELECT f.id, f.status, f.kind, f.meta, f.code_size, f.preview_size, f.created_at, f.decided_at, f.decided_by, f.note,
+            f.license_id, l.key_hint, l.customer, l.hostname
+     FROM fx_items f LEFT JOIN licenses l ON l.id = f.license_id WHERE f.status = ? ORDER BY f.created_at DESC LIMIT 300`
+  )
+    .bind(st)
+    .all()
+  const counts = await env.DB.prepare('SELECT status, COUNT(*) AS n FROM fx_items GROUP BY status').all()
+  return {
+    items: (r.results || []).map((x) => {
+      let meta = {}
+      try {
+        meta = JSON.parse(x.meta)
+      } catch {
+        /* bo qua */
+      }
+      return { ...x, meta }
+    }),
+    counts: Object.fromEntries((counts.results || []).map((c) => [c.status, c.n]))
+  }
+}
+
+async function fxCode(env, id) {
+  const obj = await env.LIB.get(`fx/${id}/code.js`)
+  if (!obj) return json({ ok: false, error: 'Không có code' }, 404)
+  return json({ ok: true, code: await obj.text() })
+}
+
+async function fxDecide(env, req, admin, id, action, b) {
+  const row = await env.DB.prepare('SELECT * FROM fx_items WHERE id = ?').bind(id).first()
+  if (!row) return json({ ok: false, error: 'Không tìm thấy hiệu ứng' }, 404)
+  const note = str(b.note, 300)
+  if (action === 'approve') {
+    await env.DB.prepare("UPDATE fx_items SET status = 'approved', decided_at = ?, decided_by = ?, note = ? WHERE id = ?")
+      .bind(Date.now(), admin, note || null, id)
+      .run()
+  } else if (action === 'reject') {
+    // giu dong (gui lai cung code -> van 'rejected', khong vao hang cho lai), xoa file cho nhe bucket
+    await env.DB.prepare("UPDATE fx_items SET status = 'rejected', decided_at = ?, decided_by = ?, note = ? WHERE id = ?")
+      .bind(Date.now(), admin, note || null, id)
+      .run()
+    await env.LIB.delete([`fx/${id}/code.js`, `fx/${id}/preview.mp4`])
+  } else {
+    return json({ ok: false, error: 'Thao tác không hợp lệ' }, 400)
+  }
+  await logEvent(env, row.license_id, 'admin_fx_' + action, req, `${admin}: ${id}${note ? ' — ' + note : ''}`)
+  return json({ ok: true })
+}
+
+async function fxPreview(env, id) {
+  const obj = await env.LIB.get(`fx/${id}/preview.mp4`)
+  if (!obj) return new Response('not found', { status: 404 })
+  const headers = new Headers({ 'content-type': 'video/mp4', 'cache-control': 'private, max-age=3600' })
+  headers.set('content-length', String(obj.size))
+  return new Response(obj.body, { headers })
 }
 
 async function recentEvents(env) {
@@ -242,6 +311,9 @@ export default {
       if (url.pathname === '/' && req.method === 'GET') {
         return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', ...SEC_HEADERS } })
       }
+      // video preview cho the <video> (khong gui duoc header x-admin; GET chi doc, da qua Access)
+      const mp = url.pathname.match(/^\/media\/fx\/(fx-[0-9a-f]{12})\/preview\.mp4$/)
+      if (mp && req.method === 'GET') return await fxPreview(env, mp[1])
       if (!url.pathname.startsWith('/api/')) return new Response('Not found', { status: 404 })
       // Chong CSRF: moi lenh API phai co header rieng (form / trang khac khong gui duoc khi khong co CORS)
       if (req.headers.get('x-admin') !== '1') return json({ ok: false, error: 'forbidden' }, 403)
@@ -252,6 +324,12 @@ export default {
       if (url.pathname === '/api/events') return json({ ok: true, events: await recentEvents(env) })
       if (url.pathname === '/api/licenses' && req.method === 'GET') return json({ ok: true, licenses: await listLicenses(env, url) })
       if (url.pathname === '/api/licenses' && req.method === 'POST') return await createLicenses(env, req, admin, b)
+      if (url.pathname === '/api/fx' && req.method === 'GET') return json({ ok: true, ...(await listFx(env, url)) })
+      const mf = url.pathname.match(/^\/api\/fx\/(fx-[0-9a-f]{12})\/(code|approve|reject)$/)
+      if (mf && FX_ID_RE.test(mf[1])) {
+        if (mf[2] === 'code' && req.method === 'GET') return await fxCode(env, mf[1])
+        if (mf[2] !== 'code' && req.method === 'POST') return await fxDecide(env, req, admin, mf[1], mf[2], b)
+      }
       const m = url.pathname.match(/^\/api\/licenses\/(L[0-9a-f]+)(?:\/([a-z_]+))?$/)
       if (m && !m[2] && req.method === 'GET') return await licenseDetail(env, m[1])
       if (m && m[2] && req.method === 'POST') return await licenseAction(env, req, admin, m[1], m[2], b)

@@ -88,6 +88,16 @@ _VAI_TRO = {
               "Chu the o giua, ro net, nen gon."),
 }
 
+# KHUNG NGANG 16:9 (canvas.py): panel / the nam BEN CANH nguoi noi thay vi tren / duoi
+_VAI_TRO_NGANG = {
+    "split": ("anh mot BEN man hinh ngang (ben kia la nguoi noi)",
+              "Chu the o giua anh, bo cuc vua khung panel dung, chua mot vung trong gon cho chu."),
+    "card": ("anh ben TRAI man hinh ngang, ben phai la the video nguoi noi",
+             "Chu the o giua, ro net, nen don gian."),
+    "broll": ("anh B-roll TOAN man hinh ngang 16:9, tieng nguoi noi van chay",
+              "Chu the chiem 1/3 giua khung, chua khoang trong sach o 1/4 phia duoi cho phu de."),
+}
+
 _BG_PLAIN = ""
 
 _BG_CUTOUT = ("NEN: chu the dat giua, TRON VEN, khong bi cat mep, tren NEN TRON MOT MAU sang (xam nhat), "
@@ -126,6 +136,8 @@ def _context_text(ctx):
         rows.append("- ANH MAU DINH KEM = anh THAT cua nguoi dung (%s). Ve DUNG chu the trong anh mau (hinh dang, mau "
                     "sac, nhan mac, bao bi, ti le), dat vao boi canh cua MO TA ANH; khong ve san pham khac, khong chep "
                     "nguyen anh mau, khong them chu / logo moi." % ctx["anh_mau"])
+    if ctx.get("khung_video"):
+        rows.append("- KHUNG VIDEO: %s — moi cho noi video doc 9:16 / TikTok o tren hieu la khung nay." % ctx["khung_video"])
     if ctx.get("vai_tro"):
         rows.append("- Vi tri tren man hinh: %s." % ctx["vai_tro"])
     if ctx.get("loi_noi"):

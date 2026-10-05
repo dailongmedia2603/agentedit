@@ -2,6 +2,7 @@
 // Moi moc gio o day la gio TREN TIMELINE (giay), da quy doi xong tu gio nguon.
 // Composition chi VE theo spec, khong tu quyet dinh noi dung — muon doi cach
 // chon thi sua o sidecar, muon doi cach ve thi sua o remotion-src/.
+import type { TextTemplateSpec } from './textTemplate/spec'
 
 export interface RSTransition {
   type: string // id trong remotion_catalog.json -> transitions
@@ -159,7 +160,7 @@ export interface RSLayer {
   start: number
   end: number
   track: number
-  type: 'text' | 'box' | 'circle' | 'ring' | 'line' | 'arrow' | 'image' | 'emoji' | 'badge' | 'counter' | 'progress' | 'speedlines' | 'video'
+  type: 'text' | 'box' | 'circle' | 'ring' | 'line' | 'arrow' | 'image' | 'emoji' | 'badge' | 'counter' | 'progress' | 'speedlines' | 'video' | 'tpl'
   /** Lop dung TU LIEU cua nguoi dung (id): anh / video hien len video (sidecar user_media.py) */
   um?: string
   /** Lop 'video': giay bat dau trong file tu lieu */
@@ -230,6 +231,12 @@ export interface RSLayer {
   replacesSubtitle?: boolean
   /** Nam SAU nguoi noi (giua nen video va nguoi) — can clip.subject */
   behind?: boolean
+  /** Lop 'tpl' (mau chu KHO TEXT): spec cua mau + thu muc file (font / anh) + chu THAT tung o.
+   *  (x, y) = tam khoi chu cua mau tren khung; tplBox = khoi chu tren khung goc cua mau (px) */
+  tpl?: TextTemplateSpec
+  tplDir?: string
+  texts?: Record<string, string>
+  tplBox?: [number, number, number, number]
 }
 
 export type CaptionRole = 'hero' | 'support' | 'micro'

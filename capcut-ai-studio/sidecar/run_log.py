@@ -66,13 +66,17 @@ def current():
 
 def carry(fn):
     """Boc fn de chay o LUONG PHU (ThreadPoolExecutor) van ghi vao run hien hanh cua luong goi.
-    Nhat ky theo luong -> khong boc thi moi su kien / lan goi AI trong luong phu bi mat."""
+    Nhat ky theo luong -> khong boc thi moi su kien / lan goi AI trong luong phu bi mat. Khung video (doc / ngang,
+    canvas.use) cua luong goi cung di theo."""
+    import canvas
     run = current()
+    khung = canvas.size()
 
     def w(*a, **k):
         set_run(run)
         try:
-            return fn(*a, **k)
+            with canvas.use(*khung):
+                return fn(*a, **k)
         finally:
             set_run(None)
     return w

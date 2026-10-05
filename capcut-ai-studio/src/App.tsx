@@ -6,8 +6,7 @@ import {
   Bell,
   UserCircle2,
   FolderClock,
-  Music2,
-  Laugh,
+  Library,
   ScrollText,
   MonitorPlay
 } from 'lucide-react'
@@ -17,15 +16,15 @@ import DoctorPage from '@/pages/Doctor'
 import { useDoctor } from '@/lib/useDoctor'
 import SettingsPage from '@/pages/Settings'
 import ProjectsPage from '@/pages/Projects'
-import SfxPage from '@/pages/Sfx'
-import MemesPage from '@/pages/Memes'
+import ResourcesPage from '@/pages/Resources'
 import PromptsPage from '@/pages/Prompts'
 import CreateVideoPage from '@/pages/CreateVideo'
 import { IS_WIN } from './lib/platform'
 import { installSecretToggle, useFullUi } from './lib/clientUi'
 import { planLabel, fmtDate } from './components/LicenseGate'
+import { kickHarvest } from './lib/fxHarvest'
 
-type Tab = 'doctor' | 'settings' | 'sfx' | 'memes' | 'prompts' | 'remotion' | 'projects'
+type Tab = 'doctor' | 'settings' | 'resources' | 'prompts' | 'remotion' | 'projects'
 
 function Sparkline() {
   const pts = [6, 10, 7, 13, 9, 15, 11, 17, 12, 18, 14]
@@ -89,6 +88,8 @@ export default function App() {
     if (ready && !syncedOnce) {
       setSyncedOnce(true)
       window.studio.syncLibrary?.().catch(() => {})
+      // Kho hieu ung: lam tiep viec nen con do (preview / Gemini nhan / gui kho chung) tu lan truoc
+      kickHarvest()
     }
   }, [ready, syncedOnce])
 
@@ -107,8 +108,7 @@ export default function App() {
   const nav: { id: Tab; label: string; icon: typeof Stethoscope }[] = [
     { id: 'doctor', label: 'Doctor', icon: Stethoscope },
     { id: 'settings', label: 'Cài đặt API', icon: SettingsIcon },
-    { id: 'sfx', label: 'Kho âm thanh', icon: Music2 },
-    { id: 'memes', label: 'Kho meme', icon: Laugh },
+    { id: 'resources', label: 'Tài nguyên', icon: Library },
     { id: 'prompts', label: 'Prompt & quy tắc', icon: ScrollText },
     { id: 'remotion', label: 'Tạo video', icon: MonitorPlay },
     { id: 'projects', label: 'Video đã tạo', icon: FolderClock }
@@ -216,8 +216,7 @@ export default function App() {
             />
           )}
           {tab === 'settings' && <SettingsPage />}
-          {tab === 'sfx' && <SfxPage />}
-          {tab === 'memes' && <MemesPage />}
+          {tab === 'resources' && <ResourcesPage />}
           {tab === 'projects' && (
             <ProjectsPage
               openProject={openProject}

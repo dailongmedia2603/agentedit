@@ -30,6 +30,7 @@ import { SourceBriefView, ReferenceAnalysisView, GuardView } from '@/components/
 import { RemotionPreview, RemotionPlanView, RemotionReferenceExtra, fmtBytes, planAiName } from '@/components/RemotionViews'
 import EditRequestForm from '@/components/EditRequestForm'
 import BrandGuideForm, { compactBrandGuide, emptyBrandGuide } from '@/components/BrandGuideForm'
+import OrientationPicker, { orientationOf } from '@/components/OrientationPicker'
 import { LibraryPicker, SavedBadge, useLibraryLookup } from '@/components/LibraryPicker'
 import RunLogPanel from '@/components/RunLogPanel'
 import { isFullUi, useFullUi } from '@/lib/clientUi'
@@ -40,6 +41,7 @@ import { loadVideoMeta } from '@/lib/media'
 import type { RenderSpec } from '../../remotion-src/types'
 import { IS_WIN, REVEAL_LABEL } from '../lib/platform'
 import { acquire, cancelWait, waitPosition, QueueCancelled, type Lane } from '@/lib/jobQueue'
+import { harvestAfterRender } from '@/lib/fxHarvest'
 import { useJobQueue } from '@/lib/useJobQueue'
 
 /** Khop sidecar remotion_plan.SPEC_MEDIA_VERSION — spec cu hon thi dung lai tu plan khi mo du an */
@@ -167,6 +169,8 @@ export default function RemotionStudioPage({
   const [referenceVideo, setReferenceVideo] = useState<VideoFile | null>(null)
   const [editRequest, setEditRequest] = useState<EditRequest>(emptyEditRequest)
   const [brandGuide, setBrandGuide] = useState<BrandGuide>(emptyBrandGuide)
+  // Loai video tao ra: doc 9:16 (mac dinh) / ngang 16:9 — gui kem lap ke hoach (sidecar canvas.py)
+  const [orientation, setOrientation] = useState<VideoOrientation>('portrait')
   const [workDir, setWorkDir] = useState('')
   const [brief, setBrief] = useState<SourceBrief | null>(null)
   const [referenceAnalysis, setReferenceAnalysis] = useState<RemotionReferenceAnalysis | null>(null)
@@ -257,6 +261,8 @@ export default function RemotionStudioPage({
     setReferenceVideo(p.referenceVideo || null)
     setEditRequest({ ...emptyEditRequest, ...(p.editRequest || {}) })
     setBrandGuide({ ...emptyBrandGuide, ...(p.brandGuide || {}) })
+    // du an cu (truoc khi co lua chon) -> theo khung cua ban dung (deu la doc)
+    setOrientation(p.orientation || orientationOf(p.rmSpec))
     setWorkDir(p.workDir || '')
     setBrief((p.sourceBrief as SourceBrief) || null)
     setReferenceAnalysis((p.referenceAnalysis as RemotionReferenceAnalysis) || null)
@@ -386,6 +392,7 @@ export default function RemotionStudioPage({
       referenceVideo,
       editRequest: compactEditRequest(editRequest),
       brandGuide: compactBrandGuide(brandGuide),
+      orientation,
       workDir,
       sourceBrief: brief || undefined,
       referenceAnalysis: referenceAnalysis || undefined,
@@ -400,7 +407,14 @@ export default function RemotionStudioPage({
     }
     window.studio.projectSave(proj)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [videos, referenceVideo, editRequest, brandGuide, workDir, brief, referenceAnalysis, plan, spec, summary, render, guard, stage, error, running, projectId, userMedia])
+  }, [videos, referenceVideo, editRequest, brandGuide, orientation, workDir, brief, referenceAnalysis, plan, spec, summary, render, guard, stage, error, running, projectId, userMedia])
+
+  // Khung cua ban dung (xem truoc / video da render): ngang -> khung xem rong, xep doc thay vi canh nhau
+  const wide = (spec ? orientationOf(spec) : orientation) === 'landscape'
+  const dimsLabel = spec ? `${spec.width}×${spec.height}` : wide ? '1920×1080' : '1080×1920'
+  const playerBox = wide ? 'w-full max-w-[760px]' : 'w-full max-w-[340px] shrink-0 self-center lg:self-start'
+  const playerRow = wide ? 'flex flex-col gap-5' : 'flex flex-col gap-5 lg:flex-row'
+  const aspectCls = wide ? 'aspect-video' : 'aspect-[9/16]'
 
   // Bao trang thai the len CreateVideo (ten the, chip, dang ban). mediaBusy = dang chep / chuyen SDR video vao du an
   const renderPctInfo = running === 'render' && !waitLane ? Math.round(((renderEv?.progress ?? 0) as number) * 100) : null
@@ -463,6 +477,7 @@ export default function RemotionStudioPage({
     setReferenceVideo(null)
     setEditRequest(emptyEditRequest)
     setBrandGuide(emptyBrandGuide)
+    setOrientation('portrait')
     setUserMedia([])
     setWorkDir('')
     setBrief(null)
@@ -868,7 +883,8 @@ export default function RemotionStudioPage({
       .catch(() => undefined)
     logUi(rid, fresh ? 'Bấm lập plan MỚI (bỏ qua kết quả đã lưu)' : 'Bắt đầu lập kế hoạch dựng video', 'info', {
       co_video_mau: !!refAn,
-      tu_lieu: userMediaRef.current.map((m) => ({ id: m.id, name: m.name, use: m.use, placement: m.placement, note: m.note }))
+      tu_lieu: userMediaRef.current.map((m) => ({ id: m.id, name: m.name, use: m.use, placement: m.placement, note: m.note })),
+      loai_video: orientation
     })
     let release: (() => void) | null = null
     try {
@@ -899,7 +915,9 @@ export default function RemotionStudioPage({
               analysis: analysis || null
             }))
           : undefined,
+        orientation,
         title: deriveTopic(useBrief),
+        project: rid,
         fresh
       })
       if (stale(g)) return
@@ -1005,6 +1023,8 @@ export default function RemotionStudioPage({
       if (ev.type === 'done' && ev.output) {
         setRender({ output: ev.output, size: ev.size, seconds: ev.seconds, at: Date.now() })
         logUi(rid, `Render xong: ${ev.output} (${fmtBytes(ev.size)}, ${Math.round(ev.seconds || 0)}s)`, 'ok')
+        // Kho hieu ung: video da xong -> dong goi hieu ung tu viet de video sau dung lai (chay nen, khong chan gi)
+        harvestAfterRender(plan, rid, orientationOf(spec))
         setStage('done')
       } else if (ev.type === 'cancelled') {
         logUi(rid, 'Đã huỷ render', 'warn')
@@ -1551,6 +1571,8 @@ export default function RemotionStudioPage({
             </CardBody>
           </Card>
 
+          <OrientationPicker value={orientation} onChange={setOrientation} built={spec ? orientationOf(spec) : null} />
+
           <EditRequestForm value={editRequest} onChange={setEditRequest} />
 
           <BrandGuideForm value={brandGuide} onChange={setBrandGuide} />
@@ -1645,7 +1667,7 @@ export default function RemotionStudioPage({
           <CardHeader className="flex items-center gap-2">
             <MonitorPlay className="h-5 w-5 text-brand-500" />
             <span className="font-semibold text-ink-900">Xem trước bản dựng</span>
-            <span className="text-xs text-ink-800/40">· {fmtTime(spec.duration)} · 1080×1920</span>
+            <span className="text-xs text-ink-800/40">· {fmtTime(spec.duration)} · {dimsLabel}</span>
           </CardHeader>
           <CardBody>
             {notice && (
@@ -1653,12 +1675,12 @@ export default function RemotionStudioPage({
                 {notice}
               </div>
             )}
-            <div className="flex flex-col gap-5 lg:flex-row">
-              <div className="w-full max-w-[340px] shrink-0 self-center lg:self-start">
+            <div className={playerRow}>
+              <div className={playerBox}>
                 {mediaBase ? (
                   <RemotionPreview spec={spec} mediaBase={mediaBase} />
                 ) : (
-                  <div className="flex aspect-[9/16] items-center justify-center rounded-2xl bg-black/80">
+                  <div className={cn('flex items-center justify-center rounded-2xl bg-black/80', aspectCls)}>
                     <Spinner className="h-6 w-6" />
                   </div>
                 )}
@@ -1672,12 +1694,12 @@ export default function RemotionStudioPage({
                 <div className="rounded-xl border border-black/8 bg-ink-50 p-3 text-xs text-ink-800/60">
                   {fullUi ? (
                     <>
-                      Render xuất MP4 1080×1920, 30fps, H.264 + AAC. Lần đầu app tải trình render (~90MB) vào{' '}
+                      Render xuất MP4 {dimsLabel}, 30fps, H.264 + AAC. Lần đầu app tải trình render (~90MB) vào{' '}
                       <code className="rounded bg-black/5 px-1">{IS_WIN ? '%USERPROFILE%\\.capcut-studio\\remotion' : '~/.capcut-studio/remotion'}</code>. Video 40 giây mất khoảng
                       1–3 phút tuỳ máy.
                     </>
                   ) : (
-                    <>Xuất MP4 1080×1920, 30fps. Lần đầu xuất video app tải thêm ~90MB (một lần). Video 40 giây mất khoảng 1–3 phút tuỳ máy.</>
+                    <>Xuất MP4 {dimsLabel}, 30fps. Lần đầu xuất video app tải thêm ~90MB (một lần). Video 40 giây mất khoảng 1–3 phút tuỳ máy.</>
                   )}
                 </div>
                 <div className="flex flex-wrap gap-2 pt-1">
@@ -1712,18 +1734,18 @@ export default function RemotionStudioPage({
             <span className="font-semibold text-ink-900">Hoàn tất — video đã render xong</span>
           </CardHeader>
           <CardBody>
-            <div className="flex flex-col gap-5 lg:flex-row">
-              <div className="w-full max-w-[340px] shrink-0 self-center lg:self-start">
+            <div className={playerRow}>
+              <div className={playerBox}>
                 {finalUrl ? (
                   <video
                     key={finalUrl}
                     src={finalUrl}
                     controls
                     playsInline
-                    className="aspect-[9/16] w-full rounded-2xl bg-black object-contain"
+                    className={cn('w-full rounded-2xl bg-black object-contain', aspectCls)}
                   />
                 ) : (
-                  <div className="flex aspect-[9/16] items-center justify-center rounded-2xl bg-black/80">
+                  <div className={cn('flex items-center justify-center rounded-2xl bg-black/80', aspectCls)}>
                     <Spinner className="h-6 w-6" />
                   </div>
                 )}
@@ -1734,7 +1756,7 @@ export default function RemotionStudioPage({
                   <div className="mt-1 flex flex-wrap gap-2">
                     {render.size ? <Badge tone="neutral">{fmtBytes(render.size)}</Badge> : null}
                     {render.seconds ? <Badge tone="neutral">render {Math.round(render.seconds)}s</Badge> : null}
-                    {spec && <Badge tone="neutral">{fmtTime(spec.duration)} · 1080×1920</Badge>}
+                    {spec && <Badge tone="neutral">{fmtTime(spec.duration)} · {dimsLabel}</Badge>}
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">

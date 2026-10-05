@@ -18,6 +18,12 @@ interface RenderJob {
   output: string
   concurrency?: number | null
   licenseKey?: string | null
+  /** Chi bat tren Mac: Chrome ve bang GPU (Metal) + nen H.264 bang VideoToolbox. Windows giu CPU vi
+   *  Remotion chon h264_nvenc (chi card NVIDIA) ma khong kiem tra may co card hay khong. */
+  accel?: boolean
+  /** Preview Kho hieu ung: thu nho (0.5 = 540x960) + khong tieng — file nho, render nhanh */
+  scale?: number
+  muted?: boolean
 }
 
 type Out =
@@ -49,6 +55,16 @@ function binariesDirectory(): string | null {
   } catch {
     return null
   }
+}
+
+/** Chip nen VideoToolbox de mac dinh: khong khung B + khung I moi ~0.4s -> file to hon x264 ~30%.
+ *  Remotion khong cho dat CRF khi nen phan cung -> chen thang vao lenh ffmpeg: giu chat luong q70 (tu cap
+ *  bit theo canh), khung B, khung I moi 2s. Render that 45s 1080x1920: 81.6MB -> 50.5MB (x264 cu 62.7MB),
+ *  VMAF so ban x264 95.5 -> 96.0, khung xau nhat 88.4 -> 88.5. Chi dong vao lenh dang dung h264_videotoolbox. */
+const VIDEOTOOLBOX_ARGS = ['-q:v', '70', '-bf', '2', '-g', '60']
+const tuneVideotoolbox = ({ args }: { args: string[] }): string[] => {
+  const i = args.indexOf('h264_videotoolbox')
+  return i < 0 ? args : [...args.slice(0, i + 1), ...VIDEOTOOLBOX_ARGS, ...args.slice(i + 1)]
 }
 
 let cancelCurrent: (() => void) | null = null
@@ -96,19 +112,22 @@ async function run(job: RenderJob) {
       logLevel: 'warn'
     })
     const totalFrames = composition.durationInFrames
-    await renderMedia({
+    const renderOnce = (accel: boolean) => renderMedia({
       composition,
       serveUrl: job.serveUrl,
       codec: 'h264',
-      audioCodec: 'aac',
+      ...(job.muted ? {} : { audioCodec: 'aac' as const }),
       outputLocation: job.output,
       inputProps,
       overwrite: true,
       concurrency: job.concurrency ?? null,
+      ...(job.scale ? { scale: job.scale } : {}),
+      ...(job.muted ? { muted: true } : {}),
       binariesDirectory: binDir,
       cancelSignal,
       timeoutInMilliseconds: 120000,
       logLevel: 'warn',
+      ...(accel ? { chromiumOptions: { gl: 'angle' as const }, hardwareAcceleration: 'if-possible' as const, ffmpegOverride: tuneVideotoolbox } : {}),
       ...(job.licenseKey ? { licenseKey: job.licenseKey } : {}),
       onProgress: ({ progress, renderedFrames, encodedFrames, stitchStage }) =>
         throttle({
@@ -121,6 +140,15 @@ async function run(job: RenderJob) {
           totalFrames
         })
     })
+    try {
+      await renderOnce(!!job.accel)
+    } catch (e) {
+      // GPU/chip nen loi (driver, may ao...) -> render lai bang CPU nhu cu, nguoi dung chi thay cham hon
+      if (cancelled || !job.accel) throw e
+      const err = e as Error
+      send({ type: 'log', jobId: job.jobId, level: 'warn', message: `Render bằng GPU lỗi, render lại bằng CPU: ${(err && err.message) || String(e)}` })
+      await renderOnce(false)
+    }
     const size = existsSync(job.output) ? statSync(job.output).size : 0
     send({ type: 'done', jobId: job.jobId, output: job.output, size, seconds: (Date.now() - t0) / 1000 })
   } catch (e) {

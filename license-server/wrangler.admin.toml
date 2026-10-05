@@ -12,6 +12,11 @@ binding = "DB"
 database_name = "agent-edit-license"
 database_id = "ead20a13-5d68-429e-afda-79603495ec9b"
 
+# Kho hieu ung chung: xem preview / code de duyet, xoa file khi tu choi
+[[r2_buckets]]
+binding = "LIB"
+bucket_name = "agent-edit"
+
 [vars]
 ADMIN_EMAIL = "dailongmedia.agency@gmail.com"
 # Dien sau khi bat Cloudflare Access cho Worker nay (xem README.md)

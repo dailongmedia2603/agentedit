@@ -212,7 +212,8 @@ const ClipLayer: React.FC<{ clip: RSClip; prev: RSClip | null; base?: string; cw
               transparent
               pauseWhenBuffering
               acceptableTimeShiftInSeconds={SUBJECT_SYNC_SEC}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: pos }}
+              // clip nen mo (khac chieu khung, vd video doc tren khung ngang) ve video kieu contain -> ban tach nguoi cung vay
+              style={{ width: '100%', height: '100%', objectFit: clip.fit === 'blur' ? 'contain' : 'cover', objectPosition: pos }}
             />
           </Sequence>
         </AbsoluteFill>
@@ -357,7 +358,7 @@ const VideoLayer: React.FC<{ spec: RenderSpec; subject?: boolean }> = ({ spec, s
   const { fps, width: W, height: H } = useVideoConfig()
   const t = frame / fps
   const map = useFisheyeMap()
-  const cam0 = cameraAt(spec.effects as RSEffect[], t, W)
+  const cam0 = cameraAt(spec.effects as RSEffect[], t, W, H)
   // bien doi khung tu viet (rung / zoom / nghieng / doi mau) — ap CA ban goc lan ban "chi nguoi"
   const ft = fxTransformAt(spec.fxTransforms, t, fps)
   const cam = { ...cam0, scale: cam0.scale * ft.scale, tx: cam0.tx + ft.x, ty: cam0.ty + ft.y, rotate: cam0.rotate + ft.rotate }
@@ -470,7 +471,9 @@ const OverlayClip: React.FC<{ o: RSOverlay; base?: string }> = ({ o, base }) => 
   const sp = spring({ frame, fps, config: { damping: 13, stiffness: 190 } })
   const dur = o.end - o.start
   const out = clamp01((dur - frame / fps) / 0.18)
-  const w = W * 0.72 * (o.scale || 1)
+  // theo CANH NGAN: khung doc = 0.72 be ngang nhu cu; khung ngang khong de meme chiem 72% cua 1920px
+  const S = Math.min(W, H)
+  const w = S * 0.72 * (o.scale || 1)
   return (
     <div
       style={{
@@ -480,10 +483,10 @@ const OverlayClip: React.FC<{ o: RSOverlay; base?: string }> = ({ o, base }) => 
         top: H * (0.5 + o.y / 2),
         transform: `translateY(-50%) scale(${(0.7 + 0.3 * sp) * out})`,
         opacity: out,
-        borderRadius: W * 0.03,
+        borderRadius: S * 0.03,
         overflow: 'hidden',
         boxShadow: '0 24px 60px rgba(0,0,0,0.5)',
-        border: `${Math.round(W * 0.006)}px solid rgba(255,255,255,0.9)`
+        border: `${Math.round(S * 0.006)}px solid rgba(255,255,255,0.9)`
       }}
     >
       <OffthreadVideo

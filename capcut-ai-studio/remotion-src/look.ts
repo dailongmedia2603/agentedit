@@ -186,7 +186,18 @@ function zoomEnv(t: number, s: number, e: number, fadeIn = ZOOM_EASE, fadeOut = 
   return easeInOut(envelope(t, s, e, fadeIn, fadeOut))
 }
 
-export function cameraAt(effects: RSEffect[], t: number, W: number): Camera {
+/** He so px thiet ke -> px khung: px thiet ke tinh tren CANH NGAN 1080 (khung doc 1080x1920 lan khung ngang
+ *  1920x1080 deu = 1). Truoc 2026-10-04 la W / 1080 — dung voi khung doc, nhung khung ngang se phong chu 1.78 lan. */
+export function pxScale(W: number, H: number): number {
+  return Math.min(W, H) / 1080
+}
+
+/** Be ngang khoi phu de / caption (phan be ngang khung) — KHOP sidecar canvas.caption_frac */
+export function captionFrac(W: number, H: number): number {
+  return W > H ? 0.7 : 0.86
+}
+
+export function cameraAt(effects: RSEffect[], t: number, W: number, H: number = W): Camera {
   const cam: Camera = { scale: 1, tx: 0, ty: 0, rotate: 0, blur: 0, grayscale: 0, rgbSplit: 0, fisheye: 0, focus: 0 }
   for (const fx of effects) {
     if (t < fx.start || t > fx.end) continue
@@ -217,8 +228,8 @@ export function cameraAt(effects: RSEffect[], t: number, W: number): Camera {
       case 'shake': {
         const amp = 26 * I * (1 - 0.6 * clamp01(local / dur))
         const k = Math.round(t * 30)
-        cam.tx += (random(`${fx.id}x${k}`) - 0.5) * 2 * amp * (W / 1080)
-        cam.ty += (random(`${fx.id}y${k}`) - 0.5) * 2 * amp * (W / 1080)
+        cam.tx += (random(`${fx.id}x${k}`) - 0.5) * 2 * amp * pxScale(W, H)
+        cam.ty += (random(`${fx.id}y${k}`) - 0.5) * 2 * amp * pxScale(W, H)
         cam.rotate += (random(`${fx.id}r${k}`) - 0.5) * 2.4 * I
         cam.scale *= 1 + 0.04 * zoomEnv(t, fx.start, fx.end, 0.12, 0.2) // phong nhe de rung khong lo vien den
         break

@@ -296,7 +296,7 @@ def measure(item):
     out = {"width": w or None, "height": h or None}
     if w and h:
         out["ti_le"] = round(w / float(h), 4)
-        out["cao_khi_rong_1"] = round(1080.0 / 1920.0 * h / float(w), 4)
+        out["cao_khi_rong_1"] = _cao_khi_rong_1(w, h)
     if item.get("kind") == "image":
         out["alpha"] = bool(info.get("alpha"))
     else:
@@ -463,13 +463,24 @@ def ensure_analyzed(items, log=None, warnings=None):
 # ---------------------------------------------------------------------------
 # DU LIEU CHO AI LAP KE HOACH (R4)
 # ---------------------------------------------------------------------------
+def _cao_khi_rong_1(w, h):
+    """Chieu cao (phan canvas) cua tu lieu khi w = 1 (phu het be ngang) — theo KHUNG hien tai (doc / ngang)."""
+    import canvas
+    return round(canvas.wh() * float(h) / float(w), 4) if w and h else None
+
+
+def _cao(m):
+    """cao_khi_rong_1 tinh LAI theo khung hien tai (so do da luu trong thu vien co the tinh tren khung khac)."""
+    return _cao_khi_rong_1(m.get("width"), m.get("height")) or m.get("cao_khi_rong_1")
+
+
 def planner_view(items):
     """tu_lieu_nguoi_dung trong payload R4: muc dich cua nguoi dung + Gemini + so do cua may."""
     rows = []
     for it in items or []:
         m = it.get("measured") or {}
         do = {"kich_thuoc": "%sx%s" % (m.get("width"), m.get("height")) if m.get("width") else None,
-              "ti_le_rong_cao": m.get("ti_le"), "cao_khi_rong_1": m.get("cao_khi_rong_1")}
+              "ti_le_rong_cao": m.get("ti_le"), "cao_khi_rong_1": _cao(m)}
         if it["kind"] == "image":
             do["nen_trong_suot"] = bool(m.get("alpha"))
         else:
@@ -662,7 +673,7 @@ def _fallback_element(it, sent):
     if it["kind"] == "video":
         dd = an.get("doan_dep") or []
         ms = dd[0]["start"] if dd else 0.0
-    if (read and float(m.get("cao_khi_rong_1") or 0) > 0.75) or it["placement"] in ("split", "fullscreen"):
+    if (read and float(_cao(m) or 0) > 0.75) or it["placement"] in ("split", "fullscreen"):
         sc = {"layout": "split" if it["placement"] == "split" else "broll", "source_id": sid,
               "src_start": round(a, 2), "src_end": round(a + dur, 2),
               "panel": {"asset": it["id"], "fit": "contain" if read else "cover"}, "why": why, "_fallback": True}
@@ -900,9 +911,10 @@ def layer_spec(L, L0, a, duration, changes, label):
     elif not L.get("mask"):
         L["mask"] = "round"
     mw, mh = float(a.get("mw") or 0), float(a.get("mh") or 0)
-    ratio = (1080.0 / 1920.0) * (mh / mw) if mw and mh else (1080.0 / 1920.0) * 0.75
+    import canvas
+    ratio = canvas.wh() * (mh / mw) if mw and mh else canvas.wh() * 0.75
     if L.get("mask") == "circle":
-        ratio = 1080.0 / 1920.0      # khung tron = vuong (cat cover)
+        ratio = canvas.wh()          # khung tron = vuong (cat cover)
     w = providers._f(L.get("w"), 0.6)
     lo = _min_w(a, typ)
     if w < lo:
@@ -1041,7 +1053,9 @@ def panel_media(a, panel, rect):
         if a.get("can_doc_chu"):
             fit = "contain"
         elif mw and mh and rect:
-            r_panel = (rect["w"] * 1080.0) / max(1.0, rect["h"] * 1920.0)
+            import canvas
+            W_, H_ = canvas.size()
+            r_panel = (rect["w"] * W_) / max(1.0, rect["h"] * H_)
             r_media = mw / mh
             if max(r_panel / r_media, r_media / r_panel) > 1.5:
                 fit = "contain"

@@ -20,6 +20,7 @@ import {
   clientCountry,
   logEvent
 } from './shared.js'
+import { FX_ID_RE, FX_FILES, FX_MAX_CODE, FX_MAX_PREVIEW, FX_MAX_META, FX_DAILY_LIMIT, sha256bytes, fxIdOf, cleanMeta } from './fx.js'
 
 const CLOCK_SKEW_MS = 10 * 60 * 1000 // gio may khach lech qua 10 phut -> bao gio server de app tu bu
 const TICKET_TTL_MS = 3 * 24 * 3600 * 1000 // ve cho sidecar; app lay ve moi moi lan mo + moi lan phan tich
@@ -40,6 +41,8 @@ const MSG = {
   not_activated: 'Key chưa được kích hoạt trên máy này.',
   other_machine: 'Key này đã được kích hoạt trên một máy khác. Mỗi key chỉ dùng cho 1 máy.',
   no_library: 'Kho chưa sẵn sàng trên máy chủ.',
+  fx_bad: 'Gói hiệu ứng không hợp lệ.',
+  fx_limit: 'Đã gửi quá nhiều hiệu ứng hôm nay — thử lại ngày mai.',
   server: 'Máy chủ bản quyền gặp lỗi. Thử lại sau.'
 }
 
@@ -215,11 +218,161 @@ async function handleLicense(req, env) {
         ...m,
         url: `${base}/v1/lib/${kind}/${encodeURIComponent(String(m.file || '').split('/').pop())}?t=${encodeURIComponent(token)}`
       }))
-    out.manifest = { ...manifest, sfx: withUrl(manifest.sfx, 'sfx'), memes: withUrl(manifest.memes, 'memes') }
-    detail += ` — ${out.manifest.sfx.length} SFX, ${out.manifest.memes.length} meme`
+    // Kho Text: 1 mau = 1 thu muc nhieu file -> moi file 1 link tai tam (cung token)
+    const withTextUrls = (rows) =>
+      (Array.isArray(rows) ? rows : [])
+        .filter((m) => safeSeg(String(m.id || '')))
+        .map((m) => ({
+          ...m,
+          files: (Array.isArray(m.files) ? m.files : [])
+            .filter((f) => safeRel(String(f.path || '')))
+            .map((f) => ({
+              ...f,
+              url: `${base}/v1/lib/texts/${encodeURIComponent(m.id)}/${String(f.path).split('/').map(encodeURIComponent).join('/')}?t=${encodeURIComponent(token)}`
+            }))
+        }))
+    // Kho hieu ung chung: lay tu D1 (muc DA DUYET), khong nam trong library-manifest.json -> publish-library.mjs
+    // (sfx/memes/texts) va may gui hieu ung khong ghi de len nhau
+    const fxRows = await env.DB.prepare(
+      "SELECT id, meta, code_sha, preview_sha, code_size, preview_size FROM fx_items WHERE status = 'approved' ORDER BY decided_at LIMIT 3000"
+    ).all()
+    const fxUrl = (id, f) => `${base}/v1/lib/fx/${id}/${f}?t=${encodeURIComponent(token)}`
+    const fx = (fxRows.results || []).map((r) => {
+      let meta = {}
+      try {
+        meta = JSON.parse(r.meta)
+      } catch {
+        /* bo qua */
+      }
+      return {
+        ...meta,
+        id: r.id,
+        code_sha: r.code_sha,
+        files: [
+          { path: 'code.js', sha256: r.code_sha, size: r.code_size, url: fxUrl(r.id, 'code.js') },
+          { path: 'preview.mp4', sha256: r.preview_sha, size: r.preview_size, url: fxUrl(r.id, 'preview.mp4') }
+        ]
+      }
+    })
+    out.manifest = {
+      ...manifest,
+      sfx: withUrl(manifest.sfx, 'sfx'),
+      memes: withUrl(manifest.memes, 'memes'),
+      texts: withTextUrls(manifest.texts),
+      fx
+    }
+    detail += ` — ${out.manifest.sfx.length} SFX, ${out.manifest.memes.length} meme, ${out.manifest.texts.length} mau chu, ${fx.length} hieu ung`
   }
   await logEvent(env, lic.id, event, req, detail)
   return json(out)
+}
+
+/** 1 doan ten an toan (khong /, \\, ., ..) */
+function safeSeg(x) {
+  return !!x && !x.includes('/') && !x.includes('\\') && x !== '.' && x !== '..'
+}
+/** duong dan tuong doi an toan cho file trong thu muc mau chu (vd fonts/a.ttf) */
+function safeRel(x) {
+  if (!x || x.startsWith('/') || x.includes('\\')) return false
+  return x.split('/').every(safeSeg)
+}
+
+/**
+ * May khach GUI 1 hieu ung tu viet vao kho chung. multipart: p (JSON ky), s (chu ky khoa thiet bi), meta (JSON),
+ * code (chuoi), preview (mp4). p = {op:'fx_upload', key, dev, fp, ts, id, meta_sha, code_sha, preview_sha}.
+ * Key phai dang dung duoc + DUNG may da gan (khong kich hoat moi o day). May trong trusted_licenses -> tu duyet.
+ * Gui lai muc da co -> tra trang thai hien tai (khong ghi de file / meta cua muc da duyet).
+ */
+async function handleFxUpload(req, env) {
+  const len = Number(req.headers.get('content-length') || 0)
+  if (!len || len > FX_MAX_PREVIEW + FX_MAX_CODE * 4 + FX_MAX_META * 4 + 64 * 1024) return fail('fx_bad', {}, 413)
+  let form
+  try {
+    form = await req.formData()
+  } catch {
+    return fail('bad_request', {}, 400)
+  }
+  const rawP = form.get('p')
+  const sig = form.get('s')
+  if (typeof rawP !== 'string' || typeof sig !== 'string' || rawP.length > 8000) return fail('bad_request', {}, 400)
+  let p
+  try {
+    p = JSON.parse(rawP)
+  } catch {
+    return fail('bad_request', {}, 400)
+  }
+  if (p.op !== 'fx_upload' || typeof p.dev !== 'string' || !validFp(p.fp) || !FX_ID_RE.test(String(p.id || ''))) {
+    return fail('bad_request', {}, 400)
+  }
+  const ip = clientIp(req)
+  if (await throttled(env, ip)) return fail('throttled')
+  let devKey
+  try {
+    devKey = await importDevicePub(p.dev)
+  } catch {
+    return fail('bad_request', {}, 400)
+  }
+  if (!(await verifyDevice(devKey, rawP, sig))) return fail('bad_signature')
+  const now = Date.now()
+  if (typeof p.ts !== 'number' || Math.abs(now - p.ts) > CLOCK_SKEW_MS) return fail('clock')
+  const norm = normalizeKey(p.key)
+  if (!norm) {
+    await addFail(env, ip)
+    return fail('invalid_key')
+  }
+  const lic = await env.DB.prepare('SELECT * FROM licenses WHERE key_hash = ?').bind(await keyHash(norm)).first()
+  if (!lic) {
+    await addFail(env, ip)
+    return fail('invalid_key')
+  }
+  if (lic.status !== 'active') return fail('locked')
+  if (lic.expires_at && now > lic.expires_at) return fail('expired', { expires_at: lic.expires_at })
+  if (!lic.device_pub) return fail('not_activated')
+  if (lic.device_pub !== p.dev || !fpMatch(lic.fp ? JSON.parse(lic.fp) : null, p.fp)) return fail('other_machine')
+
+  const meta = form.get('meta')
+  const code = form.get('code')
+  const preview = form.get('preview')
+  if (typeof meta !== 'string' || meta.length > FX_MAX_META || typeof code !== 'string' || !code.trim() || code.length > FX_MAX_CODE) {
+    return fail('fx_bad', { why: 'meta/code' })
+  }
+  if (!preview || typeof preview === 'string' || !preview.size || preview.size > FX_MAX_PREVIEW) return fail('fx_bad', { why: 'preview' })
+  const codeBuf = new TextEncoder().encode(code)
+  const prevBuf = await preview.arrayBuffer()
+  const metaSha = await sha256bytes(new TextEncoder().encode(meta))
+  const codeSha = await sha256bytes(codeBuf)
+  const prevSha = await sha256bytes(prevBuf)
+  // chu ky phu ca 3 phan (khong ai chen code / preview khac vao goi da ky)
+  if (metaSha !== p.meta_sha || codeSha !== p.code_sha || prevSha !== p.preview_sha) return fail('fx_bad', { why: 'sha' })
+  let m
+  try {
+    m = JSON.parse(meta)
+  } catch {
+    return fail('fx_bad', { why: 'meta' })
+  }
+  const kind = m?.kind === 'transform' ? 'transform' : m?.kind === 'overlay' ? 'overlay' : null
+  if (!kind || m.id !== p.id || (await fxIdOf(kind, code)) !== p.id) return fail('fx_bad', { why: 'id' })
+
+  const have = await env.DB.prepare('SELECT status FROM fx_items WHERE id = ?').bind(p.id).first()
+  if (have) return json({ ok: true, status: have.status, existed: true })
+  const n = await env.DB.prepare('SELECT COUNT(*) AS n FROM fx_items WHERE license_id = ? AND created_at > ?')
+    .bind(lic.id, now - 24 * 3600 * 1000)
+    .first()
+  if ((n?.n || 0) >= FX_DAILY_LIMIT) return fail('fx_limit')
+  const trusted = await env.DB.prepare('SELECT 1 AS t FROM trusted_licenses WHERE license_id = ?').bind(lic.id).first()
+  const status = trusted ? 'approved' : 'pending'
+  const clean = cleanMeta(m, p.id, kind)
+  await env.LIB.put(`fx/${p.id}/code.js`, codeBuf, { httpMetadata: { contentType: 'text/javascript; charset=utf-8' } })
+  await env.LIB.put(`fx/${p.id}/preview.mp4`, prevBuf, { httpMetadata: { contentType: 'video/mp4' } })
+  await env.DB.prepare(
+    `INSERT INTO fx_items (id, license_id, status, kind, meta, code_sha, preview_sha, code_size, preview_size, created_at, decided_at, decided_by)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  )
+    .bind(p.id, lic.id, status, kind, JSON.stringify(clean), codeSha, prevSha, codeBuf.length, prevBuf.byteLength, now,
+      trusted ? now : null, trusted ? 'tu duyet (may tin cay)' : null)
+    .run()
+  await logEvent(env, lic.id, 'fx_upload', req, `${p.id} ${clean.label.name || ''} -> ${status}`)
+  return json({ ok: true, status })
 }
 
 async function handleDownload(req, env, kind, rawName) {
@@ -240,8 +393,15 @@ async function handleDownload(req, env, kind, rawName) {
   } catch {
     return new Response('bad name', { status: 400 })
   }
-  if (!name || name.includes('/') || name.includes('\\') || name === '.' || name === '..') {
+  if (kind === 'texts' || kind === 'fx' ? !safeRel(name) || name.split('/').length < 2 : !safeSeg(name)) {
     return new Response('bad name', { status: 400 })
+  }
+  if (kind === 'fx') {
+    // fx/<id>/<code.js|preview.mp4> va CHI muc da duyet (muc cho duyet / bi tu choi khong tai duoc)
+    const [fid, f, ...rest] = name.split('/')
+    if (rest.length || !FX_ID_RE.test(fid) || !FX_FILES.includes(f)) return new Response('bad name', { status: 400 })
+    const row = await env.DB.prepare("SELECT status FROM fx_items WHERE id = ?").bind(fid).first()
+    if (!row || row.status !== 'approved') return new Response('not found', { status: 404 })
   }
   const obj = await env.LIB.get(`${kind}/${name}`)
   if (!obj) return new Response('not found', { status: 404 })
@@ -260,6 +420,21 @@ export default {
       if (url.pathname === '/v1/license' && req.method === 'POST') return await handleLicense(req, env)
       const m = url.pathname.match(/^\/v1\/lib\/(sfx|memes)\/([^/]+)$/)
       if (m && req.method === 'GET') return await handleDownload(req, env, m[1], m[2])
+      // Kho Text: /v1/lib/texts/<id>/<duong dan tuong doi> — giai ma TUNG doan roi kiem an toan
+      const mt = url.pathname.match(/^\/v1\/lib\/texts\/(.+)$/)
+      if (mt && req.method === 'GET') {
+        let rel
+        try {
+          rel = mt[1].split('/').map(decodeURIComponent).join('/')
+        } catch {
+          return new Response('bad name', { status: 400 })
+        }
+        return await handleDownload(req, env, 'texts', encodeURIComponent(rel))
+      }
+      // Kho hieu ung: /v1/lib/fx/<id>/<file>
+      const mf = url.pathname.match(/^\/v1\/lib\/fx\/(fx-[0-9a-f]{12})\/(code\.js|preview\.mp4)$/)
+      if (mf && req.method === 'GET') return await handleDownload(req, env, 'fx', encodeURIComponent(`${mf[1]}/${mf[2]}`))
+      if (url.pathname === '/v1/fx/upload' && req.method === 'POST') return await handleFxUpload(req, env)
       if (url.pathname === '/v1/time') return json({ ok: true, server_time: Date.now() })
       return new Response('Not found', { status: 404 })
     } catch (e) {

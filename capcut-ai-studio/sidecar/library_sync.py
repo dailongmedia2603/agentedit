@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""DONG BO KHO SFX + MEME tu Cloudflare R2 — CHI qua may chu ban quyen (bucket KHONG con cong khai).
+"""DONG BO KHO SFX + MEME + TEXT + HIEU UNG tu Cloudflare R2 — CHI qua may chu ban quyen (bucket KHONG con cong khai).
 
 Tac gia (may co token) dung `scripts/publish-library.mjs` day kho + nhan (Gemini) len R2.
 May khach: Electron main xin manifest tu may chu ban quyen (ky bang khoa thiet bi, key phai dang kich hoat
@@ -9,9 +9,14 @@ tai file THIEU / SAI SHA-256 -> GOP vao kho local theo `id`
 (muc tren R2 ghi de muc cung id; muc nguoi dung tu them GIU NGUYEN). Nhan (emotion/use_when/tags/
 summary) di theo manifest -> may khac KHONG phai goi Gemini lai.
 
+SFX + Meme: 1 muc = 1 file (`file` = ten co ban + `url` tai tam cho chinh file do).
+Kho Text: 1 muc = 1 THU MUC nhieu file (`files` = [{path tuong doi, sha256, url}, ...] — template.json,
+preview.mp4, fonts/*, audio/*, assets/*) vi 1 mau chu gom nhieu tai nguyen.
+Kho hieu ung (fx, 2026-10-05): muc DA DUYET o kho chung (code.js + preview.mp4) — gop bang fx_lib.merge_shared.
+
 An toan du lieu: sao luu library.json truoc khi ghi; tai xong kiem SHA-256 moi nhan; manifest
-loi / rong -> KHONG dong nao bi xoa (chi them/cap nhat). `file` trong kho luu duong dan TUYET DOI
-theo tung may -> pull viet lai theo thu muc local (manifest chi giu ten file).
+loi / rong -> KHONG dong nao bi xoa (chi them/cap nhat). `file`/`dir` trong kho luu duong dan TUYET
+DOI theo tung may -> pull viet lai theo thu muc local (manifest chi giu ten/duong dan tuong doi).
 """
 import os
 import time
@@ -22,6 +27,7 @@ import requests
 
 import engine       # kho SFX: SFX_DIR, SFX_LIB, _load_lib, _save_lib
 import meme_lib     # kho meme: MEME_DIR, MEME_LIB, load_lib, save_lib
+import text_lib     # kho text: TEXT_DIR, TEXT_LIB, load_lib, save_lib
 
 
 
@@ -117,13 +123,67 @@ def _merge_kind(entries, media_dir, cur, log):
     return list(by_id.values()), added, updated, errors
 
 
+def _safe_relpath(rel):
+    """Chuan hoa 1 duong dan TUONG DOI trong manifest text (vd "fonts/Roboto.ttf") -> os.path an toan,
+    tu choi duong dan tuyet doi / ".." (tranh ghi ra ngoai thu muc mau khi manifest bi can thiep)."""
+    rel = (rel or "").replace("\\", "/")
+    parts = [p for p in rel.split("/") if p not in ("", ".")]
+    if not parts or any(p == ".." for p in parts) or os.path.isabs(rel):
+        return None
+    return os.path.join(*parts)
+
+
+def _merge_texts(entries, texts_dir, cur, log):
+    """Gop kho Text: khac sfx/meme, 1 muc la 1 THU MUC NHIEU FILE (`files` = [{path, sha256, url}]).
+    1 file trong muc tai loi -> BO CA MUC do (giu ban local cu neu co) de khong luu mau thieu tai nguyen."""
+    by_id = {t.get("id"): dict(t) for t in cur if t.get("id")}
+    added = updated = 0
+    errors = []
+    for t in entries:
+        tid = t.get("id")
+        files = t.get("files") or []
+        if not tid or not isinstance(files, list) or not files:
+            continue
+        dest_dir = os.path.join(texts_dir, tid)
+        ok = True
+        for f in files:
+            rel = _safe_relpath(f.get("path"))
+            url = f.get("url")
+            if rel is None or not url:
+                errors.append("%s: file khong hop le (%s)" % (tid, f.get("path")))
+                ok = False
+                continue
+            dest = os.path.join(dest_dir, rel)
+            sha = f.get("sha256")
+            try:
+                if _need_download(dest, sha):
+                    _download(url, dest, sha)
+                    if log:
+                        log("  tai %s/%s" % (tid, rel))
+            except Exception as e:
+                errors.append("%s/%s: %s" % (tid, f.get("path"), str(e)[:120]))
+                ok = False
+        if not ok:
+            continue             # loi tai 1 file -> KHONG them muc thieu tai nguyen
+        row = dict(t)
+        row.pop("files", None)   # danh sach file trong manifest, khong luu vao kho
+        row["dir"] = dest_dir    # viet lai duong dan tuyet doi theo may nay
+        if tid in by_id:
+            updated += 1
+        else:
+            added += 1
+        by_id[tid] = row
+    return list(by_id.values()), added, updated, errors
+
+
 def pull(manifest, log=None):
-    """Gop kho SFX + Meme tu manifest (da kem link tai) do may chu ban quyen cap. Khong bao gio xoa muc local."""
+    """Gop kho SFX + Meme + Text tu manifest (da kem link tai) do may chu ban quyen cap. Khong bao gio xoa muc local."""
     if not isinstance(manifest, dict):
         return {"ok": False, "error": "Thieu manifest kho (may chu ban quyen)."}
 
     if log:
-        log("Manifest R2: %d SFX, %d meme" % (len(manifest.get("sfx") or []), len(manifest.get("memes") or [])))
+        log("Manifest R2: %d SFX, %d meme, %d mau chu" % (
+            len(manifest.get("sfx") or []), len(manifest.get("memes") or []), len(manifest.get("texts") or [])))
 
     # SFX
     sfx_lib = engine._load_lib()
@@ -141,9 +201,26 @@ def pull(manifest, log=None):
     meme_lib_data["memes"] = meme_new
     meme_lib.save_lib(meme_lib_data)
 
+    # Text (mau chu dong)
+    text_lib_data = text_lib.load_lib()
+    text_new, text_add, text_upd, text_err = _merge_texts(
+        manifest.get("texts") or [], text_lib.TEXT_DIR, text_lib_data.get("templates", []), log)
+    _backup(text_lib.TEXT_LIB)
+    text_lib_data["templates"] = text_new
+    text_lib.save_lib(text_lib_data)
+
+    # Kho hieu ung chung (muc da duyet; may chu cu khong co khoa "fx" -> khong dong gi toi kho hieu ung)
+    fx_res = None
+    if isinstance(manifest.get("fx"), list):
+        import fx_lib
+        _backup(fx_lib.FX_LIB)
+        fx_res = fx_lib.merge_shared(manifest["fx"], _download, log=log)
+
     return {
         "ok": True,
         "sfx": {"added": sfx_add, "updated": sfx_upd, "total": len(sfx_new), "errors": sfx_err},
         "memes": {"added": meme_add, "updated": meme_upd, "total": len(meme_new), "errors": meme_err},
+        "texts": {"added": text_add, "updated": text_upd, "total": len(text_new), "errors": text_err},
+        "fx": fx_res,
         "manifest_updated": manifest.get("updated"),
     }

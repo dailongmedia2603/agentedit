@@ -390,3 +390,56 @@ export async function libraryManifest(): Promise<unknown> {
 
 // Sidecar tu choi vi ve het han (app mo lien tuc > 3 ngay khong phan tich video) -> lay ve moi 1 lan
 setTicketRefresher(async () => (await checkLicense('refresh')).status === 'ok')
+
+/**
+ * KHO HIEU UNG CHUNG (2026-10-05): gui 1 hieu ung tu viet (meta da loc + code + preview) len may chu ban quyen.
+ * Ky bang khoa thiet bi; chu ky phu bam cua ca 3 phan. Key cua may tin cay -> server tu duyet, con lai cho duyet.
+ * retry = loi tam thoi (mat mang, may chu ban, gioi han ngay) -> thu lai o lan mo app sau, khong danh dau loi.
+ */
+export async function fxUpload(pl: {
+  meta: Record<string, unknown>
+  code: string
+  preview: string
+}): Promise<{ ok: boolean; status?: string; code?: string; message?: string; retry?: boolean }> {
+  if (licenseDisabled()) return { ok: false, retry: true, message: 'Bản quyền đang tắt (dev) — không gửi kho chung.' }
+  const s = loadStored()
+  if (!s) return { ok: false, retry: true, message: 'Chưa kích hoạt key.' }
+  if (apiUrl().includes('REPLACE')) return { ok: false, retry: true, message: 'Chưa cấu hình máy chủ bản quyền.' }
+  const meta = JSON.stringify(pl.meta)
+  const code = readFileSync(pl.code, 'utf-8')
+  const prev = readFileSync(pl.preview)
+  const sha = (b: Buffer) => createHash('sha256').update(b).digest('hex')
+  const fp = await fingerprint()
+  const sk = privKey(s.sk)
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const p = JSON.stringify({
+      op: 'fx_upload',
+      key: s.key,
+      dev: s.pub,
+      fp,
+      ts: Date.now() + clockOffset,
+      id: pl.meta.id,
+      meta_sha: sha(Buffer.from(meta, 'utf-8')),
+      code_sha: sha(Buffer.from(code, 'utf-8')),
+      preview_sha: sha(prev)
+    })
+    const form = new FormData()
+    form.append('p', p)
+    form.append('s', sign(null, Buffer.from(p), sk).toString('base64'))
+    form.append('meta', meta)
+    form.append('code', code)
+    form.append('preview', new Blob([prev], { type: 'video/mp4' }), 'preview.mp4')
+    let j: { ok: boolean; status?: string; code?: string; message?: string; server_time?: number }
+    try {
+      const res = await net.fetch(apiUrl() + '/v1/fx/upload', { method: 'POST', body: form, signal: AbortSignal.timeout(60000) })
+      j = (await res.json()) as typeof j
+    } catch {
+      return { ok: false, retry: true, code: 'offline', message: 'Không kết nối được máy chủ bản quyền.' }
+    }
+    if (typeof j.server_time === 'number') clockOffset = j.server_time - Date.now()
+    if (j.code === 'clock' && attempt === 0) continue
+    const temp = ['offline', 'server', 'throttled', 'clock', 'fx_limit'].includes(String(j.code))
+    return { ok: !!j.ok, status: j.status, code: j.code, message: j.message, retry: !j.ok && temp }
+  }
+  return { ok: false, retry: true, code: 'clock', message: 'Giờ trên máy bị lệch quá nhiều.' }
+}

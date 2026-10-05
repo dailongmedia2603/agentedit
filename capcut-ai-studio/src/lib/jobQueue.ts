@@ -37,6 +37,8 @@ interface Holder {
 interface Waiter extends Holder {
   resolve: (release: () => void) => void
   reject: (e: Error) => void
+  /** viec nen uu tien THAP (Kho hieu ung): luon dung SAU moi video dang cho, video moi bam cung chen len truoc */
+  low?: boolean
 }
 
 interface LaneState {
@@ -103,13 +105,35 @@ function makeRelease(lane: Lane, token: number): () => void {
 export function acquire(lane: Lane, jobId: string, label: string): Promise<() => void> {
   const st = lanes[lane]
   const token = ++seq
+  // viec nen uu tien thap dang cho KHONG chan video: con cho trong thi video chay ngay
+  if (st.active.length < st.limit && !st.queue.some((w) => !w.low)) {
+    st.active.push({ token, jobId, label })
+    changed()
+    return Promise.resolve(makeRelease(lane, token))
+  }
+  return new Promise<() => void>((resolve, reject) => {
+    const i = st.queue.findIndex((w) => w.low)
+    const w: Waiter = { token, jobId, label, resolve, reject }
+    if (i < 0) st.queue.push(w)
+    else st.queue.splice(i, 0, w) // dung truoc moi viec nen
+    changed()
+  })
+}
+
+/**
+ * Xin luot UU TIEN THAP cho viec nen (Kho hieu ung: render preview, Gemini gan nhan). Chi duoc chay khi lan
+ * con cho VA khong ai dang cho; video bam sau van chen len truoc. Huy cho bang cancelWait(jobId) nhu thuong.
+ */
+export function acquireIdle(lane: Lane, jobId: string, label: string): Promise<() => void> {
+  const st = lanes[lane]
+  const token = ++seq
   if (st.active.length < st.limit && !st.queue.length) {
     st.active.push({ token, jobId, label })
     changed()
     return Promise.resolve(makeRelease(lane, token))
   }
   return new Promise<() => void>((resolve, reject) => {
-    st.queue.push({ token, jobId, label, resolve, reject })
+    st.queue.push({ token, jobId, label, resolve, reject, low: true })
     changed()
   })
 }

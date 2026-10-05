@@ -6,7 +6,7 @@
 // la cach DUY NHAT dung chung cho ca xem truoc lan render.
 //
 // An toan: chi nghe 127.0.0.1, moi URL phai mang token ngau nhien sinh luc mo app,
-// chi tra file co duoi media (video/am thanh/anh) + JSON khung hieu ung trong cache/fx — khong phai may
+// chi tra file co duoi media (video/am thanh/anh/font) + JSON khung hieu ung trong cache/fx — khong phai may
 // chu file tuy y.
 import { createServer, IncomingMessage, Server, ServerResponse } from 'http'
 import { createReadStream, statSync } from 'fs'
@@ -30,7 +30,12 @@ const TYPES: Record<string, string> = {
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.webp': 'image/webp',
-  '.gif': 'image/gif'
+  '.gif': 'image/gif',
+  // font cua mau chu Kho Text (~/.capcut-studio/text_templates/<id>/fonts) — FontFace trong Player + luc render
+  '.ttf': 'font/ttf',
+  '.otf': 'font/otf',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2'
 }
 
 // Khung hieu ung tu viet: JSON do hop cach ly ve san — CHI trong thu muc nay

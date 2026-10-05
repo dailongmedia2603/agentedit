@@ -39,6 +39,7 @@ import {
   requireLicense,
   assertLicensed,
   libraryManifest,
+  fxUpload,
   onLicenseChange
 } from './services/license'
 import { readState, writeState, planProviderOf, PlanProvider, jobLimitsOf, saveJobLimits, JobLimits } from './services/state'
@@ -346,6 +347,16 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
     })
   })
 
+  // Kho Text: chon 1 thu muc mau (template.json + preview.mp4 + fonts/ + audio/ + assets/) de dang ky vao kho
+  ipcMain.handle('dialog:pickFolder', async (_e, title?: string) => {
+    const win = getWindow()
+    if (!win) return { canceled: true }
+    return dialog.showOpenDialog(win, {
+      title: title || 'Chọn thư mục',
+      properties: ['openDirectory']
+    })
+  })
+
   // ---- Video cua du an: chep vao thu muc du an (project-media.ts) ----
   ipcMain.handle(
     'media:import',
@@ -441,6 +452,28 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
   ipcMain.handle('meme:delete', async (_e, id: string) => {
     if (!sidecarInfo().ready) await startSidecar()
     return sidecarRequest('/meme/delete', { id })
+  })
+
+  // ---- Kho Text (mau chu dong, chuyen tu preset CapCut) ----
+  ipcMain.handle('text:list', async () => {
+    if (!sidecarInfo().ready) await startSidecar()
+    return sidecarRequest('/text/list')
+  })
+  ipcMain.handle('text:register', async (_e, dir: string) => {
+    if (!sidecarInfo().ready) await startSidecar()
+    return sidecarRequest('/text/register', { dir })
+  })
+  ipcMain.handle('text:label', async (_e, id: string) => {
+    if (!sidecarInfo().ready) await startSidecar()
+    return sidecarRequest('/text/label', { id })
+  })
+  ipcMain.handle('text:update', async (_e, payload: unknown) => {
+    if (!sidecarInfo().ready) await startSidecar()
+    return sidecarRequest('/text/update', payload)
+  })
+  ipcMain.handle('text:delete', async (_e, id: string) => {
+    if (!sidecarInfo().ready) await startSidecar()
+    return sidecarRequest('/text/delete', { id })
   })
 
   // ---- Kho am thanh (SFX) ----
@@ -563,6 +596,47 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
     return rmCall('/remotion/understand_media', payload, LONG_AI_MS)
   })
   ipcMain.handle('remotion:autoplan', (_e, payload: unknown) => rmCall('/remotion/autoplan', payload, LONG_AI_MS))
+
+  // ---- KHO HIEU UNG tu viet (2026-10-05): bo dieu phoi nen o renderer (src/lib/fxHarvest.ts) goi lan luot:
+  // dong goi (sau render) -> preview (lan render, chi khi ranh) -> Gemini nhan (lan gemini) -> gui kho chung ----
+  ipcMain.handle('fxlib:list', () => rmCall('/fxlib/list'))
+  ipcMain.handle('fxlib:harvest', (_e, payload: unknown) => rmCall('/fxlib/harvest', payload))
+  ipcMain.handle('fxlib:renderPreview', async (_e, id: string) => {
+    const job = (await rmCall('/fxlib/preview_job', { id })) as {
+      ok?: boolean
+      spec?: Record<string, unknown>
+      out?: string
+      error?: string
+    }
+    if (!job?.ok || !job.spec || !job.out) return { ok: false, error: job?.error || 'Không chuẩn bị được preview' }
+    if ((renderStatus() as { running: boolean }).running) return { ok: false, busy: true, error: 'Đang render video khác' }
+    // 540x960 khong tieng: du cho Gemini xem + UI phat, render ~10-20s
+    const res = await startRender(job.spec, job.out, () => undefined, { compositionId: 'FxPreview', scale: 0.5, muted: true })
+    const ok = res.type === 'done'
+    const error = ok ? undefined : String(res.message || res.type).split('\n')[0].slice(0, 300)
+    if (res.type !== 'cancelled') await rmCall('/fxlib/preview_done', { id, ok, error })
+    return { ok, error, cancelled: res.type === 'cancelled' }
+  })
+  ipcMain.handle('fxlib:label', (_e, ids: string[]) => rmCall('/fxlib/label', { ids }, LONG_AI_MS))
+  // Gui kho chung qua may chu ban quyen (may tin cay tu duyet, may khach cho duyet). Loi tam thoi (mat mang...)
+  // -> khong danh dau, lan mo app sau thu lai; loi han (goi hong / key khoa...) -> danh dau loi, nut "Thu lai"
+  ipcMain.handle('fxlib:share', async (_e, id: string) => {
+    const r = (await rmCall('/fxlib/share_payload', { id })) as {
+      ok?: boolean
+      payload?: { meta: Record<string, unknown>; code: string; preview: string }
+    }
+    if (!r?.ok || !r.payload) {
+      await rmCall('/fxlib/share_done', { id, status: 'error', error: 'Thiếu preview / nhãn / code' })
+      return { ok: false, error: 'Thiếu preview / nhãn / code' }
+    }
+    const res = await fxUpload(r.payload)
+    if (res.ok) await rmCall('/fxlib/share_done', { id, status: res.status })
+    else if (!res.retry) await rmCall('/fxlib/share_done', { id, status: 'error', error: res.message || res.code })
+    return { ok: res.ok, status: res.status, error: res.message, retry: res.retry }
+  })
+  ipcMain.handle('fxlib:retry', (_e, id: string) => rmCall('/fxlib/retry', { id }))
+  ipcMain.handle('fxlib:toggle', (_e, id: string, disabled: boolean) => rmCall('/fxlib/toggle', { id, disabled }))
+  ipcMain.handle('fxlib:delete', (_e, id: string) => rmCall('/fxlib/delete', { id }))
   ipcMain.handle('remotion:spec', (_e, payload: unknown) => rmCall('/remotion/spec', payload))
   ipcMain.handle('remotion:catalog', () => rmCall('/remotion/catalog'))
   // Goc URL may chu media cuc bo — Player trong app tai video nguon qua day

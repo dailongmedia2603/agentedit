@@ -22,6 +22,8 @@ export interface Project {
   referenceVideo?: { path: string; name: string; duration: number; thumb?: string } | null
   editRequest?: { purpose?: string; style?: string; audience?: string; duration?: string }
   brandGuide?: { typography?: string; colors?: string; graphics?: string; imagery?: string; motion?: string }
+  /** khung video xuat ra (vang mat = doc 9:16) */
+  orientation?: 'portrait' | 'landscape'
   workDir?: string
   brief?: unknown
   sourceBrief?: unknown
