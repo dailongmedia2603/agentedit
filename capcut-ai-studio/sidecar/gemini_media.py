@@ -526,6 +526,12 @@ def merge_parts(source_id, name, duration, parts):
         muc = _majority([g.get("muc_to") for g, _ in gn], [ln for _, ln in gn])
         merged["giong_noi"] = {"muc_to": muc, "nghe_ro": not any(g.get("nghe_ro") is False for g, _ in gn),
                                "van_de": " | ".join(str(g.get("van_de")) for g, _ in gn if g.get("van_de"))[:300]}
+    # nhac nen co san (music_lib.GEMINI_NOTE): mot phan co nhac -> ca video coi la co nhac
+    nn = [s.get("nhac_nen") for _, s in parts if isinstance(s.get("nhac_nen"), dict)]
+    if nn:
+        co = [g for g in nn if g.get("co")]
+        merged["nhac_nen"] = {"co": bool(co), "muc": (co[0] if co else nn[0]).get("muc"),
+                              "mo_ta": " | ".join(str(g.get("mo_ta")) for g in co if g.get("mo_ta"))[:300]}
     summaries = [{"range": "%s–%s" % (fmt_time(p["start"]), fmt_time(p["end"])),
                   "start": p["start"], "end": p["end"], "summary": s.get("summary") or ""}
                  for p, s in parts]

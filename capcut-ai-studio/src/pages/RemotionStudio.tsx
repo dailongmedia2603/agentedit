@@ -45,7 +45,7 @@ import { harvestAfterRender } from '@/lib/fxHarvest'
 import { useJobQueue } from '@/lib/useJobQueue'
 
 /** Khop sidecar remotion_plan.SPEC_MEDIA_VERSION — spec cu hon thi dung lai tu plan khi mo du an */
-const SPEC_MEDIA_VERSION = 9
+const SPEC_MEDIA_VERSION = 11
 
 type Step = 'understand-sources' | 'understand-reference' | 'plan' | 'render'
 // 2026-10-02: buoc "Video mau" gop vao "Hieu nguon" (Gemini doc nguon + mau CUNG LUC) -> khong con stage 'reference';

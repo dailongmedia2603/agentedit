@@ -172,7 +172,16 @@ const api = {
     ipcRenderer.on('sfx:staged', h)
     return () => ipcRenderer.removeListener('sfx:staged', h)
   },
-  pickAudio: () => ipcRenderer.invoke('dialog:pickAudio')
+  pickAudio: () => ipcRenderer.invoke('dialog:pickAudio'),
+  // ---- Kho nhac nen ----
+  musicList: () => ipcRenderer.invoke('music:list'),
+  musicImport: (items: unknown) => ipcRenderer.invoke('music:import', items),
+  musicUpdate: (payload: unknown) => ipcRenderer.invoke('music:update', payload),
+  musicDelete: (id: string) => ipcRenderer.invoke('music:delete', id),
+  musicLabel: (ids: string[]) => ipcRenderer.invoke('music:label', ids),
+  musicSettings: (payload: unknown) => ipcRenderer.invoke('music:settings', payload),
+  musicPreviewVolume: (id: string) => ipcRenderer.invoke('music:previewVolume', id),
+  pickMusic: () => ipcRenderer.invoke('dialog:pickMusic')
 }
 
 contextBridge.exposeInMainWorld('studio', api)

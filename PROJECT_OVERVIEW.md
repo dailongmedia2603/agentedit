@@ -140,7 +140,7 @@ Bao mat noi bo:
   `media_vision.py`, `sfx_kit.py`: luong Remotion (muc 11). `user_media.py`: tu lieu cua nguoi dung (muc 11p).
 - `sidecar/plan_guard.py`: lop cau truc dung chung cho build_spec (quy doi gio, hook, meme cat vao,
   can SFX, chu tranh meme) + thong so nguoi dung chinh.
-- `sidecar/engine.py` (kho SFX + resolve sfx_id/meme_id), `meme_lib.py`, `analysis_library.py`,
+- `sidecar/engine.py` (kho SFX + resolve sfx_id/meme_id), `music_lib.py` (kho nhac nen, muc 13l), `meme_lib.py`, `analysis_library.py`,
   `speech_align.py`, `prompt_store.py`, `step_cache.py`, `run_log.py`, `debug_log.py`,
   `cli_providers.py`, `config.py`.
 
@@ -150,6 +150,7 @@ Bao mat noi bo:
 - Project metadata: `~/.capcut-studio/projects.json` (`mode: "remotion"`, con tro `currentRemotion`).
 - Work directories: `~/.capcut-studio/projects/<slug>-<timestamp>/` (MP4 render ra nam o day).
 - SFX: `~/.capcut-studio/sfx/` + `sfx_library.json`. Meme: `~/.capcut-studio/memes/` + `meme_library.json`.
+- Nhac nen (13l): `~/.capcut-studio/music/` + `music_library.json` (kem settings: tu them nhac, muc so voi giong noi).
 - Thu vien phan tich: `~/.capcut-studio/library/`. Cache buoc AI: `~/.capcut-studio/cache/steps/`.
 - Prompt/quy tac nguoi dung sua: `~/.capcut-studio/prompt_overrides.json`.
 - API secrets: Electron userData `secrets.enc`.
@@ -1117,6 +1118,42 @@ sau Cloudflare Access, email `dailongmedia.agency@gmail.com`). Bi mat o `~/.capc
   'TĂNG' de dau len 'giá vàng'). Chu mau -> bo cuc y het truoc (9 mau cu: fit vs khong fit sai khac 0).
   Sidecar `text_tpl`: `_hits` / `missing_glyphs` chi lay node `text`; `_line_px` theo emPx. App cu: geometry loi ->
   catalog bo mau (an toan) — muon dung phai build + cai ban moi. So sanh: `work/capcut-presets-LEVIP2/`.
+- Mo rong 2026-10-06 (goi LE VIP2 02-20, 19 mau `levip2-02..20`, doi chieu video CapCut that `1005.mov` = draft "1005"
+  noi 01, 03..20 moi mau 2.433s — KHONG co 02; tool scratchpad: run.sh / score.py / expv.sh, ref cat theo khung i*73):
+  (1) HINH CapCut (track sticker, vat lieu `shapes` rect_item / polycon_item) -> `VectorNode` (da giac bo goc, to dac /
+  gradient tuyen tinh, vien). Toa do hinh theo khung RONG 720 (do: hop 318 don vi = 477 px @1080); check_flag 16 = to,
+  32 = vien, 64 = bo goc; goc gradient tinh truc y XUONG (hinh thoi xoay 45 do LE VIP2-14). (2) CLIP GHEP CANVAS RIENG
+  (vd 1920x1080 trong project doc): group `canvas` -> con ve theo canvas do (co chu theo BE NGANG canvas) roi "vua khung"
+  vao cha (subCtx / fitMatrix; text_tpl._hits khop). Spec luon 1080x1920. (3) CapCut tinh chieu cao dong theo bang OS/2
+  TYPO (khong hhea nhu trinh duyet): font viet tay hhea 2.26 / typo 1.28 em -> chu to gap 1.77 (LE VIP2-05). Importer ghi
+  `fonts[].metrics`; renderer + text_tpl dung khi co (mau cu khong co -> y het truoc). Mask "Van ban": co chu = 1.0549
+  x scale x font_size/40 / dong typo (01 Montserrat giu nguyen 0.8655 x scale; 03 Anton nho hon 0.815; 09 font_size 20).
+  (4) CHINH MAU port 1:1 tu goi 7501974767453474064 (`remotion-src/textTemplate/colorAdjust.ts`, LUT 65^3): curves
+  (bezier) -> primary wheels (kep [-1,1] + adjustLift/Gamma/Gain, **LumaMix 0** — do: vet do 18 -> vang, chu 06 trung vi
+  khop) -> log wheels (chi offset) -> adjustColor (brightness / contrast / highlight / shadow / saturation / white / black /
+  light_sensation LUT 17^3 nhung trong spec). Mask `category: "adjust"` = chi chon VUNG chinh mau, clip khong bi cat
+  (05); `"video"` = cat clip (04, 14). Thanh truot = 0 -> bo qua. Mau da do o KNOWN_COLOR_ADJUST (LE VIP5-09) giu nguyen.
+  (5) Hieu ung: "Player 3" xoay 3D quanh truc doc qua TAM KHUNG (`rotate3d`, space 'canvas', chieu -1, keyframe thanh
+  truot xoay — 20); LumiDeepGlow BAN MOI (co GlowIter.lua) port rieng `deepGlow2` (8 vong, nhan exposure moi vong, hau xu
+  ly lay vong le cuoi do Lua ghi de u_blurTex) — quang 12 vs CapCut 10; "Shockwave" = 2 chuoi PNG screen + overlay
+  (`sprite_blend`, giu alpha lop); "Flipped" = LUT 8x8 + chuoi tim neon screen lap (mask nguoi bo qua tren chu); word-art
+  text_effect "125" = anh kim loai gian theo net chu + bong (`fillImage`, bo vien). (6) Hoat anh chu: Lua doc duoc ->
+  `SampledAnim` bang mau (Transform.lua tween: dich 2.66 lan be ngang / chieu cao chu, quadOut; Transform.lua actions:
+  dich ca lop px khung; TextAnim.lua "Cham dan vao phai"; AnimScript.lua "Ha ngau nhien" -> charAnim shuffle + autoStep);
+  ma hoa -> DO tren video (KNOWN_CHAR_ANIMS / KNOWN_TEXT_ANIMS: "Chu bat vao", "School Trip", "Truot len" 7510 (thu tu
+  nguoc), "Truot vao", "Mo dan nhu bong ma" (thu tu rieng + nhoe), "Awkward Reunion" (halves + curve con lac), "Chu
+  nhap nhay" (bac thang do hien), "Fisheye" (bang scale)). (7) Keyframe CapCut tinh theo thoi gian NGUON cua clip
+  (tru source_timerange.start — 14); keyframe mask (KFTypeCommonMask*); bong chu = `diffuse` cua style (shadow_smoothing
+  0.45 lam bong loang ~1 em, sai); BO DEM SO (track chu >= 4 doan so cung dinh dang) -> 1 o + `counter` (dem toi so that,
+  giu tien to / phan nghin — 10); am thanh clip ghep long; clip video trong clip ghep tat tieng -> bo tieng; anh tinh.
+  (8) PHIEN BAN: mau moi mang `minApp: "1.2.0"`; app 1.2.0 (`text_lib.TEXT_RENDERER_VERSION`) — license-server chi ky link
+  mau cho app >= minApp, library_sync + text_tpl.usable bo mau app chua ve duoc (app 1.1.0 khong nhan -> khong loi render).
+  Ket qua (sai khac TB toan khung /255, video CapCut that): 03 2.0, 04 1.6, 05 1.6, 06 1.9, 07 0.7, 08 2.0, 09 0.3, 10 2.5,
+  11 1.6, 12 1.6, 13 2.3, 14 0.3, 15 0.7, 16 1.2, 17 1.2, 18 2.0, 19 1.0, 20 0.5 (02 chua co video doi chieu). Da cai kho that +
+  nhan Gemini + publish R2 + deploy worker; app 1.2.0 (build 20261006-0408-full) cai /Applications. Xem
+  `work/capcut-presets-LEVIP2/so_sanh_NN_capcut_vs_remotion.mp4` (trai CapCut, phai Remotion). Con lech: vi tri doc chu
+  vai px o mot so font (3-4 px), meo fisheye chua ve (chi phong), thu tu ngau nhien "Ha ngau nhien" khac RNG Lua.
+  Test: `tests/test_capcut_preset_import.py` [7].
 - Dong bo: `library_sync.py` + `publish-library.mjs` them `texts` (1 muc = nhieu file, R2 `texts/<id>/<path>`);
   `license-server/src/api.js` ky link tam cho tung file (`/v1/lib/texts/<id>/<path>`, chan `..`). Smoke 40 ok.
 - Bay: ffmpeg trich khung video CapCut phai `scale=in_color_matrix=bt709` (mac dinh BT.601 lech mau);
@@ -1244,6 +1281,73 @@ Rang buoc: KHONG lam cham tao video. User chon (10-05): MOI may gui len kho chun
   20261005-1100-full (selftest 21/21), ban truoc ~/.capcut-studio/app-backup-20261005-110422. App cu khong gui / nhan muc fx.
   BAY: selftest-packaged chay Python nhung -> GHI .pyc vao release/mac-arm64/*.app -> chu ky ad-hoc hong ("sealed resource
   is missing"); cai tu file .dmg (dong goi truoc selftest), kiem `codesign --verify --deep`.
+
+### 13l. KHO NHAC NEN — nhac CC0 dong bo, Gemini nghe, B7 chon, dat SAU hook duoi giong noi (2026-10-05, `sidecar/music_lib.py`)
+
+User: video du co SFX van nen co chut nhac nen nho de khong qua im; nhac KHONG dinh ban quyen tren TikTok / YouTube /
+Reels; KHONG to lan giong nguoi noi (co cho chinh muc); Gemini phan tich de AI lap ke hoach chon dung; KHONG ap cho hook.
+
+- GIAY PHEP (user chot 10-05): kho chung CHI nhac **CC0** (Freesound / OpenGameArt, kiem giay phep tung bai). Mixkit /
+  Pixabay / YouTube Audio Library / Bensound cho dung trong video nhung CAM gom file thanh kho phat lai trong app -> khong
+  dung. `publish-library.mjs` chi dua bai co `license` bat dau "CC0"; nhac user tu nhap ("Nhạc của bạn") chi o may do.
+- Kho: `~/.capcut-studio/music/` + `music_library.json` {tracks, settings{auto, level_db}}. Muc: id = "m-<slug>-<sha1 file
+  [:6]>", name, file, source, artist, license, source_url, duration + lufs_i (may do, ebur128), gain_db (chinh rieng
+  -6..+6), disabled, nhan Gemini (summary, genre, moods, energy thap|vua|cao, tempo, bpm, instruments, has_vocals,
+  speech_friendly tot|vua|kem, use_when, avoid_when, best_start (kep <= do dai - 30s), structure, tags).
+- Gemini NGHE (`_GEMINI_MUSIC_PROMPT`, own_key, 3 bai / luot, ban nen mono 48 kbps o `cache/music-gemini`) qua
+  `providers._gemini_analyze_videos` (step Gemini-music). Hieu nguon them `music_lib.GEMINI_NOTE` -> source.nhac_nen
+  {co, muc, mo_ta} (video goc da co nhac -> AI khong chen them); `gemini_media.merge_parts` gop.
+- LAP KE HOACH: KHONG them luot AI — B7 nhan them `_MUSIC_RULE` (own_key) + danh muc (`catalog_for_plan`: bai co file,
+  khong tat, da co nhan, >= 20s; tat "Tu them nhac nen" -> rong) + payload `nhac_nen.nhac_nen_video_goc`; AI tra them
+  `"music": {track_id, muc rat_nho|nho|vua, ly_do}` hoac track_id null + ly do. Kho rong -> system prompt + payload +
+  khoa cache B7 Y HET truoc; co kho -> khoa them `music` {kho fp, prompt fp, nhac goc}. `music_lib.choose`: id hop le ->
+  AI; null -> ton trong; thieu khoa / id la -> CODE chon (khop tu voi cau chuyen, uu tien speech_friendly tot, khong loi
+  hat, dung nang luong theo tone). plan["music"] = {track_id, name, muc, ly_do, by ai|code}.
+- DUNG (`build_spec` cuoi -> `music_lib.to_spec`): dong spec audio role "bgm" BAT DAU KHI HET HOOK (clip kind hook), fade
+  in 1.2s, fade out 2s o het video; bat dau bai tu best_start; bai ngan hon -> noi lai tu best_start, cross-fade 2s.
+  Muc = giong noi cua video (`_voice_lufs`, da tinh voice_boost) + min(CEIL_REL -9, level_db (thanh truot, mac dinh -15,
+  -30..-8) + muc AI (-4/0/+3) + gain_db bai); do to bai = nang luong TB LUFS M doan dung (~I; giong = p90). Duong am luong
+  `env` [[giay, volume]] (luoi 0.05s, rut gon sai so 0.008): dang noi = muc nen; khong loi >= 0.8s = +3 dB; meme CAT vao
+  -12 dB; meme de len co tieng -6 dB; xuong nhanh 0.12s / len cham 0.5s. Khong do duoc giong -> -36 LUFS tuyet doi.
+  Phan sau hook < 4s / bai mat / bai tat -> khong nhac + ghi nhat ky. `plan_rows` tinh cac doan + env, roi `premix` TRON
+  SAN thanh 1 WAV 48 kHz (`cache/music-mix/bgm-<sha1>.wav`, khoa theo file + doan + env) -> spec 1 dong volume 1.0.
+  LY DO (do tren render that): Remotion LAM TRON volume toi 0.01 -> nhac nen ~0.05 lech ~2 dB moi bac (sau khoang lang
+  nhac nho hon truoc 2 dB du env phang); tron san: lech 0.2 dB. Tron loi -> phat tung doan voi `env` (Remotion
+  `AutoEdit.envAt`, volume callback). Do render that (giong 300 Hz / nhac 2 kHz): hook im, nhac -23 dB duoi giong, khoang
+  khong loi +2.6 dB, fade 2 dau.
+  hook_rule / mix_sfx / speech_cut bo qua role bgm (co tu truoc); summarize: sfx khong dem bgm + `nhac_nen`.
+- Dong bo: manifest `music` (1 muc = 1 file nhu SFX), `library_sync` giu gain_db / disabled cua may; license-server
+  `withUrl(manifest.music, 'music')` + `/v1/lib/music/<file>`. Can deploy api + publish de may khach co kho.
+- UI: Tai nguyen -> tab "Nhạc nền" (`src/pages/MusicLibrary.tsx`): bat / tat tu them nhac, thanh truot do to so voi
+  giong noi, nghe thu (binh thuong + DUNG muc nen so voi giong mau -16 LUFS, `/music/preview_volume`), Gemini nghe hang
+  loat / tung bai, sua "Dung khi", chinh to / nho tung bai, tat bai, nhap nhac cua ban (xoa duoc; bai CC0 chi tat).
+  Route `/music/*`, IPC `music:*`, `dialog:pickMusic`; may chu media them .flac.
+- 10-06 (user: video moi "khong thay co nhac nen"): plan CO nhac nhung qua nho — do: giong -15.1, nhac p90 -35.2 / trung vi
+  -42.5 (bai beat thua nhip + do bai theo p90 + mac dinh -20) -> chim trong tap am quan cafe. Sua: do bai theo NANG LUONG
+  TRUNG BINH LUFS M (~I), mac dinh level_db -15, tran CEIL_REL -9, khoang -30..-8; SPEC_MEDIA_VERSION 10 (du an mo lai tu
+  dung lai spec, khong goi AI). Du an do: nhac +8.9 dB (p90 -26.3), SFX + clip giu nguyen.
+- 10-06 (2) USER: KHONG chinh do to o kho — QUY TAC buoc lap ke hoach: nhac nen = 20% tieng nguoi (bien do = giong - 14
+  dB). `plan_guard.MUSIC_VOICE_PCT` (20, sua o Prompt & quy tac nhom SFX, 5..60%) -> `music_lib.voice_pct()/rel_db()`;
+  `_MUSIC_RULE` noi ro {pct}%; BO: thanh truot level_db, chinh tung bai gain_db, muc AI (rat_nho/nho/vua), tran CEIL_REL,
+  nhich len o khoang khong loi (giu dung 20% suot video; chi ha khi meme co tieng + fade). UI chi con bat / tat + ghi chu
+  quy tac. settings = {auto}.
+- KHO DA PHAT HANH 10-05: 65 bai CC0 tai ve (agent kiem giay phep tung trang) -> Gemini nghe ca 65 -> user chon ~30 bai
+  DA DUNG (bo co loi hat / de lan giong / Gemini khong nghe ro; 1 tac gia <= 8 bai) -> nen 128 kbps stereo: 30 bai 59 MB,
+  danh muc B7 ~5.7k token. `npm run publish:library -- --only music` = chi day nhac, kho khac giu NGUYEN nhu R2 (luc do may
+  tac gia co 10 mau Kho Text, R2 moi 8 — khong day kem). Ban 65 bai: `music_library.json.bak-65`.
+- Test: `tests/test_music_lib.py` (90+ muc: kho, Gemini, danh muc, B7 kho rong y het, chon bai, dung nhac sau hook / muc /
+  tran / meme / noi bai / thanh truot, dong bo, publish chi CC0, autoplan dau-cuoi); license-server smoke muc nhac nen.
+
+### 13m. Bao ve mat XET THEO TUNG THOI DIEM (2026-10-06, `motion_design.protect_face`)
+User: chu R4 ("CẮT TỪNG ĐOẠN / LÀM PHỤ ĐỀ / TÌM HÌNH ẢNH / HIỆU ỨNG ÂM THANH") qua nho, sat mep — "gan day sau nhieu lan update".
+Do: R4 dat co 92 o giua nua tren (bo cuc chia doi, mat o nua duoi) -> build cuoi co 38.6, x 0.78-0.87. Nguyen nhan: protect_face
+(11w, 10-03) GOP khung ca to hop x CA khoang thoi gian; 1 chu hien them 0.45s sau khi bo cuc chia doi het (video ve toan khung,
+mat len cao) -> ca 4 chu bi doi + thu 42% suot 4s. Sua: (1) phan de len mat tinh TUNG thoi diem = TONG phan de cua tung phan tu
+DANG HIEN (khong dung khung gop — 2 chu 2 ben mat khong con bi coi la de len mat); (2) chi de len mat o DAU / CUOI <= 0.6s
+(hoac <= 25% thoi gian hien, `FACE_TRIM_MAX`) va khong o hook -> `_trim_edges` cat bot thoi gian hien CHI cua phan tu cham mat
+(con >= 0.5s), giu co + vi tri; (3) con lai doi cho / thu nho nhu cu. Du an that r_muvgy9muf8ouiq: 9 lop tro lai dung co R4
+(38.6 -> 92, 32 -> 62, 93.6 -> 180, 78 -> 150...). SPEC_MEDIA_VERSION 11 -> du an cu mo lai tu dung lai spec.
+Test: `tests/test_face_cutout.py` test_face_guard_per_time.
 
 ### 13f. May moi: ffmpeg nhung + mac dinh AI = CLI subscription (2026-10-01)
 

@@ -197,3 +197,164 @@ export function deepGlow(input: Img, p: DeepGlowEffect, gain = 1): Img {
   }
   return out
 }
+
+// ---------------------------------------------------------------------------
+// LumiDeepGlow BAN MOI (goi co GlowIter.lua: glowIter / stepsMult / downSample) — port 1:1 LumiDeepGlow.lua + GlowIter.lua
+// + shader (preprocess / downscale / blur / comp / postprocess, doc tu shaderGLES). Khac ban cu: moi vong lay ket qua vong
+// truoc, tron screen voi do mo gamma/i * falloff, NHAN exposure (mult) moi vong. Lua dat u_blurTex = blurTex SAU cung ->
+// hau xu ly dung ket qua vong co chi so le cuoi (glowIter 8 -> vong 7) — giu nguyen nhu ban goc.
+export interface DeepGlow2Params {
+  radius: number
+  exposure: number
+  threshold: number
+  thresholdSmooth: number
+  gammaValue: number
+  gammaCorrect: boolean
+  quality: number
+  unmult: boolean
+  sourceOpacity: number
+  glowIter: number
+  stepsMult: number
+  downSample: number
+  ratio: number
+  rotate: number
+}
+
+function pass(w: number, h: number, fn: (u: number, v: number, o: Float32Array, i: number) => void): Img {
+  const out = newImg(w, h)
+  for (let y = 0; y < h; y++) {
+    const v = (y + 0.5) / h
+    for (let x = 0; x < w; x++) fn((x + 0.5) / w, v, out.d, (y * w + x) * 4)
+  }
+  return out
+}
+
+export function deepGlow2(input: Img, p: DeepGlow2Params, gain = 1): Img {
+  const W = input.w
+  const H = input.h
+  const g = p.gammaCorrect ? p.gammaValue : 1
+  const s = new Float32Array(4)
+  const s2 = new Float32Array(4)
+  // preprocess (view = Final Render)
+  const thr = pass(W, H, (u, v, o, i) => {
+    sample(input, u, v, s)
+    for (let c = 0; c < 3; c++) {
+      let t = s[c]
+      if (t < p.threshold) t = (t / p.threshold) * t * p.thresholdSmooth
+      o[i + c] = p.gammaCorrect ? pw(t, p.gammaValue) : t
+    }
+    o[i + 3] = p.gammaCorrect ? pw(s[3], p.gammaValue) : s[3]
+  })
+  const N = 8
+  const radius = p.radius * 5
+  const rf = radius / 500
+  const mapSteps = radius < 500 ? 1 : 1 + 1.5 * ((radius - 500) / 1500)
+  const stepsMult = p.stepsMult * mapSteps
+  const iters = Math.floor(p.glowIter)
+  const gold = [1, 1]
+  for (let i = 2; i < N; i++) gold.push(gold[i - 1] + gold[i - 2])
+  const mx = Math.max(W, H)
+  const aspect = [W / mx, H / mx]
+  const ratio = Math.min(2, Math.max(0, p.ratio))
+  const stepsInt = Math.max(1, Math.floor(1 / p.downSample))
+  const gauss = (x: number, sg: number) => Math.exp(-(x * x) / (2 * sg * sg)) / (2.5066282749176025 * sg)
+  const blur = (src: Img, angleDeg: number, steps: number, stride: number): Img => {
+    const a = (angleDeg * Math.PI) / 180
+    const r = (p.rotate * Math.PI) / 180
+    const dx0 = Math.cos(a) / aspect[0]
+    const dy0 = Math.sin(a) / aspect[1]
+    // mat2(vec2(c,-s), vec2(s,c)) * v (cot) = (c*x + s*y, -s*x + c*y)
+    const dx = Math.cos(r) * dx0 + Math.sin(r) * dy0
+    const dy = -Math.sin(r) * dx0 + Math.cos(r) * dy0
+    const n = Math.floor(steps)
+    const w0 = gauss(0, 4)
+    const taps: { t: number; wt: number }[] = []
+    for (let t = 1; t < 32 && t < n; t += stepsInt) taps.push({ t, wt: gauss((t / steps) * 15, 4) })
+    let sumW = w0
+    for (const tp of taps) sumW += tp.wt * 2
+    return pass(src.w, src.h, (u, v, o, i) => {
+      sample(src, u, v, s)
+      let rr = pw(s[0], g) * w0
+      let gg = pw(s[1], g) * w0
+      let bb = pw(s[2], g) * w0
+      for (const tp of taps) {
+        const ox = dx * tp.t * stride
+        const oy = dy * tp.t * stride
+        sample(src, u + ox, v + oy, s)
+        sample(src, u - ox, v - oy, s2)
+        rr += (pw(s[0], g) + pw(s2[0], g)) * tp.wt
+        gg += (pw(s[1], g) + pw(s2[1], g)) * tp.wt
+        bb += (pw(s[2], g) + pw(s2[2], g)) * tp.wt
+      }
+      o[i] = pw(rr / sumW, 1 / g)
+      o[i + 1] = pw(gg / sumW, 1 / g)
+      o[i + 2] = pw(bb / sumW, 1 / g)
+      o[i + 3] = 1
+    })
+  }
+  const outs: Img[] = []
+  let cur = thr
+  for (let i = 1; i <= Math.min(iters, N); i++) {
+    const ds = (i === 1 || i === iters ? 0.5 : 0.25) * p.quality
+    const dw = Math.max(1, Math.floor(W * ds))
+    const dh = Math.max(1, Math.floor(H * ds))
+    const down = pass(dw, dh, (u, v, o, k) => {
+      sample(cur, u, v, s)
+      o[k] = s[0]
+      o[k + 1] = s[1]
+      o[k + 2] = s[2]
+      o[k + 3] = s[3]
+    })
+    const maxSteps = Math.min(i * rf, i * 6)
+    const st = Math.min(rf * gold[i - 1], maxSteps)
+    const stride = (rf * i) / mx / stepsMult
+    const bA = blur(blur(down, 0, st * ratio, stride), 90, st * (2 - ratio), stride)
+    const opacity = (p.gammaValue / i) * Math.pow(0.05, i / N / i)
+    const src = cur
+    // comp: u_comp = 1, blendMode Screen; vao/ra deu o khong gian gamma (pow g / pow 1/g)
+    cur = pass(W, H, (u, v, o, k) => {
+      sample(src, u, v, s)
+      sample(bA, u, v, s2)
+      const aw = s[3]
+      const bw = s2[3]
+      const ia = Math.max(aw, 0.001)
+      for (let c = 0; c < 3; c++) {
+        const p0 = pw(s[c], g)
+        const p1 = pw(s2[c], g)
+        const A = p0 / ia
+        const B = p1 / ia
+        const scr = (A - 1) * (1 - B) + 1
+        const mixd = scr * opacity + A * (1 - opacity)
+        const val = (p0 * (1 - bw) + p1 * (1 - aw) + mixd * (aw * bw)) * p.exposure * gain
+        o[k + c] = clamp01(pw(val, 1 / g))
+      }
+      o[k + 3] = clamp01((bw * (1 - aw) + aw) * p.exposure * gain)
+    })
+    outs.push(cur)
+  }
+  // postprocess: u_blurTex = blurTex = ket qua vong le cuoi cung
+  let last = outs.length - 1
+  if (last % 2 === 1) last -= 1
+  const bt = outs[Math.max(0, last)]
+  return pass(W, H, (u, v, o, k) => {
+    sample(bt, u, v, s)
+    sample(input, u, v, s2)
+    let r = s[0]
+    let gg = s[1]
+    let b = s[2]
+    let a = s[3]
+    if (p.unmult) {
+      const m = Math.max(r, gg, b)
+      if (m > 0) a = m
+      else r = gg = b = a = 0
+    }
+    // mix(glow, screen(input, glow), srcOpacity)
+    const sc = [s2[0], s2[1], s2[2]].map((x, c) => (x - 1) * (1 - [r, gg, b][c]) + 1)
+    const sa = -s2[3] * a + (s2[3] + a)
+    const so = p.sourceOpacity
+    o[k] = r + (sc[0] - r) * so
+    o[k + 1] = gg + (sc[1] - gg) * so
+    o[k + 2] = b + (sc[2] - b) * so
+    o[k + 3] = a + (sa - a) * so
+  })
+}

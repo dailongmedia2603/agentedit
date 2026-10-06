@@ -17,6 +17,7 @@ Endpoints chinh:
   GET  /sfx/list, POST /sfx/*, /find_sfx         (kho am thanh; /sfx/label = Gemini nghe & gan nhan)
   GET  /meme/list, POST /meme/*                  (kho meme)
   GET  /text/list, POST /text/*                  (kho text — mau chu dong)
+  GET|POST /music/*                              (kho nhac nen: nhap, Gemini nghe gan nhan, bat / tat tu them nhac)
   POST /fxlib/*                                  (kho hieu ung tu viet: dong goi sau render, preview, Gemini nhan, kho chung)
   POST /remotion/understand_reference { video }  -> phan tich video mau (Gemini xem + nghe video)
   POST /remotion/autoplan { brief, ... }         -> {plan, spec, guard, summary}
@@ -704,6 +705,90 @@ def sfx_delete_route():
     return jsonify({"ok": True})
 
 
+# ----------------------------------------------------------------------------
+# KHO NHAC NEN (music_lib.py, 2026-10-05): nhac CC0 dong bo qua may chu ban quyen + nhac user tu nhap; Gemini nghe
+# gan nhan; B7 chon bai; build_spec dat nhac SAU hook, can theo giong noi.
+# ----------------------------------------------------------------------------
+@app.route("/music/list", methods=["GET", "POST"])
+@require_token
+def music_list_route():
+    import music_lib
+    return jsonify({"ok": True, "tracks": music_lib.list_tracks(), "settings": music_lib.settings(),
+                    "voice_pct": music_lib.voice_pct()})
+
+
+@app.route("/music/import", methods=["POST"])
+@require_token
+def music_import_route():
+    import music_lib
+    b = request.get_json(force=True, silent=True) or {}
+    added, failed = [], []
+    for it in b.get("items") or []:
+        path = it.get("path") if isinstance(it, dict) else it
+        try:
+            added.append(music_lib.import_local(path, name=(it or {}).get("name") if isinstance(it, dict) else None))
+        except Exception as e:
+            failed.append({"path": path, "error": str(e)[:200]})
+    return jsonify({"ok": True, "added": added, "failed": failed})
+
+
+@app.route("/music/update", methods=["POST"])
+@require_token
+def music_update_route():
+    import music_lib
+    b = request.get_json(force=True, silent=True) or {}
+    try:
+        row = music_lib.update(str(b.get("id") or ""), name=b.get("name"), use_when=b.get("use_when"),
+                               disabled=b.get("disabled"))
+    except (TypeError, ValueError) as e:
+        return err(e, 400)
+    return jsonify({"ok": row is not None, "track": row})
+
+
+@app.route("/music/delete", methods=["POST"])
+@require_token
+def music_delete_route():
+    import music_lib
+    b = request.get_json(force=True, silent=True) or {}
+    return jsonify({"ok": music_lib.delete(str(b.get("id") or ""))})
+
+
+@app.route("/music/label", methods=["POST"])
+@require_token
+def music_label_route():
+    """Gemini NGHE cac bai (ids) roi viet nhan — di dung cach ket noi Gemini dang chon."""
+    import music_lib
+    b = request.get_json(force=True, silent=True) or {}
+    ids = [i for i in (b.get("ids") or []) if isinstance(i, str)]
+    if not ids:
+        return err("Thieu ids", 400)
+    try:
+        return jsonify({"ok": True, **music_lib.label_with_ai(ids, log=logger.info)})
+    except Exception as e:
+        return err(e)
+
+
+@app.route("/music/settings", methods=["POST"])
+@require_token
+def music_settings_route():
+    import music_lib
+    b = request.get_json(force=True, silent=True) or {}
+    try:
+        st = music_lib.set_settings(auto=b.get("auto"))
+    except (TypeError, ValueError) as e:
+        return err(e, 400)
+    return jsonify({"ok": True, "settings": st})
+
+
+@app.route("/music/preview_volume", methods=["POST"])
+@require_token
+def music_preview_volume_route():
+    """Volume (0..1) de nghe thu 1 bai o DUNG quy tac (% tieng nguoi) so voi mot giong noi mau."""
+    import music_lib
+    b = request.get_json(force=True, silent=True) or {}
+    return jsonify({"ok": True, "volume": music_lib.mix_preview(str(b.get("id") or ""))})
+
+
 @app.route("/understand_sources", methods=["POST"])
 @require_token
 def understand_sources_route():
@@ -1240,6 +1325,14 @@ def _remotion_autoplan(b):
     try:
         source_videos, transcript_data, emotion_map_data, faces_regions, key_moments_data = _du_lieu_nguon(brief)
         sfx_catalog = engine.sfx_catalog_for_plan()
+        # KHO NHAC NEN: co bai da gan nhan + bat "tu them nhac nen" -> B7 chon them 1 bai (rong = B7 y nhu truoc)
+        import music_lib
+        music_catalog = music_lib.catalog_for_plan()
+        if not music_catalog:
+            _n_music = len(music_lib.list_tracks())
+            run_log.emit("note", "Nhạc nền: %s" % (
+                "đã tắt 'Tự thêm nhạc nền' (Tài nguyên → Kho nhạc nền)" if not music_lib.settings().get("auto")
+                else "kho chưa có bài đã gắn nhãn" if _n_music else "kho trống"), step="B7-audio")
         if um_items:
             user_media.ensure_analyzed(um_items, log=logger.info, warnings=warnings)
             run_log.emit("note", "Tư liệu của bạn: %d mục — %s" % (len(um_items), " | ".join(
@@ -1598,6 +1691,7 @@ def _remotion_autoplan(b):
 
         # B7: SFX chay cuoi (kho SFX la file ngoai) — biet hieu ung hinh da dat cho hook de dat tieng trung nhip
         _hook_hinh = hook_rule.hook_visuals({"fx": fx_list, "scene_effects": visual.get("effects", [])})
+        _music_ctx = {"nhac_nen_video_goc": music_lib.source_music(brief)} if music_catalog else None
         audio = _step("B7-audio", {
             "km": key_moments_data, "emo": emotion_map_data, "sfx": sfx_catalog, "segs": segs_b2,
             "tr": transcript_data, "story": story, "hook": hook_info,
@@ -1605,13 +1699,19 @@ def _remotion_autoplan(b):
             "ins": inserts.get("inserts", []), "layers": layer_texts,
             "ref": providers.phong_cach_cho_buoc(reference_analysis, "audio"),
             "hr": hook_rule.HOOK_RULE_VERSION, "hv": _hook_hinh,
+            **({"music": {"kho": music_lib.catalog_fp(music_catalog), "p": music_lib.prompt_fp(),
+                          "goc": _music_ctx}} if music_catalog else {}),
         }, lambda: providers.gpt_audio(
             key_moments_data=key_moments_data, emotion_map_data=emotion_map_data,
             sfx_catalog=sfx_catalog, segments=segs_b2, transcript_data=transcript_data, story=story,
             reference_analysis=reference_analysis, hook=hook_info,
             transitions=visual.get("transitions", []),
             captions=captions.get("captions", []) + motion_design.layers_as_heroes(design.get("layers")),
-            inserts=inserts.get("inserts", []), log=logger.info, hook_visuals=_hook_hinh), optional=True) or {}
+            inserts=inserts.get("inserts", []), log=logger.info, hook_visuals=_hook_hinh,
+            music_catalog=music_catalog, music_ctx=_music_ctx), optional=True) or {}
+        # nhac nen: bai AI chon (kiem id) | AI bo qua / sai id -> code chon theo nhan | AI noi khong dung (co ly do)
+        music_pick = music_lib.choose(audio.get("music"), music_catalog, story=story,
+                                      emit=lambda m, lvl: run_log.emit("note", m, step="B7-audio", level=lvl))
 
         # ----- CHO VIEC CHAY NEN (chu anh AI + anh AI) roi moi ghep plan -----
         if art_future is not None:
@@ -1677,6 +1777,8 @@ def _remotion_autoplan(b):
             "hook": hook_obj if isinstance(hook_obj, dict) else None,
             "inserts": inserts.get("inserts", []),
             "audio": audio.get("audio", []),
+            # nhac nen ca video (kho nhac nen) — build_spec dat SAU hook, can theo giong noi (music_lib.to_spec)
+            "music": music_pick,
             "speech": _khoang_loi_noi(transcript_data),
             # giong noi nho -> muc nang (dB) theo tung video nguon (voice_boost); 0 = giong da chuan, giu nguyen
             "voice_boost": voice,

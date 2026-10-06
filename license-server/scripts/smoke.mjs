@@ -122,6 +122,8 @@ check('ten file co / -> 400', dl.status === 400)
 const tx = (r.manifest.texts || [])[0]
 check('manifest co texts (loc id ..)', r.manifest.texts && r.manifest.texts.length === 1 && tx.id === 'smoke-tpl', r.manifest.texts)
 check('texts loc file ../', tx && tx.files.length === 2 && tx.files.every((f) => f.url), tx)
+// mau can renderer moi (minApp > phien ban app gui len 1.1.0) -> khong ky link (manifest local co the co muc 'smoke-future' minApp 9.0.0)
+check('mau minApp > app -> bi loc', !(r.manifest.texts || []).some((t) => t.minApp && t.minApp > '1.1.0'), r.manifest.texts)
 const fontUrl = tx && tx.files.find((f) => f.path === 'fonts/a.ttf').url
 dl = await fetch(fontUrl)
 check('tai file con cua mau chu -> 200', dl.status === 200 && (await dl.text()).includes('fake-font'))
@@ -131,6 +133,15 @@ dl = await fetch(fontUrl.replace('/smoke-tpl/fonts/a.ttf', '/..%2Fsfx/boom.mp3')
 check('mau chu id .. -> 400', dl.status === 400)
 dl = await fetch(fontUrl.replace(/t=[^&]+/, 't=abc'))
 check('mau chu token gia -> 403', dl.status === 403)
+// Kho nhac nen (2026-10-05): cung khuon SFX (1 muc = 1 file, link tam)
+check('manifest co music (mang)', Array.isArray(r.manifest.music), r.manifest.music)
+const mu = (r.manifest.music || [])[0]
+if (mu) {
+  dl = await fetch(mu.url)
+  check('tai nhac nen -> 200', dl.status === 200)
+  dl = await fetch(mu.url.replace(/t=[^&]+/, 't=abc'))
+  check('nhac nen token gia -> 403', dl.status === 403)
+} else console.log('  (R2 local chua co nhac nen mau — bo qua buoc tai)')
 r = await call(B, fpB, L1.key, 'library')
 check('may khac xin kho -> other_machine', r.code === 'other_machine', r)
 

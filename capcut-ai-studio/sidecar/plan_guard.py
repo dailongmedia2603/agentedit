@@ -855,6 +855,7 @@ SFX_LOUD_EVERY_SEC = 10.0     # moi ~10s chi mot tieng to
 # tuyet doi SFX_MIX cu. Khong con san volume 0.2 (san do lam SFX to hon giong 15-20 dB o video thu am nho).
 SFX_REL = {"impact": 2.0, "comedy": 1.0, "whoosh": -2.0, "crowd": -2.0, "ui": -4.0, "riser": -7.0, "neutral": -1.0}
 SFX_ACCENT_REL = -3.0         # SFX tu gan khi CHU / HINH hien (lop do hoa, hieu ung tu viet): <= giong - 3 dB
+MUSIC_VOICE_PCT = 20          # NHAC NEN = 20% tieng nguoi (bien do, = giong - 14 dB) — quy tac buoc lap ke hoach (user 10-06)
 SFX_REL_MIN_VOL = 0.01
 MEME_REL = 0.0                # tieng meme cat vao: khong to hon giong noi cua video
 
@@ -1141,7 +1142,7 @@ EDITABLE_RULES = (
     "OVERLAY_SILENCE_MARGIN", "SPEECH_GAP_SEC",
     "MAX_SFX", "SFX_MIN_GAP", "SFX_VOL_MIN", "SFX_VOL_MAX", "SFX_DUCK_OVER_SPEECH",
     "SFX_HOOK_BOOST", "SFX_REPEAT_DECAY", "SFX_CROWD_DECAY", "SFX_CROWD_SEC",
-    "SFX_LOUD_MARK", "SFX_LOUD_EVERY_SEC",
+    "SFX_LOUD_MARK", "SFX_LOUD_EVERY_SEC", "MUSIC_VOICE_PCT",
 ) + tuple("SFX_MIX.%s.%s" % (f, k) for f in
           ("impact", "comedy", "whoosh", "crowd", "ui", "riser", "neutral")
           for k in ("lufs", "vol"))

@@ -51,6 +51,8 @@ export interface TextNode {
   letterSpacing?: number
   /** hoat anh tung ky tu (vd CapCut "Kich ban xuat hien" — script ma hoa, tham so DO tu video CapCut xuat that) */
   charAnim?: CharAnim
+  /** hoat anh vao / ra CA KHOI chu (CapCut Transform.lua / LeftIn.lua / TextAnim.lua, hoac do tu video): bang mau theo thoi gian */
+  anims?: SampledAnim[]
   /** 'upper': chu that luon IN HOA (o chu mau viet hoa — AI dien chu thuong van giu kieu chu cua mau) */
   textCase?: 'upper'
   /** lo dan (wipe) theo chieu ngang khung chu */
@@ -61,6 +63,10 @@ export interface TextNode {
   emPx?: number
   /** lam dam (CapCut bold_width cua mask chu): vien CUNG MAU day `bold` em moi ben */
   bold?: number
+  /** bo dem so: tu t[i] (giay tu dau node) hien so = frac[i] x so cua chu (giu tien to / hau to / dau phan nghin) */
+  counter?: { t: number[]; frac: number[] }
+  /** to chu bang 1 anh gian theo khung NET chu (word-art CapCut text_effect) */
+  fillImage?: string
   /** to chu bang khung video (CapCut mask "Van ban" tren clip video): hinh chu = mask, mau = khung video luc do */
   fillFrames?: FrameSeq
 }
@@ -131,6 +137,44 @@ export interface ShapeNode {
   shadow?: TextShadow // hinh: distance / smoothing tinh bang px (khung rong 1080), khong theo em nhu chu
 }
 
+/** Hinh CapCut (Shape "rect_item" / "polycon_item"): da giac quanh tam (px, truc y LEN), bo goc tung dinh,
+ *  to dac / gradient tuyen tinh, vien. Dat theo transform nhu chu (x, y = nua khung, scale, rotation). */
+export interface VectorNode {
+  type: 'vector'
+  id: string
+  start: number
+  duration: number
+  transform: CcTransform
+  keyframes?: Partial<Record<'alpha' | 'x' | 'y' | 'scale' | 'rotation', CcKey[]>>
+  alpha?: number
+  points: [number, number][]
+  radius?: number[]
+  fill: VectorFill | null
+  fillAlpha?: number
+  border?: { color: [number, number, number]; width: number; alpha: number }
+}
+
+export type VectorFill =
+  | { type: 'solid'; color: [number, number, number]; alpha: number }
+  | { type: 'linear'; colors: [number, number, number][]; alphas: number[]; stops: number[]; angle: number }
+
+/** Hoat anh lay mau: gia tri tai t[i] (0..1 cua duration), noi suy tuyen tinh. dx / dy theo `unit`:
+ *  'px' (khung rong 1080, nhan scale cua node), 'textW' / 'textH' (be ngang / chieu cao dong cua chu THAT dang ve).
+ *  alpha / scale nhan vao; rot cong them (do). Truoc start: mau dau; sau start + duration: mau cuoi. */
+export interface SampledAnim {
+  start: number
+  duration: number
+  unit?: 'px' | 'canvas' | 'textW' | 'textH' // canvas: px khung 1080 KHONG nhan co cua node
+  t: number[]
+  alpha?: number[]
+  dx?: number[]
+  dy?: number[]
+  scale?: number[]
+  rot?: number[]
+  /** 'none': truoc start KHONG ap (mac dinh giu mau dau) */
+  pre?: 'none'
+}
+
 export interface CharAnim {
   type: 'stagger_in'
   start: number // giay tu dau lop chu
@@ -143,6 +187,25 @@ export interface CharAnim {
   scale: number // ti le luc dau
   ease: [number, number, number, number] // bezier chuyen dong (x1,y1,x2,y2)
   alphaEnd: number // 0..1: ky tu hien du sau alphaEnd phan thoi gian cua no
+  /** thoi diem bat dau RIENG tung ky tu (phan cua duration, theo chi so ky tu) — thu tu "ngau nhien" do tu video;
+   *  ky tu vuot qua mang: gia tri gia ngau nhien co dinh trong [0, startsMax] */
+  starts?: number[]
+  startsMax?: number
+  /** nhoe luc dau (em), giam ve 0 theo tien do ky tu */
+  blur?: number
+  /** ky tu CUOI chay truoc (thu tu phai -> trai) */
+  reverse?: boolean
+  /** tre truoc ky tu dau (phan cua duration) */
+  delay?: number
+  /** thu tu xao tron co dinh (hoan vi gia ngau nhien theo so ky tu) */
+  shuffle?: boolean
+  /** "Ha ngau nhien" (AnimScript.lua): thoi luong ky tu = 1 / (step * (n - 1) + 1), ky tu sau tre step * thoi luong ky tu;
+   *  bo qua overlap / gap */
+  autoStep?: number
+  /** he so do lech dx / dy theo tien do ky tu (lay mau deu 0..1) — thay cho (1 - ease); cho phep vuot qua / dao dong */
+  curve?: number[]
+  /** nua dau chu lech dx, nua sau lech -dx (hai nua chay vao giua — "Awkward Reunion") */
+  halves?: boolean
 }
 
 export interface TextRun {
@@ -215,6 +278,12 @@ export interface DeepGlowEffect {
   unmult: boolean
   blendMode: 'screen' | 'add'
   sourceOpacity: number
+  /** co -> LumiDeepGlow BAN MOI (GlowIter.lua) — deepGlow2 */
+  glowIter?: number
+  stepsMult?: number
+  downSample?: number
+  ratio?: number
+  rotate?: number
 }
 
 /** CapCut "Mo" (mo-hu): nhoe 2 luot; value = thanh truot effects_adjust_blur (0..1), co the co keyframe */
@@ -241,7 +310,38 @@ export interface ColorSetEffect {
   map: { from: [number, number, number]; to: [number, number, number] }[]
 }
 
-export type NodeEffect = AeTrsMatteEffect | DeepGlowEffect | BlurEffect | ChromeBlurEffect | ColorSetEffect
+/** Xoay mat phang quanh truc DOC qua tam khung, chieu phoi canh camera fovx (do) — MotionBlur3D cua Lumi */
+export interface Rotate3dEffect {
+  type: 'rotate3d'
+  rotY: number
+  fovx: number
+  /** keyframe goc (gio tinh tu `start`, giay trong group) */
+  keyframes?: CcKey[]
+  start?: number
+}
+
+/** Chinh mau CapCut (curves -> color wheels -> adjustColor) — cong thuc chep tu shader goc, xem colorAdjust.ts */
+export interface ColorAdjustEffect {
+  type: 'color_adjust'
+  ops: import('./colorAdjust').ColorOp[]
+}
+
+/** Hieu ung chuoi anh (CapCut "Shockwave"): moi luot phu 1 chuoi PNG (cover, giua khung) bang blend, giu ALPHA cua lop */
+export interface SpriteBlendEffect {
+  type: 'sprite_blend'
+  start: number
+  duration: number
+  rate: number // toc do chuoi (seekToTime(t * rate))
+  fps: number
+  passes: { dir: string; files: string[]; blend: 'screen' | 'overlay' | 'add' | 'multiply' | 'normal' }[]
+  /** chuoi LAP lai (mac dinh giu khung cuoi) */
+  loop?: boolean
+  /** LUT 8x8 (anh 512x512, 64 muc) ap TRUOC cac luot, tron theo intensity */
+  lut?: { image: string; intensity: number }
+}
+
+/** space 'canvas': hieu ung ap SAU transform cua group (tren khung cha), vd lop dieu chinh Lumi tren clip co vi tri */
+export type NodeEffect = (AeTrsMatteEffect | DeepGlowEffect | BlurEffect | ChromeBlurEffect | ColorSetEffect | Rotate3dEffect | ColorAdjustEffect | SpriteBlendEffect) & { space?: 'canvas' }
 
 export interface GroupNode {
   type: 'group'
@@ -249,17 +349,25 @@ export interface GroupNode {
   start: number // giay trong cha
   duration: number
   sourceStart: number // giay bat dau trong noi dung con
+  /** canvas rieng cua clip ghep (vd 1920x1080 trong khung doc): con ve theo canvas nay roi dat "vua khung" vao cha */
+  canvas?: [number, number]
   transform?: CcTransform
   alpha?: number
   keyframes?: Partial<Record<'alpha' | 'x' | 'y' | 'scale' | 'rotation', CcKey[]>>
   /** hoat anh vao/ra kieu Transform.lua cua CapCut (vd "Mo dan"): nhan vao do hien/scale cua clip */
   anims?: ClipAnim[]
+  /** hoat anh lay mau (don vi px khung 1080) — Transform.lua kieu actions tren clip ghep */
+  sanims?: SampledAnim[]
   mask?: ClipMask
+  /** 'adjust': mask chi chon vung CHINH MAU (clip co chinh mau + mask), khong cat clip */
+  maskTarget?: 'adjust'
+  /** keyframe cua mask (gio tinh tu dau segment) — ghi de truong cung ten cua mask */
+  maskKeyframes?: Partial<Record<'centerX' | 'centerY' | 'rotation' | 'feather' | 'width' | 'height', CcKey[]>>
   effects?: NodeEffect[]
   children: TemplateNode[] // duoi -> tren
 }
 
-export type TemplateNode = TextNode | ShapeNode | FramesNode | GroupNode
+export type TemplateNode = TextNode | ShapeNode | FramesNode | VectorNode | GroupNode
 
 export interface TemplateAudio {
   file: string
@@ -284,7 +392,8 @@ export interface TextTemplateSpec {
   slots: { id: string; role: string; sample: string; accept?: 'number'; room?: number }[]
   /** thu tu doc khai bao (mau tu thiet ke) — thieu thi sidecar doan theo hinh hoc */
   readingOrder?: string[]
-  fonts: { id: string; file: string }[]
+  /** metrics: OS/2 typo ascent / descent (ti le em) — CapCut tinh chieu cao dong theo bang nay (mau cu: thieu -> do bang trinh duyet) */
+  fonts: { id: string; file: string; metrics?: { ascent: number; descent: number } }[]
   audio: TemplateAudio[]
   root: GroupNode
 }

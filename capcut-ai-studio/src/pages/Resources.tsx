@@ -1,19 +1,20 @@
 import { useEffect, useState } from 'react'
-import { Music2, Laugh, Type, Sparkles } from 'lucide-react'
+import { Music2, Disc3, Laugh, Type, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import SfxPage from '@/pages/Sfx'
+import MusicLibraryPage from '@/pages/MusicLibrary'
 import MemesPage from '@/pages/Memes'
 import TextTemplatesPage from '@/pages/TextTemplates'
 import FxLibraryPage from '@/pages/FxLibrary'
 
-type ResourceTab = 'sfx' | 'memes' | 'text' | 'fx'
+type ResourceTab = 'sfx' | 'music' | 'memes' | 'text' | 'fx'
 
 const KEY = 'studio.resourcesTab'
 
 function loadTab(): ResourceTab {
   try {
     const v = localStorage.getItem(KEY)
-    if (v === 'sfx' || v === 'memes' || v === 'text' || v === 'fx') return v
+    if (v === 'sfx' || v === 'music' || v === 'memes' || v === 'text' || v === 'fx') return v
   } catch {
     /* localStorage khong dung duoc (vd che do rieng tu) -> mac dinh */
   }
@@ -30,12 +31,13 @@ function saveTab(t: ResourceTab) {
 
 const TABS: { id: ResourceTab; label: string; icon: typeof Music2 }[] = [
   { id: 'sfx', label: 'Kho âm thanh', icon: Music2 },
+  { id: 'music', label: 'Nhạc nền', icon: Disc3 },
   { id: 'memes', label: 'Kho meme', icon: Laugh },
   { id: 'text', label: 'Kho Text', icon: Type },
   { id: 'fx', label: 'Kho hiệu ứng', icon: Sparkles }
 ]
 
-/** Trang "Tài nguyên": gộp Kho âm thanh + Kho meme + Kho Text + Kho hiệu ứng vào tab con (nhớ tab vừa mở). */
+/** Trang "Tài nguyên": gộp Kho âm thanh + Nhạc nền + Kho meme + Kho Text + Kho hiệu ứng vào tab con (nhớ tab vừa mở). */
 export default function ResourcesPage() {
   const [tab, setTab] = useState<ResourceTab>(loadTab)
 
@@ -48,7 +50,7 @@ export default function ResourcesPage() {
       <div className="shrink-0 border-b border-black/5 bg-white/40 px-8 pt-5">
         <h1 className="text-2xl font-bold text-ink-900">Tài nguyên</h1>
         <p className="mt-1 text-sm text-ink-800/50">
-          Các kho tài nguyên dùng chung khi AI dựng video: âm thanh, meme chèn, mẫu chữ động và hiệu ứng đã viết.
+          Các kho tài nguyên dùng chung khi AI dựng video: âm thanh, nhạc nền, meme chèn, mẫu chữ động và hiệu ứng đã viết.
         </p>
         <div className="mt-4 flex gap-1">
           {TABS.map((t) => {
@@ -75,6 +77,9 @@ export default function ResourcesPage() {
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className={tab === 'sfx' ? '' : 'hidden'}>
           <SfxPage />
+        </div>
+        <div className={tab === 'music' ? '' : 'hidden'}>
+          <MusicLibraryPage />
         </div>
         <div className={tab === 'memes' ? '' : 'hidden'}>
           <MemesPage />

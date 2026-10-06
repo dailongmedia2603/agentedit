@@ -536,6 +536,28 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
     })
   })
 
+  // ---- Kho nhac nen (sidecar music_lib.py) ----
+  const musicCall = async (path: string, payload?: unknown) => {
+    if (!sidecarInfo().ready) await startSidecar()
+    return sidecarRequest(path, payload)
+  }
+  ipcMain.handle('music:list', () => musicCall('/music/list'))
+  ipcMain.handle('music:import', (_e, items: unknown) => musicCall('/music/import', { items: Array.isArray(items) ? items : [] }))
+  ipcMain.handle('music:update', (_e, payload: unknown) => musicCall('/music/update', payload))
+  ipcMain.handle('music:delete', (_e, id: string) => musicCall('/music/delete', { id }))
+  ipcMain.handle('music:label', (_e, ids: string[]) => musicCall('/music/label', { ids }))
+  ipcMain.handle('music:settings', (_e, payload: unknown) => musicCall('/music/settings', payload))
+  ipcMain.handle('music:previewVolume', (_e, id: string) => musicCall('/music/preview_volume', { id }))
+  ipcMain.handle('dialog:pickMusic', async () => {
+    const win = getWindow()
+    if (!win) return { canceled: true }
+    return dialog.showOpenDialog(win, {
+      title: 'Chọn file nhạc nền',
+      properties: ['openFile', 'multiSelections'],
+      filters: [{ name: 'Audio', extensions: ['mp3', 'wav', 'm4a', 'aac', 'ogg', 'flac'] }]
+    })
+  })
+
   // ---- Thu vien phan tich (video nguon / video mau da phan tich) ----
   const libCall = async (path: string, payload?: unknown) => {
     if (!sidecarInfo().ready) await startSidecar()
@@ -544,7 +566,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
   ipcMain.handle('library:list', () => libCall('/library/list'))
   ipcMain.handle('library:lookup', (_e, paths: string[]) => libCall('/library/lookup', { paths }))
   ipcMain.handle('library:delete', (_e, fp: string, part?: string) => libCall('/library/delete', { fp, part }))
-  // Dong bo kho SFX + Meme (nut "Dong bo kho" + tu chay nen luc mo app): CHI qua may chu ban quyen —
+  // Dong bo kho SFX + Meme + Text + Nhac nen + Hieu ung (nut "Dong bo kho" + tu chay nen luc mo app): CHI qua may chu ban quyen —
   // key dang kich hoat dung may nay moi nhan duoc manifest + link tai tam (bucket R2 khong con cong khai)
   ipcMain.handle('library:sync', async () => {
     let manifest: unknown

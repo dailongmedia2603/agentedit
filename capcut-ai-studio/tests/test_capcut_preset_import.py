@@ -183,7 +183,11 @@ else:
     mask_txt = kids[0]["children"][0]
     check("mask chu -> o chu (slot) mang khung video", mask_txt["type"] == "text" and mask_txt["fillFrames"]["ext"] == "jpg"
           and sp["slots"][0]["sample"] == "THAY ĐỔI")
-    check("mask chu: co chu theo em = 0.8655 x scale, lam dam", abs(mask_txt["emPx"] - 0.8655 * 165.107) < 1e-6 and mask_txt["bold"] > 0)
+    # co chu theo CHIEU CAO DONG typo cua font (LE VIP2-03 Anton): em = TEXT_MASK_LINE x scale / dong_em (Montserrat -> 0.8655 x scale)
+    _tm = imp.font_typo_metrics(FONT)
+    _line = (_tm["ascent"] + _tm["descent"]) if _tm else None
+    check("mask chu: co chu theo dong typo x scale, lam dam",
+          _line and abs(mask_txt["emPx"] - imp.TEXT_MASK_LINE * 165.107 / _line) < 1e-6 and mask_txt["bold"] > 0)
     check("keyframe nhap nhay nam o group clip", kids[0]["keyframes"]["alpha"][1] == [0.033333, 1.0])
     fr = kids[1]["children"][0]
     check(".mov alpha -> chuoi PNG, toc do 1.1, cat sat vung co hinh",
@@ -197,4 +201,46 @@ else:
     check("border_color rong -> khong vien", "border" not in mask_txt)
     check("chu mau IN HOA -> textCase upper", mask_txt.get("textCase") == "upper")
 
+print("\n[7] LE VIP2 02-20 (2026-10-06): chinh mau, keyframe, bo dem so, hoat anh Lua")
+# chinh mau: curves day diem bezier a0, r0, l1, a1 ; wheels kep [-1, 1] + adjust*, LumaMix 0 (do tren LE VIP2-18 / 06)
+ctl = imp._curve_ctl([{"anchor": {"x": 0, "y": 0.2}, "left_control": {"x": 0, "y": 0.2}, "right_control": {"x": 0.33, "y": 0.47}},
+                      {"anchor": {"x": 1, "y": 1}, "left_control": {"x": 0.67, "y": 0.73}, "right_control": {"x": 1, "y": 1}}])
+check("curves -> 4 diem dieu khien", [round(p["x"], 2) for p in ctl] == [0, 0.33, 0.67, 1.0])
+wu = imp._wheel_uniforms({"lift": {"blue": 1.27, "red": -0.49}, "gamma": {"red": 0.25}, "gain": {"blue": -1.73, "green": 0.34},
+                          "offset": {}, "intensity": 1.0})
+check("wheels: kep + adjustLift / adjustGamma / adjustGain", abs(wu["lift"][3] - 0.5) < 1e-9 and abs(wu["lift"][1] + 0.49) < 1e-9
+      and abs(wu["gamma"][1] - 0.5) < 1e-9 and abs(wu["gain"][3] - 0.001) < 1e-6 and wu["lumaMix"] == 0.0)
+ops = imp._color_ops({"brightness": 1.0, "light_sensation": 0.0}, {"luma": [], "red": []}, None)
+check("thu tu chinh mau: adjust cuoi, light_sensation -> light", ops[-1]["op"] == "adjust" and "light" in ops[-1])
+# keyframe tinh theo thoi gian NGUON (clip ghep bat dau nguon 1.0s)
+kk = imp._cc_keys({"source_timerange": {"start": 1_000_000}, "common_keyframes": [
+    {"property_type": "KFTypeAlpha", "keyframe_list": [{"time_offset": 1_000_000, "values": [0]}, {"time_offset": 3_000_000, "values": [1]}]},
+    {"property_type": "KFTypeCommonMaskPositionX", "keyframe_list": [{"time_offset": 0, "values": [0.1]}]}]})
+check("keyframe tru source_timerange.start, bo keyframe mask", kk == {"alpha": [[0.0, 0.0], [2.0, 1.0]]})
+mk = imp._mask_keys({"common_keyframes": [{"property_type": "KFTypeCommonMaskRotation", "keyframe_list": [
+    {"time_offset": 0, "values": [24.0]}, {"time_offset": 9_000_000, "values": [890.0]}]},
+    {"property_type": "KFTypeCommonMaskFeather", "keyframe_list": [{"time_offset": 0, "values": [0.3]}]}]})
+check("keyframe mask: chi lay truong co doi gia tri", list(mk) == ["rotation"] and mk["rotation"][1] == [9.0, 890.0])
+# bo dem so: 4 doan "$0".."$1,000" -> 1 o chu + counter
+b = imp.Builder()
+txt = lambda i, t: {"id": i, "content": _json.dumps({"text": t, "styles": [{"fill": {"content": {"render_type": "solid", "solid": {"color": [1, 1, 1]}}},  # noqa: E731
+                                                                            "size": 15, "range": [0, len(t)], "font": {"path": FONT or ""}}]})}
+segs = []
+for i, (t, st) in enumerate([("$0", 0.0), ("$200", 0.1), ("$600", 0.2), ("$1,000", 0.3)]):
+    b.glob["T%d" % i] = ("texts", txt("T%d" % i, t))
+    segs.append({"id": "S%d" % i, "material_id": "T%d" % i, "target_timerange": {"start": int(st * 1e6), "duration": 100000 if i < 3 else 1000000},
+                 "clip": {"scale": {"x": 1, "y": 1}, "transform": {"x": 0, "y": 0}}, "extra_material_refs": []})
+if FONT:
+    cn = b.counter_node(segs)
+    check("bo dem so: 1 o chu, chu = so cuoi, ti le tung buoc", cn and len(b.slots) == 1 and b.slots[0]["sample"] == "$1,000"
+          and cn["counter"]["frac"] == [0.0, 0.2, 0.6, 1.0] and abs(cn["duration"] - 1.3) < 1e-6)
+# hoat anh Lua doc duoc: tween quadOut (Truot len) -> bang mau, dich 2.66 lan chieu cao chu
+import glob as _glob  # noqa: E402
+_res = _glob.glob(os.path.expanduser("~/Movies/CapCut/User Data/Presets/Combination/Resources/LEVIP2Mac-*/E/06"))
+if _res:
+    sa = imp._lua_text_anim({"path": _res[0], "type": "in", "start": 0, "duration": 500000, "name": "Truot len"})
+    check("Truot len (Transform.lua tween): textH, dy 2.66 -> 0, hien dan", sa and sa["unit"] == "textH" and abs(sa["dy"][0] - 2.66) < 1e-6
+          and sa["dy"][-1] == 0 and sa["alpha"][0] == 0 and sa["alpha"][-1] == 1)
+else:
+    print("  (bo qua hoat anh Lua: may khong co goi LE VIP2)")
 print("\n%d ok" % ok)

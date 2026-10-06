@@ -26,6 +26,7 @@ const TYPES: Record<string, string> = {
   '.m4a': 'audio/mp4',
   '.aac': 'audio/aac',
   '.ogg': 'audio/ogg',
+  '.flac': 'audio/flac',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',

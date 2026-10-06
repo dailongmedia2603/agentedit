@@ -289,6 +289,9 @@ export interface RSAudio {
   rel?: number | null
   /** tieng code tu gan khi CHU hien (luat moi chu co tieng) — luat hook khong tinh la tieng gay chu y */
   textAuto?: boolean
+  /** NHAC NEN (role 'bgm'): duong am luong [giay tinh tu `start`, volume 0..1] — can theo giong noi, nhich len o
+   *  khoang khong loi, ha khi meme cat vao, fade 2 dau (sidecar music_lib.to_spec). Co env thi bo qua `volume`. */
+  env?: [number, number][]
 }
 
 export interface RSOverlay {

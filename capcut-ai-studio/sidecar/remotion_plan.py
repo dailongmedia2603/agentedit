@@ -1071,12 +1071,14 @@ def _overlays_to_spec(p, duration):
 
 # 2 = video HDR -> ban SDR + lop tach nguoi khop khung; 3 = cat an toan theo tieng noi + lop chu
 # khop loi (2026-09-26). UI dung lai spec cu hon tu plan khi mo du an.
-SPEC_MEDIA_VERSION = 9     # 4 = quy tac chu 2026-09-27; 5 = phu de cach chu noi bat + chu khong tu xuong dong;
+SPEC_MEDIA_VERSION = 11    # 4 = quy tac chu 2026-09-27; 5 = phu de cach chu noi bat + chu khong tu xuong dong;
                            # 6 = chu khop loi theo cau phu de + SFX hook khong roi khoi hook;
                            # 7 = tach nguoi tung khung (tach chu the + loc vung nguoi + trung vi 3 khung)
                            # 8 = zoom muot (zoomFrom/zoomDur), luat cung khoang lang + kiem lai diem cat,
                            #     SFX / meme can theo giong noi cua video (2026-10-01)
                            # 9 = bao ve mat nguoi noi (hook tuyet doi) + anh tach nen sach bong / lop mo (2026-10-03)
+                           # 10 = nhac nen nghe ro hon (do bai theo nang luong TB, mac dinh -15 dB so voi giong, 2026-10-06)
+                           # 11 = nhac nen = 20% tieng nguoi (quy tac plan) + bao ve mat xet theo tung thoi diem (2026-10-06)
 
 
 def build_spec(plan, log=None):
@@ -1419,6 +1421,13 @@ def _build_spec(plan, log=None):
         issues.append({"severity": "high", "area": "structure", "problem": "Khong con doan video nao dung duoc"})
     elif abs(spec["clips"][-1]["end"] - spec["duration"]) > 0.1:
         spec["duration"] = spec["clips"][-1]["end"]
+    if p.get("music") and spec["clips"]:
+        # NHAC NEN (kho nhac nen): SAU hook toi het video, can theo giong noi, ha khi meme cat vao, fade 2 dau
+        import music_lib
+        try:
+            spec["audio"] += music_lib.to_spec(p, spec, changes)
+        except Exception as ex:
+            changes.append("bo qua nhac nen (%s)" % str(ex)[:120])
     if spec["duration"] < 3:
         issues.append({"severity": "medium", "area": "pacing",
                        "problem": "Video chi dai %.1fs" % spec["duration"]})
@@ -1470,7 +1479,9 @@ def summarize(plan, spec):
     return {
         "do_dai": spec.get("duration"), "clip": len(spec.get("clips") or []),
         "caption": len(spec.get("captions") or []), "hieu_ung": len(spec.get("effects") or []),
-        "sfx": len(spec.get("audio") or []), "meme_de_len": len(spec.get("overlays") or []),
+        "sfx": len([a for a in spec.get("audio") or [] if a.get("role") != "bgm"]),
+        "nhac_nen": next((a.get("name") for a in spec.get("audio") or [] if a.get("role") == "bgm"), None),
+        "meme_de_len": len(spec.get("overlays") or []),
         "tong_mau": (spec.get("grade") or {}).get("preset"),
         "chuyen_canh": [c["transitionOut"]["type"] for c in spec.get("clips") or [] if c.get("transitionOut")],
         "bo_cuc": [s["layout"] for s in spec.get("scenes") or []],

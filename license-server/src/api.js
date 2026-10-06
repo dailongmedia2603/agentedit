@@ -219,9 +219,20 @@ async function handleLicense(req, env) {
         url: `${base}/v1/lib/${kind}/${encodeURIComponent(String(m.file || '').split('/').pop())}?t=${encodeURIComponent(token)}`
       }))
     // Kho Text: 1 mau = 1 thu muc nhieu file -> moi file 1 link tai tam (cung token)
+    // Mau co minApp (can renderer moi, vd LE VIP2 02-20 can 1.2.0) -> CHI gui cho app >= minApp (app cu ve sai / loi)
+    const verOf = (v) => (String(v || '0').match(/\d+/g) || ['0']).slice(0, 3).map(Number)
+    const verGe = (a, b) => {
+      const x = verOf(a)
+      const y = verOf(b)
+      for (let i = 0; i < 3; i++) {
+        if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0)
+      }
+      return true
+    }
     const withTextUrls = (rows) =>
       (Array.isArray(rows) ? rows : [])
         .filter((m) => safeSeg(String(m.id || '')))
+        .filter((m) => !m.minApp || verGe(appVer, m.minApp))
         .map((m) => ({
           ...m,
           files: (Array.isArray(m.files) ? m.files : [])
@@ -259,9 +270,10 @@ async function handleLicense(req, env) {
       sfx: withUrl(manifest.sfx, 'sfx'),
       memes: withUrl(manifest.memes, 'memes'),
       texts: withTextUrls(manifest.texts),
+      music: withUrl(manifest.music, 'music'),
       fx
     }
-    detail += ` — ${out.manifest.sfx.length} SFX, ${out.manifest.memes.length} meme, ${out.manifest.texts.length} mau chu, ${fx.length} hieu ung`
+    detail += ` — ${out.manifest.sfx.length} SFX, ${out.manifest.memes.length} meme, ${out.manifest.texts.length} mau chu, ${out.manifest.music.length} nhac nen, ${fx.length} hieu ung`
   }
   await logEvent(env, lic.id, event, req, detail)
   return json(out)
@@ -432,7 +444,7 @@ export default {
     const url = new URL(req.url)
     try {
       if (url.pathname === '/v1/license' && req.method === 'POST') return await handleLicense(req, env)
-      const m = url.pathname.match(/^\/v1\/lib\/(sfx|memes)\/([^/]+)$/)
+      const m = url.pathname.match(/^\/v1\/lib\/(sfx|memes|music)\/([^/]+)$/)
       if (m && req.method === 'GET') return await handleDownload(req, env, m[1], m[2])
       // Kho Text: /v1/lib/texts/<id>/<duong dan tuong doi> — giai ma TUNG doan roi kiem an toan
       const mt = url.pathname.match(/^\/v1\/lib\/texts\/(.+)$/)

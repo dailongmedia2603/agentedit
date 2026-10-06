@@ -106,7 +106,7 @@ export function RemotionPlanView({
           ['Đoạn cắt', clips.filter((c) => c.kind === 'body').length],
           ['Caption', spec?.captions.length ?? plan.captions?.length ?? 0],
           ['Hiệu ứng', (spec?.effects.length ?? 0) + (spec?.fx?.length ?? 0) + (spec?.fxTransforms?.length ?? 0)],
-          ['SFX', spec?.audio.length ?? 0],
+          ['SFX', spec?.audio.filter((a) => a.role !== 'bgm').length ?? 0],
           ['Meme', memes],
           ['Bố cục', spec?.scenes?.length ?? 0],
           ['Lớp đồ hoạ', spec?.layers?.length ?? 0]
@@ -262,12 +262,31 @@ export function RemotionPlanView({
           </div>
         </div>
       )}
-      {!!spec?.audio.length && (
+      {!!spec?.audio.some((a) => a.role !== 'bgm') && (
         <div className="text-xs text-ink-800/55">
           SFX:{' '}
-          {spec.audio.map((a) => `${a.name || 'sfx'} @${fmtTime(a.start)}`).join(' · ')}
+          {spec.audio
+            .filter((a) => a.role !== 'bgm')
+            .map((a) => `${a.name || 'sfx'} @${fmtTime(a.start)}`)
+            .join(' · ')}
         </div>
       )}
+      {(() => {
+        const bgm = spec?.audio.filter((a) => a.role === 'bgm') || []
+        const m = plan.music
+        if (!bgm.length && !m) return null
+        return (
+          <div className="text-xs text-ink-800/55">
+            Nhạc nền:{' '}
+            {bgm.length
+              ? `${bgm[0].name} từ ${fmtTime(bgm[0].start)} (sau hook)${
+                  bgm[0].rel != null ? ` · ${bgm[0].rel.toFixed(1)} dB so với giọng nói` : ''
+                }${bgm.length > 1 ? ` · nối bài ${bgm.length - 1} lần` : ''}`
+              : 'không dùng'}
+            {m?.ly_do ? ` — ${m.ly_do}` : ''}
+          </div>
+        )
+      })()}
     </div>
   )
 }

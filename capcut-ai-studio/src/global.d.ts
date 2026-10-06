@@ -110,6 +110,8 @@ interface StudioBridge {
     sfx?: { added: number; updated: number; total: number; errors: string[] }
     memes?: { added: number; updated: number; total: number; errors: string[] }
     texts?: { added: number; updated: number; total: number; errors: string[] }
+    /** kho nhac nen (nhac CC0); may chu cu khong co -> total 0 */
+    music?: { added: number; updated: number; total: number; errors: string[] }
     /** kho hieu ung chung (muc da duyet); null = may chu chua co kho hieu ung */
     fx?: { added: number; updated: number; removed: number; total: number; errors: string[] } | null
     log?: string[]
@@ -252,6 +254,38 @@ interface StudioBridge {
     error?: string
   }>
   sfxDelete(id: string): Promise<{ ok: boolean }>
+
+  // ---- Kho nhac nen ----
+  musicList(): Promise<{
+    ok: boolean
+    tracks: MusicTrack[]
+    settings: MusicSettings
+    /** quy tac buoc lap ke hoach: nhac nen = bao nhieu % tieng nguoi (Prompt & quy tac) */
+    voice_pct: number
+    error?: string
+  }>
+  musicImport(items: { path: string; name?: string }[]): Promise<{
+    ok: boolean
+    added?: MusicTrack[]
+    failed?: { path: string; error: string }[]
+    error?: string
+  }>
+  musicUpdate(payload: { id: string; name?: string; use_when?: string; disabled?: boolean }): Promise<{
+    ok: boolean
+    track?: MusicTrack | null
+    error?: string
+  }>
+  musicDelete(id: string): Promise<{ ok: boolean }>
+  musicLabel(ids: string[]): Promise<{
+    ok: boolean
+    updated?: MusicTrack[]
+    failed?: { id: string; error: string }[]
+    error?: string
+  }>
+  musicSettings(payload: Partial<MusicSettings>): Promise<{ ok: boolean; settings?: MusicSettings; error?: string }>
+  /** volume 0..1 de nghe thu bai o dung quy tac % tieng nguoi (so voi giong noi mau) */
+  musicPreviewVolume(id: string): Promise<{ ok: boolean; volume: number | null }>
+  pickMusic(): Promise<{ canceled: boolean; filePaths?: string[] }>
   sfxFetchLinks(links: string[]): Promise<FetchOutcome>
   sfxOpenMyinstants(): Promise<{ ok: boolean }>
   sfxCloseMyinstants(): Promise<{ ok: boolean }>
@@ -814,6 +848,42 @@ declare global {
     lufs_m?: number
   }
 
+  interface MusicSettings {
+    /** true = AI tu chon nhac nen khi lap ke hoach */
+    auto: boolean
+  }
+
+  interface MusicTrack {
+    id: string
+    name: string
+    file: string
+    source?: string
+    artist?: string
+    license?: string
+    source_url?: string
+    duration?: number
+    lufs_i?: number
+    disabled?: boolean
+    labeled_by?: string
+    labeled_at?: string
+    summary?: string
+    genre?: string
+    moods?: string[]
+    energy?: 'thap' | 'vua' | 'cao'
+    tempo?: 'cham' | 'vua' | 'nhanh'
+    bpm?: number
+    instruments?: string[]
+    has_vocals?: boolean
+    vocals_note?: string
+    speech_friendly?: 'tot' | 'vua' | 'kem'
+    speech_note?: string
+    use_when?: string
+    avoid_when?: string[]
+    best_start?: number
+    structure?: string
+    tags?: string[]
+  }
+
   /** 1 file da tai ve thu muc cho, CHUA vao kho */
   interface StagedSfx {
     key: string
@@ -994,6 +1064,8 @@ declare global {
     hook?: { caption?: string; src_start?: number; src_end?: number; reason?: string; [k: string]: unknown } | null
     inserts?: Record<string, unknown>[]
     audio?: Record<string, unknown>[]
+    /** nhac nen ca video (B7 chon trong Kho nhac nen); track_id null = AI chon khong dung (co ly do) */
+    music?: { track_id: string | null; name?: string; muc?: string; ly_do?: string; by?: 'ai' | 'code' } | null
     _pipeline?: { story_arc?: string; tone?: string; notes?: string; [k: string]: unknown }
     [k: string]: unknown
   }
@@ -1003,6 +1075,8 @@ declare global {
     caption?: number
     hieu_ung?: number
     sfx?: number
+    /** ten bai nhac nen dang dung (null = khong co) */
+    nhac_nen?: string | null
     meme_de_len?: number
     tong_mau?: string
     chuyen_canh?: string[]

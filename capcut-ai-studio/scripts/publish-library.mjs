@@ -1,11 +1,13 @@
-// PUBLISH kho SFX + Meme + Text (kem nhan Gemini) len Cloudflare R2 — CHI chay o may tac gia.
+// PUBLISH kho SFX + Meme + Text + Nhac nen (kem nhan Gemini) len Cloudflare R2 — CHI chay o may tac gia.
 //   npm run publish:library
 // Doc kho tu ~/.capcut-studio (sfx_library.json + sfx/, meme_library.json + memes/,
 // text_library.json + text_templates/<id>/ — thu muc NHIEU file: template.json, preview.mp4,
 // fonts/, audio/, assets/), tinh SHA-256 tung file, tao library-manifest.json (sfx/memes: file=ten
 // co ban; texts: files=[{path tuong doi, sha256, size}] vi 1 mau co nhieu file), roi upload nhung
 // file MOI / DOI (so voi manifest tren R2) + manifest moi. R2 key: `sfx/<file>`, `memes/<file>`,
-// `texts/<id>/<path tuong doi>`.
+// `texts/<id>/<path tuong doi>`, `music/<file>`.
+// NHAC NEN: CHI bai giay phep CC0 (`license` bat dau "CC0") duoc dua len — nhac nguoi dung tu nhap / nhac co giay phep
+// cam phat lai (Mixkit, Pixabay...) KHONG BAO GIO len kho chung. Chinh rieng tung may (disabled) bi bo.
 //
 // Token R2 nam o ~/.capcut-studio/r2-publish.json (KHONG nhung vao app, KHONG len git):
 //   { "account_id","access_key_id","secret_access_key","bucket" }
@@ -20,6 +22,14 @@ import { basename, join } from 'node:path'
 const HOME = homedir()
 const ENGINE = join(HOME, '.capcut-studio')
 const DRY_RUN = process.argv.includes('--dry-run') || process.env.PUBLISH_DRY_RUN === '1'
+// --only music[,sfx,...]: CHI dua cac kho nay len; kho khac giu NGUYEN nhu manifest dang co tren R2 (vd chi phat hanh
+// nhac nen ma khong day kem mau chu chua muon phat hanh). Dry-run khong doc R2 -> kho khac de trong.
+const ONLY = (() => {
+  const i = process.argv.indexOf('--only')
+  const v = i >= 0 ? process.argv[i + 1] : (process.argv.find((a) => a.startsWith('--only=')) || '').slice(7)
+  return v ? new Set(v.split(',').map((x) => x.trim()).filter(Boolean)) : null
+})()
+const want = (kind) => !ONLY || ONLY.has(kind)
 const log = (...a) => console.log('[publish-library]', ...a)
 
 function creds() {
@@ -43,7 +53,8 @@ function creds() {
 }
 
 const sha256 = (p) => createHash('sha256').update(readFileSync(p)).digest('hex')
-const ctype = (f) => (f.endsWith('.mp3') ? 'audio/mpeg' : f.endsWith('.mp4') ? 'video/mp4' : f.endsWith('.json') ? 'application/json' : 'application/octet-stream')
+const CTYPES = { mp3: 'audio/mpeg', mp4: 'video/mp4', json: 'application/json', wav: 'audio/wav', ogg: 'audio/ogg', m4a: 'audio/mp4', aac: 'audio/aac', flac: 'audio/flac' }
+const ctype = (f) => CTYPES[f.split('.').pop().toLowerCase()] || 'application/octet-stream'
 
 function readLib(file, key) {
   const p = join(ENGINE, file)
@@ -90,24 +101,34 @@ async function main() {
       })
 
   // manifest hien co tren R2 -> bo qua file trung SHA (tiet kiem bang thong)
-  let remote = { sfx: [], memes: [], texts: [] }
+  let remote = { sfx: [], memes: [], texts: [], music: [] }
   if (!DRY_RUN) {
     try {
       const r = await client.send(new GetObjectCommand({ Bucket: c.bucket, Key: 'library-manifest.json' }))
       remote = JSON.parse(await r.Body.transformToString())
-    } catch {
+    } catch (e) {
+      // --only giu kho khac theo R2: khong doc duoc manifest thi DUNG (khong ghi de kho khac thanh rong)
+      if (ONLY) throw new Error(`--only can doc manifest R2 nhung that bai: ${e?.message || e}`)
       /* chua co manifest */
     }
   }
   const remoteSha = new Map()
-  for (const kind of ['sfx', 'memes']) for (const e of remote[kind] || []) remoteSha.set(`${kind}/${e.file}`, e.sha256)
+  for (const kind of ['sfx', 'memes', 'music']) for (const e of remote[kind] || []) remoteSha.set(`${kind}/${e.file}`, e.sha256)
   for (const e of remote.texts || []) for (const f of e.files || []) remoteSha.set(`texts/${e.id}/${f.path}`, f.sha256)
 
   const kinds = [
     { key: 'sfx', lib: 'sfx_library.json', libKey: 'sfx', dir: 'sfx' },
-    { key: 'memes', lib: 'meme_library.json', libKey: 'memes', dir: 'memes' }
+    { key: 'memes', lib: 'meme_library.json', libKey: 'memes', dir: 'memes' },
+    {
+      key: 'music',
+      lib: 'music_library.json',
+      libKey: 'tracks',
+      dir: 'music',
+      keep: (e) => /^CC0/i.test(String(e.license || '')),
+      strip: ['disabled']
+    }
   ]
-  const manifest = { updated: new Date().toISOString(), sfx: [], memes: [], texts: [] }
+  const manifest = { updated: new Date().toISOString(), sfx: [], memes: [], texts: [], music: [] }
   let uploaded = 0
   let skipped = 0
 
@@ -117,9 +138,18 @@ async function main() {
   }
 
   for (const k of kinds) {
+    if (!want(k.key)) {
+      manifest[k.key] = remote[k.key] || []
+      continue
+    }
     const entries = readLib(k.lib, k.libKey)
     for (const e of entries) {
+      if (k.keep && !k.keep(e)) {
+        log(`  bo qua (khong phai CC0 — khong duoc phat lai): ${e.id || e.name}`)
+        continue
+      }
       const me = manifestEntry(e, k.dir)
+      for (const f of k.strip || []) delete me?.[f]
       if (!me) {
         log(`  bo qua (thieu file): ${e.id || e.name}`)
         continue
@@ -137,7 +167,8 @@ async function main() {
   }
 
   // Kho Text: moi mau la 1 THU MUC nhieu file (template.json, preview.mp4, fonts/, audio/, assets/)
-  const texts = readLib('text_library.json', 'templates')
+  if (!want('texts')) manifest.texts = remote.texts || []
+  const texts = want('texts') ? readLib('text_library.json', 'templates') : []
   for (const t of texts) {
     if (!t.id) continue
     const tdir = join(ENGINE, 'text_templates', t.id)
@@ -171,7 +202,7 @@ async function main() {
 
   // manifest cuoi cung
   await putObject('library-manifest.json', Buffer.from(JSON.stringify(manifest, null, 2)), 'application/json')
-  const tong = `SFX ${manifest.sfx.length} + Meme ${manifest.memes.length} + Text ${manifest.texts.length}`
+  const tong = `SFX ${manifest.sfx.length} + Meme ${manifest.memes.length} + Text ${manifest.texts.length} + Nhac nen ${manifest.music.length}`
   if (DRY_RUN) {
     log(`THU xong. ${tong}; se upload ${uploaded} file (tat ca, vi khong so voi R2). Khong co gi duoc gui len.`)
   } else {

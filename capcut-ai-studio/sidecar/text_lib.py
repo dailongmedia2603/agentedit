@@ -46,6 +46,19 @@ ANALYSIS_FIELDS = (
 
 ENERGIES = ("nhe", "vua", "manh")
 
+# Muc renderer Kho Text cua ban app nay. Mau co "minApp" lon hon -> app nay KHONG ve dung (node / hieu ung moi) -> bo qua
+# khi dong bo va khi lap plan. 1.2.0: hinh vector, canvas clip ghep, chinh mau, glow moi, hoat anh chu lay mau, bo dem so...
+TEXT_RENDERER_VERSION = "1.2.0"
+
+
+def _ver(v):
+    return tuple(int(x) for x in re.findall(r"\d+", str(v or "0"))[:3]) or (0,)
+
+
+def supported(row_or_spec):
+    """Mau ve duoc o ban app nay? (minApp <= TEXT_RENDERER_VERSION; thieu minApp = mau cu)."""
+    return _ver((row_or_spec or {}).get("minApp")) <= _ver(TEXT_RENDERER_VERSION)
+
 
 def _pretty(tid):
     s = re.sub(r"[-_]+", " ", tid or "").strip()
@@ -187,6 +200,8 @@ def register_from_dir(dir_path):
         "sample_texts": _sample_texts(spec, slots),
         "preview": preview_name if os.path.isfile(preview_path) else None,
     }
+    if spec.get("minApp"):
+        row["minApp"] = as_text(spec.get("minApp"))
     lib = load_lib()
     rows = lib.get("templates", [])
     old = next((t for t in rows if t.get("id") == tid), None)

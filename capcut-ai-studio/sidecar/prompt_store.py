@@ -48,7 +48,7 @@ GROUPS = [
              "khoảnh khắc chính…) — kết quả là 'source brief' làm đầu vào cho mọi bước sau."},
     {"id": "plan", "title": "Lập kế hoạch — các bước chung (GPT / Claude)",
      "info": "Khi bấm lập plan: B1 chọn chất liệu & câu chuyện → B2 timeline → B3 hook → R4 thiết kế → "
-             "R5 phụ đề → FX hiệu ứng tự viết (+ chữ ảnh AI) → B6 meme → B7 SFX. Mỗi bước là 1 lần gọi AI lập kế hoạch (GPT hoặc Claude — chọn "
+             "R5 phụ đề → FX hiệu ứng tự viết (+ chữ ảnh AI) → B6 meme → B7 SFX + nhạc nền. Mỗi bước là 1 lần gọi AI lập kế hoạch (GPT hoặc Claude — chọn "
              "trong Cài đặt API) với prompt riêng. Nhóm này là các bước "
              "B1/B2/B3/B6/B7; R4, R5 và video mẫu nằm ở nhóm 'Video Remotion'. Câu chuyện của B1 và phần video "
              "mẫu liên quan đi vào MỌI bước; timeline B2 là xương sống; B7 SFX nhận cả hook, chuyển cảnh, chữ "
@@ -99,6 +99,12 @@ PROMPTS = [
      "info": "Gemini NGHE từng file SFX (5 file/lượt) và viết nhãn: nghe thấy gì, loại tiếng, có giọng người "
              "nói không (+ lời), cảm xúc, mức mạnh, dùng khi / tránh khi. Độ dài và mốc cú đậm (peak_time) do "
              "máy đo từ âm thanh thật. AI lập plan KHÔNG nghe được file nên chỉ chọn SFX dựa vào nhãn này."},
+    {"id": "_GEMINI_MUSIC_PROMPT", "group": "understand", "module": "music_lib", "own_key": True,
+     "title": "Gắn nhãn nhạc nền (Kho nhạc nền)",
+     "used_in": "Tài nguyên → Kho nhạc nền → nút 'Cho Gemini nghe'",
+     "info": "Gemini NGHE từng bài nhạc nền (3 bài/lượt, bản nén mono) và viết nhãn: thể loại, cảm xúc, năng lượng, "
+             "nhịp, nhạc cụ, có lời hát không, có hợp làm nền dưới giọng nói không, dùng khi / tránh khi, giây bắt đầu "
+             "đẹp. Độ dài + độ to do máy đo. AI lập plan KHÔNG nghe được bài nên chỉ chọn nhạc dựa vào nhãn này."},
     {"id": "_GEMINI_TEXT_TEMPLATE_PROMPT", "group": "understand", "title": "Gắn nhãn mẫu chữ (Kho Text)",
      "used_in": "Kho Text → nút '✨ Gemini phân tích'",
      "info": "Gemini XEM preview.mp4 của 1 mẫu chữ động (chuyển từ preset CapCut) và viết nhãn: phong cách/"
@@ -155,6 +161,14 @@ PROMPTS = [
              "chuyển cảnh (R4) + chữ hero (R5 + lớp chữ đồ hoạ) + meme (B6) + kiểu SFX của video mẫu. Mỗi chữ "
              "hiện ra đều có SFX (thiếu thì hệ thống tự gắn) + SFX ở điểm nhấn, đặt đúng giây (neo theo giờ trong file gốc, hệ thống tự quy đổi). Danh mục SFX được tự nối "
              "vào cuối prompt. Kho trống → bỏ qua bước này."},
+    {"id": "_MUSIC_RULE", "group": "plan", "module": "music_lib", "own_key": True,
+     "title": "B7 · Chọn nhạc nền",
+     "used_in": "Bước Plan — B7 (cùng lượt chọn SFX), CHỈ khi Kho nhạc nền có bài đã gắn nhãn và bật 'Tự thêm nhạc nền'",
+     "info": "Hệ thống tự nối luật này + danh mục nhạc nền vào cuối prompt B7: AI chọn 1 bài hợp nội dung / cảm xúc cho "
+             "cả video (hoặc không dùng, phải có lý do: video gốc đã có nhạc, người dùng không muốn nhạc...) và mức "
+             "rất nhỏ / nhỏ / vừa. Độ to THẬT do code tính theo giọng nói của chính video (thanh trượt ở Kho nhạc nền), "
+             "không bao giờ lấn giọng; nhạc bắt đầu SAU hook, tự giảm khi meme cắt vào, fade ở cuối. AI không chọn / "
+             "chọn sai id → hệ thống tự chọn bài hợp nhãn nhất."},
     {"id": "_CREATIVE_RULE", "group": "plan", "module": "creative",
      "title": "Luật sáng tạo + cảm xúc (chung)",
      "used_in": "Hệ thống tự nối vào B3 hook, R4 thiết kế, R5 chữ, FX hiệu ứng, B6 meme, B7 SFX",
@@ -324,6 +338,10 @@ RULES = [
     _r("SPEECH_GAP_SEC", "meme", "Khoảng nghỉ tính là 'lặng'", "Hai cụm lời cách nhau ít hơn mức này được coi là liền nhau (không phải khoảng lặng). Ảnh hưởng chỗ cắt meme và hạ SFX khi trùng giọng.", 0, 2, "giây"),
     # --- sfx
     _r("MAX_SFX", "sfx", "Số SFX tối đa", "Số SFX tối đa trong 1 video; dư sẽ bị bỏ.", 0, 30, "SFX"),
+    _r("MUSIC_VOICE_PCT", "sfx", "Nhạc nền so với tiếng người",
+       "Quy tắc bước lập kế hoạch: độ lớn nhạc nền = bấy nhiêu % tiếng người nói của CHÍNH video (đo bằng máy; 20% = "
+       "nhỏ hơn giọng 14 dB). Nhạc bắt đầu sau hook, nhỏ hẳn khi meme cắt vào, fade 2 đầu. Áp dụng cả khi mở lại dự án cũ.",
+       5, 60, "%"),
     _r("SFX_MIN_GAP", "sfx", "Khoảng cách giữa 2 SFX", "2 SFX gần nhau hơn mức này → bỏ bớt.", 0, 10, "giây"),
     _r("SFX_VOL_MIN", "sfx", "Âm lượng SFX thấp nhất", "Sàn âm lượng sau khi tự tính (1 = 100%).", 0, 2),
     _r("SFX_VOL_MAX", "sfx", "Âm lượng SFX cao nhất", "Trần âm lượng sau khi tự tính (bản Remotion kẹp lại tối đa 1 = 100% khi dựng).", 0.1, 2),

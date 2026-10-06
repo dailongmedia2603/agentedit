@@ -31,6 +31,23 @@ import { LayersLayer } from './Layers'
 import { FxLayer, fxTransformAt, fxTransformFilters } from './FxLayer'
 import { SceneBackdrop, ScenePanels, arollStateAt } from './Scenes'
 
+/** Duong am luong nhac nen [giay, volume] -> volume tai giay t (noi suy tuyen tinh, kep 0..1). */
+export function envAt(env: [number, number][], t: number): number {
+  if (t <= env[0][0]) return clampVol(env[0][1])
+  for (let i = 1; i < env.length; i++) {
+    const [t1, v1] = env[i]
+    if (t <= t1) {
+      const [t0, v0] = env[i - 1]
+      return clampVol(t1 > t0 ? v0 + ((v1 - v0) * (t - t0)) / (t1 - t0) : v1)
+    }
+  }
+  return clampVol(env[env.length - 1][1])
+}
+
+function clampVol(v: number): number {
+  return Math.min(1, Math.max(0, v))
+}
+
 /** Duong dan file tren may -> URL ma trinh duyet (Player lan may render) tai duoc. */
 export function mediaSrc(base: string | undefined, path: string): string {
   if (/^(https?:|data:|blob:)/.test(path)) return path
@@ -564,7 +581,11 @@ export const AutoEdit: React.FC<AutoEditProps> = ({ spec }) => {
         const len = a.srcEnd !== null && a.srcEnd !== undefined ? toFrame(a.srcEnd - a.srcStart, fps) : undefined
         return (
           <Sequence key={a.id} from={from} durationInFrames={len && len > 0 ? len : undefined} layout="none">
-            <Html5Audio src={mediaSrc(spec.mediaBase, a.path)} trimBefore={toFrame(a.srcStart, fps)} volume={Math.min(1, Math.max(0, a.volume))} />
+            <Html5Audio
+              src={mediaSrc(spec.mediaBase, a.path)}
+              trimBefore={toFrame(a.srcStart, fps)}
+              volume={a.env && a.env.length ? (f: number) => envAt(a.env!, f / fps) : Math.min(1, Math.max(0, a.volume))}
+            />
           </Sequence>
         )
       })}

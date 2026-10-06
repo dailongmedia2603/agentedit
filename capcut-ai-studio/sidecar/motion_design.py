@@ -2745,14 +2745,28 @@ def protect_face(spec, changes):
         lim = FACE_HOOK_MAX if in_hook else (
             FACE_TPL_MAX if any(kind == "L" and x.get("type") == "tpl" for kind, x in mem) else FACE_BODY_MAX)
         ts = [st + 0.05 + 0.2 * j for j in range(max(1, int((en - st - 0.1) / 0.2) + 1))] + [max(st, en - 0.05)]
-        faces = [f for f in (_face_rect(spec, t, W, H) for t in ts) if f]
+        tf = [(t, f) for t, f in ((t, _face_rect(spec, t, W, H)) for t in ts) if f]
+        faces = [f for _, f in tf]
         if not faces:
             continue
 
         def cover(b):
             return max(UM._inter(b, f) / max(1e-6, (f[2] - f[0]) * (f[3] - f[1])) for f in faces)
 
-        if cover(box) <= lim:
+        def _cov(b, f):
+            return UM._inter(b, f) / max(1e-6, (f[2] - f[0]) * (f[3] - f[1]))
+
+        # XET THEO TUNG THOI DIEM (10-06): chi cac phan tu DANG HIEN luc t, so voi mat DUNG luc t; phan de len mat = TONG
+        # phan de cua TUNG phan tu (khung gop ca to hop "phu" mat du moi chu deu ne mat). Truoc day gop khung ca to hop x
+        # ca khoang thoi gian -> 1 chu con hien 0.45s sau khi bo cuc chia doi het (mat len cao) lam ca 4 chu o nua tren
+        # bi doi sat mep + thu con 42% suot 4s.
+        bad = [t for t, f in tf
+               if min(1.0, sum(_cov(b, f) for (_, x), b in zip(mem, boxes) if x["start"] <= t <= x["end"])) > lim]
+        if not bad:
+            continue
+        hit = [x for (_, x), b in zip(mem, boxes)
+               if any(x["start"] <= t <= x["end"] and _cov(b, f) > 0.01 for t, f in tf if t in bad)]
+        if not in_hook and _trim_edges(mem, hit, bad, st, en, changes):
             continue
         F = (min(f[0] for f in faces), min(f[1] for f in faces), max(f[2] for f in faces), max(f[3] for f in faces))
         fh = F[3] - F[1]
@@ -2821,6 +2835,40 @@ def protect_face(spec, changes):
                     x["size"] = round(float(x["size"]) * k, 1)
         changes.append("%s: %s de len mat nguoi noi -> %s%s" % (
             _guard_name(mem), "hook —" if in_hook else "", note, ", thu nho %.0f%%" % (k * 100) if k < 0.999 else ""))
+
+
+FACE_TRIM_MAX = 0.6         # de len mat chi o DAU / CUOI <= 0.6s (hoac <= 25% thoi gian hien) -> cat bot thoi gian hien
+
+
+def _trim_edges(mem, hit, bad, st, en, changes):
+    """De len mat CHI o mot dau (vd bo cuc doi ngay truoc khi chu het) -> cat bot thoi gian hien cua cac phan tu CHAM
+    MAT (`hit`) o doan do thay vi doi + thu nho ca to hop. Tra True neu da xu ly."""
+    span = en - st
+    lim = max(FACE_TRIM_MAX, 0.25 * span)
+    b0, b1 = min(bad), max(bad)
+    if b1 - b0 > lim + 0.25:
+        return False
+    if en - b0 <= lim + 0.3:              # duoi: cat het tu luc bat dau de len mat
+        cut, side = b0 - 0.15, "end"
+    elif b1 - st <= lim + 0.3:            # dau: hien sau luc het de len mat
+        cut, side = b1 + 0.15, "start"
+    else:
+        return False
+    if not hit:
+        return False
+    for x in hit:
+        if side == "end" and x["end"] > cut and cut - x["start"] < 0.5:
+            return False                  # phan tu con qua ngan de doc -> de buoc doi cho xu ly
+        if side == "start" and x["start"] < cut and x["end"] - cut < 0.5:
+            return False
+    for x in hit:
+        if side == "end" and x["end"] > cut:
+            x["end"] = round(cut, 3)
+        elif side == "start" and x["start"] < cut:
+            x["start"] = round(cut, 3)
+    changes.append("%s: chi de len mat %.2fs o %s (bo cuc / mat doi cho) -> %s luc %.2fs, giu co + vi tri" % (
+        _guard_name([("L", x) for x in hit]), b1 - b0 + 0.2, "cuoi" if side == "end" else "dau", "tat" if side == "end" else "hien", cut))
+    return True
 
 
 def _guard_name(mem):

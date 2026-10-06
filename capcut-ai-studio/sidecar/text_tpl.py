@@ -113,6 +113,8 @@ def usable():
     for t in text_lib.text_list():
         if not (t.get("summary") or t.get("use_when")) or not t.get("slots"):
             continue
+        if not text_lib.supported(t):
+            continue  # mau can renderer moi hon ban app nay
         spec = load_spec(t)
         if spec and spec.get("root") and spec.get("slots"):
             out.append(t)
@@ -120,19 +122,35 @@ def usable():
 
 
 def _font(dirp, spec, fid):
+    """(font PIL co 100, chieu cao dong / em, duong dan, ascent / em, descent / em). Mau co `metrics` (OS/2 typo — CapCut
+    tinh dong theo bang nay, KHOP lineEm cua TextTemplate) thi dung metrics, khong thi metric PIL (hhea)."""
     f = next((x for x in spec.get("fonts") or [] if x.get("id") == fid), None)
     if not f:
         return None
     path = os.path.join(dirp, f["file"])
-    if path not in _FONT_CACHE:
+    fm = f.get("metrics") or None
+    key = (path, json.dumps(fm, sort_keys=True) if fm else "")
+    if key not in _FONT_CACHE:
         try:
             from PIL import ImageFont
             ft = ImageFont.truetype(path, 100)
             asc, desc = ft.getmetrics()
-            _FONT_CACHE[path] = (ft, (asc + desc) / 100.0 or 1.2, path)
+            if fm:
+                a_em, d_em = float(fm["ascent"]), float(fm["descent"])
+            else:
+                a_em, d_em = asc / 100.0, desc / 100.0
+            _FONT_CACHE[key] = (ft, (a_em + d_em) or 1.2, path, a_em, d_em)
         except Exception:
-            _FONT_CACHE[path] = None
-    return _FONT_CACHE[path]
+            _FONT_CACHE[key] = None
+    return _FONT_CACHE[key]
+
+
+def _cv(spec, n):
+    """Kich thuoc canvas cua group chua node (clip ghep co canvas rieng, vd 1920x1080 — _hits gan `_cv`)."""
+    cv = n.get("_cv")
+    if cv:
+        return float(cv[0]), float(cv[1])
+    return float(spec.get("width") or 1080), float(spec.get("height") or 1920)
 
 
 def _split_runs(text, runs):
@@ -163,7 +181,7 @@ def _line_px(n, r, scale, W, line_em):
 
 def text_size(spec, dirp, n, text, scale=1.0):
     """(be ngang, chieu cao dong) px tren khung mau — cong thuc nhu layoutText (CapCut khong kern)."""
-    W = float(spec.get("width") or 1080)
+    W = _cv(spec, n)[0]
     w, h = 0.0, 0.0
     text = _shown(n, text)
     for r, s in _split_runs(text, _runs(n, text)):
@@ -173,7 +191,7 @@ def text_size(spec, dirp, n, text, scale=1.0):
         if not fo:
             w += len(s) * line * 0.45
             continue
-        ft, line_em, _ = fo
+        ft, line_em = fo[0], fo[1]
         em = line / line_em
         w += ft.getlength(s) * em / 100.0 + float(n.get("letterSpacing") or 0) * em * len(s)
     return w, h
@@ -237,7 +255,7 @@ def _hits(spec, t, shapes=None):
     W, H = float(spec.get("width") or 1080), float(spec.get("height") or 1920)
     out = []
 
-    def visit(g, local, M):
+    def visit(g, local, M, W, H):
         if local < 0 or local >= g["duration"]:
             return
         ct = local + g.get("sourceStart", 0)
@@ -245,10 +263,17 @@ def _hits(spec, t, shapes=None):
         if alpha <= 0:
             return
         Mg = _mul(M, m)
+        cv = g.get("canvas")
+        if cv and (float(cv[0]), float(cv[1])) != (W, H):
+            # clip ghep canvas rieng "vua khung" vao canvas cha (KHOP fitMatrix cua TextTemplate)
+            f = min(W / float(cv[0]), H / float(cv[1]))
+            Mg = _mul(Mg, _mul(_tr((W - cv[0] * f) / 2, (H - cv[1] * f) / 2), _sc(f)))
+            W, H = float(cv[0]), float(cv[1])
         for ch in g.get("children") or []:
             if ch.get("type") == "group":
-                visit(ch, ct - ch["start"], Mg)
+                visit(ch, ct - ch["start"], Mg, W, H)
                 continue
+            ch["_cv"] = (W, H)
             l = ct - ch["start"]
             if l < 0 or l >= ch["duration"] or _cc((ch.get("keyframes") or {}).get("alpha"), l, ch.get("alpha", 1)) <= 0:
                 continue
@@ -260,14 +285,14 @@ def _hits(spec, t, shapes=None):
                 continue
             out.append((ch, Mg, l))
 
-    visit(dict(spec["root"], start=0), t, (1, 0, 0, 1, 0, 0))
+    visit(dict(spec["root"], start=0), t, (1, 0, 0, 1, 0, 0), W, H)
     return out
 
 
 def _node_box(spec, dirp, hit, text):
     n, M, l = hit
     kf = n.get("keyframes") or {}
-    W, H = float(spec.get("width") or 1080), float(spec.get("height") or 1920)
+    W, H = _cv(spec, n)
     w, h = text_size(spec, dirp, n, text, _cc(kf.get("scale"), l, n["transform"]["scale"]))
     cx, cy = _apply(M, W / 2 + _cc(kf.get("x"), l, n["transform"]["x"]) * W / 2,
                     H / 2 - _cc(kf.get("y"), l, n["transform"]["y"]) * H / 2)
@@ -287,7 +312,7 @@ def _text_frame(spec, dirp, hit, text, mult=1.0):
     """Khung chu cua node tren khung mau: l / r / t / b (dong font), cx / cy, base (chan chu), ink* (net muc that)."""
     n, M, l = hit
     kf = n.get("keyframes") or {}
-    W, H = float(spec.get("width") or 1080), float(spec.get("height") or 1920)
+    W, H = _cv(spec, n)
     scale = _cc(kf.get("scale"), l, n["transform"]["scale"]) * mult
     text = _shown(n, text)
     parts, x = [], 0.0
@@ -296,10 +321,10 @@ def _text_frame(spec, dirp, hit, text, mult=1.0):
         fo = _font(dirp, spec, r.get("font"))
         if not fo:
             return None
-        ft, line_em, _ = fo
+        ft, line_em = fo[0], fo[1]
         line = _line_px(n, r, scale, W, line_em)
         k = line / line_em / 100.0
-        a, d = ft.getmetrics()
+        a, d = fo[3] * 100.0, fo[4] * 100.0
         asc_m, desc_m = max(asc_m, a * k), max(desc_m, d * k)
         bb = ft.getbbox(s, anchor="ls")
         parts.append((x + bb[0] * k, bb[1] * k, x + bb[2] * k, bb[3] * k))
@@ -324,6 +349,8 @@ def _rest_local(n):
     for ks in (n.get("keyframes") or {}).values():
         for k in ks or []:
             t = max(t, float(k[0]))
+    for a in n.get("anims") or []:
+        t = max(t, float(a.get("start") or 0) + float(a.get("duration") or 0))
     for key in ("charAnim", "reveal"):
         a = n.get(key)
         if a:
@@ -335,7 +362,7 @@ def _shape_box(spec, dirp, shp, texts, fit=None):
     """Khung hinh (hop / gach / lap lanh) tren khung mau — bam o chu cung group o vi tri nghi (khong tinh xoay)."""
     s, M, _l, sib = shp
     samples = {x["id"]: x.get("sample") or "" for x in spec.get("slots") or []}
-    W = float(spec.get("width") or 1080)
+    W = _cv(spec, s)[0]
     vals = []
     for side in ("l", "t", "r", "b"):
         ref = (s.get("box") or {}).get(side) or {}
@@ -482,7 +509,7 @@ _GLYPH = {}
 
 
 def _has_glyph(fo, ch):
-    ft, _, path = fo
+    ft, path = fo[0], fo[2]
     key = (path, ch)
     if key not in _GLYPH:
         try:

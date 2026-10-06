@@ -3,9 +3,10 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { AbsoluteFill, Html5Audio, Sequence, continueRender, delayRender, useCurrentFrame, useVideoConfig } from 'remotion'
 import { aeVal, ccVal } from './aeCurve'
-import { deepGlow, type Img } from './deepGlow'
+import { deepGlow, deepGlow2, type Img } from './deepGlow'
 import { capcutBlur, chromeBlur } from './blur'
-import type { AeTrsMatteEffect, ClipMask, EllipseMask, LineMask, FrameSeq, FramesNode, GroupNode, Reveal, ShapeNode, SlotRef, TemplateNode, TextNode, TextRun, TextTemplateProps, TextTemplateSpec } from './spec'
+import { applyColorOps } from './colorAdjust'
+import type { AeTrsMatteEffect, ClipMask, EllipseMask, LineMask, FrameSeq, FramesNode, GroupNode, Reveal, SampledAnim, ShapeNode, SlotRef, TemplateNode, TextNode, TextRun, TextTemplateProps, TextTemplateSpec, VectorNode } from './spec'
 
 /** He so quy doi don vi CapCut -> pixel (khung rong 1080). Do bang cach so khung voi video CapCut xuat that. */
 export interface TextTune {
@@ -23,10 +24,13 @@ export interface TextTune {
   kerning: number // 1 = ap kerning GPOS. CapCut KHONG kern (do tren LE VIP5-09: sai khac 1.96 -> 0.93)
   layoutPx: number // >0: dan chu o co (size * layoutPx / lineEm) px, lam tron do rong tung ky tu roi phong len // 1: letter_spacing tinh theo CHIEU CAO DONG (em * lineEm) thay vi em
   lineFeatherPow: number // mask Tach/Cuon phim: u_diff = feather^pow (do tren video CapCut)
+  shapeBorder: number // px vien hinh / 1 don vi border_width (khung rong 1080)
+  rot3dSign: number // chieu xoay rotate3d (+1 / -1)
+  shapeUnit: number // he so phu cho don vi hinh (1 = khung rong 720)
 }
 // Do 2026-10-04 tren preset LE VIP5-06 xuat that tu CapCut (1080x1920): co chu khop toi 0.3px, mask sai so 1.4%.
 // shadow* / borderWidth chua do duoc (bong + vien den tren nen den) — gia tri tam, can do lai tren nen sang.
-export const DEFAULT_TUNE: TextTune = { linePerSize: 6.21, shadowDist: 0.03, shadowBlur: 2.45, borderWidth: 5.5, maskK: 4.86, maskPow: 1.866, maskShift: 0.025, glowGain: 1, letterSpacing: 1, italicPivot: -1, lineFeatherPow: 2, lsByLine: 0, kerning: 0, layoutPx: 0 }
+export const DEFAULT_TUNE: TextTune = { linePerSize: 6.21, shadowDist: 0.03, shadowBlur: 2.45, borderWidth: 5.5, maskK: 4.86, maskPow: 1.866, maskShift: 0.025, glowGain: 1, letterSpacing: 1, italicPivot: -1, lineFeatherPow: 2, lsByLine: 0, kerning: 0, layoutPx: 0, shapeBorder: 1, rot3dSign: -1, shapeUnit: 1 }
 
 const fontFamily = (spec: TextTemplateSpec, id: string) => `tpl-${spec.id}-${id}`
 const joinUrl = (base: string, rel: string) => (/^(https?:|file:|data:)/.test(rel) ? rel : base.replace(/\/$/, '') + '/' + rel.split('/').map(encodeURIComponent).join('/'))
@@ -43,10 +47,17 @@ function useAssets(spec: TextTemplateSpec, assetBase: string, fileUrl?: (rel: st
     }
     const walk = (n: TemplateNode) => {
       if (n.type === 'group') {
-        for (const e of n.effects || []) if (e.type === 'ae_trs_matte' && e.matte) imgFiles.add(e.matte.image)
+        for (const e of n.effects || []) {
+          if (e.type === 'ae_trs_matte' && e.matte) imgFiles.add(e.matte.image)
+          if (e.type === 'sprite_blend') {
+            for (const p of e.passes) for (const f of p.files) imgFiles.add(`${p.dir}/${f}`)
+            if (e.lut) imgFiles.add(e.lut.image)
+          }
+        }
         n.children.forEach(walk)
       } else if (n.type === 'frames') addSeq(n.seq)
       else if (n.type === 'text' && n.fillFrames) addSeq(n.fillFrames)
+      if (n.type === 'text' && n.fillImage) imgFiles.add(n.fillImage)
     }
     walk(spec.root)
     const fonts = spec.fonts.map(async (f) => {
@@ -130,6 +141,8 @@ interface Ctx {
   W: number
   H: number
   matteCache: Map<string, HTMLCanvasElement>
+  /** pool theo kich thuoc canvas (clip ghep co canvas rieng, vd 1920x1080 trong khung doc) */
+  pools?: Map<string, Pool>
   /** chu THAT thay chu mau: co chu (scale) + dich (px trong khung cua group chua node) cho tung node — computeFit */
   adj?: Map<TextNode, { scale: number; ox: number; oy: number }>
 }
@@ -137,6 +150,8 @@ interface Ctx {
 /** chieu cao dong / em cua font (metric hhea/typo ma trinh duyet dung) */
 const lineCache = new Map<string, number>()
 function lineEm(k: Ctx, font: string) {
+  const fm = k.spec.fonts.find((f) => f.id === font)?.metrics
+  if (fm) return fm.ascent + fm.descent
   const fam = fontFamily(k.spec, font)
   let v = lineCache.get(fam)
   if (v === undefined) {
@@ -205,8 +220,50 @@ function layoutText(c: CanvasRenderingContext2D, n: TextNode, raw: string, scale
       acc += k.tune.layoutPx > 0 ? Math.round(adv) : adv
       prevW = wNow
     }
-    return { ...p, em, font, glyphs, xs, w: acc * ratio, asc: m.fontBoundingBoxAscent, desc: m.fontBoundingBoxDescent, inkAsc: m.actualBoundingBoxAscent, inkDesc: m.actualBoundingBoxDescent }
+    // dong font: metric typo cua mau (CapCut) neu co, khong thi metric trinh duyet (hhea)
+    const fm = k.spec.fonts.find((f) => f.id === p.run.font)?.metrics
+    const asc = fm ? fm.ascent * em : m.fontBoundingBoxAscent
+    const desc = fm ? fm.descent * em : m.fontBoundingBoxDescent
+    return { ...p, em, font, glyphs, xs, w: acc * ratio, asc, desc, inkAsc: m.actualBoundingBoxAscent, inkDesc: m.actualBoundingBoxDescent }
   })
+}
+
+/** Bo dem so: so trong chu (so cuoi) x frac cua buoc hien tai, giu tien to / hau to / dau phan nghin. Chu khong co so -> giu nguyen */
+function counterText(final: string, c: { t: number[]; frac: number[] }, local: number) {
+  const m = final.match(/^(\D*?)(\d[\d.,]*)(\D*)$/)
+  if (!m) return final
+  let i = 0
+  while (i < c.t.length - 1 && c.t[i + 1] <= local + 1e-6) i++
+  if (i === c.t.length - 1) return final
+  const sep = /\d[.,]\d{3}(\D|$)/.test(m[2]) ? (m[2].match(/\d([.,])\d{3}/) || [])[1] || '' : ''
+  const target = Number(m[2].replace(/[.,]/g, ''))
+  const v = Math.round(target * c.frac[i])
+  const digits = String(v)
+  const body = sep ? digits.replace(/\B(?=(\d{3})+(?!\d))/g, sep) : digits
+  return m[1] + body + m[3]
+}
+
+/** Trang thai hoat anh lay mau tai `local` (giay tu dau node) */
+function sampledState(anims: SampledAnim[] | undefined, local: number) {
+  const st = { alpha: 1, scale: 1, rot: 0, dx: [] as { v: number; unit: string }[], dy: [] as { v: number; unit: string }[] }
+  for (const a of anims || []) {
+    if (a.pre === 'none' && local < a.start) continue // bo dem so gop: hoat anh cua doan cuoi chua toi
+    const p = Math.min(1, Math.max(0, (local - a.start) / Math.max(1e-6, a.duration)))
+    let i = 0
+    while (i < a.t.length - 2 && a.t[i + 1] <= p) i++
+    const f = a.t[i + 1] > a.t[i] ? Math.min(1, Math.max(0, (p - a.t[i]) / (a.t[i + 1] - a.t[i]))) : 0
+    const at = (arr?: number[]) => (arr ? arr[i] + (arr[Math.min(i + 1, arr.length - 1)] - arr[i]) * f : undefined)
+    const al = at(a.alpha)
+    if (al !== undefined) st.alpha *= al
+    const sc = at(a.scale)
+    if (sc !== undefined) st.scale *= sc
+    st.rot += at(a.rot) ?? 0
+    const ux = at(a.dx)
+    if (ux !== undefined) st.dx.push({ v: ux, unit: a.unit || 'px' })
+    const uy = at(a.dy)
+    if (uy !== undefined) st.dy.push({ v: uy, unit: a.unit || 'px' })
+  }
+  return st
 }
 
 function drawText(n: TextNode, t: number, dst: CanvasRenderingContext2D, k: Ctx) {
@@ -214,15 +271,17 @@ function drawText(n: TextNode, t: number, dst: CanvasRenderingContext2D, k: Ctx)
   if (local < 0 || local >= n.duration) return
   const kf = n.keyframes || {}
   const fit = k.adj?.get(n)
+  const sa = n.anims ? sampledState(n.anims, local) : null
   const x = ccVal(kf.x, local, n.transform.x)
   const y = ccVal(kf.y, local, n.transform.y)
-  const scale = ccVal(kf.scale, local, n.transform.scale) * (fit?.scale ?? 1)
-  const rot = ccVal(kf.rotation, local, n.transform.rotation)
-  const alpha = ccVal(kf.alpha, local, n.alpha ?? 1)
+  const scale0 = ccVal(kf.scale, local, n.transform.scale) * (fit?.scale ?? 1)
+  const scale = scale0 * (sa?.scale ?? 1)
+  const rot = ccVal(kf.rotation, local, n.transform.rotation) + (sa?.rot ?? 0)
+  const alpha = ccVal(kf.alpha, local, n.alpha ?? 1) * (sa?.alpha ?? 1)
   if (alpha <= 0) return
-  const text = textOf(k, n.slot)
-  const cx = k.W / 2 + (x * k.W) / 2 + (fit?.ox ?? 0)
-  const cy = k.H / 2 - (y * k.H) / 2 + (fit?.oy ?? 0)
+  const text = n.counter ? counterText(textOf(k, n.slot), n.counter, local) : textOf(k, n.slot)
+  let cx = k.W / 2 + (x * k.W) / 2 + (fit?.ox ?? 0)
+  let cy = k.H / 2 - (y * k.H) / 2 + (fit?.oy ?? 0)
 
   // chu + vien ve rieng 1 lop, roi do bong cho CA lop (khong chong bong vien + bong chu)
   const tmp = k.pool.get()
@@ -235,6 +294,13 @@ function drawText(n: TextNode, t: number, dst: CanvasRenderingContext2D, k: Ctx)
   const total = parts.reduce((a, p) => a + p.w, 0)
   const asc = Math.max(...parts.map((p) => p.asc))
   const desc = Math.max(...parts.map((p) => p.desc))
+  if (sa && (sa.dx.length || sa.dy.length)) {
+    // don vi dich: px (khung 1080, theo co cua node) / be ngang chu / chieu cao dong — o co NGHI (khong tinh scale cua anim)
+    const u = (unit: string) =>
+      unit === 'textW' ? total / (sa.scale || 1) : unit === 'textH' ? (asc + desc) / (sa.scale || 1) : unit === 'canvas' ? k.W / 1080 : scale0 * (k.W / 1080)
+    for (const d of sa.dx) cx += d.v * u(d.unit)
+    for (const d of sa.dy) cy += d.v * u(d.unit)
+  }
   const base = (asc - desc) / 2
   const em0 = parts[0].em
   c.translate(cx, cy)
@@ -243,17 +309,33 @@ function drawText(n: TextNode, t: number, dst: CanvasRenderingContext2D, k: Ctx)
   // hoat anh tung ky tu: tien do cua ky tu thu i (0..1)
   const ca = n.charAnim
   const nChars = parts.reduce((a, p) => a + p.glyphs.length, 0)
+  let order: number[] | null = null
   const charState = (i: number) => {
     if (!ca) return null
-    const per = ca.duration * ca.overlap
-    const gap = ca.gap !== undefined ? ca.gap * ca.duration : nChars > 1 ? (ca.duration - per) / (nChars - 1) : 0
-    const p = Math.min(1, Math.max(0, (local - ca.start - i * gap) / Math.max(1e-6, per)))
+    const autoCd = ca.autoStep !== undefined ? 1 / (ca.autoStep * Math.max(0, nChars - 1) + 1) : 0
+    const per = ca.autoStep !== undefined ? ca.duration * autoCd : ca.duration * ca.overlap
+    const gap = ca.autoStep !== undefined ? ca.autoStep * autoCd * ca.duration : ca.gap !== undefined ? ca.gap * ca.duration : nChars > 1 ? (ca.duration - per) / (nChars - 1) : 0
+    if (ca.shuffle && !order) order = shuffleOrder(nChars)
+    // thu tu rieng (vd "Mo dan nhu bong ma"): mang do duoc; ky tu thua -> so gia ngau nhien co dinh theo chi so
+    const st0 = ca.starts
+      ? (ca.starts[i] ?? (((Math.sin((i + 1) * 12.9898) * 43758.5453) % 1) + 1) % 1 * (ca.startsMax ?? 0.6)) * ca.duration
+      : (order ? order[i] : ca.reverse ? nChars - 1 - i : i) * gap + (ca.delay ?? 0) * ca.duration
+    const p = Math.min(1, Math.max(0, (local - ca.start - st0) / Math.max(1e-6, per)))
     const e = cubicEase(ca.ease, p)
-    return { p, e, alpha: Math.min(1, p / Math.max(1e-6, ca.alphaEnd)) }
+    return { p, e, alpha: ca.alphaEnd <= 0 ? 1 : Math.min(1, p / Math.max(1e-6, ca.alphaEnd)) }
   }
   // doi mau quet: tien do 0..1 (null = khong co / chua toi -> mau `from`, xong -> mau fill)
   const cs = n.colorSweep
   const sweep = cs ? { cs, p: cubicEase(cs.ease || [0.4, 0, 0.6, 1], clamp01((local - cs.start) / Math.max(1e-6, cs.duration))), unit: k.W / 1080 } : null
+  // word-art: anh gian theo khung NET chu (dinh net cao nhat -> day net thap nhat), to thang khi ve glyph
+  let imgFill: CanvasPattern | null = null
+  const fim = n.fillImage ? k.images[n.fillImage] : undefined
+  if (fim) {
+    const inkT = base - Math.max(...parts.map((p) => p.inkAsc))
+    const inkB = base + Math.max(...parts.map((p) => p.inkDesc))
+    imgFill = c.createPattern(fim, 'no-repeat')
+    imgFill?.setTransform(new DOMMatrix().translate(-total / 2, inkT).scale(total / fim.width, Math.max(1, inkB - inkT) / fim.height))
+  }
   const drawPass = (stroke: boolean) => {
     let px = -total / 2
     let ci = 0
@@ -274,11 +356,21 @@ function drawText(n: TextNode, t: number, dst: CanvasRenderingContext2D, k: Ctx)
           }
           const cxg = gx + gw / 2
           c.globalAlpha = st.alpha
-          c.translate(cxg + ca!.dx * p.em * (1 - st.e), ca!.dy * p.em * (1 - st.e))
+          // do lech con lai: curve (lay mau) hoac 1 - ease; halves: nua sau doi dau dx
+          let rem = 1 - st.e
+          if (ca!.curve?.length) {
+            const cv = ca!.curve
+            const q = st.p * (cv.length - 1)
+            const qi = Math.min(cv.length - 2, Math.floor(q))
+            rem = cv[qi] + (cv[qi + 1] - cv[qi]) * (q - qi)
+          }
+          const sgn = ca!.halves && ci >= nChars / 2 ? -1 : 1
+          c.translate(cxg + sgn * ca!.dx * p.em * rem, ca!.dy * p.em * rem)
           c.rotate(((ca!.rotation * (1 - st.e)) * Math.PI) / 180)
           const sc = ca!.scale + (1 - ca!.scale) * st.e
           c.scale(sc, sc)
           c.translate(-cxg, 0)
+          if (ca!.blur && st.e < 1) c.filter = `blur(${(ca!.blur * p.em * (1 - st.e)).toFixed(2)}px)`
         }
         // nghieng quanh duong chan chu: x' = x - skew * (y - base)
         if (p.run.italic) {
@@ -292,7 +384,7 @@ function drawText(n: TextNode, t: number, dst: CanvasRenderingContext2D, k: Ctx)
           c.lineWidth = n.border!.width * k.tune.borderWidth * p.em * 2
           c.strokeText(gch, gx, base)
         } else {
-          c.fillStyle = sweep ? sweepFill(c, sweep, p.run.fill, total, asc + desc) : rgb(p.run.fill)
+          c.fillStyle = imgFill ?? (sweep ? sweepFill(c, sweep, p.run.fill, total, asc + desc) : rgb(p.run.fill))
           c.fillText(gch, gx, base)
         }
         c.restore()
@@ -414,6 +506,7 @@ function revealMask(c: CanvasRenderingContext2D, rv: Reveal, local: number, L: n
 function restLocal(n: TextNode) {
   let t = 0
   for (const ks of Object.values(n.keyframes || {})) for (const kk of ks || []) t = Math.max(t, kk[0])
+  for (const a of n.anims || []) t = Math.max(t, a.start + a.duration)
   if (n.charAnim) t = Math.max(t, n.charAnim.start + n.charAnim.duration)
   if (n.reveal) t = Math.max(t, n.reveal.start + n.reveal.duration)
   return Math.min(t, Math.max(0, n.duration - 1e-3))
@@ -502,6 +595,167 @@ function drawShape(s: ShapeNode, t: number, dst: CanvasRenderingContext2D, k: Ct
   dst.drawImage(tmp, 0, 0)
   dst.restore()
   k.pool.put(tmp)
+}
+
+/** Hinh CapCut: da giac (px quanh tam, truc y LEN) bo goc tung dinh, dat theo transform + keyframe nhu chu */
+function drawVector(n: VectorNode, t: number, dst: CanvasRenderingContext2D, k: Ctx) {
+  const local = t - n.start
+  if (local < 0 || local >= n.duration) return
+  const kf = n.keyframes || {}
+  const alpha = ccVal(kf.alpha, local, n.alpha ?? 1)
+  const scale = ccVal(kf.scale, local, n.transform.scale)
+  if (alpha <= 0 || scale <= 0) return
+  // toa do hinh CapCut tinh theo khung rong 720 (do tren LE VIP2-03: hop 318 don vi = 477 px @1080)
+  const u = (k.W / 720) * k.tune.shapeUnit
+  const x = ccVal(kf.x, local, n.transform.x)
+  const y = ccVal(kf.y, local, n.transform.y)
+  const rot = ccVal(kf.rotation, local, n.transform.rotation)
+  dst.save()
+  dst.globalAlpha = Math.min(1, alpha)
+  dst.translate(k.W / 2 + (x * k.W) / 2, k.H / 2 - (y * k.H) / 2)
+  if (rot) dst.rotate((rot * Math.PI) / 180)
+  dst.scale(scale * u, scale * u)
+  const P = n.points.map(([px, py]) => [px, -py] as [number, number])
+  const path = new Path2D()
+  const N = P.length
+  for (let i = 0; i < N; i++) {
+    const a = P[(i - 1 + N) % N]
+    const b = P[i]
+    const c = P[(i + 1) % N]
+    // bo goc dinh b: cung tron tiep xuc 2 canh, ban kinh <= nua canh ngan
+    const r = Math.min(n.radius?.[i] ?? 0, Math.hypot(b[0] - a[0], b[1] - a[1]) / 2, Math.hypot(c[0] - b[0], c[1] - b[1]) / 2)
+    if (i === 0) {
+      const m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
+      path.moveTo(m[0], m[1])
+    }
+    if (r > 0) path.arcTo(b[0], b[1], c[0], c[1], r)
+    else path.lineTo(b[0], b[1])
+  }
+  path.closePath()
+  if (n.fill) {
+    const f = n.fill
+    dst.save()
+    dst.globalAlpha *= n.fillAlpha ?? 1
+    if (f.type === 'solid') dst.fillStyle = rgb(f.color, f.alpha)
+    else {
+      // gradient tuyen tinh theo goc (do, nguoc chieu kim dong ho tu truc x), trai het khung bao cua hinh
+      const xs = P.map((p) => p[0])
+      const ys = P.map((p) => p[1])
+      const cx = (Math.min(...xs) + Math.max(...xs)) / 2
+      const cy = (Math.min(...ys) + Math.max(...ys)) / 2
+      const a = (f.angle * Math.PI) / 180
+      // goc CapCut tinh theo truc y HUONG XUONG (do tren LE VIP2-14: hinh thoi xoay 45 do, goc 135 -> dai doc)
+      const dx = Math.cos(a)
+      const dy = Math.sin(a)
+      const half = Math.max(...P.map((p) => Math.abs((p[0] - cx) * dx + (p[1] - cy) * dy)))
+      const g = dst.createLinearGradient(cx - dx * half, cy - dy * half, cx + dx * half, cy + dy * half)
+      f.colors.forEach((c, i) => g.addColorStop(clamp01(f.stops[i]), rgb(c, f.alphas[i] ?? 1)))
+      dst.fillStyle = g
+    }
+    dst.fill(path)
+    dst.restore()
+  }
+  if (n.border && n.border.width > 0) {
+    dst.strokeStyle = rgb(n.border.color, n.border.alpha)
+    dst.lineWidth = n.border.width * k.tune.shapeBorder
+    dst.lineJoin = 'round'
+    dst.stroke(path)
+  }
+  dst.restore()
+}
+
+/** Xoay mat phang quanh truc doc qua tam (phoi canh fovx): moi cot dich lay 1 cot nguon, co doc quanh tam */
+function rotate3d(layer: HTMLCanvasElement, rotY: number, fovx: number, k: Ctx): HTMLCanvasElement {
+  const out = k.pool.get()
+  const c = out.getContext('2d')!
+  const th = (rotY * Math.PI) / 180 * k.tune.rot3dSign
+  const d = k.W / 2 / Math.tan((fovx * Math.PI) / 360)
+  const cs = Math.cos(th)
+  const sn = Math.sin(th)
+  for (let X = 0; X < k.W; X++) {
+    const xp = X + 0.5 - k.W / 2
+    const den = d * cs - xp * sn
+    if (den <= 0) continue
+    const xs = (xp * d) / den
+    const sx = xs + k.W / 2
+    if (sx < 0 || sx >= k.W) continue
+    const s = d / (d + xs * sn)
+    const h = k.H * s
+    c.drawImage(layer, Math.floor(sx), 0, 1, k.H, X, k.H / 2 - h / 2, 1, h)
+  }
+  k.pool.put(layer)
+  return out
+}
+
+const lutCache8 = new Map<string, Uint8ClampedArray>()
+
+/** CenterCrop.frag + alphaOutput: chuoi anh phu kieu cover giua khung, tron mau (chua nhan alpha) theo blend voi do mo cua
+ *  anh, alpha cua lop GIU NGUYEN. Khung chuoi = floor(t * rate * fps), het chuoi giu khung cuoi. */
+function spriteBlend(layer: HTMLCanvasElement, e: Extract<GroupNode['effects'], unknown[]>[number] & { type: 'sprite_blend' }, local: number, k: Ctx) {
+  const c = layer.getContext('2d')!
+  const img = c.getImageData(0, 0, k.W, k.H)
+  const d = img.data
+  const lutIm = e.lut ? k.images[e.lut.image] : undefined
+  if (e.lut && lutIm && e.lut.intensity > 0) {
+    // lut8x8 (pass0.frag): o (b % 8, floor(b / 8)) moi o 64x64, r ngang g doc; tron 2 lat b
+    let ld = lutCache8.get(e.lut.image)
+    if (!ld) {
+      const cv = Object.assign(document.createElement('canvas'), { width: lutIm.width, height: lutIm.height })
+      const cc = cv.getContext('2d', { willReadFrequently: true })!
+      cc.drawImage(lutIm, 0, 0)
+      ld = cc.getImageData(0, 0, lutIm.width, lutIm.height).data
+      lutCache8.set(e.lut.image, ld)
+    }
+    const LW = lutIm.width
+    const at = (bi: number, r: number, g: number, ch: number) => {
+      const x = (bi % 8) * 64 + r
+      const y = Math.floor(bi / 8) * 64 + g
+      return ld![(y * LW + x) * 4 + ch]
+    }
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i + 3] === 0) continue
+      const r = Math.round((d[i] / 255) * 63)
+      const g = Math.round((d[i + 1] / 255) * 63)
+      const b = (d[i + 2] / 255) * 63
+      const b0 = Math.floor(b)
+      const b1 = Math.ceil(b)
+      const f = b - b0
+      for (let ch = 0; ch < 3; ch++) {
+        const v = at(b0, r, g, ch) * (1 - f) + at(b1, r, g, ch) * f
+        d[i + ch] = Math.round(d[i + ch] + (v - d[i + ch]) * e.lut.intensity)
+      }
+    }
+  }
+  for (const p of e.passes) {
+    const raw = Math.floor(local * e.rate * e.fps + 1e-6)
+    const fi = e.loop ? ((raw % p.files.length) + p.files.length) % p.files.length : Math.min(p.files.length - 1, Math.max(0, raw))
+    const im = k.images[`${p.dir}/${p.files[fi]}`]
+    if (!im) continue
+    // anh chuoi phu kieu cover len khung
+    const sc = Math.max(k.W / im.width, k.H / im.height)
+    const tmp = k.pool.get()
+    const tc = tmp.getContext('2d')!
+    tc.drawImage(im, k.W / 2 - (im.width * sc) / 2, k.H / 2 - (im.height * sc) / 2, im.width * sc, im.height * sc)
+    const sd = tc.getImageData(0, 0, k.W, k.H).data
+    k.pool.put(tmp)
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i + 3] === 0) continue
+      const a = sd[i + 3] / 255
+      if (a <= 0) continue
+      for (let ch = 0; ch < 3; ch++) {
+        const b = d[i + ch] / 255
+        const s = sd[i + ch] / 255
+        let r: number
+        if (p.blend === 'screen') r = 1 - (1 - b) * (1 - s)
+        else if (p.blend === 'overlay') r = b < 0.5 ? 2 * b * s : 1 - 2 * (1 - b) * (1 - s)
+        else if (p.blend === 'add') r = Math.min(1, b + s)
+        else if (p.blend === 'multiply') r = b * s
+        else r = s
+        d[i + ch] = Math.round((b + (r - b) * a) * 255)
+      }
+    }
+  }
+  c.putImageData(img, 0, 0)
 }
 
 /** Anh matte (luma -> alpha) da gian theo khung roi phong to quanh tam (MotionBlur2D scale) */
@@ -676,8 +930,40 @@ function fromImg(img: Img, cv: HTMLCanvasElement) {
   ctx.putImageData(out, 0, 0)
 }
 
-/** Ve group vao canvas moi (kich thuoc khung) — t la gio trong CHA */
-function drawGroup(g: GroupNode, t: number, k: Ctx): HTMLCanvasElement | null {
+/** Ctx cho noi dung clip ghep co canvas rieng (w x h): chu / hinh / khung tinh theo canvas do (co chu theo be ngang) */
+function subCtx(k: Ctx, g: GroupNode): Ctx {
+  if (!g.canvas || (g.canvas[0] === k.W && g.canvas[1] === k.H)) return k
+  const [w, h] = g.canvas
+  k.pools ||= new Map()
+  const key = `${w}x${h}`
+  let pool = k.pools.get(key)
+  if (!pool) k.pools.set(key, (pool = new Pool(w, h)))
+  return { ...k, W: w, H: h, pool, matteCache: new Map() }
+}
+/** canvas rieng -> dat "vua khung" (contain, giua) vao canvas cha — nhu media w x h trong khung CapCut */
+function fitMatrix(k: Ctx, g: GroupNode) {
+  if (!g.canvas || (g.canvas[0] === k.W && g.canvas[1] === k.H)) return null
+  const [w, h] = g.canvas
+  const f = Math.min(k.W / w, k.H / h)
+  return new DOMMatrix().translate((k.W - w * f) / 2, (k.H - h * f) / 2).scale(f)
+}
+
+/** Ve group vao canvas moi (kich thuoc khung CHA) — t la gio trong CHA */
+function drawGroup(g: GroupNode, t: number, kp: Ctx): HTMLCanvasElement | null {
+  const k = subCtx(kp, g)
+  const out = drawGroupIn(g, t, k)
+  if (!out || k === kp) return out
+  const fm = fitMatrix(kp, g)!
+  const dst = kp.pool.get()
+  const c = dst.getContext('2d')!
+  c.setTransform(fm.a, fm.b, fm.c, fm.d, fm.e, fm.f)
+  c.drawImage(out, 0, 0)
+  c.setTransform(1, 0, 0, 1, 0, 0)
+  k.pool.put(out)
+  return dst
+}
+
+function drawGroupIn(g: GroupNode, t: number, k: Ctx): HTMLCanvasElement | null {
   const local = t - g.start
   if (local < 0 || local >= g.duration) return null
   const ct = local + g.sourceStart
@@ -687,27 +973,79 @@ function drawGroup(g: GroupNode, t: number, k: Ctx): HTMLCanvasElement | null {
     if (ch.type === 'text') drawText(ch, ct, ctx, k)
     else if (ch.type === 'shape') drawShape(ch, ct, ctx, k, g.children)
     else if (ch.type === 'frames') drawFrames(ch, ct, ctx, k)
+    else if (ch.type === 'vector') drawVector(ch, ct, ctx, k)
     else {
       const sub = drawGroup(ch, ct, k)
       if (sub) {
-        composite(ctx, sub, ch, k, ct - ch.start)
+        if ((ch.effects || []).some((e) => e.space === 'canvas')) {
+          // hieu ung ap SAU khi dat clip len khung (phoi canh xoay quanh tam KHUNG — do tren LE VIP2-03)
+          let full = k.pool.get()
+          composite(full.getContext('2d')!, sub, ch, k, ct - ch.start)
+          full = applyEffects(full, ch, ct, k, true)
+          ctx.drawImage(full, 0, 0)
+          k.pool.put(full)
+        } else composite(ctx, sub, ch, k, ct - ch.start)
         k.pool.put(sub)
       }
     }
   }
+  if (g.mask && g.maskTarget === 'adjust') {
+    // clip co CHINH MAU + mask: CapCut dung mask chon VUNG chinh mau (Feature.js u_blendWithMask), clip khong bi cat
+    // (do tren LE VIP2-05: ngoai dai sang "Compound" van hien mau goc cua ban sao)
+    const adj = k.pool.get()
+    adj.getContext('2d')!.drawImage(layer, 0, 0)
+    const isColor = (e: { type: string }) => e.type === 'color_adjust' || e.type === 'color_set'
+    const done = applyEffects(adj, { ...g, effects: (g.effects || []).filter(isColor) }, ct, k, false)
+    const mk = maskAt(g, local)
+    if (mk.type === 'ellipse') applyMask(done, mk, k)
+    else applyLineMask(done, mk, k)
+    const lc = layer.getContext('2d')!
+    lc.globalCompositeOperation = 'destination-out'
+    lc.drawImage(done, 0, 0)
+    lc.globalCompositeOperation = 'lighter'
+    lc.drawImage(done, 0, 0)
+    lc.globalCompositeOperation = 'source-over'
+    k.pool.put(done)
+    // hieu ung khac (vd Player 3) ap len ca clip sau khi chinh mau
+    return applyEffects(layer, { ...g, effects: (g.effects || []).filter((e) => !isColor(e)) }, ct, k, false)
+  }
+  layer = applyEffects(layer, g, ct, k, false)
+  if (g.mask) {
+    const mk = maskAt(g, local)
+    if (mk.type === 'ellipse') applyMask(layer, mk, k)
+    else applyLineMask(layer, mk, k)
+  }
+  return layer
+}
+
+/** mask cua group luc `local` (gio tu dau segment) — ap keyframe mask */
+function maskAt(g: GroupNode, local: number): ClipMask {
+  const m = g.mask!
+  if (!g.maskKeyframes) return m
+  const out: Record<string, unknown> = { ...m }
+  for (const [f, ks] of Object.entries(g.maskKeyframes)) out[f] = ccVal(ks, local, (m as unknown as Record<string, number>)[f] ?? 0)
+  return out as unknown as ClipMask
+}
+
+function applyEffects(layer: HTMLCanvasElement, g: GroupNode, ct: number, k: Ctx, canvas: boolean): HTMLCanvasElement {
   for (const e of g.effects || []) {
+    if ((e.space === 'canvas') !== canvas) continue
     if (e.type === 'ae_trs_matte') layer = applyTrsMatte(layer, e, ct, k)
+    else if (e.type === 'deep_glow' && e.glowIter !== undefined)
+      fromImg(deepGlow2(toImg(layer), { ...e, glowIter: e.glowIter, stepsMult: e.stepsMult ?? 1, downSample: e.downSample ?? 1, ratio: e.ratio ?? 1, rotate: e.rotate ?? 0 }, k.tune.glowGain), layer)
     else if (e.type === 'deep_glow') fromImg(deepGlow(toImg(layer), e, k.tune.glowGain), layer)
     else if (e.type === 'chrome_blur') fromImg(chromeBlur(toImg(layer), e.blur, e.offset, e.flipY ?? true), layer)
     else if (e.type === 'color_set') setColors(layer, e.map)
+    else if (e.type === 'color_adjust') applyColorOps(layer, e.ops)
+    else if (e.type === 'sprite_blend' && ct >= e.start && ct < e.start + e.duration) spriteBlend(layer, e, ct - e.start, k)
+    else if (e.type === 'rotate3d') {
+      const ry = ccVal(e.keyframes, ct - (e.start ?? 0), e.rotY)
+      if (Math.abs(ry) > 1e-6) layer = rotate3d(layer, ry, e.fovx, k)
+    }
     else if (e.type === 'blur' && ct >= e.start && ct < e.start + e.duration) {
       const v = ccVal(e.keyframes, ct - e.start, e.value)
       if (v > 1e-4) fromImg(capcutBlur(toImg(layer), 4 * v), layer)
     }
-  }
-  if (g.mask) {
-    if (g.mask.type === 'ellipse') applyMask(layer, g.mask, k)
-    else applyLineMask(layer, g.mask, k)
   }
   return layer
 }
@@ -725,6 +1063,7 @@ interface Hit {
   n: TextNode
   M: DOMMatrix // khung cua group chua node -> khung cua mau
   local: number
+  k: Ctx // ctx canvas cua group chua node (clip ghep co canvas rieng)
 }
 interface Box {
   l: number
@@ -748,7 +1087,13 @@ function compositeMatrix(g: GroupNode, k: Ctx, local: number): { m: DOMMatrix; a
     alpha *= a.alpha[0] + (a.alpha[1] - a.alpha[0]) * cubicEase(a.easeAlpha, p)
     animScale *= a.scale[0] + (a.scale[1] - a.scale[0]) * cubicEase(a.easeScale, p)
   }
+  const sa = g.sanims ? sampledState(g.sanims, local) : null
+  if (sa) {
+    alpha *= sa.alpha
+    animScale *= sa.scale
+  }
   let m = new DOMMatrix()
+  if (sa) m = m.translate(sa.dx.reduce((a, d) => a + d.v, 0) * (k.W / 1080), sa.dy.reduce((a, d) => a + d.v, 0) * (k.W / 1080))
   if (x || y || scale * animScale !== 1 || rot) {
     m = m
       .translate(k.W / 2 + (x * k.W) / 2, k.H / 2 - (y * k.H) / 2)
@@ -762,34 +1107,38 @@ function compositeMatrix(g: GroupNode, k: Ctx, local: number): { m: DOMMatrix; a
 /** Cac node chu dang hien luc t (gio cua mau) + ma tran tu khung group chua no ra khung mau */
 function hitsAt(k: Ctx, t: number): Hit[] {
   const out: Hit[] = []
-  const visit = (g: GroupNode, local: number, M: DOMMatrix) => {
+  const visit = (g: GroupNode, local: number, M: DOMMatrix, kp: Ctx) => {
     if (local < 0 || local >= g.duration) return
     const ct = local + g.sourceStart
-    const { m, alpha } = compositeMatrix(g, k, local)
+    const { m, alpha } = compositeMatrix(g, kp, local)
     if (alpha <= 0) return
     let Mg = M.multiply(m)
+    const fm = fitMatrix(kp, g)
+    if (fm) Mg = Mg.multiply(fm)
+    const kk = subCtx(kp, g)
     for (const e of g.effects || []) {
       if (e.type !== 'ae_trs_matte' || ct < e.start || ct >= e.start + e.duration) continue
       const pos = e.position ? aeVal(e.position, (ct - e.start) * e.speed) : e.anchor
-      Mg = Mg.translate((pos[0] - e.anchor[0]) * (k.W / e.compSize[0]), (pos[1] - e.anchor[1]) * (k.H / e.compSize[1]))
+      Mg = Mg.translate((pos[0] - e.anchor[0]) * (kk.W / e.compSize[0]), (pos[1] - e.anchor[1]) * (kk.H / e.compSize[1]))
     }
     for (const ch of g.children) {
       if (ch.type === 'group') {
-        visit(ch, ct - ch.start, Mg)
+        visit(ch, ct - ch.start, Mg, kk)
         continue
       }
       if (ch.type !== 'text') continue
       const l = ct - ch.start
       if (l < 0 || l >= ch.duration || ccVal(ch.keyframes?.alpha, l, ch.alpha ?? 1) <= 0) continue
-      out.push({ n: ch, M: Mg, local: l })
+      out.push({ n: ch, M: Mg, local: l, k: kk })
     }
   }
-  visit({ ...k.spec.root, start: 0 }, t, new DOMMatrix())
+  visit({ ...k.spec.root, start: 0 }, t, new DOMMatrix(), k)
   return out
 }
 
 /** Khung chu cua node tren khung mau (chua tinh hoat anh tung ky tu) */
-function nodeBox(h: Hit, text: string, c: CanvasRenderingContext2D, k: Ctx): Box | null {
+function nodeBox(h: Hit, text: string, c: CanvasRenderingContext2D, _k: Ctx): Box | null {
+  const k = h.k
   const n = h.n
   const kf = n.keyframes || {}
   const parts = layoutText(c, n, text, ccVal(kf.scale, h.local, n.transform.scale), k)
@@ -954,7 +1303,7 @@ export function computeFit(k: Ctx): Map<TextNode, { scale: number; ox: number; o
   const inkGlyphs = (id: string, text: string, sc: number, box: Box): Box[] => {
     const out: Box[] = []
     for (const h of star.filter((x) => x.n.slot === id)) {
-      const parts = layoutText(c, h.n, text, ccVal(h.n.keyframes?.scale, h.local, h.n.transform.scale) * sc, k)
+      const parts = layoutText(c, h.n, text, ccVal(h.n.keyframes?.scale, h.local, h.n.transform.scale) * sc, h.k)
       if (!parts.length) continue
       const total = parts.reduce((s0, p) => s0 + p.w, 0)
       const base = (Math.max(...parts.map((p) => p.asc)) - Math.max(...parts.map((p) => p.desc))) / 2
@@ -1040,6 +1389,21 @@ export function computeFit(k: Ctx): Map<TextNode, { scale: number; ox: number; o
   return adj
 }
 
+/** hoan vi co dinh cua n ky tu: order[i] = luot ra san cua ky tu i (LCG hat giong theo n — giong tinh than AnimScript.lua) */
+function shuffleOrder(n: number): number[] {
+  const a = Array.from({ length: n }, (_, i) => i)
+  let s = (114514 + 1919810 + n * 255) >>> 0
+  const rnd = () => ((s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296)
+  for (let j = 0; j <= n; j++) {
+    const x = Math.floor(rnd() * n)
+    const y = Math.floor(rnd() * n)
+    ;[a[x], a[y]] = [a[y], a[x]]
+  }
+  const order = new Array(n)
+  a.forEach((ch, slot) => (order[ch] = slot))
+  return order
+}
+
 /** getBezierTfromX + getBezierValue cua Transform.lua (controls {x1,y1,x2,y2}) */
 function cubicEase(c: [number, number, number, number], x: number) {
   const bez = (a: number, b: number, t: number) => 3 * a * (1 - t) * (1 - t) * t + 3 * b * (1 - t) * t * t + t * t * t
@@ -1069,9 +1433,17 @@ function composite(dst: CanvasRenderingContext2D, src: HTMLCanvasElement, g: Gro
     alpha *= a.alpha[0] + (a.alpha[1] - a.alpha[0]) * cubicEase(a.easeAlpha, p)
     animScale *= a.scale[0] + (a.scale[1] - a.scale[0]) * cubicEase(a.easeScale, p)
   }
+  const sa = g.sanims ? sampledState(g.sanims, local) : null
+  if (sa) {
+    alpha *= sa.alpha
+    animScale *= sa.scale
+  }
   if (alpha <= 0) return
+  const sx = sa ? sa.dx.reduce((a, d) => a + d.v, 0) * (k.W / 1080) : 0
+  const sy = sa ? sa.dy.reduce((a, d) => a + d.v, 0) * (k.W / 1080) : 0
   dst.save()
   dst.globalAlpha = Math.min(1, alpha)
+  if (sx || sy) dst.translate(sx, sy)
   if (x || y || scale * animScale !== 1 || rot) {
     dst.translate(k.W / 2 + (x * k.W) / 2, k.H / 2 - (y * k.H) / 2)
     if (rot) dst.rotate((rot * Math.PI) / 180)

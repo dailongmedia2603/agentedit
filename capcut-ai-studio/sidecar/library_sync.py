@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""DONG BO KHO SFX + MEME + TEXT + HIEU UNG tu Cloudflare R2 — CHI qua may chu ban quyen (bucket KHONG con cong khai).
+"""DONG BO KHO SFX + MEME + TEXT + NHAC NEN + HIEU UNG tu Cloudflare R2 — CHI qua may chu ban quyen (bucket KHONG con cong khai).
 
 Tac gia (may co token) dung `scripts/publish-library.mjs` day kho + nhan (Gemini) len R2.
 May khach: Electron main xin manifest tu may chu ban quyen (ky bang khoa thiet bi, key phai dang kich hoat
@@ -144,6 +144,8 @@ def _merge_texts(entries, texts_dir, cur, log):
         files = t.get("files") or []
         if not tid or not isinstance(files, list) or not files:
             continue
+        if not text_lib.supported(t):
+            continue  # mau can ban app moi hon (minApp) — may chu da loc, day la lop chan thu 2
         dest_dir = os.path.join(texts_dir, tid)
         ok = True
         for f in files:
@@ -182,8 +184,9 @@ def pull(manifest, log=None):
         return {"ok": False, "error": "Thieu manifest kho (may chu ban quyen)."}
 
     if log:
-        log("Manifest R2: %d SFX, %d meme, %d mau chu" % (
-            len(manifest.get("sfx") or []), len(manifest.get("memes") or []), len(manifest.get("texts") or [])))
+        log("Manifest R2: %d SFX, %d meme, %d mau chu, %d nhac nen" % (
+            len(manifest.get("sfx") or []), len(manifest.get("memes") or []), len(manifest.get("texts") or []),
+            len(manifest.get("music") or [])))
 
     # SFX
     sfx_lib = engine._load_lib()
@@ -209,6 +212,25 @@ def pull(manifest, log=None):
     text_lib_data["templates"] = text_new
     text_lib.save_lib(text_lib_data)
 
+    # Nhac nen (chi nhac CC0 — duoc phat lai tu do; 1 muc = 1 file nhu SFX). May chu cu khong co khoa "music" -> 0
+    import music_lib
+    with music_lib._lock:
+        music_data = music_lib.load_lib()
+        music_new, music_add, music_upd, music_err = _merge_kind(
+            manifest.get("music") or [], music_lib.MUSIC_DIR, music_data.get("tracks", []), log)
+        if manifest.get("music"):
+            # giu chinh rieng cua nguoi dung o may nay (tat bai) khi R2 cap nhat nhan
+            cu = {t.get("id"): t for t in music_data.get("tracks", [])}
+            for row in music_new:
+                old = cu.get(row.get("id"))
+                if old is not None and old is not row:
+                    for k in ("disabled",):
+                        if k in old:
+                            row[k] = old[k]
+            _backup(music_lib.MUSIC_LIB)
+            music_data["tracks"] = music_new
+            music_lib.save_lib(music_data)
+
     # Kho hieu ung chung (muc da duyet; may chu cu khong co khoa "fx" -> khong dong gi toi kho hieu ung)
     fx_res = None
     if isinstance(manifest.get("fx"), list):
@@ -221,6 +243,7 @@ def pull(manifest, log=None):
         "sfx": {"added": sfx_add, "updated": sfx_upd, "total": len(sfx_new), "errors": sfx_err},
         "memes": {"added": meme_add, "updated": meme_upd, "total": len(meme_new), "errors": meme_err},
         "texts": {"added": text_add, "updated": text_upd, "total": len(text_new), "errors": text_err},
+        "music": {"added": music_add, "updated": music_upd, "total": len(music_new), "errors": music_err},
         "fx": fx_res,
         "manifest_updated": manifest.get("updated"),
     }

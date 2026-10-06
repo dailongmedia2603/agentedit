@@ -941,8 +941,10 @@ def _plan_gemini_requests(items, limit=None):
 
 def _source_prompt(meta):
     # danh gia giong noi (voice_boost) noi bang code — prompt "Hieu video nguon" user da sua van phai co
+    # + nhac nen CO SAN trong video goc (music_lib: video da co nhac thi B7 khong chen them nhac nen)
     import voice_boost
-    return (_p("_GEMINI_SOURCES_PROMPT") + voice_boost.GEMINI_NOTE
+    import music_lib
+    return (_p("_GEMINI_SOURCES_PROMPT") + voice_boost.GEMINI_NOTE + music_lib.GEMINI_NOTE
             + "\n\nDANH SACH VIDEO NGUON:\n" + json.dumps(meta, ensure_ascii=False))
 
 
@@ -2608,7 +2610,8 @@ def gpt_timeline(selections, source_videos, duration_target=None, transcript_dat
 
 def gpt_audio(key_moments_data, emotion_map_data, sfx_catalog, segments=None,
               transcript_data=None, story=None, reference_analysis=None, hook=None,
-              transitions=None, captions=None, inserts=None, log=None, hook_visuals=None):
+              transitions=None, captions=None, inserts=None, log=None, hook_visuals=None,
+              music_catalog=None, music_ctx=None):
     """B7: Chon SFX — chay CUOI vi SFX la dau cham cau cho nhung gi da co:
     chuyen canh (R4), chu hero (R5 + lop chu do hoa), meme (B6), hook (B3). Khong biet nhung thu do thi SFX
     de dat trung cho meme, bo lo cho chuyen canh, hoac danh nhau voi chu hero.
@@ -2621,8 +2624,11 @@ def gpt_audio(key_moments_data, emotion_map_data, sfx_catalog, segments=None,
     trong khi output lai duoc ghi thang vao audio[].start (gio TREN TIMELINE). Timeline co
     cat/dao thu tu -> SFX lech cho. Nay truyen them segments de model biet anh xa, va lop
     plan_guard quy doi "src_time" -> timeline mot cach xac dinh.
+
+    music_catalog (2026-10-05): kho nhac nen (music_lib) -> CUNG luot AI chon them 1 bai nhac nen (khoa "music").
+    Rong -> system prompt + payload y het truoc.
     """
-    if not sfx_catalog:
+    if not sfx_catalog and not music_catalog:
         if log:
             log("B7/7: Khong co SFX catalog -> bo qua.")
         return {"audio": []}
@@ -2636,7 +2642,10 @@ loi nguoi noi; avoid_when = khi nao khong dung; duration = do dai file (giay); p
 nam o giay thu may trong file (do bang am thanh that, chi co o SFX khong co giong noi).
 src_time/start la luc SFX BAT DAU phat: muon cu dam roi dung luc X thi dat = X - peak_time.
 Muc khong co summary: nhan doan tu ten file.
-""" + json.dumps(sfx_catalog, ensure_ascii=False)
+""" + json.dumps(sfx_catalog or [], ensure_ascii=False)
+    if music_catalog:
+        import music_lib
+        sys_prompt += music_lib.rule_text(music_catalog)
     # Ban do gio NGUON -> gio TIMELINE (kem nhip truyen) cho model doi chieu
     seg_rows = _ban_do_timeline(segments)
     # Nhung gi cac buoc truoc da dat — SFX phai an khop voi chung
@@ -2673,9 +2682,12 @@ Muc khong co summary: nhan doan tu ten file.
     ref = phong_cach_cho_buoc(reference_analysis, "audio")
     if ref:
         payload["phong_cach_mau"] = ref
+    if music_catalog and music_ctx:
+        payload["nhac_nen"] = music_ctx
     user = json.dumps(payload, ensure_ascii=False)
     if log:
-        log("B7/7: %s chon SFX tu %d muc..." % (plan_ai_name(), len(sfx_catalog)))
+        log("B7/7: %s chon SFX tu %d muc%s..." % (plan_ai_name(), len(sfx_catalog or []), (
+            " + nhac nen tu %d bai" % len(music_catalog)) if music_catalog else ""))
     text = plan_chat([
         {"role": "system", "content": sys_prompt},
         {"role": "user", "content": user},

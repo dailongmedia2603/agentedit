@@ -226,6 +226,57 @@ def test_face_guard():
     check("khong co mat -> giu nguyen", spec3["layers"][0]["y"] == 0.31)
 
 
+def test_face_guard_per_time():
+    print("Bao ve mat XET THEO TUNG THOI DIEM (10-06: 4 chu nua tren bi doi sat mep + thu 42% vi 1 chu hien them 0.45s "
+          "sau khi bo cuc chia doi het)")
+    rows = [("CAT TUNG DOAN", 0.42, 0.30, 15.0, 20.45), ("LAM PHU DE", 0.60, 0.21, 15.4, 19.95),
+            ("TIM HINH ANH", 0.40, 0.12, 15.8, 19.95), ("HIEU UNG AM THANH", 0.55, 0.39, 16.2, 19.95)]
+    layers = [{"id": "t%d" % i, "type": "text", "group": "viec", "start": st, "end": en, "track": 30, "x": x, "y": y,
+               "spans": [{"text": txt, "size": 92}]} for i, (txt, x, y, st, en) in enumerate(rows)]
+    spec = spec_with(layers)
+    spec["scenes"] = [{"layout": "split", "start": 5.0, "end": 20.0, "aroll": {"x": 0, "y": 0.5, "w": 1, "h": 0.5}}]
+    f_split, f_full = MD._face_rect(spec, 17, 1080, 1920), MD._face_rect(spec, 20.3, 1080, 1920)
+    check("gia lap: chia doi -> mat nua duoi; toan khung -> mat len cao", f_split and f_split[1] >= 0.5 and f_full
+          and f_full[1] < 0.3, (f_split, f_full))
+    union = (min(MD._guard_box(L)[1] for L in layers), max(MD._guard_box(L)[3] for L in layers))
+    check("gia lap: khung GOP ca to hop cham mat toan khung (dung loi cu)", union[1] > f_full[1], (union, f_full))
+    ch = []
+    MD.protect_face(spec, ch)
+    ids = {L["id"]: L for L in spec["layers"]}
+    check("khong chu nao bi doi cho", all((ids["t%d" % i]["x"], ids["t%d" % i]["y"]) == (r[1], r[2])
+                                          for i, r in enumerate(rows)), [(L["x"], L["y"]) for L in spec["layers"]])
+    check("khong chu nao bi thu nho", all(L["spans"][0]["size"] == 92 for L in spec["layers"]),
+          [L["spans"][0]["size"] for L in spec["layers"]])
+    check("chi chu hien qua luc doi bo cuc bi tat som (truoc khi de len mat)",
+          ids["t0"]["end"] <= 20.1 and all(ids["t%d" % i]["end"] == 19.95 for i in (1, 2, 3)),
+          [L["end"] for L in spec["layers"]])
+    worst = max(face_cover(spec, MD._guard_box(L), t) for L in spec["layers"]
+                for t in np.arange(L["start"], L["end"] - 0.04, 0.05))
+    check("sau khi sua: khong luc nao chu de len mat qua 15%", worst <= MD.FACE_BODY_MAX, worst)
+    check("nhat ky ghi ro: chi cat bot thoi gian, giu co + vi tri", any("giu co + vi tri" in c for c in ch), ch)
+    # 2 chu 2 BEN mat (khung gop phu mat, tung chu khong cham) -> giu nguyen
+    lay3 = [{"id": "a", "type": "text", "group": "g", "start": 21, "end": 25, "track": 30, "x": 0.12, "y": 0.31,
+             "spans": [{"text": "TRAI", "size": 80}]},
+            {"id": "b", "type": "text", "group": "g", "start": 21, "end": 25, "track": 30, "x": 0.88, "y": 0.31,
+             "spans": [{"text": "PHAI", "size": 80}]}]
+    spec3 = spec_with(lay3)
+    f = MD._face_rect(spec3, 22, 1080, 1920)
+    check("gia lap: 2 chu khong cham mat", all(MD._guard_box(L)[2] < f[0] or MD._guard_box(L)[0] > f[2] for L in lay3),
+          ([MD._guard_box(L) for L in lay3], f))
+    ch3 = []
+    MD.protect_face(spec3, ch3)
+    check("2 chu 2 ben mat -> giu nguyen (khung gop khong tinh la de len mat)",
+          [(L["x"], L["y"], L["spans"][0]["size"]) for L in spec3["layers"]] == [(0.12, 0.31, 80), (0.88, 0.31, 80)], ch3)
+    # de len mat GAN HET thoi gian hien -> van doi cho (khong cat thoi gian)
+    lay2 = [{"id": "x0", "type": "text", "start": 21, "end": 25, "track": 30, "x": 0.5, "y": 0.31,
+             "spans": [{"text": "DE LEN MAT CA LUC", "size": 92}]}]
+    spec2 = spec_with(lay2)
+    ch2 = []
+    MD.protect_face(spec2, ch2)
+    L = spec2["layers"][0]
+    check("de len mat ca luc -> van doi cho nhu cu, khong cat thoi gian", L["end"] == 25 and L["y"] != 0.31, (L, ch2))
+
+
 def test_sticker_flag():
     print("Anh tach nen gan co cutout (renderer ve bong theo vien, khong theo khung chu nhat)")
     path = os.path.join(TMP, "a.png")
@@ -248,6 +299,7 @@ if __name__ == "__main__":
     test_cutout_clean()
     test_cutout_pipeline()
     test_face_guard()
+    test_face_guard_per_time()
     test_sticker_flag()
     print("\n%s" % ("TAT CA DAT" if not FAILED else "LOI: %d — %s" % (len(FAILED), ", ".join(FAILED))))
     sys.exit(1 if FAILED else 0)
