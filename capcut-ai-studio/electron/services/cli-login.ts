@@ -407,6 +407,13 @@ export function agyFailureText(raw: string | undefined, version: string | null |
 /** Sau khi agy da dang xuat: xoa file phien kieu cu (agy <= 1.2.x truoc Keychain; agy hien tai khong doc nua) + dau
  *  keyring-marker con sot -> app khong con bao "da dang nhap" nham. */
 function clearAgyLeftovers(): void {
+  // Moc dang xuat: sidecar (cli_providers.agy_account_email) bo log agy cu hon moc nay -> khong hien email tai khoan cu
+  try {
+    mkdirSync(join(homedir(), '.capcut-studio'), { recursive: true })
+    writeFileSync(join(homedir(), '.capcut-studio', 'agy-logout-at'), new Date().toISOString())
+  } catch {
+    /* khong ghi duoc -> chi mat phan an email cu */
+  }
   const dir = join(homedir(), '.gemini', 'antigravity-cli')
   try {
     for (const n of readdirSync(dir)) {

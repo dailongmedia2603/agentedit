@@ -436,7 +436,9 @@ def cli_status(name):
         out["logged_in"] = agy_logged_in()
         out["workdir"] = agy_workdir()
         if out["logged_in"]:
-            out["detail"] = "Đã đăng nhập tài khoản Google qua Antigravity CLI."
+            out["account"] = agy_account_email()
+            out["detail"] = ("Đã đăng nhập — %s" % out["account"]) if out["account"] else \
+                "Đã đăng nhập tài khoản Google qua Antigravity CLI."
             models = agy_models()
             if models:
                 out["models"] = models
@@ -761,6 +763,22 @@ def _auth_hint(name, blob):
             % (spec["label"], spec["login_cmd"], (blob or "").strip()[:300]))
 
 
+def _eligibility_hint(name, blob):
+    """agy: Google bat tai khoan XAC MINH truoc khi dung Antigravity ("Eligibility check failed: Your current account is not
+    eligible for Antigravity. Verify your account to continue." + link accounts.google.com — su co that may Windows khach
+    2026-10-06, tai khoan Pro). Giu NGUYEN link (dai ~400 ky tu; cat o 600 ky tu lam hong link)."""
+    low = (blob or "").lower()
+    if name != "gemini" or not ("not eligible" in low or "eligibility check failed" in low or "verify your account" in low):
+        return None
+    m = re.search(r"https://accounts\.google\.com/[^\s\"'<>]+", blob or "")
+    return ("Google chưa cho tài khoản này dùng Antigravity CLI — Google yêu cầu XÁC MINH tài khoản (đây không phải lỗi "
+            "đăng nhập hay lỗi app, gói Pro vẫn có thể gặp).\n"
+            "Cách xử lý: bấm “Mở trang xác minh” (hoặc mở link dưới) trong trình duyệt ĐANG đăng nhập đúng tài khoản Google "
+            "này, làm theo các bước Google yêu cầu, xong bấm “Kiểm tra kết nối” lại. Không xác minh được thì Đăng xuất và "
+            "đăng nhập một tài khoản Google cá nhân khác, hoặc chuyển Gemini sang API Key."
+            + ("\n\nLink xác minh: %s" % m.group(0) if m else "\n\nCLI báo: %s" % (blob or "").strip()[:400]))
+
+
 def _outdated_hint(name, blob):
     """Claude Code cu hon ban model can: API tra 400 'does not support this model; version X'."""
     m = re.search(r"does not support this model;?\s*version\s*([\d.]+)", blob or "", re.I)
@@ -774,6 +792,9 @@ def _outdated_hint(name, blob):
 def _raise_cli(name, step_label, model, rc, so, se):
     blob = ((se or "") + "\n" + (so or "")).strip()
     hint = _outdated_hint(name, blob)
+    if hint:
+        raise CliError("%s\n\nBuoc: %s | model: %s" % (hint, step_label, model))
+    hint = _eligibility_hint(name, blob)
     if hint:
         raise CliError("%s\n\nBuoc: %s | model: %s" % (hint, step_label, model))
     for hint in (_auth_hint(name, blob), _quota_hint(name, blob)):
@@ -989,6 +1010,49 @@ def agy_logged_in():
     if IS_WIN:
         return _windows_cred_has_agy()
     return _mac_keychain_has_agy() if sys.platform == "darwin" else False
+
+
+# Email tai khoan Google cua agy: agy KHONG co lenh "whoami" va app khong doc token -> lay tu dong agy TU GHI vao log moi
+# lan chay: "OAuth: authenticated successfully as <email>" / "applyAuthResult: email=<email>, ..." (agy 1.2.16, da xem
+# log that 2026-10-06). Log cu hon lan dang xuat gan nhat (Electron ghi AGY_LOGOUT_MARK) bi bo -> khong hien email cu.
+_AGY_EMAIL_RE = re.compile(r"authenticated successfully as (\S+@[^\s,]+)|applyAuthResult: email=([^,\s]+@[^,\s]+)")
+AGY_LOGOUT_MARK = os.path.join(os.path.expanduser("~"), ".capcut-studio", "agy-logout-at")
+
+
+def agy_account_email():
+    """Email tai khoan Google agy dang dung (tu log cua agy) hoac None (chua chay agy lan nao tu khi dang nhap)."""
+    try:
+        cut = os.path.getmtime(AGY_LOGOUT_MARK)
+    except OSError:
+        cut = 0.0
+    cands = []
+    logdir = os.path.join(AGY_HOME, "log")
+    try:
+        cands = [os.path.join(logdir, n) for n in os.listdir(logdir) if n.lower().endswith(".log")]
+    except OSError:
+        pass
+    root_log = os.path.join(AGY_HOME, "cli.log")       # macOS: symlink toi log moi nhat; Windows co the la file that
+    if os.path.isfile(root_log) and not os.path.islink(root_log):
+        cands.append(root_log)
+    seen = set()
+    for f in sorted(cands, key=lambda x: os.path.getmtime(x) if os.path.exists(x) else 0, reverse=True)[:12]:
+        try:
+            real = os.path.realpath(f)
+            if real in seen:
+                continue
+            seen.add(real)
+            if os.path.getmtime(f) < cut:
+                break
+            with open(f, "rb") as fh:
+                fh.seek(max(0, os.path.getsize(f) - 8 * 1024 * 1024))
+                text = fh.read().decode("utf-8", "replace")
+        except OSError:
+            continue
+        found = _AGY_EMAIL_RE.findall(text)
+        if found:
+            a, b = found[-1]
+            return (a or b).strip().rstrip(".")
+    return None
 
 
 def _agy_model_note(mid):

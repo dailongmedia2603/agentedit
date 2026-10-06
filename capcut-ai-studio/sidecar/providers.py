@@ -157,7 +157,8 @@ def _test_subscription(name, model):
              {"role": "user", "content": "ping"}],
             json_mode=True, req_timeout=180, step_label="test-%s-sub" % name, effort=effort)
     except cli_providers.CliError as e:
-        return {"ok": False, "error": str(e)[:600]}
+        # 1500: loi agy "verify your account" kem link xac minh dai ~400 ky tu — cat ngan lam hong link
+        return {"ok": False, "error": str(e)[:1500]}
     except Exception as e:
         return {"ok": False, "error": "Loi khi goi %s: %s" % (st.get("label"), str(e)[:300])}
     if "ok" not in (text or "").lower():

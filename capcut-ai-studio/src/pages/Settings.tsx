@@ -250,6 +250,8 @@ function TaskLog({ run, title, onCancel, codeInput }: { run: LoginRun; title: st
 /** Loi "Kiem tra ket noi" day du + nut sao chep (gui cho nguoi ho tro) */
 function TestErrorBox({ msg }: { msg: string }) {
   const [copied, setCopied] = useState(false)
+  // Link chinh chu trong loi (vd Google bat xac minh tai khoan cho Antigravity) -> nut mo thang
+  const urls = Array.from(new Set(msg.match(LOGIN_URL_RE) || []))
   return (
     <div className="mb-4 rounded-xl border border-red-200 bg-red-50/70 px-3 py-2.5">
       <div className="mb-1 flex items-center justify-between gap-2">
@@ -266,9 +268,18 @@ function TestErrorBox({ msg }: { msg: string }) {
           {copied ? 'Đã sao chép' : 'Sao chép'}
         </button>
       </div>
-      <div className="max-h-48 select-text overflow-y-auto whitespace-pre-wrap break-words font-mono text-[11.5px] leading-relaxed text-red-700/90">
+      <div className="max-h-48 select-text overflow-y-auto whitespace-pre-wrap break-all font-mono text-[11.5px] leading-relaxed text-red-700/90">
         {msg}
       </div>
+      {!!urls.length && (
+        <div className="mt-2 flex flex-wrap gap-2">
+          {urls.slice(0, 2).map((u) => (
+            <Button key={u} variant="outline" size="sm" onClick={() => window.studio.openLoginUrl(u)}>
+              <ExternalLink className="h-3.5 w-3.5" /> {/accounts\.google\.com/.test(u) ? 'Mở trang xác minh' : 'Mở link'}
+            </Button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -998,6 +1009,8 @@ export default function SettingsPage() {
       [id]: { ok: !!res.ok, msg: res.ok ? res.detail || 'Kết nối OK' : res.error || 'Lỗi' }
     }))
     setTesting(null)
+    // Che do tai khoan: luot thu vua chay CLI -> tai lai trang thai (Gemini: email lay tu log agy chi co sau luot goi dau)
+    if (local[id]?.auth_mode === 'subscription') refreshCli([id])
     const m = await window.studio.settingsGet()
     setLocal((s) => ({
       ...s,
