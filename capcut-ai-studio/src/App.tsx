@@ -17,6 +17,7 @@ import { useDoctor } from '@/lib/useDoctor'
 import SettingsPage from '@/pages/Settings'
 import ProjectsPage from '@/pages/Projects'
 import ResourcesPage from '@/pages/Resources'
+import { useLibrarySyncStatus } from '@/lib/useLibrarySync'
 import PromptsPage from '@/pages/Prompts'
 import CreateVideoPage from '@/pages/CreateVideo'
 import { IS_WIN } from './lib/platform'
@@ -53,8 +54,9 @@ export default function App() {
   // Ban cai cho may khac: an Prompt & quy tac (+ nhat ky, quy trinh o cac trang) — cua bi mat Ctrl/Cmd+Shift+Alt+D
   const fullUi = useFullUi()
   useEffect(() => installSecretToggle(), [])
+  // Ban khach con an ca menu Tai nguyen (kho tu dong bo khi mo app; trang thai xem o Doctor -> "Dong bo tai nguyen")
   useEffect(() => {
-    if (!fullUi && tab === 'prompts') setTab('remotion')
+    if (!fullUi && (tab === 'prompts' || tab === 'resources')) setTab('remotion')
   }, [fullUi, tab])
   const [appVersion, setAppVersion] = useState('')
   // Thong tin key (nut tai khoan goc phai): da qua cong ban quyen thi trang thai luon la ok
@@ -81,17 +83,32 @@ export default function App() {
     window.studio.appInfo().then((i) => setAppVersion(i.build ? `${i.version} · build ${i.build}` : i.version))
   }, [])
 
-  // Tu dong dong bo kho SFX + Meme tu R2 MOT LAN khi san sang (chay nen, khong chan UI).
-  // Loi mang -> im lang; nguoi dung co the bam "Dong bo kho" o trang SFX/Meme.
-  const [syncedOnce, setSyncedOnce] = useState(false)
+  // Tu dong dong bo TOAN BO kho (SFX, Meme, Text, Nhac nen, Hieu ung) tu R2 moi lan mo app — chay nen, khong chan UI.
+  // KHONG cho Doctor "san sang" (truoc 2026-10-06 cho -> may con 1 muc Doctor loi, vd chua dang nhap AI, khong bao gio tu
+  // dong bo): dong bo chi can sidecar + key (App chi hien sau cong ban quyen). Loi (mat mang, sidecar dang khoi dong...)
+  // -> thu lai toi da 3 lan, cach 45s; van loi thi nguoi dung bam "Dong bo kho" o trang Tai nguyen.
+  const libSync = useLibrarySyncStatus()
   useEffect(() => {
-    if (ready && !syncedOnce) {
-      setSyncedOnce(true)
-      window.studio.syncLibrary?.().catch(() => {})
-      // Kho hieu ung: lam tiep viec nen con do (preview / Gemini nhan / gui kho chung) tu lan truoc
+    let stop = false
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const attempt = async (n: number) => {
+      const r = await window.studio.syncLibrary?.().catch((e) => ({ ok: false, error: String(e) }))
+      if (!stop && r && !r.ok && n < 3) timer = setTimeout(() => attempt(n + 1), 45000)
+    }
+    attempt(1)
+    return () => {
+      stop = true
+      if (timer) clearTimeout(timer)
+    }
+  }, [])
+  // Kho hieu ung: lam tiep viec nen con do (preview / Gemini nhan / gui kho chung) tu lan truoc — can Doctor san sang
+  const [harvestedOnce, setHarvestedOnce] = useState(false)
+  useEffect(() => {
+    if (ready && !harvestedOnce) {
+      setHarvestedOnce(true)
       kickHarvest()
     }
-  }, [ready, syncedOnce])
+  }, [ready, harvestedOnce])
 
   // Mo lai tab Doctor / Video Remotion (vd vua dang nhap AI o Cai dat) -> kiem lai (~1-2s); dang cai thi thoi
   const { run: rerunDoctor, busy: doctorBusy, checks: doctorChecks } = doctor
@@ -112,7 +129,7 @@ export default function App() {
     { id: 'prompts', label: 'Prompt & quy tắc', icon: ScrollText },
     { id: 'remotion', label: 'Tạo video', icon: MonitorPlay },
     { id: 'projects', label: 'Video đã tạo', icon: FolderClock }
-  ].filter((n) => fullUi || n.id !== 'prompts') as { id: Tab; label: string; icon: typeof Stethoscope }[]
+  ].filter((n) => fullUi || (n.id !== 'prompts' && n.id !== 'resources')) as { id: Tab; label: string; icon: typeof Stethoscope }[]
 
   return (
     <div className="flex h-full w-full flex-col">
@@ -213,10 +230,12 @@ export default function App() {
               onRecheck={doctor.run}
               onFix={doctor.fix}
               goSettings={() => setTab('settings')}
+              libSync={libSync}
+              onResync={() => window.studio.syncLibrary().catch(() => {})}
             />
           )}
           {tab === 'settings' && <SettingsPage />}
-          {tab === 'resources' && <ResourcesPage />}
+          {tab === 'resources' && fullUi && <ResourcesPage />}
           {tab === 'projects' && (
             <ProjectsPage
               openProject={openProject}

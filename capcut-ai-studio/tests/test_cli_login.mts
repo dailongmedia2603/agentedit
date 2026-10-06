@@ -4,11 +4,12 @@
 //  2. agy: KHONG duoc nhan bien SSH_* (bien do bat che do "in link + dan ma", khong tu xong)
 //  3. claude: cho ma qua stdin -> sendCliInput gui ma -> CLI thoat 0 -> thanh cong; ma co xuong dong bi tu choi
 //  4. Huy giua chung -> canceled
-//  5. Dang xuat: codex logout / claude auth logout / agy -i /logout (HOME tam -> Keychain khong co phien agy)
+//  5. Dang xuat: codex logout / claude auth logout / agy = xoa thang muc phien, KHONG chay agy (HOME tam -> `security` chi
+//     thay System keychain, khong dung Keychain that)
 //  macOS: agy chay trong pseudo-terminal (agy >= 1.2.16 khong TTY thi khong bat dau dang nhap)
 //  (Windows: agy chay o cua so rieng — agyWindow — khong test bang CLI gia duoc; phan nay chi macOS / POSIX)
 import { register } from 'node:module'
-import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
+import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import { homedir } from 'os'
 import { join } from 'path'
 
@@ -114,12 +115,14 @@ const r5 = await L.startCliLogout('claude', claudeOut, '', () => {})
 const c5 = JSON.parse(readFileSync(join(HOME, 'claude-args.json'), 'utf-8'))
 check('claude: chay `claude auth logout`, bo ANTHROPIC_API_KEY', r5.ok && c5.args.join(' ') === 'auth logout' && c5.key === null, { r5, c5 })
 if (!IS_WIN) {
-  // HOME tam: Keychain khong co muc phien agy -> agy coi nhu da dang xuat ngay; file phien kieu cu bi don
+  // HOME tam: Keychain khong co muc phien agy; file phien kieu cu bi don. KHONG chay giao dien day du `agy -i /logout`
+  // (may chua tung mo agy day du -> man hinh chao lan dau "Choose your color scheme" -> treo, bao "da huy" — 2026-10-06)
+  const envFile = join(HOME, 'agy-env.json')
+  if (existsSync(envFile)) rmSync(envFile)
   const t6 = Date.now()
   const r6 = await L.startCliLogout('gemini', agy, join(HOME, 'agy-work'), () => {})
-  const env6 = JSON.parse(readFileSync(join(HOME, 'agy-env.json'), 'utf-8'))
-  check('agy: chay giao dien day du `agy -i /logout` (khong -p: agy chan /logout o che do in)', env6.args.join(' ') === '-i /logout', env6)
-  check('agy: het phien -> dung agy, bao thanh cong', r6.ok && Date.now() - t6 < 15000, r6)
+  check('agy: khong chay agy (xoa thang muc phien)', !existsSync(envFile))
+  check('agy: het phien -> bao thanh cong ngay', r6.ok && Date.now() - t6 < 5000, r6)
   check('agy: don file phien kieu cu', !existsSync(join(tokDir, 'antigravity-oauth-token')))
 }
 

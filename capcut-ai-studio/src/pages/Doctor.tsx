@@ -9,7 +9,8 @@ import {
   Cpu,
   KeyRound,
   Package,
-  Clapperboard
+  Clapperboard,
+  Library
 } from 'lucide-react'
 import { Badge, Button, Card, CardBody, CardHeader, Progress, Spinner } from '@/components/ui/primitives'
 import { cn } from '@/lib/utils'
@@ -52,7 +53,9 @@ export default function DoctorPage({
   logs,
   onRecheck,
   onFix,
-  goSettings
+  goSettings,
+  libSync,
+  onResync
 }: {
   checks: DoctorCheck[]
   loading: boolean
@@ -62,6 +65,8 @@ export default function DoctorPage({
   onRecheck: () => void
   onFix: (id: string) => void
   goSettings: () => void
+  libSync: LibrarySyncStatus
+  onResync: () => void
 }) {
   const fullUi = useFullUi()
   const logRef = useRef<HTMLDivElement>(null)
@@ -217,6 +222,8 @@ export default function DoctorPage({
         })}
       </div>
 
+      <LibrarySyncCard st={libSync} onResync={onResync} />
+
       {/* Nhat ky cai dat (ban cai cho may khac: an — src/lib/clientUi.ts) */}
       {fullUi && logs.length > 0 && (
         <Card className="mt-4">
@@ -239,5 +246,69 @@ export default function DoctorPage({
         </Card>
       )}
     </div>
+  )
+}
+
+// So muc tung kho sau luot dong bo (bo kho chua co tren may chu)
+const SYNC_KINDS: { key: 'sfx' | 'memes' | 'texts' | 'music' | 'fx'; label: string }[] = [
+  { key: 'sfx', label: 'âm thanh' },
+  { key: 'memes', label: 'meme' },
+  { key: 'texts', label: 'mẫu chữ' },
+  { key: 'music', label: 'nhạc nền' },
+  { key: 'fx', label: 'hiệu ứng' }
+]
+
+/** Muc "Dong bo tai nguyen": kho SFX / meme / mau chu / nhac nen / hieu ung tu dong tai tu may chu moi lan mo app. */
+function LibrarySyncCard({ st, onResync }: { st: LibrarySyncStatus; onResync: () => void }) {
+  const r = st.result
+  const failed = !st.running && !!r && !r.ok
+  const done = !st.running && !!r?.ok
+  const fileErrs = done ? SYNC_KINDS.reduce((n, k) => n + (r?.[k.key]?.errors?.length || 0), 0) : 0
+  const counts = done
+    ? SYNC_KINDS.filter((k) => (r?.[k.key]?.total || 0) > 0)
+        .map((k) => `${r![k.key]!.total} ${k.label}`)
+        .join(' · ')
+    : ''
+  const added = done ? SYNC_KINDS.reduce((n, k) => n + (r?.[k.key]?.added || 0) + (r?.[k.key]?.updated || 0), 0) : 0
+  const time = st.at ? new Date(st.at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : ''
+  const status: DoctorCheck['status'] = st.running || !r ? 'checking' : failed ? 'fail' : fileErrs ? 'warn' : 'ok'
+  return (
+    <Card className="mt-4">
+      <CardHeader className="flex items-center gap-2">
+        <Library className="h-4 w-4 text-brand-500" />
+        <span className="text-sm font-semibold text-ink-900">Tài nguyên</span>
+        <span className="text-xs text-ink-800/40">· Âm thanh, meme, mẫu chữ, nhạc nền, hiệu ứng — tự tải mỗi lần mở app</span>
+      </CardHeader>
+      <CardBody>
+        <div className="flex items-start gap-3 rounded-xl border border-black/6 bg-ink-50 px-3 py-2.5">
+          <div className="mt-0.5">
+            <StatusIcon status={status} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm font-medium text-ink-900">Đồng bộ tài nguyên</span>
+              <Badge tone={st.running || !r ? 'brand' : failed ? 'fail' : fileErrs ? 'warn' : 'ok'}>
+                {st.running || !r ? 'Đang đồng bộ…' : failed ? 'Đồng bộ lỗi' : 'Đồng bộ xong'}
+              </Badge>
+            </div>
+            <div className="text-xs text-ink-800/55">
+              {st.running || !r
+                ? 'App đang tải tài nguyên mới nhất về máy — vẫn dùng các trang khác bình thường.'
+                : failed
+                  ? r.error || 'Không đồng bộ được — kiểm tra mạng rồi bấm “Đồng bộ lại”.'
+                  : `${counts || 'Kho đã đủ'}${added ? ` · ${added} mục mới / cập nhật` : ''}${time ? ` · lúc ${time}` : ''}`}
+            </div>
+            {fileErrs > 0 && (
+              <div className="mt-0.5 text-xs text-amber-700/90">{fileErrs} tệp tải lỗi — bấm “Đồng bộ lại” để tải tiếp.</div>
+            )}
+          </div>
+          {(failed || fileErrs > 0) && (
+            <Button size="sm" variant="outline" className="shrink-0" onClick={onResync}>
+              <RefreshCw className="h-4 w-4" /> Đồng bộ lại
+            </Button>
+          )}
+        </div>
+      </CardBody>
+    </Card>
   )
 }

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Download, FolderInput, Sparkles, Trash2, Info, Wand2, RefreshCw } from 'lucide-react'
 import { Button, Card, CardBody, CardHeader, Spinner, Badge } from '@/components/ui/primitives'
+import { useLibrarySync } from '../lib/useLibrarySync'
 import { fileUrl } from '../lib/platform'
 
 const EMOTIONS = ['punch', 'positive', 'negative', 'nostalgic', 'soft', 'neutral']
@@ -44,6 +45,9 @@ export default function MemesPage() {
 
   const [syncing, setSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState<string | null>(null)
+  const bgSync = useLibrarySync(load)
+  const syncBusy = syncing || bgSync
+
   const doSync = async () => {
     setSyncing(true)
     setSyncMsg(null)
@@ -150,9 +154,9 @@ export default function MemesPage() {
           </p>
           {syncMsg && <p className="mt-1 text-xs text-brand-600">{syncMsg}</p>}
         </div>
-        <Button variant="outline" onClick={doSync} disabled={syncing} className="shrink-0">
-          {syncing ? <Spinner className="h-4 w-4" /> : <RefreshCw className="h-4 w-4" />}
-          {syncing ? 'Đang đồng bộ…' : 'Đồng bộ kho'}
+        <Button variant="outline" onClick={doSync} disabled={syncBusy} className="shrink-0">
+          {syncBusy ? <Spinner className="h-4 w-4" /> : <RefreshCw className="h-4 w-4" />}
+          {syncBusy ? 'Đang đồng bộ…' : 'Đồng bộ kho'}
         </Button>
       </div>
 

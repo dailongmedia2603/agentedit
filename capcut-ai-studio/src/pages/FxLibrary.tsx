@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Info, Pause, Play, Power, RefreshCw, RotateCcw, Sparkles, Trash2 } from 'lucide-react'
 import { Badge, Button, Card, CardBody, Spinner } from '@/components/ui/primitives'
+import { useLibrarySync } from '../lib/useLibrarySync'
 import { cn } from '@/lib/utils'
 import { fileUrl } from '../lib/platform'
 import { harvestStatus, kickHarvest, subscribeHarvest, type FxHarvestStatus } from '../lib/fxHarvest'
@@ -53,6 +54,9 @@ export default function FxLibraryPage() {
 
   const shown = useMemo(() => items.filter((e) => filter === 'all' || e.origin === filter), [items, filter])
   const nLocal = items.filter((e) => e.origin === 'local').length
+
+  const bgSync = useLibrarySync(load)
+  const syncBusy = busy === 'sync' || bgSync
 
   const doSync = async () => {
     setBusy('sync')
@@ -128,9 +132,9 @@ export default function FxLibraryPage() {
           )}
           {msg && <p className="mt-1 text-xs text-brand-600">{msg}</p>}
         </div>
-        <Button variant="outline" onClick={doSync} disabled={busy === 'sync'} className="shrink-0">
-          {busy === 'sync' ? <Spinner className="h-4 w-4" /> : <RefreshCw className="h-4 w-4" />}
-          {busy === 'sync' ? 'Đang đồng bộ…' : 'Đồng bộ kho'}
+        <Button variant="outline" onClick={doSync} disabled={syncBusy} className="shrink-0">
+          {syncBusy ? <Spinner className="h-4 w-4" /> : <RefreshCw className="h-4 w-4" />}
+          {syncBusy ? 'Đang đồng bộ…' : 'Đồng bộ kho'}
         </Button>
       </div>
 

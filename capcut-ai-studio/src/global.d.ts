@@ -117,6 +117,12 @@ interface StudioBridge {
     log?: string[]
     manifest_updated?: string
   }>
+  /** Dang co luot dong bo kho chay (vd luot tu chay luc mo app) */
+  librarySyncRunning(): Promise<boolean>
+  /** Dang dong bo + ket qua luot gan nhat (at = luc xong) — muc "Dong bo tai nguyen" o Doctor */
+  librarySyncStatus(): Promise<LibrarySyncStatus>
+  /** Luot dong bo kho bat dau (running) / xong (result = ket qua syncLibrary) — ke ca luot tu chay luc mo app */
+  onLibrarySyncState(cb: (s: LibrarySyncStatus) => void): () => void
 
   projectsList(): Promise<Project[]>
   projectGet(id: string): Promise<Project | null>
@@ -329,6 +335,28 @@ declare global {
     /** can vao Cai dat API */
     settings?: boolean
     fixable: boolean
+  }
+
+  /** Ket qua 1 luot dong bo kho (syncLibrary) — dung chung cho Doctor + trang Tai nguyen */
+  interface LibrarySyncKind {
+    added: number
+    updated: number
+    total: number
+    errors: string[]
+  }
+  interface LibrarySyncResult {
+    ok: boolean
+    error?: string
+    sfx?: LibrarySyncKind
+    memes?: LibrarySyncKind
+    texts?: LibrarySyncKind
+    music?: LibrarySyncKind
+    fx?: (LibrarySyncKind & { removed: number }) | null
+  }
+  interface LibrarySyncStatus {
+    running: boolean
+    result?: LibrarySyncResult
+    at?: number
   }
 
   interface DoctorProgress {

@@ -93,6 +93,13 @@ const api = {
   libraryLookup: (paths: string[]) => ipcRenderer.invoke('library:lookup', paths),
   libraryDelete: (fp: string, part?: string) => ipcRenderer.invoke('library:delete', fp, part),
   syncLibrary: () => ipcRenderer.invoke('library:sync'),
+  librarySyncRunning: () => ipcRenderer.invoke('library:syncRunning'),
+  librarySyncStatus: () => ipcRenderer.invoke('library:syncStatus'),
+  onLibrarySyncState: (cb: (s: unknown) => void) => {
+    const fn = (_e: unknown, s: unknown) => cb(s)
+    ipcRenderer.on('library:syncState', fn)
+    return () => ipcRenderer.removeListener('library:syncState', fn)
+  },
 
   // Projects
   projectsList: () => ipcRenderer.invoke('projects:list'),

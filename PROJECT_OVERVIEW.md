@@ -762,6 +762,9 @@ tieng; (3) chu anh AI: duoi 'g' hang tren con du manh tren hang duoi; (4) SFX kh
   cai dat"; ten AI / ten buoc trong loi nhan (chay: "Dang phan tich" -> "Dang tao video"; loi: "Co loi khi ..."; canh
   bao: chi muc "Tu lieu..." + 1 dong chung); Cai dat API vai tro chung chung; thu vien "Mau" (khong "Gemini").
   main.ts: menu Xem khong co DevTools + `webPreferences.devTools = false`.
+  2026-10-06 (user yeu cau): an CA menu Tai nguyen (SFX / meme / Text / nhac nen / hieu ung) — kho tu dong bo khi mo app;
+  Doctor co the "Tai nguyen" -> muc "Dong bo tai nguyen" (Dang dong bo… / Dong bo xong + so muc tung kho + gio / Dong bo
+  loi + nut "Dong bo lai"), ca 2 ban deu hien.
 - Chuc nang KHONG doi (sidecar van ghi nhat ky ~/.capcut-studio/runs tren may khach, chi khong hien).
 
 ## 11v. Hieu nguon + video mau CUNG LUC; NHIEU VIDEO chay cung luc (2026-10-02)
@@ -1024,8 +1027,12 @@ phai phat hanh app moi.
   `*_library.json.bak` truoc khi ghi; `file` viet lai duong dan tuyet doi theo may (manifest chi giu ten);
   manifest loi/rong -> khong xoa gi. Dung `engine._load_lib/_save_lib` + `meme_lib.load_lib/save_lib`
   (giu dung schema). Chi `requests` (da co trong sidecar).
-- **Electron/UI**: IPC `library:sync` (ipc.ts) -> preload `syncLibrary` -> nut "Dong bo kho" o
-  `Sfx.tsx` + `Memes.tsx`; TU sync nen 1 lan khi app san sang (`App.tsx`, loi im lang).
+- **Electron/UI**: IPC `library:sync` (ipc.ts) -> preload `syncLibrary` -> nut "Dong bo kho" o cac trang Tai nguyen;
+  TU sync nen MOI LAN MO APP (`App.tsx`). 2026-10-06: KHONG con cho Doctor "san sang" (truoc do may khach con 1 muc
+  Doctor loi -> khong bao gio tu dong bo), loi -> thu lai toi da 3 lan cach 45s. ipc.ts chi chay 1 luot tai 1 thoi diem
+  (bam nut trong luc luot mo app dang chay -> nhan chung ket qua), su kien `library:syncState` {running, result, at} +
+  `library:syncStatus` (ket qua luot gan nhat) -> `src/lib/useLibrarySync.ts`: trang Tai nguyen hien "Dang dong bo…" va
+  tai lai danh sach khi xong; Doctor hien muc "Dong bo tai nguyen".
 - **Publish (may tac gia)** `scripts/publish-library.mjs` (`npm run publish:library`; `--dry-run` de thu):
   doc `~/.capcut-studio/{sfx,memes}` + `*_library.json`, tinh SHA-256, tao manifest (file=ten co ban),
   upload file MOI/DOI (so voi manifest R2) + manifest. Token R2 o `~/.capcut-studio/r2-publish.json`
@@ -1426,6 +1433,14 @@ macOS giu nguyen hanh vi (moi nhanh Windows deu co dieu kien nen tang); da kiem 
   du khong ve gi (-> stty), giet script KHONG giet agy (-> `pkill -P` truoc, `stopChild`). Giao dien day du `agy` (khong -p)
   tu 1.2.16 hoi "Select login method" (Enter = Google OAuth) -> Windows: cua so agy de HIEN (khong thu nho) + huong dan bam
   Enter; Terminal du phong cung them buoc nay.
+- DANG XUAT agy TU 2026-10-06: KHONG chay `agy -i /logout` nua — may chua tung mo giao dien day du cua agy (app chi goi
+  `agy -p`) thi agy hien man hinh chao lan dau ("Choose your color scheme" ...) thay vi "Are you sure...", app cho 90s roi
+  bao "Da huy dang xuat" (su co that Mac + Windows may khach; do lai tren may dev bang pty, khong xac nhan). Nay
+  `startAgyLogout` xoa thang muc phien go-keyring: macOS `security delete-generic-password -s gemini -a antigravity` (muc do
+  /usr/bin/security tao -> khong hoi quyen, da thu bang muc gia), Windows `cmdkey /delete` muc `gemini:antigravity` (+ *jetski*),
+  du phong CredDeleteW qua PowerShell (CHUA thu tren Windows that) + file phien cu. Chi xoa tren may, khong goi "sign out"
+  len Google. Sidecar `/cli_status {fresh:true}` bo cache 2s Keychain / cmdkey de doc trang thai that ngay sau khi xoa.
+  Phan duoi la cach cu (lich su):
 - DANG XUAT (2026-10-03, user yeu cau de doi tai khoan): nut "Dang xuat" trong CliPanel khi da dang nhap ->
   `settings:cliLogout` -> `startCliLogout`: `codex logout`, `claude auth logout` (claudeEnv), agy `/logout`. agy CHAN
   `/logout` o `-p` ("clears stored credentials") -> `agy -i /logout` giao dien day du: macOS trong pty, app tu tra loi cac

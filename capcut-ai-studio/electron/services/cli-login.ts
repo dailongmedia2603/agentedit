@@ -37,7 +37,7 @@ import { IS_WIN, agyCredentialPresent, agySessionPresent, augmentedEnv, claudeEn
  * van chay giao dien day du trong cua so do. Cai agy = install.ps1 chinh chu (toolchain.installAgy).
  *
  * DANG XUAT (doi sang tai khoan khac) — cung bang lenh chinh chu: `codex logout`, `claude auth logout`, agy `/logout`
- * (agy chan /logout o che do -p -> chay giao dien day du `agy -i /logout`, xem startAgyLogout).
+ * (agy: xoa thang muc phien Keychain / Credential Manager — giao dien day du `agy -i /logout` treo o may moi, xem startAgyLogout).
  */
 export type CliLoginMode = 'browser' | 'device'
 
@@ -316,80 +316,68 @@ export function startAgyLogin(bin: string, workdir: string, onLine: (line: strin
   })
 }
 
-/** Tra loi cac cau hoi nhan dang terminal cua giao dien day du agy (khong tra loi -> agy dung cho mai, da do that) */
-function answerTerminalQueries(raw: string, proc: ChildProcess): void {
-  const reply = (s: string) => {
-    try {
-      proc.stdin?.write(s)
-    } catch {
-      /* da dong */
-    }
-  }
-  if (raw.includes('\x1b[>q')) reply('\x1bP>|xterm(370)\x1b\\')
-  if (raw.includes('\x1b[c') || raw.includes('\x1b[0c')) reply('\x1b[?62;22c')
-  if (raw.includes('\x1b[?u')) reply('\x1b[?0u')
-  if (raw.includes('\x1b[6n')) reply('\x1b[1;1R')
+/** Chay 1 lenh he thong ngan (khong shell), tra stdout ('' khi loi). */
+function runQuiet(file: string, args: string[]): Promise<string> {
+  return new Promise((resolve) => {
+    execFile(file, args, { windowsHide: true, timeout: 15000, encoding: 'utf-8' }, (err, stdout) => resolve(err ? '' : String(stdout || '')))
+  })
 }
 
 /**
- * Dang xuat agy (doi tai khoan Google). `agy -p /logout` bi agy chan ("not available in print mode") -> chay giao dien
- * day du `agy -i /logout`: macOS trong pseudo-terminal, app tu tra loi "Are you sure you want to sign out?" (va hoi tin
- * cay thu muc lam viec cua app neu co); Windows trong cua so agy rieng, nguoi dung tu xac nhan.
- * Xong = muc phien trong Keychain / Credential Manager bien mat -> dung agy, don file phien cu con sot.
+ * Xoa muc phien dang nhap cua agy — dung viec go-keyring cua agy lam khi /logout: macOS = muc Keychain service "gemini" /
+ * account "antigravity" (do /usr/bin/security tao -> xoa bang chinh no, khong hoi quyen; da thu 2026-10-06), Windows =
+ * muc Credential Manager "gemini:antigravity" (+ muc "jetski" neu co). Chi xoa muc cua agy, khong dung muc cua app khac.
  */
-export function startAgyLogout(bin: string, workdir: string, onLine: (line: string) => void): Promise<TaskResult> {
-  if (!validBin(bin, 'agy')) return Promise.resolve({ ok: false, error: 'Không tìm thấy Antigravity CLI (agy) trên máy.' })
-  const { env, cwd } = agyEnvCwd(workdir)
-  const loggedOut = () => !agyCredentialPresent()
-  const finish = (r: TaskResult): TaskResult => {
-    if (r.ok) clearAgyLeftovers()
-    return r
+async function deleteAgyCredential(): Promise<void> {
+  if (process.platform === 'darwin') {
+    // Co the co nhieu muc trung (keychain khac nhau) -> xoa toi khi het (toi da 5 lan)
+    for (let i = 0; i < 5 && agyCredentialPresent(); i++) {
+      await runQuiet('/usr/bin/security', ['delete-generic-password', '-s', 'gemini', '-a', 'antigravity'])
+    }
+    return
   }
-  if (IS_WIN) return agyWindow(bin, ['-i', '/logout'], cwd, env, onLine, {
-    done: loggedOut,
-    intro: [
-      'Đã mở cửa sổ Antigravity CLI (agy) để đăng xuất.',
-      'agy hỏi “Are you sure you want to sign out?”: gõ y rồi Enter trong cửa sổ đó.',
-      'Đăng xuất xong app tự đóng cửa sổ agy.'
-    ],
-    okLine: 'Đã đăng xuất tài khoản Google khỏi Antigravity CLI.',
-    closedError: 'Cửa sổ Antigravity CLI đã đóng trước khi đăng xuất xong.',
-    timeoutMs: 5 * 60 * 1000
-  }).then(finish)
+  if (!IS_WIN) return
+  const cmdkey = join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'cmdkey.exe')
+  const targets = new Set<string>(['gemini:antigravity'])
+  // Dong "Target: LegacyGeneric:target=gemini:antigravity" (nhan "Target" doi theo ngon ngu Windows -> lay token cuoi dong)
+  for (const line of (await runQuiet(cmdkey, ['/list'])).split(/\r?\n/)) {
+    const tok = line.trim().split(/\s+/).pop() || ''
+    const name = tok.replace(/^[a-z]*:target=/i, '')
+    if (/^gemini:antigravity$/i.test(name) || /jetski/i.test(name)) targets.add(tok)
+  }
+  for (const t of targets) {
+    await runQuiet(cmdkey, [`/delete:${t}`])
+    const plain = t.replace(/^[a-z]*:target=/i, '')
+    if (plain !== t) await runQuiet(cmdkey, [`/delete:${plain}`])
+  }
+  if (!agyCredentialPresent()) return
+  // Du phong: API Windows CredDelete (muc generic) qua PowerShell
+  const ps = [
+    'Add-Type -Namespace W -Name C -MemberDefinition \'[DllImport("advapi32.dll", CharSet=CharSet.Unicode, SetLastError=true)] public static extern bool CredDeleteW(string t, int y, int f);\'',
+    "[void][W.C]::CredDeleteW('gemini:antigravity', 1, 0)"
+  ].join('; ')
+  await runQuiet(powershell(), ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', ps])
+}
+
+/**
+ * Dang xuat agy (doi tai khoan Google). KHONG con chay giao dien day du `agy -i /logout` (2026-10-06): may chua tung mo
+ * giao dien day du cua agy (app chi goi `agy -p`) thi agy hien man hinh chao lan dau ("Choose your color scheme", ...) thay
+ * vi "Are you sure you want to sign out?" -> app cho mai, het gio, bao "Da huy dang xuat" (su co that Mac + Windows may
+ * khach); Windows con bat nguoi dung tu go y trong cua so agy. Nay xoa thang muc phien (deleteAgyCredential) + file phien
+ * kieu cu -> lan goi agy sau bao "authentication required" -> bam Dang nhap de vao tai khoan khac. (Phien chi bi xoa tren
+ * may nay, khong goi "sign out" len may chu Google — ma dang nhap cu khong con o dau tren may.)
+ */
+export async function startAgyLogout(bin: string, onLine: (line: string) => void): Promise<TaskResult> {
+  if (!validBin(bin, 'agy')) return { ok: false, error: 'Không tìm thấy Antigravity CLI (agy) trên máy.' }
+  if (child || extPid) return { ok: false, error: 'Đang có một lượt đăng nhập / cài đặt chạy dở.' }
   onLine('Đang đăng xuất tài khoản Google khỏi Antigravity CLI…')
-  let seen = ''
-  let trusted = false
-  let confirmed = false
-  return runTask(bin, ['-i', '/logout'], {
-    env,
-    cwd,
-    timeoutMs: 90 * 1000,
-    stdin: 'pipe',
-    pty: true,
-    // Giao dien day du ve lai man hinh lien tuc -> khong dua ra nhat ky
-    onLine: () => {},
-    onChunk: (text, proc, raw) => {
-      answerTerminalQueries(raw, proc)
-      seen = (seen + text).slice(-4000)
-      if (!trusted && /Do you trust the contents of this project/i.test(seen)) {
-        // thu muc lam viec rieng cua app (~/.capcut-studio/agy-work) — chon dong dau "Yes, I trust this folder"
-        trusted = true
-        seen = ''
-        setTimeout(() => proc.stdin?.write('\r'), 400)
-      }
-      if (!confirmed && /Are you sure you want to sign out/i.test(seen)) {
-        confirmed = true
-        setTimeout(() => proc.stdin?.write('y'), 300)
-        setTimeout(() => proc.stdin?.write('\r'), 700)
-      }
-    },
-    doneWhen: loggedOut
-  }).then((r) => {
-    if (r.ok || r.canceled) return finish(r)
-    // agy tu thoat: hoi lai Keychain that (doneWhen hoi moi 1s, co the chua kip)
-    if (loggedOut()) return finish({ ok: true })
-    return { ok: false, error: r.error || 'Antigravity CLI chưa đăng xuất được.' }
-  })
+  await deleteAgyCredential()
+  clearAgyLeftovers()
+  if (agyCredentialPresent() || agySessionPresent()) {
+    return { ok: false, error: 'Không xoá được phiên đăng nhập Google của Antigravity CLI trên máy này.' }
+  }
+  onLine('Đã đăng xuất tài khoản Google khỏi Antigravity CLI.')
+  return { ok: true }
 }
 
 /**
@@ -422,7 +410,7 @@ function clearAgyLeftovers(): void {
   const dir = join(homedir(), '.gemini', 'antigravity-cli')
   try {
     for (const n of readdirSync(dir)) {
-      if (n === 'antigravity-oauth-token' || /^keyring-marker/i.test(n)) rmSync(join(dir, n), { force: true })
+      if (n === 'antigravity-oauth-token' || /^keyring-marker/i.test(n) || (/oauth/i.test(n) && /token/i.test(n))) rmSync(join(dir, n), { force: true })
     }
   } catch {
     /* khong co thu muc */
@@ -431,7 +419,7 @@ function clearAgyLeftovers(): void {
 
 /** Dang xuat Codex (`codex logout`) / Claude Code (`claude auth logout`) — lenh chinh chu, khong can trinh duyet */
 export function startCliLogout(id: string, bin: string, workdir: string, onLine: (line: string) => void): Promise<TaskResult> {
-  if (id === 'gemini') return startAgyLogout(bin, workdir, onLine)
+  if (id === 'gemini') return startAgyLogout(bin, onLine)
   if (id === 'claude') {
     if (!validBin(bin, 'claude')) return Promise.resolve({ ok: false, error: 'Không tìm thấy Claude Code CLI trên máy.' })
     return runTask(bin, ['auth', 'logout'], { env: claudeEnv(cleanEnv()), cwd: homedir(), timeoutMs: 60 * 1000, onLine })

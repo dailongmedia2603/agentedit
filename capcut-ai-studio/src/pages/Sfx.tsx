@@ -19,6 +19,7 @@ import {
   RefreshCw
 } from 'lucide-react'
 import { Badge, Button, Card, CardBody, CardHeader, Spinner } from '@/components/ui/primitives'
+import { useLibrarySync } from '../lib/useLibrarySync'
 import { cn } from '@/lib/utils'
 import { MOD_KEY, fileUrl } from '../lib/platform'
 
@@ -74,6 +75,9 @@ export default function SfxPage() {
 
   const [syncing, setSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState<string | null>(null)
+  const bgSync = useLibrarySync(loadLib)
+  const syncBusy = syncing || bgSync
+
   const doSync = async () => {
     setSyncing(true)
     setSyncMsg(null)
@@ -266,9 +270,9 @@ export default function SfxPage() {
           </p>
           {syncMsg && <p className="mt-1 text-xs text-brand-600">{syncMsg}</p>}
         </div>
-        <Button variant="outline" onClick={doSync} disabled={syncing} className="shrink-0">
-          {syncing ? <Spinner className="h-4 w-4" /> : <RefreshCw className="h-4 w-4" />}
-          {syncing ? 'Đang đồng bộ…' : 'Đồng bộ kho'}
+        <Button variant="outline" onClick={doSync} disabled={syncBusy} className="shrink-0">
+          {syncBusy ? <Spinner className="h-4 w-4" /> : <RefreshCw className="h-4 w-4" />}
+          {syncBusy ? 'Đang đồng bộ…' : 'Đồng bộ kho'}
         </Button>
       </div>
 

@@ -968,6 +968,12 @@ def _mac_keychain_has_agy():
     return hit
 
 
+def reset_login_cache():
+    """Bo cache 2s cua Keychain / Credential Manager (vua dang nhap / dang xuat agy xong -> doc trang thai that)."""
+    _KEYCHAIN.update(at=0.0, hit=False)
+    _CMDKEY.update(at=0.0, hit=False)
+
+
 def agy_logged_in():
     """agy da co phien dang nhap chua (khong doc noi dung). agy luu phien qua go-keyring: Windows trong CREDENTIAL
     MANAGER, macOS trong KEYCHAIN — KHONG co file (su co that 2026-10-01 Windows, 2026-10-02 Mac moi: `agy -p` SUCCESS ma

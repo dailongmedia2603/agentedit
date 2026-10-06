@@ -187,12 +187,13 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
   // Dang nhap CLI ngay trong app (xem services/cli-login.ts): Codex (`codex login`) hoac Antigravity
   // CLI cho Gemini (mo Terminal chay `agy`; UI tu hoi lai trang thai). Duong dan binary + thu muc lam
   // viec luon lay tu sidecar (cli_status), khong nhan tu renderer.
-  const cliStatusOf = async (id: string) => {
+  // fresh = bo cache 2s cua sidecar (vua dang nhap / dang xuat xong phai doc Keychain / Credential Manager that)
+  const cliStatusOf = async (id: string, fresh = false) => {
     if (!sidecarInfo().ready) {
       const s = await startSidecar()
       if (!s.ok) return { error: 'Sidecar chua san sang: ' + s.error }
     }
-    const r = await sidecarRequest('/cli_status', { name: id }, 120000).catch(() => null)
+    const r = await sidecarRequest('/cli_status', fresh ? { name: id, fresh: true } : { name: id }, 120000).catch(() => null)
     return { st: r?.status?.[id] }
   }
   ipcMain.handle('settings:cliLogin', async (_e, mode?: CliLoginMode, name?: string) => {
@@ -241,7 +242,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
     const win = getWindow()
     const res = await startCliLogout(id, st.path, st.workdir, (line) => win?.webContents.send('settings:cliLoginLog', line))
     if (res.canceled) return res
-    const now = (await cliStatusOf(id)).st
+    const now = (await cliStatusOf(id, true)).st
     if (now && !now.logged_in) return { ok: true }
     const err = res.ok ? `${label} vẫn báo đang đăng nhập — bấm “Kiểm tra lại” hoặc thử lại.` : res.error
     return { ok: false, error: id === 'gemini' ? agyFailureText(err, now?.version || st.version, 'logout') : err }
@@ -568,15 +569,35 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
   ipcMain.handle('library:delete', (_e, fp: string, part?: string) => libCall('/library/delete', { fp, part }))
   // Dong bo kho SFX + Meme + Text + Nhac nen + Hieu ung (nut "Dong bo kho" + tu chay nen luc mo app): CHI qua may chu ban quyen —
   // key dang kich hoat dung may nay moi nhan duoc manifest + link tai tam (bucket R2 khong con cong khai)
-  ipcMain.handle('library:sync', async () => {
-    let manifest: unknown
-    try {
-      manifest = await libraryManifest()
-    } catch (e) {
-      return { ok: false, error: String((e as Error).message || e) }
-    }
-    return libCall('/library/sync', { manifest })
+  // MOT luot dong bo tai 1 thoi diem: luot tu chay luc mo app dang do ma nguoi dung bam nut -> nhan chung ket qua (2 luot
+  // song song cung ghi *_library.json -> mat du lieu). Bat dau / xong -> su kien 'library:syncState' de cac trang Tai
+  // nguyen hien "Dang dong bo…" va tai lai danh sach (trang mo TRUOC khi luot mo app xong van thay muc moi).
+  let libSync: Promise<Record<string, unknown>> | null = null
+  // Ket qua luot gan nhat (Doctor hien "Dong bo tai nguyen": dang dong bo / xong / loi) — at = luc xong
+  let libLast: { result: unknown; at: number } | null = null
+  const syncState = (running: boolean, result?: unknown) => {
+    if (!running) libLast = { result, at: Date.now() }
+    getWindow()?.webContents.send('library:syncState', { running, result, at: libLast?.at })
+  }
+  ipcMain.handle('library:sync', () => {
+    if (libSync) return libSync
+    syncState(true)
+    libSync = (async () => {
+      try {
+        const manifest = await libraryManifest()
+        return (await libCall('/library/sync', { manifest })) as Record<string, unknown>
+      } catch (e) {
+        return { ok: false, error: String((e as Error).message || e) }
+      }
+    })().then((r) => {
+      libSync = null
+      syncState(false, r)
+      return r
+    })
+    return libSync
   })
+  ipcMain.handle('library:syncRunning', () => !!libSync)
+  ipcMain.handle('library:syncStatus', () => ({ running: !!libSync, result: libLast?.result, at: libLast?.at }))
 
   // ---- Projects (luu/khoi phuc du an) ----
   ipcMain.handle('projects:list', () => listProjects())

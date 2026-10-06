@@ -592,6 +592,8 @@ def cli_status_route():
     """Trang thai CLI chinh chu (Claude Code / Codex) cho che do goi subscription."""
     body = request.get_json(force=True, silent=True) or {}
     name = body.get("name")
+    if body.get("fresh"):
+        cli_providers.reset_login_cache()
     if name:
         return jsonify({"ok": True, "status": {name: cli_providers.cli_status(name)}})
     return jsonify({"ok": True, "status": cli_providers.all_status()})

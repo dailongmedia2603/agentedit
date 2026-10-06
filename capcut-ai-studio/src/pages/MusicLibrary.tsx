@@ -16,6 +16,7 @@ import {
   X
 } from 'lucide-react'
 import { Badge, Button, Card, CardBody, Spinner } from '@/components/ui/primitives'
+import { useLibrarySync } from '../lib/useLibrarySync'
 import { cn } from '@/lib/utils'
 import { fileUrl } from '../lib/platform'
 
@@ -100,6 +101,9 @@ export default function MusicLibraryPage() {
     const r = await window.studio.musicSettings(patch)
     if (r.ok && r.settings) setSt(r.settings)
   }
+
+  const bgSync = useLibrarySync(load)
+  const syncBusy = syncing || bgSync
 
   const doSync = async () => {
     setSyncing(true)
@@ -186,9 +190,9 @@ export default function MusicLibraryPage() {
           </p>
           {msg && <p className="mt-1 text-xs text-brand-600">{msg}</p>}
         </div>
-        <Button variant="outline" onClick={doSync} disabled={syncing} className="shrink-0">
-          {syncing ? <Spinner className="h-4 w-4" /> : <RefreshCw className="h-4 w-4" />}
-          {syncing ? 'Đang đồng bộ…' : 'Đồng bộ kho'}
+        <Button variant="outline" onClick={doSync} disabled={syncBusy} className="shrink-0">
+          {syncBusy ? <Spinner className="h-4 w-4" /> : <RefreshCw className="h-4 w-4" />}
+          {syncBusy ? 'Đang đồng bộ…' : 'Đồng bộ kho'}
         </Button>
       </div>
 
