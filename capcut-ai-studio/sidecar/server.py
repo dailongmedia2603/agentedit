@@ -1586,6 +1586,8 @@ def _remotion_autoplan(b):
             "km": key_moments_data, "story": story, "hook": hook_info, "hints": hints, "cat": rm_fp,
             "ref": providers.phong_cach_cho_buoc(reference_analysis, "captions"),
             "layers": layer_texts, "sub": (kit or {}).get("subtitle"),
+            # luat karaoke (so chu / luc + danh muc hieu ung, vien) nam trong prompt R5 -> doi thi R5 chay lai
+            "kara": [remotion_plan.KARAOKE_VER, plan_guard.KARAOKE_MAX_WORDS],
         }
         if brand_guide.view(brand, "captions"):
             r5_key["brand"] = brand_guide.view(brand, "captions")

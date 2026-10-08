@@ -319,6 +319,10 @@ RULES = [
     _r("MIN_CAPTION_SEC", "caption", "Chữ hiện ít nhất",
        "Khi tránh đoạn meme cắt vào, chữ bị cắt đuôi mà còn ngắn hơn mức này thì được dời cả khối ra sau meme; "
        "vẫn không đủ chỗ thì bỏ hẳn (không để lại chữ chớp nhoáng không kịp đọc).", 0.2, 3, "giây"),
+    _r("KARAOKE_MAX_WORDS", "caption", "Karaoke — số chữ mỗi lần",
+       "Phụ đề karaoke / bật từng chữ chỉ hiện tối đa bấy nhiêu chữ một lúc: nói tới đâu chữ đổi màu tới đó, nói xong "
+       "cụm thì cụm tiếp theo hiện ra. Hệ thống tự chia câu theo mốc từng chữ (Whisper), ưu tiên ngắt ở dấu câu / chỗ "
+       "ngừng nói và chia đều (7 chữ → 3+2+2, không để 1 chữ lẻ).", 1, 8, "chữ"),
     # --- hook
     _r("HOOK_MIN_SEC", "hook", "Hook ngắn nhất", "Hook ngắn hơn mức này bị coi là lỗi.", 0.5, 10, "giây"),
     _r("HOOK_MAX_SEC", "hook", "Hook dài nhất", "Hook dài hơn mức này sẽ bị cắt ngắn.", 1, 20, "giây"),

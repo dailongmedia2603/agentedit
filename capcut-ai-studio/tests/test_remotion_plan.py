@@ -59,6 +59,7 @@ def base_plan(src, meme, sfx):
         "hook": {"source_id": "source_1", "src_start": 17.0, "src_end": 20.8, "caption": "SỐC CHƯA",
                  "rm_transition": {"type": "zoom_in", "duration": 0.35}},
         "caption_theme": {"style_body": "karaoke", "style_hero": "hero_title", "font_body": "lexend",
+                          "karaoke_fx": "fill_sweep", "text_edge": "soft_shadow", "weight_body": 600,
                           "font_hero": "anton", "accent": "#FF3B5C"},
         "captions": [
             {"text": "Mở đầu câu chuyện", "role": "support", "source_id": "source_1", "src_start": 0.2, "src_end": 2.0},
@@ -141,7 +142,8 @@ def main():
         check("phu de khong chong gio", all(a["end"] <= b["start"] + 1e-3 for a, b in zip(sup, sup[1:])),
               [(c["text"], c["start"], c["end"]) for c in sup])
         hero = [c for c in caps if c["text"] == "CON SỐ"][0]
-        phu = [c for c in caps if c["text"] == "câu phụ cùng lúc"][0]
+        # "câu phụ cùng lúc" (4 chu, karaoke) -> luat karaoke chia 2+2: lay cum dau
+        phu = [c for c in caps if c["text"] == "câu phụ"][0]
         check("hero va phu de cung luc bi tach vung", abs(hero["y"] - phu["y"]) >= 0.24, (hero["y"], phu["y"]))
         check("hero uppercase + font hero", hero["uppercase"] and hero["font"] == "anton", hero)
         check("phu de dung font body", phu["font"] == "lexend", phu["font"])
@@ -216,9 +218,10 @@ def main():
         }
         sp2, rep2 = RP.build_spec(p2)
         by = {c["text"]: c for c in sp2["captions"]}
-        c17 = by.get("Tui sử dụng thấy ổn")
+        # 5 chu karaoke -> luat <= 3 chu chia 3+2: cum dau bat dau 17.0, cum cuoi het 19.5
+        c17, c17b = by.get("Tui sử dụng"), by.get("thấy ổn")
         check("src 17.0 (ranh gioi) -> timeline 17.0, khong phai 1.2",
-              c17 and abs(c17["start"] - 17.0) < 0.01 and abs(c17["end"] - 19.5) < 0.01, c17)
+              c17 and c17b and abs(c17["start"] - 17.0) < 0.01 and abs(c17b["end"] - 19.5) < 0.01, (c17, c17b))
         check("caption trung lap bi BO, khong bi doi gio", "trùng lặp" not in by, list(by))
         check("caption sau giu dung gio loi noi", by.get("câu sau") and abs(by["câu sau"]["start"] - 19.5) < 0.01,
               by.get("câu sau"))
@@ -231,6 +234,55 @@ def main():
         au_plan = [a for a in sp2["audio"] if a["path"] == sfx]
         check("SFX o ranh gioi 17.0 -> dau doan sau (17.0)", len(au_plan) == 1 and abs(au_plan[0]["start"] - 17.0) < 0.01,
               sp2["audio"])
+
+        print("[6c] LUAT karaoke <= 3 chu / luc + plan chon font / hieu ung (user 2026-10-08)")
+        import plan_guard
+        check("quy tac mac dinh 3 chu", plan_guard.KARAOKE_MAX_WORDS == 3, plan_guard.KARAOKE_MAX_WORDS)
+        sup_k = [c for c in caps if c["role"] == "support" and c["style"] in RP.KARAOKE_STYLES]
+        check("moi phu de karaoke <= 3 chu", sup_k and all(len(c["text"].split()) <= 3 for c in sup_k),
+              [c["text"] for c in sup_k])
+        check("moi phu de karaoke co moc tung chu khop chu", all(
+            c["words"] and [w["text"] for w in c["words"]] == c["text"].split() for c in sup_k),
+              [(c["text"], c["words"]) for c in sup_k])
+        check("cum karaoke noi tiep, khong chong gio", all(
+            a["end"] <= b["start"] + 1e-3 for a, b in zip(sup_k, sup_k[1:])), [(c["text"], c["start"], c["end"]) for c in sup_k])
+        check("phu de lay hieu ung / vien / do dam plan chon", all(
+            c["fx"] == "fill_sweep" and c["edge"] == "soft_shadow" and c.get("weight") == 600 for c in sup_k),
+              [(c.get("fx"), c.get("edge"), c.get("weight")) for c in sup_k])
+        words = [{"text": w, "start": i * 0.3, "end": i * 0.3 + 0.25} for i, w in
+                 enumerate("Và Thanh nhận ra một điều lạ".split())]
+        g = RP.karaoke_groups(words, 3)
+        check("7 chu -> 3+2+2 (khong de 1 chu le)", [len(x) for x in g] == [3, 2, 2], g)
+        w2 = [dict(w) for w in words[:5]]
+        w2[1]["text"] = "Thanh,"
+        check("ngat o dau phay truoc", [len(x) for x in RP.karaoke_groups(w2, 3)] == [2, 3], RP.karaoke_groups(w2, 3))
+        w3 = [dict(w) for w in words[:4]]
+        for w in w3[3:]:
+            w["start"] += 1.0
+            w["end"] += 1.0
+        check("ngat o cho ngung noi", [len(x) for x in RP.karaoke_groups(w3, 3)] == [3, 1], RP.karaoke_groups(w3, 3))
+        cap = {"id": "cap9", "text": " ".join(w["text"] for w in words), "start": 0.0, "end": 2.2, "role": "support",
+               "style": "karaoke", "words": words, "emphasis": ["điều"]}
+        ch = []
+        parts = RP.split_karaoke([cap], ch)
+        check("tach dung 3 cum, id rieng", [p["id"] for p in parts] == ["cap9-1", "cap9-2", "cap9-3"], parts)
+        check("cum dau giu gio bat dau, cum cuoi giu gio ket thuc",
+              parts[0]["start"] == 0.0 and parts[-1]["end"] == 2.2, parts)
+        check("cum sau hien dung luc noi chu dau cua no", abs(parts[1]["start"] - words[3]["start"]) < 1e-6, parts[1])
+        check("nhan manh di theo cum chua chu do", parts[2]["emphasis"] == ["điều"] and parts[0]["emphasis"] == [], parts)
+        check("chay lai giu nguyen (idempotent)", RP.split_karaoke(parts, []) == parts)
+        nw = RP.split_karaoke([dict(cap, words=None)], [])
+        check("khong co moc Whisper -> van chia theo do dai chu", len(nw) == 3 and all(p["words"] for p in nw), nw)
+        ob = dict(cap, style="outline_bold")
+        check("kieu khong phai karaoke -> giu nguyen", RP.split_karaoke([ob], []) == [ob])
+        check("prompt R5 co luat karaoke + danh muc", all(k in RP.karaoke_note() for k in (
+            "TOI DA 3 CHU", "karaoke_fx", "text_edge", "weight_body", "fill_sweep", "soft_shadow")))
+        for fx in RP.KARAOKE_FX:
+            check("hieu ung karaoke %s duoc ve" % fx["id"], ("'%s'" % fx["id"]) in open(os.path.join(
+                HERE, "..", "remotion-src", "Captions.tsx"), encoding="utf-8").read())
+        for ed in RP.TEXT_EDGES:
+            check("vien chu %s duoc ve" % ed["id"], ("'%s'" % ed["id"]) in open(os.path.join(
+                HERE, "..", "remotion-src", "Captions.tsx"), encoding="utf-8").read())
 
         print("[7] catalog <-> composition")
         cat = RP.load_catalog()

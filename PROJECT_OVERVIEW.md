@@ -204,6 +204,17 @@ gio cu giu o `start_gemini`, chu Whisper o `asr_words`. Cache: ~/.capcut-studio/
 Luong Remotion con bam tung caption vao chu Whisper (karaoke dung chu). Do lai tren MP4 xuat
 ra: caption lech loi noi trung vi -0.04s. Test: `tests/test_speech_align.py`.
 
+LUAT KARAOKE (user 2026-10-08): phu de kieu `karaoke` / `pop_words` chi hien toi da
+`plan_guard.KARAOKE_MAX_WORDS` (3, sua o menu Quy tac) chu mot luc. `remotion_plan.split_karaoke` chia
+caption dai thanh caption con `capN-k` theo moc tung chu (ngat o dau cau / cho ngung >= 0.35s truoc, roi
+chia deu: 7 -> 3+2+2), chay trong build_spec truoc ne chu noi bat / bao ve mat va chay lai sau khi bo
+phong cach doi kieu phu de (idempotent). R5 chon them trong `caption_theme`: `karaoke_fx` (color_pop |
+fill_sweep | box | underline | glow | lift), `text_edge` (soft_shadow | thin_outline | bold_outline),
+`weight_body` — danh muc o `remotion_plan.KARAOKE_FX/TEXT_EDGES` (KHONG trong remotion_catalog.json de
+khong doi khoa cache R4; doi thi tang `KARAOKE_VER`). Spec caption mang `fx` / `edge` / `weight`; spec cu
+khong co -> Captions.tsx ve y nhu truoc (vien day). Luat + danh muc nam o `karaoke_note()` noi vao prompt
+R5 bang code (van ap khi user da sua prompt R5).
+
 ## 11b. Video gui Gemini: nen 720p + cat THEO DUNG LUONG (sidecar/gemini_media.py, 2026-09-26)
 
 Ly do: gui file goc (vd 138 MB HEVC 1080p) qua proxy = 1 request base64 ~184 MB -> timeout / 502;

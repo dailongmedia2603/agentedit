@@ -24,6 +24,7 @@ import unicodedata
 # HANG SO
 # ---------------------------------------------------------------------------
 MIN_CAPTION_SEC = 0.6   # caption ngan hon se doc khong kip
+KARAOKE_MAX_WORDS = 3   # LUAT (user 10-08): phu de karaoke chi hien toi da 3 chu 1 luc, noi xong cum moi hien cum sau
 MIN_VISUAL_SEC = 0.3    # effect/card ngan hon muc nay coi nhu khong hien gi
 MIN_ELEMENT_SEC = 0.2
 SFX_MIN_GAP = 0.4
@@ -1134,7 +1135,7 @@ def clear_over_inserts(plan, changes):
 OVERRIDES_PATH = os.path.join(os.path.expanduser("~"), ".capcut-studio", "prompt_overrides.json")
 
 EDITABLE_RULES = (
-    "MIN_CAPTION_SEC",
+    "MIN_CAPTION_SEC", "KARAOKE_MAX_WORDS",
     "HOOK_MIN_SEC", "HOOK_MAX_SEC", "HOOK_IDEAL.0", "HOOK_IDEAL.1",
     "HOOK_REPEAT_GUARD_SEC",
     "MAX_INSERTS", "INSERT_MIN_GAP", "INSERT_MIN_SEC", "INSERT_MAX_SEC",

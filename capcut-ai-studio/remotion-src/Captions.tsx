@@ -4,7 +4,7 @@
 import React from 'react'
 import { AbsoluteFill, spring, useCurrentFrame, useVideoConfig } from 'remotion'
 import type { RSCaption, RSWord } from './types'
-import { fontOf } from './fonts'
+import { fontOf, nearestWeight } from './fonts'
 import { captionFrac, clamp01, easeOut, pxScale } from './look'
 
 const MAX_LINES: Record<string, number> = { hero: 3, support: 3, micro: 2 }
@@ -63,6 +63,30 @@ function luminance(hex: string): number {
 
 const readableOn = (bg: string) => (luminance(bg) > 0.4 ? '#111111' : '#FFFFFF')
 
+/** Vien / bong chu cua phu de karaoke (plan chon). Khong khai = vien day nhu ban cu (spec cu render y nhu truoc). */
+function edgeStyle(edge: string | undefined, size: number): React.CSSProperties {
+  if (edge === 'soft_shadow') {
+    return {
+      WebkitTextStroke: '0px transparent',
+      textShadow: `0 ${size * 0.04}px ${size * 0.16}px rgba(0,0,0,0.72), 0 0 ${size * 0.05}px rgba(0,0,0,0.45)`
+    }
+  }
+  if (edge === 'thin_outline') {
+    return {
+      WebkitTextStroke: `${Math.max(1.5, size * 0.045)}px rgba(0,0,0,0.92)`,
+      paintOrder: 'stroke fill',
+      textShadow: `0 ${size * 0.04}px ${size * 0.1}px rgba(0,0,0,0.45)`
+    }
+  }
+  // 'bold_outline' (va spec cu chua co edge): vien den day nhu truoc
+  const stroke = Math.max(2, size * 0.085)
+  return {
+    WebkitTextStroke: `${stroke}px #000`,
+    paintOrder: 'stroke fill',
+    textShadow: `0 ${size * 0.06}px ${size * 0.14}px rgba(0,0,0,0.55)`
+  }
+}
+
 const Caption: React.FC<{ c: RSCaption }> = ({ c }) => {
   const frame = useCurrentFrame()
   const { fps, width: W, height: H } = useVideoConfig()
@@ -73,7 +97,7 @@ const Caption: React.FC<{ c: RSCaption }> = ({ c }) => {
   const dur = Math.max(0.1, c.end - c.start)
   const f = fontOf(c.font)
   const size = fitSize(c, W, H)
-  const weight = f.weights[c.role] ?? 700
+  const weight = c.weight ? nearestWeight(c.font, c.weight, c.role) : f.weights[c.role] ?? 700
   const text = c.uppercase ? c.text.toLocaleUpperCase('vi') : c.text
   // moc tung chu co san (Whisper) giu chu goc -> viet hoa o day cho giong ca cau
   const words = wordTimings({ ...c, text }).map((w) =>
@@ -163,24 +187,113 @@ const Caption: React.FC<{ c: RSCaption }> = ({ c }) => {
     case 'karaoke':
     case 'pop_words': {
       const pop = c.style === 'pop_words'
+      const fx = pop ? 'pop' : c.fx || 'color_pop'
+      const edge = edgeStyle(c.edge, size)
       anim = { opacity: (pop ? 1 : fadeIn) * exit }
+      // box: moi chu cung le ngang (trong suot khi khong sang) -> hop bat len khong lam xo chu
+      const padX = fx === 'box' ? '0.14em' : 0
       body = (
-        <span style={outlined}>
+        <span>
           {words.map((w, i) => {
             const active = t >= w.start && t < w.end
             const said = t >= w.start
             const wLocal = Math.round((t - w.start) * fps)
             const sp = said ? spring({ frame: wLocal, fps, config: { damping: 12, stiffness: 220, mass: 0.5 } }) : 0
+            const prog = clamp01((t - w.start) / Math.max(0.05, w.end - w.start))
+            const hot = active || (isEmph(w.text) && said)
             const style: React.CSSProperties = {
+              ...edge,
               display: 'inline-block',
-              color: active || (isEmph(w.text) && said) ? c.accent : c.color,
-              transform: pop ? `scale(${said ? 0.5 + 0.5 * sp : 0.5})` : `scale(${active ? 1.08 : 1})`,
-              opacity: pop ? (said ? 1 : 0) : said ? 1 : 0.82,
-              marginRight: i < words.length - 1 ? '0.26em' : 0
+              position: 'relative',
+              color: hot ? c.accent : c.color,
+              opacity: said ? 1 : 0.82,
+              padding: `0 ${padX}`,
+              marginRight: i < words.length - 1 ? (fx === 'box' ? '0.08em' : '0.26em') : 0
+            }
+            let extra: React.ReactNode = null
+            if (fx === 'pop') {
+              style.transform = `scale(${said ? 0.5 + 0.5 * sp : 0.5})`
+              style.opacity = said ? 1 : 0
+            } else if (fx === 'color_pop') {
+              style.transform = `scale(${active ? 1.08 : 1})`
+            } else if (fx === 'fill_sweep') {
+              // chu nen mau thuong + ban sao mau nhan bi cat theo tien do noi (trai -> phai)
+              const fill = said ? (active ? prog : 1) : 0
+              style.color = c.color
+              style.opacity = 1
+              extra = (
+                <span
+                  aria-hidden
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    color: c.accent,
+                    clipPath: `inset(-20% ${(1 - fill) * 100}% -20% 0)`,
+                    textShadow: 'none'
+                  }}
+                >
+                  {w.text}
+                </span>
+              )
+            } else if (fx === 'box') {
+              const on = active ? 0.85 + 0.15 * sp : 0
+              style.color = active ? readableOn(c.accent) : isEmph(w.text) && said ? c.accent : c.color
+              style.opacity = 1
+              if (active) {
+                style.WebkitTextStroke = '0px transparent'
+                style.textShadow = 'none'
+              }
+              extra = active ? (
+                <span
+                  aria-hidden
+                  style={{
+                    position: 'absolute',
+                    inset: '0.02em 0',
+                    background: c.accent,
+                    borderRadius: '0.22em',
+                    transform: `scale(${on})`,
+                    zIndex: -1,
+                    boxShadow: `0 ${size * 0.05}px ${size * 0.16}px rgba(0,0,0,0.35)`
+                  }}
+                />
+              ) : null
+              style.zIndex = 0
+            } else if (fx === 'underline') {
+              const bar = said ? (active ? easeOut(prog) : isEmph(w.text) ? 1 : 0) : 0
+              style.color = active || (isEmph(w.text) && said) ? c.accent : c.color
+              extra = bar > 0 ? (
+                <span
+                  aria-hidden
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    bottom: '-0.06em',
+                    height: '0.11em',
+                    width: `${bar * 100}%`,
+                    background: c.accent,
+                    borderRadius: '0.06em',
+                    boxShadow: `0 ${size * 0.02}px ${size * 0.06}px rgba(0,0,0,0.45)`
+                  }}
+                />
+              ) : null
+            } else if (fx === 'glow') {
+              if (active) {
+                style.textShadow = [edge.textShadow, `0 0 ${size * 0.22}px ${c.accent}`, `0 0 ${size * 0.45}px ${c.accent}`]
+                  .filter(Boolean)
+                  .join(', ')
+              }
+            } else if (fx === 'lift') {
+              const up = active ? sp : 0
+              style.transform = `translateY(${-0.1 * up}em) scale(${1 + 0.12 * up})`
+              style.opacity = said ? 1 : 0.55
+              style.color = active ? c.accent : isEmph(w.text) && said ? c.accent : c.color
             }
             return (
               <span key={i} style={style}>
+                {extra && fx === 'box' ? extra : null}
                 {w.text}
+                {extra && fx !== 'box' ? extra : null}
               </span>
             )
           })}

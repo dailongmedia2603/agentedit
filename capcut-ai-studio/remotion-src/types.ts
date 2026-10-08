@@ -265,6 +265,12 @@ export interface RSCaption {
   uppercase: boolean
   /** Moc tung chu (karaoke). null -> composition tu chia deu theo do dai chu. */
   words: RSWord[] | null
+  /** Hieu ung chu DANG NOI cua kieu karaoke (plan chon): color_pop | fill_sweep | box | underline | glow | lift */
+  fx?: string
+  /** Vien / bong chu cua karaoke + pop_words: soft_shadow | thin_outline | bold_outline (khong co = bold, nhu ban cu) */
+  edge?: string
+  /** Do dam phu de plan chon (lay do dam co that gan nhat cua font) */
+  weight?: number
 }
 
 export interface RSEffect {

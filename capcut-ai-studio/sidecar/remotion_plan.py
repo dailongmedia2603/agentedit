@@ -348,6 +348,49 @@ _RM_CAPTION_MOTION_NOTE = """
 - Doan co lop thay_phu_de: van viet phu de binh thuong (he thong tu an phu de trong luc chu nhan hien)."""
 
 
+# KARAOKE (user 2026-10-08): chu "tho" -> plan tu chon font + do dam + hieu ung chu dang noi + kieu vien cho phu de.
+# Danh muc rieng (khong nam trong remotion_catalog.json de khong doi khoa cache R4). Doi danh muc / luat -> tang KARAOKE_VER.
+KARAOKE_VER = 1
+KARAOKE_STYLES = ("karaoke", "pop_words")
+KARAOKE_FX = [
+    {"id": "color_pop", "look": "chu DANG NOI doi sang mau nhan + nay nhe, chu chua noi mo nhe", "use_when": "nhanh, vui, talking-head pho thong"},
+    {"id": "fill_sweep", "look": "mau nhan CHAY DAN tu trai sang phai trong tung chu dung nhip noi (karaoke that), chu da noi giu mau nhan",
+     "use_when": "ke chuyen, cam xuc, nhip vua — muot va sang nhat"},
+    {"id": "box", "look": "hop bo tron mau nhan bat len sau chu dang noi, chu tren hop doi mau tuong phan",
+     "use_when": "trend TikTok, nen video roi/nhieu chi tiet, can doc ro"},
+    {"id": "underline", "look": "vach mau nhan chay duoi chu dang noi, chu dang noi doi mau nhan", "use_when": "huong dan, giai thich, tone nghiem tuc / chuyen gia"},
+    {"id": "glow", "look": "chu dang noi sang len mau nhan (phat sang mem)", "use_when": "dem, cong nghe, lang man, cam xuc manh"},
+    {"id": "lift", "look": "chu dang noi nhac len + to hon, chu chua noi mo, chu da noi giu mau thuong", "use_when": "nang luong cao, hai, meme"},
+]
+TEXT_EDGES = [
+    {"id": "soft_shadow", "look": "KHONG vien, chi bong do mem — sach, sang trong (can nen khong qua sang)"},
+    {"id": "thin_outline", "look": "vien toi MONG + bong nhe — gon, tinh, doc ro tren moi nen (mac dinh)"},
+    {"id": "bold_outline", "look": "vien den DAY + bong dam — kieu meme/TikTok manh, de bi tho neu chu da dam"},
+]
+KARAOKE_FX_DEFAULT, TEXT_EDGE_DEFAULT = "color_pop", "thin_outline"
+_KARAOKE_NOTE = """
+
+# PHU DE KARAOKE (luat, bat buoc)
+- Kieu karaoke / pop_words: man hinh CHI HIEN TOI DA %(n)d CHU mot luc — noi toi dau chu doi mau toi do, noi xong %(n)d chu
+  thi %(n)d chu tiep theo hien ra. He thong TU CHIA cum theo moc tung chu: van viet cum phu de theo cau/y binh thuong,
+  KHONG tu cat chu thanh cum %(n)d chu, KHONG bo chu de cho vua.
+- Chon them trong "caption_theme" cho PHU DE (theo phong cach video mau neu co; khong co thi theo noi dung + tone):
+  "font_body": font phu de — chu nho doc nhanh: uu tien sans gon, net deu (tranh font qua rong / qua dam lam chu tho).
+  "weight_body": 500 | 600 | 700 | 800 | 900 — do dam phu de (chu nho tren dien thoai: 600-800; 900 chi khi tone rat manh).
+  "karaoke_fx": hieu ung chu dang noi — chon 1 id trong KARAOKE_FX duoi day.
+  "text_edge": vien/bong chu — chon 1 id trong TEXT_EDGES duoi day (vien day + chu dam = tho).
+  Font + do dam + vien + hieu ung phai HOP NHAU va hop tone (sang trong: soft_shadow/thin_outline + fill_sweep/underline;
+  manh/hai: bold_outline + lift/box).
+KARAOKE_FX: %(fx)s
+TEXT_EDGES: %(edges)s"""
+
+
+def karaoke_note():
+    return _KARAOKE_NOTE % {
+        "n": max(1, int(plan_guard.KARAOKE_MAX_WORDS)),
+        "fx": json.dumps(KARAOKE_FX, ensure_ascii=False), "edges": json.dumps(TEXT_EDGES, ensure_ascii=False)}
+
+
 def gpt_rm_captions(segments, transcript_data, emotion_map_data, faces_regions, key_moments_data,
                     reference_analysis=None, story=None, hook=None, log=None, layers=None, subtitle_style=None,
                     brand=None):
@@ -391,7 +434,7 @@ def gpt_rm_captions(segments, transcript_data, emotion_map_data, faces_regions, 
     import canvas
     sys_prompt = (_p("_RM_CAPTION_SYSTEM") + (_RM_CAPTION_MOTION_NOTE if motion else "")
                   + "\n\n# DANH MUC REMOTION (chi dung id trong nay):\n" + _catalog_block() + creative.luat("R5")
-                  + canvas.note("captions"))
+                  + canvas.note("captions") + karaoke_note())
     import brand_guide
     if brand_guide.view(brand, "captions"):
         # Brand Guideline: font + mau thuong hieu cho phu de / chu hero theo loi noi (code ep lai o build_spec)
@@ -660,6 +703,11 @@ def _captions_to_spec(p, theme, duration, changes, issues):
     font_hero = theme.get("font_hero") if theme.get("font_hero") in fonts else "anton"
     up_hero = theme.get("uppercase_hero")
     up_hero = True if up_hero is None else bool(up_hero)
+    fx_ids, edge_ids = {x["id"] for x in KARAOKE_FX}, {x["id"] for x in TEXT_EDGES}
+    k_fx = theme.get("karaoke_fx") if theme.get("karaoke_fx") in fx_ids else KARAOKE_FX_DEFAULT
+    edge = theme.get("text_edge") if theme.get("text_edge") in edge_ids else TEXT_EDGE_DEFAULT
+    w_body = providers._f(theme.get("weight_body"), 0)
+    w_body = int(_clamp(round(w_body / 100) * 100, 400, 900)) if w_body else None
 
     rows = []
     import motion_design as _MD
@@ -713,8 +761,12 @@ def _captions_to_spec(p, theme, duration, changes, issues):
             "uppercase": bool(c.get("uppercase")) if c.get("uppercase") is not None else (
                 role == "hero" and up_hero),
             "words": [dict(w) for w in c["_words"]] if c.get("_words") else None,
+            "fx": c.get("karaoke_fx") if c.get("karaoke_fx") in fx_ids else k_fx,
+            "edge": c.get("text_edge") if c.get("text_edge") in edge_ids else edge,
             "_anchor": c.get("anchor"),
         })
+        if w_body and role == "support":
+            rows[-1]["weight"] = w_body
     rows.sort(key=lambda r: (r["start"], 0 if r["role"] == "hero" else 1))
 
     # --- khong chong gio trong CUNG mot lop (phu de voi phu de, hero voi hero) ---
@@ -789,6 +841,90 @@ def _captions_to_spec(p, theme, duration, changes, issues):
         issues.append({"severity": "low", "area": "caption", "problem": "Video khong co caption nao"})
     for o in out:
         o.pop("_anchor", None)
+    return out
+
+
+def _even_words(c):
+    """Moc tung chu khi khong co Whisper — GIONG wordTimings() trong Captions.tsx (chu dai noi lau hon)."""
+    toks = str(c.get("text") or "").split()
+    span = max(0.1, (c["end"] - c["start"]) * 0.92)
+    wts = [max(2, len(w) + 1) for w in toks]
+    tot, cur, out = float(sum(wts)) or 1.0, c["start"], []
+    for w, k in zip(toks, wts):
+        d = span * k / tot
+        out.append({"text": w, "start": round(cur, 3), "end": round(cur + d, 3)})
+        cur += d
+    return out
+
+
+KARAOKE_PAUSE_SEC = 0.35        # ngung noi giua 2 chu dai hon -> ngat cum o do
+_END_PUNCT = re.compile(r"[.,!?;:…]+[\"'”’)]*$")
+
+
+def karaoke_groups(words, n):
+    """Chia chu thanh cum <= n chu: ngat o dau cau / cho ngung noi truoc, roi chia DEU tung doan
+    (7 chu, n=3 -> 3+2+2; 4 -> 2+2) de khong con 1 chu le loi. Tra list cac list chi so."""
+    runs, cur = [], []
+    for i, w in enumerate(words):
+        cur.append(i)
+        nxt = words[i + 1] if i + 1 < len(words) else None
+        pause = nxt is not None and float(nxt.get("start", 0)) - float(w.get("end", 0)) >= KARAOKE_PAUSE_SEC
+        if nxt is None or pause or _END_PUNCT.search(str(w.get("text") or "")):
+            runs.append(cur)
+            cur = []
+    groups = []
+    for r in runs:
+        k = -(-len(r) // n)
+        base, extra = divmod(len(r), k)
+        pos = 0
+        for j in range(k):
+            sz = base + (1 if j < extra else 0)
+            groups.append(r[pos:pos + sz])
+            pos += sz
+    return groups
+
+
+def split_karaoke(caps, changes):
+    """LUAT (user 2026-10-08): phu de karaoke / pop_words chi hien toi da KARAOKE_MAX_WORDS chu mot luc — noi toi dau
+    chu doi mau toi do, noi xong cum thi cum sau hien ra. Tach 1 caption dai thanh cac caption con noi tiep nhau theo
+    moc tung chu (Whisper; khong co thi chia theo do dai chu nhu renderer). Chay lai nhieu lan van giu nguyen."""
+    n = max(1, int(plan_guard.KARAOKE_MAX_WORDS))
+    out, n_split = [], 0
+    for c in caps or []:
+        words = [w for w in (c.get("words") or []) if isinstance(w, dict) and str(w.get("text") or "").strip()]
+        if c.get("style") not in KARAOKE_STYLES or len(words or str(c.get("text") or "").split()) <= n:
+            out.append(c)
+            continue
+        words = [dict(w) for w in words] if words else _even_words(c)
+        for w in words:
+            w["start"] = round(_clamp(float(w["start"]), c["start"], c["end"]), 3)
+            w["end"] = round(_clamp(float(w["end"]), w["start"], c["end"]), 3)
+        groups = karaoke_groups(words, n)
+        starts = [c["start"]] + [words[g[0]]["start"] for g in groups[1:]]
+        emph = {_norm_word(x) for e in c.get("emphasis") or [] for x in str(e).split()} - {""}
+        parts = []
+        for k, g in enumerate(groups):
+            ws = [words[i] for i in g]
+            st = starts[k]
+            if k + 1 < len(groups):
+                nxt = starts[k + 1]
+                # ngung ngan -> giu cum cu toi khi cum moi hien (do nhap nhay); ngung dai -> o lai mot chut roi tat
+                en = nxt if nxt - ws[-1]["end"] <= CAPTION_BRIDGE_SEC else min(nxt, ws[-1]["end"] + CAPTION_LINGER_SEC)
+            else:
+                en = c["end"]
+            if en - st < 0.05 and parts:
+                # cum qua ngan (moc chu dinh nhau): gop vao cum truoc thay vi chop 1 khung hinh
+                parts[-1]["words"] += ws
+                parts[-1]["text"] = " ".join(w["text"] for w in parts[-1]["words"])
+                parts[-1]["end"] = round(max(parts[-1]["end"], en), 3)
+                continue
+            ce = [w["text"] for w in ws if _norm_word(w["text"]) in emph]
+            parts.append(dict(c, id="%s-%d" % (c["id"], len(parts) + 1), text=" ".join(w["text"] for w in ws),
+                              start=round(st, 3), end=round(max(en, st + 0.05), 3), words=ws, emphasis=ce))
+        out.extend(parts)
+        n_split += 1
+    if n_split:
+        changes.append("luat karaoke: %d phu de chia thanh cum <= %d chu (noi xong cum moi hien cum sau)" % (n_split, n))
     return out
 
 
@@ -1358,6 +1494,8 @@ def _build_spec(plan, log=None):
         "scenes": scenes,
         "layers": layers,
     }
+    # LUAT karaoke <= KARAOKE_MAX_WORDS chu / luc: chia TRUOC ne chu noi bat / bao ve mat (tinh tren khoi chu that)
+    spec["captions"] = split_karaoke(spec["captions"], changes)
     if p.get("brand_guide"):
         # mau code tu sinh khi dung (nen the lay tu khung video, mau tang phu...) -> he mau thuong hieu; trung tinh giu
         import brand_guide
@@ -1407,6 +1545,8 @@ def _build_spec(plan, log=None):
                 for w in c.get("words") or []:
                     if isinstance(w, dict) and w.get("text"):
                         w["text"] = f_(w["text"])
+        # bo phong cach co the vua doi kieu phu de sang karaoke -> chia lai (cum da chia giu nguyen)
+        spec["captions"] = split_karaoke(spec["captions"], changes)
         MD.dodge_subtitles(spec, changes)
         try:
             MD.protect_face(spec, changes)     # kiem lai sau khi phu de doi cho (phu de o hook)
@@ -1500,5 +1640,5 @@ def log_note(msg):
         pass
 
 
-__all__ = ["load_catalog", "gpt_rm_visual", "gpt_rm_captions", "apply_visual", "build_spec",
+__all__ = ["load_catalog", "gpt_rm_visual", "gpt_rm_captions", "split_karaoke", "karaoke_note", "apply_visual", "build_spec",
            "hook_caption", "transition_goi_y_hook", "probe", "summarize", "fingerprint", "config"]
