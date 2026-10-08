@@ -1271,6 +1271,10 @@ def _build_spec(plan, log=None):
     import canvas as CV
     W, H = CV.size()
     p["canvas"] = {"w": W, "h": H}
+    # VIDEO NHO HON KHUNG (user 2026-10-08 "edit xong mo hon goc"): Chrome phong to kieu song tuyen -> mo. Render tu ban
+    # phong lanczos + lam net (media_sharp.py), tao 1 lan; do dac / cat van tren file goc (orig_path)
+    import media_sharp
+    media_sharp.apply(p, W, H, changes, log=log)
     fps = int(p.get("fps") or FPS)
     if p.get("brand_guide"):
         # BRAND GUIDELINE: ep font + ma mau thuong hieu len lop chu / phu de / nen / bo phong cach TRUOC khi dung (do

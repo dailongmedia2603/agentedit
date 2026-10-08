@@ -227,6 +227,11 @@ def working_sources(source_videos, log=None):
             if wp != orig:
                 sv["orig_path"] = orig
                 sv["path"] = wp
+            else:
+                # video SDR: ve LAI file goc — ban lam viec cu (ban net theo khung cu, ban nang giong) khong duoc dinh lai;
+                # cac khau sau (voice_boost, media_sharp) tu tinh lai tu day
+                sv["path"] = orig
+                sv.pop("orig_path", None)
         out.append(sv)
     return out
 

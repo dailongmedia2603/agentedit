@@ -215,6 +215,16 @@ khong doi khoa cache R4; doi thi tang `KARAOKE_VER`). Spec caption mang `fx` / `
 khong co -> Captions.tsx ve y nhu truoc (vien day). Luat + danh muc nam o `karaoke_note()` noi vao prompt
 R5 bang code (van ap khi user da sua prompt R5).
 
+BAN LAM VIEC NET (user 2026-10-08 "edit xong mo hon goc", `sidecar/media_sharp.py`): do that render + nen KHONG
+lam mo (clip full khung VMAF 99.9 so goc, 6 cau hinh nen ~bang nhau); mo do Chrome PHONG TO video nguon nho hon
+khung (song tuyen: -15% do net so voi lanczos) + zoom diem cat (1.25 -> -35%). `_build_spec` (sau voice_boost)
+goi `media_sharp.apply`: nguon can phong > 5% de phu khung (luat `_fit_for`; video ngang trong khung doc chi
+thu nho -> bo qua) -> 1 lan tao ban lanczos x `ZOOM_ROOM` 1.15 (tran 2560) + unsharp 0.35, x264 crf 16, giu
+tieng (copy) + moc khung (`-fps_mode passthrough`). File `<key>_sharp.mp4` nam CHUNG `cache/media-sdr/` (cung co
+che don + UI coi la ban lam viec); `orig_path` = file goc nen do dac / cat van tren goc. `media_sdr.working_sources`
+nay luon ve lai file goc (ca video SDR) de ban lam viec cu khong dinh lai khi doi khung. Gia: ~0.45x thoi luong
+video (86s -> 39s), chi lan dau. Test: `tests/test_media_sharp.py`.
+
 ## 11b. Video gui Gemini: nen 720p + cat THEO DUNG LUONG (sidecar/gemini_media.py, 2026-09-26)
 
 Ly do: gui file goc (vd 138 MB HEVC 1080p) qua proxy = 1 request base64 ~184 MB -> timeout / 502;
