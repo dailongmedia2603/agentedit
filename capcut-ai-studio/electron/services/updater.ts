@@ -39,6 +39,8 @@ const BUNDLE_ID = 'app.autocapcut.desktop'
 
 export const UPDATED_FLAG = '--agent-edit-updated='
 export const UPDATE_FAILED_FLAG = '--agent-edit-update-failed='
+/** ban script MONG DOI mo len (version+build) — app tu so voi chinh no */
+export const UPDATE_TO_FLAG = '--agent-edit-update-to='
 export const SELFTEST_FLAG = '--update-selftest='
 const argOf = (flag: string) => process.argv.find((a) => a.startsWith(flag))?.slice(flag.length)
 
@@ -167,8 +169,15 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 // ---------------------------------------------------------------------------
 /** Goi 1 lan khi app ready. Dang ky voi license.ts, doc co "vua cap nhat", don file cu. */
 export function initUpdater(): void {
-  const from = argOf(UPDATED_FLAG)
-  const failed = argOf(UPDATE_FAILED_FLAG)
+  let from = argOf(UPDATED_FLAG)
+  let failed = argOf(UPDATE_FAILED_FLAG)
+  const expected = argOf(UPDATE_TO_FLAG)
+  // Script bao "da cap nhat" nhung app dang chay KHONG phai ban mong doi (vd bo cai Windows ghi nham thu muc) -> la LOI
+  if (from && expected && expected !== releaseKey(app.getVersion(), APP_BUILD)) {
+    log(`mo len van la ${app.getVersion()}+${APP_BUILD}, khong phai ban mong doi ${expected} -> cap nhat LOI`)
+    from = undefined
+    failed = expected
+  }
   const patch: Partial<UpdateState> = {}
   if (from) patch.justUpdated = { from: from.split('+')[0], to: app.getVersion() }
   if (failed) {
@@ -582,7 +591,14 @@ export async function runUpdateSelftest(cfgPath: string): Promise<void> {
     console.log('[UPD-SELFTEST]', JSON.stringify(r))
   }
   if (argOf(UPDATED_FLAG) || argOf(UPDATE_FAILED_FLAG)) {
-    out({ phase: argOf(UPDATED_FLAG) ? 'updated' : 'failed', from: argOf(UPDATED_FLAG) || '', failed: argOf(UPDATE_FAILED_FLAG) || '' })
+    const to = argOf(UPDATE_TO_FLAG)
+    const mismatch = !!to && to !== releaseKey(app.getVersion(), APP_BUILD)
+    out({
+      phase: argOf(UPDATED_FLAG) && !mismatch ? 'updated' : 'failed',
+      from: argOf(UPDATED_FLAG) || '',
+      to: to || '',
+      failed: argOf(UPDATE_FAILED_FLAG) || (mismatch ? `mo len ban khac ${to}` : '')
+    })
     app.exit(0)
     return
   }

@@ -37,7 +37,7 @@ check('build sai dang (-full) = cu nhat', C.compareRelease('1.2.3', '20261009-15
 check('version sai dang = 0.0.0', C.compareRelease('abc', '', '0.0.1', '') < 0)
 check('ten file an toan', C.safeFileName('Agent-Edit-1.2.3-b20261009-1530-mac-arm64.zip'))
 check('ten file co .. / thu muc -> tu choi', !C.safeFileName('../x.zip') && !C.safeFileName('a/b.zip') && !C.safeFileName('a..b') && !C.safeFileName('.x'))
-check('relaunchArgs bo -psn_ va co cap nhat cu', JSON.stringify(C.relaunchArgs(['--user-data-dir=/x y', '-psn_0_123', '--agent-edit-updated=1', '--agent-edit-update-failed=2', '--a'])) === '["--user-data-dir=/x y","--a"]')
+check('relaunchArgs bo -psn_ va co cap nhat cu', JSON.stringify(C.relaunchArgs(['--user-data-dir=/x y', '-psn_0_123', '--agent-edit-updated=1', '--agent-edit-update-failed=2', '--agent-edit-update-to=3', '--a'])) === '["--user-data-dir=/x y","--a"]')
 
 console.log('[2] kiem phieu')
 const kp = generateKeyPairSync('ed25519')
@@ -159,7 +159,7 @@ if (IS_MAC) {
     check('script thoat 0', r.code === 0, r)
     check('app o vi tri cu la BAN MOI', readFileSync(join(app, 'Contents', 'Resources', 'TAG'), 'utf-8') === 'NEW')
     check('ban cu (backup) da xoa', !existsSync(join(dir, 'stage', 'old.app')))
-    check('ban moi mo lai voi tham so cu (co dau cach) + co updated', launched.includes('--user-data-dir=/tmp/có dấu cách') && launched.includes('--x') && launched.includes('--agent-edit-updated=1.2.2+20261008-1500'), launched)
+    check('ban moi mo lai voi tham so cu (co dau cach) + co updated', launched.includes('--user-data-dir=/tmp/có dấu cách') && launched.includes('--x') && launched.includes('--agent-edit-updated=1.2.2+20261008-1500') && launched.includes('--agent-edit-update-to=1.3.0+20261009-1530'), launched)
     check('tien trinh con trong goi app bi dung', !alive(helper.pid!), helper.pid)
     check('nhat ky ghi OK', /OK: ban moi da mo/.test(r.log), r.log)
     rmSync(dir, { recursive: true, force: true })

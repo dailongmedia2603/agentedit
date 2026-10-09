@@ -111,7 +111,9 @@ export function sha512File(path: string): Promise<string> {
 
 /** Tham so mo lai app sau cap nhat: giu tham so cu (vd --user-data-dir), bo -psn_ (macOS cu) + co cap nhat cu. */
 export function relaunchArgs(argv: string[]): string[] {
-  return argv.filter((a) => !/^-psn_/.test(a) && !a.startsWith('--agent-edit-updated=') && !a.startsWith('--agent-edit-update-failed='))
+  return argv.filter(
+    (a) => !/^-psn_/.test(a) && !a.startsWith('--agent-edit-updated=') && !a.startsWith('--agent-edit-update-failed=') && !a.startsWith('--agent-edit-update-to=')
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -200,7 +202,7 @@ LSREG=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchService
 [ -x "$LSREG" ] && "$LSREG" -f "$APP" >/dev/null 2>&1
 
 rm -f "$MARKER"
-/usr/bin/open -n "$APP" --args "$@" "--agent-edit-updated=$FROM" >> "$LOG" 2>&1 || log "open ban moi bao loi $?"
+/usr/bin/open -n "$APP" --args "$@" "--agent-edit-updated=$FROM" "--agent-edit-update-to=$TO" >> "$LOG" 2>&1 || log "open ban moi bao loi $?"
 i=0
 while [ ! -f "$MARKER" ]; do
   i=$((i+1)); [ $i -ge "$MARKER_TRIES" ] && break; sleep 0.5
@@ -286,8 +288,9 @@ if (-not (Test-Path -LiteralPath $Exe)) {
   exit 1
 }
 Remove-Item -LiteralPath $Marker -ErrorAction SilentlyContinue
-$flag = if ($code -eq 0) { '--agent-edit-updated=' + $FromVer } else { '--agent-edit-update-failed=' + $ToVer }
-$parts += $flag
+# ban moi tu so --agent-edit-update-to voi chinh no: bo cai ghi nham cho (van mo ban cu) -> app tu bao cap nhat LOI
+if ($code -eq 0) { $parts += ('--agent-edit-updated=' + $FromVer); $parts += ('--agent-edit-update-to=' + $ToVer) }
+else { $parts += ('--agent-edit-update-failed=' + $ToVer) }
 $argLine = $parts -join ' '
 Start-Process -FilePath $Exe -ArgumentList $argLine
 for ($i = 0; $i -lt 240; $i++) { if (Test-Path -LiteralPath $Marker) { break }; Start-Sleep -Milliseconds 500 }

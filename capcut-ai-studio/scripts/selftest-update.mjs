@@ -81,12 +81,29 @@ if (IS_MAC) {
 } else {
   const setup = join(root, 'release', `Agent Edit-Setup-${info.version}-b${info.build}-x64.exe`)
   if (!existsSync(setup)) die(`khong thay ${setup}`)
-  installed = opt('--install-dir') || join(work, 'AE Selftest')
-  console.log(`[selftest-update] cai im lang vao ${installed}…`)
-  // NSIS: /D= phai dung CUOI va KHONG co ngoac kep (ke ca khi co dau cach) -> truyen nguyen van
-  execFileSync(setup, [`/S /D=${installed}`], { stdio: 'inherit', windowsVerbatimArguments: true, timeout: 15 * 60000 })
+  // Cai NHU KHACH (`/S`, khong /D): bo cai NSIS cua electron-builder dung thu muc trong registry / mac dinh
+  // (%LOCALAPPDATA%\\Programs\\Agent Edit) — lan chay CI 2026-10-09 cho thay /D= bi bo qua.
+  console.log('[selftest-update] cai im lang (nhu khach)…')
+  execFileSync(setup, ['/S'], { stdio: 'inherit', timeout: 15 * 60000 })
+  const findInstall = () => {
+    try {
+      const ps = "Get-ItemProperty HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\* -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -like 'Agent Edit*' } | Select-Object -First 1 -ExpandProperty InstallLocation"
+      return execFileSync('powershell.exe', ['-NoProfile', '-Command', ps], { encoding: 'utf-8' }).trim()
+    } catch {
+      return ''
+    }
+  }
+  installed = ''
+  for (let i = 0; i < 120 && !(installed && existsSync(join(installed, 'Agent Edit.exe'))); i++) {
+    installed = findInstall() || join(process.env.LOCALAPPDATA || '', 'Programs', 'Agent Edit')
+    if (!existsSync(join(installed, 'Agent Edit.exe'))) await sleep(1000)
+  }
   exe = join(installed, 'Agent Edit.exe')
-  if (!existsSync(exe)) die(`cai xong nhung khong thay ${exe}`)
+  if (!existsSync(exe)) {
+    console.log('[selftest-update] registry InstallLocation:', JSON.stringify(findInstall()))
+    die(`cai xong nhung khong thay Agent Edit.exe (thu ${installed})`)
+  }
+  console.log(`[selftest-update] da cai: ${installed}`)
   cleanups.push(() => {
     try {
       execFileSync(join(installed, 'Uninstall Agent Edit.exe'), ['/S'], { timeout: 10 * 60000 })
