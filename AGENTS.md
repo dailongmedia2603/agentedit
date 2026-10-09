@@ -13,6 +13,21 @@
   package.json `name: "auto-capcut"`, `appId` and `~/.capcut-studio` must NOT change: Electron
   derives the userData folder and the Keychain item holding the encrypted API keys from them.
 
+## Phat hanh ban moi (user nhan "Phat hanh ban X.Y.Z, ghi chu: ..." / "Phat hanh ban thu")
+
+Day la quy trinh CHUAN, user da dong y tu truoc — lam du cac buoc, khong hoi lai tung buoc (PROJECT_OVERVIEW muc 15):
+1. Chay kiem tra: `cd capcut-ai-studio && npx tsc --noEmit -p tsconfig.json` (+ test lien quan den phan vua sua). Loi -> sua
+   truoc, KHONG phat hanh code hong.
+2. Commit moi thay doi cua user (bo qua file media / thu muc khong lien quan nhu *.mov, marketing/) len `main`, message ro rang.
+3. Chinh thuc: `npm run release -- X.Y.Z --notes "<ghi chu tieng Viet co dau>"` (tu tang version, tag, day remote
+   `agentedit`). User khong ghi so -> sua loi tang so cuoi, tinh nang moi tang so giua. Khong ghi ghi chu -> tu tom tat ngan
+   gon tu cac commit tu ban truoc (khach doc trong hop thoai cap nhat). "Ban thu" -> `npm run release -- --test --notes "..."`.
+4. Theo doi GitHub Actions (`gh run list --repo dailongmedia2603/agentedit --workflow release.yml`) toi khi xong ca mac +
+   windows (~40 phut). Buoc nao do -> doc log (`gh api repos/dailongmedia2603/agentedit/actions/jobs/<id>/logs`), sua, phat
+   hanh lai. KHONG bao "xong" khi chua xanh.
+5. Bao user: link GitHub Release (file .dmg / Setup .exe cho khach moi) + may da cai se thay nut "Cap nhat len X.Y.Z" o lan
+   mo app ke tiep.
+
 ## CodeGraph
 
 - The project CodeGraph index lives in `.codegraph/`.
