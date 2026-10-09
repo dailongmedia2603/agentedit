@@ -32,6 +32,27 @@ console.log('    thu muc cai:', inst, '| co exe:', existsSync(exe))
 
 const work = mkdtempSync(join(tmpdir(), 'aedbg-'))
 const ud = join(work, 'ud')
+// THU TO HOP THAM SO BO CAI khi DA co ban cai (app khong chay): cai de -> co exe khong?
+const variants = [['/S'], ['/S', '--updated'], ['/S', `/D=${inst}`], ['/S', '--updated', `/D=${inst}`], ['/S', '--updated', '--force-run']]
+for (const v of variants) {
+  if (!existsSync(exe)) execFileSync(setup, ['/S'], { stdio: 'inherit', timeout: 15 * 60000 }) // cai lai cho co ban cu
+  const t = Date.now()
+  let code = 0
+  try {
+    // /D= phai nguyen van (khong ngoac kep) -> ghep chuoi + windowsVerbatimArguments
+    execFileSync(setup, [v.join(' ')], { stdio: 'inherit', timeout: 15 * 60000, windowsVerbatimArguments: true })
+  } catch (e) {
+    code = e.status
+  }
+  await sleep(3000)
+  console.log(`[V] ${v.join(' ')} -> ma ${code}, ${Math.round((Date.now() - t) / 1000)}s, co exe: ${existsSync(exe)}, so file: ${existsSync(inst) ? readdirSync(inst).length : 0}`)
+  if (v.includes('--force-run')) {
+    await sleep(5000)
+    try { execFileSync('taskkill', ['/IM', 'Agent Edit.exe', '/F'], { stdio: 'pipe' }) } catch {}
+  }
+}
+if (!existsSync(exe)) execFileSync(setup, ['/S'], { stdio: 'inherit', timeout: 15 * 60000 })
+
 console.log('[2] mo app da cai')
 const env = { ...process.env }
 delete env.ELECTRON_RUN_AS_NODE
