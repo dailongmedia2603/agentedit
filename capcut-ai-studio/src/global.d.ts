@@ -21,6 +21,16 @@ interface StudioBridge {
   licenseForget(): Promise<LicenseState>
   onLicenseChanged(cb: (s: LicenseState) => void): () => void
 
+  // ---- Tu cap nhat (ban cai cho khach; ban day du / dev: phase 'disabled') ----
+  updateState(): Promise<UpdateState>
+  /** Hoi may chu co ban moi khong (nut "Kiem tra cap nhat") */
+  updateCheck(): Promise<UpdateState>
+  /** Tai lai (sau loi / ban tung cap nhat loi) */
+  updateDownload(): Promise<UpdateState>
+  /** Thoat app + cai ban moi + mo lai. busy = con video dang xu ly -> tu choi */
+  updateApply(busy: boolean): Promise<{ ok: boolean; error?: string }>
+  onUpdateChanged(cb: (s: UpdateState) => void): () => void
+
   doctorRun(): Promise<DoctorCheck[]>
   doctorFix(id: string): Promise<{ ok: boolean; error?: string }>
   /** Tu cai moi cong cu con thieu / sai phien ban (1 luot, theo thu tu phu thuoc) -> ket qua kiem lai */
@@ -303,6 +313,20 @@ interface StudioBridge {
 }
 
 declare global {
+  type UpdatePhase = 'disabled' | 'idle' | 'available' | 'downloading' | 'ready' | 'applying' | 'error'
+  interface UpdateState {
+    phase: UpdatePhase
+    current: { version: string; build: string }
+    channel: string
+    offer?: { version: string; build: string; notes: string; size: number; releasedAt: number }
+    progress?: { received: number; total: number }
+    message?: string
+    needsAdmin?: boolean
+    justUpdated?: { from: string; to: string }
+    updateFailed?: string
+    checkedAt?: number
+    checking?: boolean
+  }
   interface LicenseState {
     status: 'ok' | 'need_key' | 'invalid_key' | 'locked' | 'expired' | 'other_machine' | 'offline' | 'error'
     message: string

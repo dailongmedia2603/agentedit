@@ -7,6 +7,7 @@ import { stopSidecar } from './services/sidecar'
 import { stopRender } from './services/remotion'
 import { stopMediaServer } from './services/media-server'
 import { cancelCliTask } from './services/cli-login'
+import { initUpdater, markLaunchedIfUpdated, runUpdateSelftest, selftestConfigPath } from './services/updater'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -37,6 +38,9 @@ if (existsSync(GPU_OFF()) || process.argv.includes('--disable-gpu')) {
 declare const __APP_BUILD__: string
 const APP_BUILD = typeof __APP_BUILD__ !== 'undefined' ? __APP_BUILD__ : ''
 bootLog(`khoi dong v${app.getVersion()}${APP_BUILD ? ' build ' + APP_BUILD : ''} ${process.platform}-${process.arch} gpu=${existsSync(GPU_OFF()) ? 'tat' : 'bat'}`)
+// Vua duoc script tu cap nhat mo lai -> bao "ban moi da khoi dong" NGAY (truoc moi buoc co the treo, vd hop thoai Keychain);
+// khong co dau nay trong 120s script se tra ban cu ve (updater.ts / update-core.ts)
+markLaunchedIfUpdated()
 app.on('child-process-gone', (_e, d) => {
   bootLog(`tien trinh con ${d.type} dung: ${d.reason} (ma ${d.exitCode})`)
   if (d.type === 'GPU' && d.reason !== 'clean-exit' && d.reason !== 'killed') {
@@ -176,6 +180,15 @@ app.whenReady().then(async () => {
   nativeTheme.themeSource = 'light'
   setAppMenu()
   registerIpc(() => mainWindow)
+  initUpdater()
+
+  // Tu kiem TU CAP NHAT (ban dong goi): --update-selftest=<json> — khong mo cua so (scripts/selftest-update.mjs)
+  const updSelftest = selftestConfigPath()
+  if (updSelftest) {
+    bootLog('tu kiem cap nhat: ' + updSelftest)
+    await runUpdateSelftest(updSelftest)
+    return
+  }
 
   // Che do test connection cac provider luong Remotion dung (dung key that da luu)
   // Tu kiem SIDECAR QUA MAIN (dung duong cua trang Cai dat API: startSidecar() khong kem onLog + /cli_status), bat moi

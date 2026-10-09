@@ -17,10 +17,22 @@ export const shell = {
   async openExternal(u) { (globalThis.__OPENED ||= []).push(u) }
 }
 export const app = {
-  isPackaged: false,
+  // globalThis.__PACKAGED / __APP_VERSION: test tu cap nhat gia lap ban dong goi
+  get isPackaged() {
+    return !!globalThis.__PACKAGED
+  },
   getPath: (n) => (n === 'userData' && globalThis.__USERDATA) || '/tmp',
   getAppPath: () => process.cwd(),
-  getVersion: () => '0.0.0-test'
+  getVersion: () => globalThis.__APP_VERSION || '0.0.0-test',
+  // ghi lai thay vi thoat that (globalThis.__APP_CALLS)
+  quit: () => (globalThis.__APP_CALLS ||= []).push('quit'),
+  exit: (c) => (globalThis.__APP_CALLS ||= []).push('exit:' + c)
+}
+export class UtilityProcess {}
+export const utilityProcess = {
+  fork() {
+    throw new Error('utilityProcess khong co trong test')
+  }
 }
 // globalThis.__SAFE_STORAGE = true -> ma hoa gia lap gan voi "may" globalThis.__MACHINE (doi may = khong giai ma duoc)
 export const safeStorage = {
@@ -33,4 +45,4 @@ export const safeStorage = {
   }
 }
 export const net = { fetch: (...a) => fetch(...a) }
-export default { shell, app, safeStorage, net }
+export default { shell, app, safeStorage, net, utilityProcess }

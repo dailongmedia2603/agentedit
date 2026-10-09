@@ -1,7 +1,9 @@
 // Kiem tra may chu ban quyen chay LOCAL (npm run dev:api + dev:admin, .dev.vars co DEV_NO_AUTH=1).
 //   node scripts/smoke.mjs [api=http://localhost:8787] [admin=http://localhost:8788]
 import { generateKeyPairSync, sign, verify, createPublicKey, createHmac, createHash } from 'crypto'
-import { readFileSync } from 'fs'
+import { readFileSync, writeFileSync, mkdtempSync } from 'fs'
+import { spawnSync } from 'child_process'
+import { tmpdir } from 'os'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
@@ -243,6 +245,81 @@ console.log('Kho hieu ung chung')
   check('go muc da duyet -> mat khoi manifest', !r.manifest.fx.some((x) => x.id === id2), r.manifest.fx.map((x) => x.id))
 }
 
+console.log('Tu cap nhat app')
+// Dat phieu + file vao R2 LOCAL (wrangler dev --persist-to .wrangler/state). Worker khong kiem chu ky phieu (app kiem) ->
+// chu ky gia van chuyen tiep nguyen ven.
+const r2tmp = mkdtempSync(join(tmpdir(), 'upd-smoke-'))
+function r2put(key, content) {
+  const f = join(r2tmp, key.replace(/\//g, '_'))
+  writeFileSync(f, content)
+  const r = spawnSync('npx', ['wrangler', 'r2', 'object', 'put', `agent-edit/${key}`, '--file', f, '--local', '--persist-to', '.wrangler/state'], { cwd: root, encoding: 'utf-8' })
+  if (r.status !== 0) throw new Error('r2 put loi: ' + (r.stderr || r.stdout))
+}
+function r2del(key) {
+  spawnSync('npx', ['wrangler', 'r2', 'object', 'delete', `agent-edit/${key}`, '--local', '--persist-to', '.wrangler/state'], { cwd: root, encoding: 'utf-8' })
+}
+const updBody = Buffer.from('0123456789'.repeat(1000)) // 10000 byte
+const updFile = 'Agent-Edit-Setup-9.0.0-b20991231-2359-x64.exe'
+const mkRec = (version, build, file = updFile) => {
+  const m = JSON.stringify({ v: 1, channel: 'stable', platform: 'win32', arch: 'x64', version, build, file, size: updBody.length, sha512: 'x', notes: 'Ghi chú thử ✓', released_at: 1 })
+  return JSON.stringify({ m, sig: 'c2lnLWdpYQ==' })
+}
+r2del('updates/stable/win32-x64.json')
+r2del('updates/test/win32-x64.json')
+r = await call(A2, fpA2, L1.key, 'check')
+check('app cu (khong gui upd) -> khong co truong update', r.ok && !('update' in r), r)
+r = await call(A2, fpA2, L1.key, 'check', { upd: { arch: 'x64', build: '20261009-1000', channel: 'stable' } })
+check('chua co phieu -> update null', r.ok && r.update === null, r)
+r2put(`updates/files/${updFile}`, updBody)
+const rec900 = mkRec('9.0.0', '20991231-2359')
+r2put('updates/stable/win32-x64.json', rec900)
+r = await call(A2, fpA2, L1.key, 'check', { upd: { arch: 'x64', build: '20261009-1000', channel: 'stable' } })
+check('co ban moi -> offer kem link tai', r.ok && r.update && r.update.url && r.update.version === '9.0.0', r)
+check('phieu chuyen tiep NGUYEN chuoi da ky', r.update && r.update.m === JSON.parse(rec900).m && r.update.sig === 'c2lnLWdpYQ==')
+const updUrl = r.update && r.update.url
+r = await call(A2, fpA2, L1.key, 'update', { upd: { arch: 'x64', build: '20261009-1000', channel: 'stable' } })
+check('op=update (nut Kiem tra cap nhat) -> offer', r.ok && r.update && r.update.version === '9.0.0', r)
+r = await call(A2, fpA2, L1.key, 'check', { app: '9.0.0', upd: { arch: 'x64', build: '20991231-2359', channel: 'stable' } })
+check('dang dung dung ban do -> null', r.ok && r.update === null, r)
+r = await call(A2, fpA2, L1.key, 'check', { app: '9.0.0', upd: { arch: 'x64', build: '20991231-2358', channel: 'stable' } })
+check('cung so phien ban, ma build cu hon -> offer', r.ok && r.update && r.update.build === '20991231-2359', r)
+r = await call(A2, fpA2, L1.key, 'check', { app: '9.1.0', upd: { arch: 'x64', build: '20200101-0000', channel: 'stable' } })
+check('app moi hon phieu -> null (khong ha cap)', r.ok && r.update === null, r)
+r = await call(A2, fpA2, L1.key, 'check', { upd: { arch: 'arm64', build: '20261009-1000', channel: 'stable' } })
+check('khac kien truc (win32-arm64 chua co) -> null', r.ok && r.update === null, r)
+r = await call(A2, fpA2, L1.key, 'check', { upd: { arch: 'x64', build: '20261009-1000', channel: 'test' } })
+check('kenh test chua co phieu -> null', r.ok && r.update === null, r)
+r2put('updates/test/win32-x64.json', mkRec('9.0.1', '20991231-2359'))
+r = await call(A2, fpA2, L1.key, 'check', { upd: { arch: 'x64', build: '20261009-1000', channel: 'test' } })
+check('kenh test -> phieu kenh test', r.ok && r.update && r.update.version === '9.0.1', r)
+r = await call(A2, fpA2, L1.key, 'check', { upd: { arch: 'x64', build: '20261009-1000', channel: 'la-hoac' } })
+check('kenh la -> ve stable', r.ok && r.update && r.update.version === '9.0.0', r)
+r2put('updates/test/win32-x64.json', mkRec('9.0.2', '20991231-2359', '../evil.exe'))
+r = await call(A2, fpA2, L1.key, 'check', { upd: { arch: 'x64', build: '20261009-1000', channel: 'test' } })
+check('phieu co ten file ../ -> bo qua', r.ok && r.update === null, r)
+r2del('updates/test/win32-x64.json')
+dl = await fetch(updUrl)
+check('tai file cap nhat -> 200 + du byte', dl.status === 200 && Buffer.from(await dl.arrayBuffer()).equals(updBody) && dl.headers.get('accept-ranges') === 'bytes')
+dl = await fetch(updUrl, { headers: { range: 'bytes=9990-' } })
+check('tai tiep Range bytes=9990- -> 206 + 10 byte cuoi', dl.status === 206 && dl.headers.get('content-range') === 'bytes 9990-9999/10000' && (await dl.text()) === '0123456789')
+dl = await fetch(updUrl, { headers: { range: 'bytes=10-19' } })
+check('Range bytes=10-19 -> 10 byte', dl.status === 206 && (await dl.text()) === '0123456789')
+dl = await fetch(updUrl, { headers: { range: 'bytes=10000-' } })
+check('Range qua cuoi file -> 416', dl.status === 416 && dl.headers.get('content-range') === 'bytes */10000')
+dl = await fetch(updUrl.replace(/t=[^&]+/, 't=abc'))
+check('token gia -> 403', dl.status === 403)
+{
+  // token tai KHO (cung bi mat HMAC) khong dung cho file cap nhat
+  r = await call(A2, fpA2, L1.key, 'library')
+  const libTok = new URL(r.manifest.sfx[0].url).searchParams.get('t')
+  dl = await fetch(updUrl.replace(/t=[^&]+/, 't=' + encodeURIComponent(libTok)))
+  check('token kho dung cho file cap nhat -> 403', dl.status === 403)
+}
+dl = await fetch(updUrl.replace(encodeURIComponent(updFile), '..%2Fsecret'))
+check('ten file co ../ -> 400', dl.status === 400)
+dl = await fetch(updUrl.replace(encodeURIComponent(updFile), 'khong-co.exe'))
+check('file khong co -> 404', dl.status === 404)
+
 console.log('Khoa / mo / het han')
 let a = await admin(`/api/licenses/${L1.id}/lock`, { reason: 'test' })
 check('admin khoa', a.ok && a.license.status === 'locked', a)
@@ -250,6 +327,10 @@ r = await call(A2, fpA2, L1.key, 'check')
 check('key bi khoa -> locked', r.code === 'locked', r)
 dl = await fetch(url)
 check('link tai cu sau khi khoa -> 403', dl.status === 403)
+dl = await fetch(updUrl)
+check('link tai ban cap nhat sau khi khoa -> 403', dl.status === 403)
+r = await call(A2, fpA2, L1.key, 'update', { upd: { arch: 'x64', build: '20261009-1000', channel: 'stable' } })
+check('key bi khoa -> op=update bi chan', r.code === 'locked', r)
 a = await admin(`/api/licenses/${L1.id}/unlock`, {})
 r = await call(A2, fpA2, L1.key, 'check')
 check('mo khoa -> ok', r.ok, r)

@@ -226,11 +226,28 @@ interface ServerReply {
   ticket?: string
   license?: { plan: LicenseState['plan']; expires_at: number | null; key_hint: string; customer?: string }
   manifest?: unknown
+  /** Tu cap nhat (chi khi app gui p.upd): phieu ban moi hoac null = dang moi nhat. App cu / server cu: khong co truong. */
+  update?: unknown
 }
 
-async function post(op: 'activate' | 'check' | 'library', s: Stored, extra: Record<string, unknown> = {}): Promise<ServerReply> {
+// ---------------------------------------------------------------------------
+// TU CAP NHAT (updater.ts dang ky — license.ts khong import updater de tranh vong lap)
+// ---------------------------------------------------------------------------
+interface UpdateHooks {
+  /** {arch, build, channel} gui kem lan kiem key; null = ban nay khong tu cap nhat (dev / ban day du) */
+  payload: () => Record<string, unknown> | null
+  /** server tra phieu (hoac null = khong co ban moi). manual = nguoi dung bam "Kiem tra cap nhat". */
+  offer: (update: unknown, manual: boolean) => void
+}
+let updHooks: UpdateHooks | null = null
+export function setUpdateHooks(h: UpdateHooks): void {
+  updHooks = h
+}
+
+async function post(op: 'activate' | 'check' | 'library' | 'update', s: Stored, extra: Record<string, unknown> = {}): Promise<ServerReply> {
   if (apiUrl().includes('REPLACE')) return { ok: false, code: 'error', message: 'Chưa cấu hình máy chủ bản quyền.' }
   const fp = await fingerprint()
+  const upd = op === 'check' || op === 'update' ? updHooks?.payload() || null : null
   const sk = privKey(s.sk)
   for (let attempt = 0; attempt < 2; attempt++) {
     const p = JSON.stringify({
@@ -241,6 +258,7 @@ async function post(op: 'activate' | 'check' | 'library', s: Stored, extra: Reco
       app: app.getVersion(),
       host: hostname().slice(0, 80),
       ts: Date.now() + clockOffset,
+      ...(upd ? { upd } : {}),
       ...extra
     })
     const sig = sign(null, Buffer.from(p), sk).toString('base64')
@@ -325,7 +343,10 @@ export function checkLicense(reason: 'open' | 'analyze' | 'refresh', maxAgeMs = 
   inflight = (async () => {
     const s = loadStored()
     if (!s) return setState({ status: 'need_key', message: storeError })
-    return apply(await post('check', s, { reason }), s)
+    const r = await post('check', s, { reason })
+    const st = apply(r, s)
+    if (r.ok && r.update !== undefined) updHooks?.offer(r.update, false)
+    return st
   })().finally(() => {
     inflight = null
   })
@@ -386,6 +407,19 @@ export async function libraryManifest(): Promise<unknown> {
   apply(r, s)
   if (!r.ok) throw new Error(state.message || r.message || 'Không đồng bộ được kho.')
   return r.manifest
+}
+
+/** Nut "Kiem tra cap nhat" / lay lai link tai khi link cu het han (403). ok=false: loi key / mang (message). */
+export async function requestUpdateOffer(manual = true): Promise<{ ok: boolean; message?: string }> {
+  if (licenseDisabled()) return { ok: false, message: 'Bản phát triển không tự cập nhật.' }
+  const s = loadStored()
+  if (!s) return { ok: false, message: 'Chưa kích hoạt key.' }
+  const r = await post('update', s)
+  apply(r, s)
+  if (!r.ok) return { ok: false, message: state.message || r.message || 'Không kiểm tra được bản cập nhật.' }
+  if (r.update === undefined) return { ok: false, message: 'Máy chủ chưa hỗ trợ cập nhật.' }
+  updHooks?.offer(r.update, manual)
+  return { ok: true }
 }
 
 // Sidecar tu choi vi ve het han (app mo lien tuc > 3 ngay khong phan tich video) -> lay ve moi 1 lan

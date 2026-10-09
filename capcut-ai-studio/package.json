@@ -21,7 +21,9 @@
     "bundle:models": "node scripts/bundle-models.mjs",
     "compile:sidecar": "node scripts/compile-sidecar.mjs",
     "protect:electron": "node scripts/protect-electron.mjs",
-    "publish:library": "node scripts/publish-library.mjs"
+    "publish:library": "node scripts/publish-library.mjs",
+    "publish:update": "node scripts/publish-update.mjs",
+    "release": "node scripts/release.mjs"
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.1143.0",

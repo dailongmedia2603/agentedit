@@ -42,6 +42,7 @@ import {
   fxUpload,
   onLicenseChange
 } from './services/license'
+import { updateState, onUpdateChange, checkForUpdateNow, applyUpdate, startDownload } from './services/updater'
 import { readState, writeState, planProviderOf, PlanProvider, jobLimitsOf, saveJobLimits, JobLimits } from './services/state'
 import { mediaBase, mediaUrl } from './services/media-server'
 import { startRender, cancelRender, renderStatus, browserInstalled } from './services/remotion'
@@ -107,6 +108,17 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
   ipcMain.handle('license:check', () => checkLicense('open'))
   ipcMain.handle('license:activate', (_e, key: string) => activateLicense(String(key || '')))
   ipcMain.handle('license:forget', () => forgetLicense())
+
+  // ---- Tu cap nhat (ban cai cho khach) ----
+  onUpdateChange((st) => getWindow()?.webContents.send('update:changed', st))
+  ipcMain.handle('update:state', () => updateState())
+  ipcMain.handle('update:check', () => checkForUpdateNow())
+  ipcMain.handle('update:download', () => {
+    startDownload()
+    return updateState()
+  })
+  // busy = trang Tao video con video dang xu ly
+  ipcMain.handle('update:apply', (_e, busy?: boolean) => applyUpdate(!!busy))
 
   // ---- Doctor ----
   // Chi dung khi tu kiem giao dien (chay kem --user-data-dir tam): coi moi dieu kien

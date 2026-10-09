@@ -52,5 +52,9 @@
   `env -i HOME=<tmp> PATH=/usr/bin:/bin:/usr/sbin:/sbin <app binary> --user-data-dir=<tmp>/ud` (the terminal PATH would
   find the real machine's tools; Electron's profile folder on macOS IGNORES $HOME — without --user-data-dir the test
   opens the real profile with the encrypted API keys and may trigger a Keychain prompt).
+- Tu cap nhat + phat hanh (PROJECT_OVERVIEW 15): `npm run release -- X.Y.Z --notes "..."` (tag -> GitHub Actions build Mac +
+  Windows -> R2; khach tu cap nhat), `npm run release -- --test` (kenh test). Test: `HOME=$(mktemp -d) node tests/test_updater.mts`,
+  ban dong goi `node scripts/selftest-update.mjs`. Bi mat `~/.capcut-studio/update-signing.json` + `mac-codesign.p12/.json`
+  (KHONG len git; mat khoa ky = app da cai khong nhan ban moi). Ban day du khong tu cap nhat.
 - Render self-test: `env -u ELECTRON_RUN_AS_NODE STUDIO_REMOTION_RENDER=<spec.json> STUDIO_REMOTION_OUT=<out.mp4> <app binary>`
   (VSCode terminals set `ELECTRON_RUN_AS_NODE=1`, which makes the app binary exit silently)

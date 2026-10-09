@@ -150,6 +150,32 @@ await admin(`/api/licenses/${lic.id}/unlock`, {})
 s = await L.checkLicense('open')
 check('mo khoa -> ok', s.status === 'ok', s)
 
+console.log('Tu cap nhat qua lan kiem key')
+{
+  // phieu gia o R2 LOCAL kenh test (Worker chi chuyen tiep, app moi kiem chu ky -> o day chi kiem duong di)
+  const { writeFileSync: wf, mkdtempSync: md } = await import('fs')
+  const tmpF = join(md(join(tmpdir(), 'upd-lic-')), 'm.json')
+  const plat = process.platform === 'win32' ? 'win32-x64' : 'darwin-arm64'
+  wf(tmpF, JSON.stringify({ m: JSON.stringify({ v: 1, version: '9.0.0', build: '20991231-2359', file: 'Agent-Edit-9.0.0-b20991231-2359-x.zip' }), sig: 'eA==' }))
+  const r2 = (args: string[]) => execFileSync('npx', ['wrangler', 'r2', 'object', ...args, '--local', '--persist-to', '.wrangler/state'], { cwd: resolve('../license-server'), stdio: 'pipe' })
+  r2(['put', `agent-edit/updates/test/${plat}.json`, '--file', tmpF])
+  const got: { u: any; manual: boolean }[] = []
+  let sent: unknown = null
+  L.setUpdateHooks({
+    payload: () => (sent = { arch: process.platform === 'win32' ? 'x64' : 'arm64', build: '20261009-1000', channel: 'test' }),
+    offer: (u, manual) => got.push({ u, manual })
+  })
+  s = await L.checkLicense('open')
+  check('mo app: gui kem thong tin cap nhat', s.status === 'ok' && !!sent, s)
+  check('mo app: hook nhan phieu (tu dong, khong phai bam tay)', got.length === 1 && got[0].u?.version === '9.0.0' && got[0].manual === false && /\/v1\/update\//.test(got[0].u?.url), got)
+  const r = await L.requestUpdateOffer(true)
+  check('nut Kiem tra cap nhat -> phieu, manual=true', r.ok && got.length === 2 && got[1].manual === true, { r, got })
+  r2(['delete', `agent-edit/updates/test/${plat}.json`])
+  await L.checkLicense('open')
+  check('khong con phieu -> hook nhan null', got.length === 3 && got[2].u === null, got)
+  L.setUpdateHooks({ payload: () => null, offer: () => {} })
+}
+
 console.log('Copy sang may khac')
 ;(globalThis as any).__MACHINE = 'B'
 s = await L.checkLicense('open')

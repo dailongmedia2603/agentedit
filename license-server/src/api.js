@@ -29,6 +29,8 @@ const THROTTLE_WINDOW_MS = 3600 * 1000
 const THROTTLE_MAX_FAILS = 20 // nhap sai key 20 lan / gio / IP -> chan
 const REKEY_LIMIT = 3 // kich hoat lai (cung may, khoa thiet bi moi) >= 3 lan / 7 ngay -> tu khoa
 const REKEY_WINDOW_MS = 7 * 24 * 3600 * 1000
+const UPD_TTL_MS = 24 * 3600 * 1000 // link tai ban cap nhat (~300 MB, mang cham tai tiep duoc trong 1 ngay)
+const UPD_CHANNELS = ['stable', 'test']
 
 const MSG = {
   bad_request: 'Yêu cầu không hợp lệ.',
@@ -109,7 +111,7 @@ async function handleLicense(req, env) {
     return fail('bad_request', {}, 400)
   }
   const op = p.op
-  if (!['activate', 'check', 'library'].includes(op) || typeof p.dev !== 'string' || !validFp(p.fp)) {
+  if (!['activate', 'check', 'library', 'update'].includes(op) || typeof p.dev !== 'string' || !validFp(p.fp)) {
     return fail('bad_request', {}, 400)
   }
   const ip = clientIp(req)
@@ -205,6 +207,13 @@ async function handleLicense(req, env) {
     ticket: await ticketFor(env, lic, boundFp, lic.device_pub)
   }
 
+  // TU CAP NHAT: app ban cai cho khach gui kem p.upd {arch, build, channel} o lan kiem luc mo app / phan tich video
+  // (khong hoi them dinh ky) + nut "Kiem tra cap nhat" (op=update). App cu khong gui p.upd -> khong co truong update.
+  if ((op === 'check' || op === 'update') && p.upd && typeof p.upd === 'object') {
+    out.update = await updateOffer(req, env, lic, p, appVer)
+    if (out.update) detail += ` — co ban moi ${out.update.version} (${out.update.build})`
+  }
+
   if (op === 'library') {
     const obj = await env.LIB.get('library-manifest.json')
     if (!obj) return fail('no_library')
@@ -277,6 +286,100 @@ async function handleLicense(req, env) {
   }
   await logEvent(env, lic.id, event, req, detail)
   return json(out)
+}
+
+// ---------------------------------------------------------------------------
+// TU CAP NHAT APP. R2: updates/<kenh>/<darwin|win32>-<arm64|x64>.json = {m: "<JSON phieu>", sig} (scripts/publish-update.mjs
+// cua app tao + KY bang khoa rieng — Worker KHONG giu khoa ky, chi chuyen tiep; app tu kiem chu ky), file o updates/files/.
+// ---------------------------------------------------------------------------
+const verNums = (v) => {
+  const m = /^(\d+)\.(\d+)\.(\d+)$/.exec(String(v || '').trim())
+  return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : [0, 0, 0]
+}
+/** (aV, aB) moi hon (bV, bB)? So version truoc, bang nhau thi so ma build ngay-gio (sai dang = cu nhat). Giong update-core.ts. */
+function releaseNewer(aV, aB, bV, bB) {
+  const a = verNums(aV)
+  const b = verNums(bV)
+  for (let i = 0; i < 3; i++) if (a[i] !== b[i]) return a[i] > b[i]
+  const re = /^\d{8}-\d{4}$/
+  const ab = re.test(aB || '') ? aB : ''
+  const bb = re.test(bB || '') ? bB : ''
+  return ab > bb
+}
+const UPD_FILE_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,150}$/
+
+async function updateOffer(req, env, lic, p, appVer) {
+  const arch = p.upd.arch === 'arm64' || p.upd.arch === 'x64' ? p.upd.arch : null
+  const channel = UPD_CHANNELS.includes(p.upd.channel) ? p.upd.channel : 'stable'
+  if (!arch) return null
+  const obj = await env.LIB.get(`updates/${channel}/${p.fp.platform}-${arch}.json`)
+  if (!obj) return null
+  let rec
+  let m
+  try {
+    rec = await obj.json()
+    m = JSON.parse(rec.m)
+  } catch {
+    return null
+  }
+  if (!m || typeof rec.sig !== 'string' || !UPD_FILE_RE.test(String(m.file || '')) || m.file.includes('..')) return null
+  if (!releaseNewer(m.version, m.build, appVer, String(p.upd.build || ''))) return null
+  const exp = Date.now() + UPD_TTL_MS
+  const t = `${lic.id}.${exp}`
+  // tien to 'upd.' -> token tai kho (sfx/meme...) khong dung duoc cho file cap nhat va nguoc lai
+  const token = t + '.' + (await hmacSign(env.DL_SECRET, 'upd.' + t))
+  return {
+    m: rec.m,
+    sig: rec.sig,
+    url: `${new URL(req.url).origin}/v1/update/${encodeURIComponent(m.file)}?t=${encodeURIComponent(token)}`,
+    version: m.version,
+    build: m.build
+  }
+}
+
+/** Tai file cap nhat (link tam tu updateOffer). Ho tro Range "bytes=N-" / "bytes=N-M" -> app tai tiep khi rot mang. */
+async function handleUpdateDownload(req, env, rawName) {
+  const t = new URL(req.url).searchParams.get('t') || ''
+  const [lid, expStr, sig] = t.split('.')
+  const exp = Number(expStr)
+  if (!lid || !exp || !sig || Date.now() > exp || !(await hmacVerify(env.DL_SECRET, `upd.${lid}.${expStr}`, sig))) {
+    return new Response('forbidden', { status: 403 })
+  }
+  const lic = await env.DB.prepare('SELECT status, expires_at FROM licenses WHERE id = ?').bind(lid).first()
+  if (!lic || lic.status !== 'active' || (lic.expires_at && Date.now() > lic.expires_at)) {
+    return new Response('forbidden', { status: 403 })
+  }
+  let name
+  try {
+    name = decodeURIComponent(rawName)
+  } catch {
+    return new Response('bad name', { status: 400 })
+  }
+  if (!UPD_FILE_RE.test(name) || name.includes('..')) return new Response('bad name', { status: 400 })
+  const key = `updates/files/${name}`
+  const base = { 'accept-ranges': 'bytes', 'cache-control': 'private, no-store', 'content-type': 'application/octet-stream' }
+  const rh = req.headers.get('range')
+  if (rh) {
+    const mr = /^bytes=(\d+)-(\d*)$/.exec(rh.trim())
+    const head = await env.LIB.head(key)
+    if (!head) return new Response('not found', { status: 404 })
+    if (!mr) return new Response('bad range', { status: 416, headers: { ...base, 'content-range': `bytes */${head.size}` } })
+    const offset = Number(mr[1])
+    const end = mr[2] ? Math.min(Number(mr[2]), head.size - 1) : head.size - 1
+    if (offset >= head.size || end < offset) {
+      return new Response('bad range', { status: 416, headers: { ...base, 'content-range': `bytes */${head.size}` } })
+    }
+    const length = end - offset + 1
+    const obj = await env.LIB.get(key, { range: { offset, length } })
+    if (!obj) return new Response('not found', { status: 404 })
+    return new Response(obj.body, {
+      status: 206,
+      headers: { ...base, 'content-length': String(length), 'content-range': `bytes ${offset}-${end}/${head.size}`, etag: obj.httpEtag }
+    })
+  }
+  const obj = await env.LIB.get(key)
+  if (!obj) return new Response('not found', { status: 404 })
+  return new Response(obj.body, { headers: { ...base, 'content-length': String(obj.size), etag: obj.httpEtag } })
 }
 
 /** 1 doan ten an toan (khong /, \\, ., ..) */
@@ -461,6 +564,9 @@ export default {
       const mf = url.pathname.match(/^\/v1\/lib\/fx\/(fx-[0-9a-f]{12})\/(code\.js|preview\.mp4)$/)
       if (mf && req.method === 'GET') return await handleDownload(req, env, 'fx', encodeURIComponent(`${mf[1]}/${mf[2]}`))
       if (url.pathname === '/v1/fx/upload' && req.method === 'POST') return await handleFxUpload(req, env)
+      // File cap nhat app: /v1/update/<ten file>?t=<token 24h>
+      const mu = url.pathname.match(/^\/v1\/update\/([^/]+)$/)
+      if (mu && (req.method === 'GET' || req.method === 'HEAD')) return await handleUpdateDownload(req, env, mu[1])
       if (url.pathname === '/v1/time') return json({ ok: true, server_time: Date.now() })
       return new Response('Not found', { status: 404 })
     } catch (e) {

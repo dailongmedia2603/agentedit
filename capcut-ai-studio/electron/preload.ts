@@ -16,6 +16,17 @@ const api = {
     return () => ipcRenderer.removeListener('license:changed', fn)
   },
 
+  // Tu cap nhat
+  updateState: () => ipcRenderer.invoke('update:state'),
+  updateCheck: () => ipcRenderer.invoke('update:check'),
+  updateDownload: () => ipcRenderer.invoke('update:download'),
+  updateApply: (busy: boolean) => ipcRenderer.invoke('update:apply', busy),
+  onUpdateChanged: (cb: (s: unknown) => void) => {
+    const fn = (_e: unknown, s: unknown) => cb(s)
+    ipcRenderer.on('update:changed', fn)
+    return () => ipcRenderer.removeListener('update:changed', fn)
+  },
+
   // Doctor
   doctorRun: () => ipcRenderer.invoke('doctor:run'),
   doctorFix: (id: string) => ipcRenderer.invoke('doctor:fix', id),

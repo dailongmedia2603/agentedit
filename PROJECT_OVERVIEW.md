@@ -1480,6 +1480,73 @@ macOS giu nguyen hanh vi (moi nhanh Windows deu co dieu kien nen tang); da kiem 
 - CHUA kiem tren may Windows that (khong co may): ten file phien dang nhap agy tren Windows (chap nhan *oauth*token*), sandbox
   Codex Windows khi tao anh (co du phong lay anh tu ~/.codex/generated_images), SmartScreen / Smart App Control (app chua ky so).
 
+## 15. TU CAP NHAT + PHAT HANH QUA GITHUB ACTIONS (2026-10-09)
+
+Muc tieu (user): sua code tren may chu app -> commit + day GitHub -> may chu build ca Mac + Windows -> app DA CAI cua khach tu
+hien "Cap nhat len x.y.z" va tu cai. macOS theo phuong an MIEN PHI (khong Apple Developer / notarize).
+
+**Phat hanh (may chu app)** — `cd capcut-ai-studio`:
+- `npm run release -- 1.3.0 --notes "..."` (scripts/release.mjs): thay doi chua commit -> dung; tang version (package.json +
+  lock) -> commit `chore: release v1.3.0` -> tag co ghi chu -> day remote `agentedit` -> `.github/workflows/release.yml`.
+- `npm run release -- --test --notes "..."`: day nhanh + `gh workflow run` kenh **test** (phien ban giu nguyen, ma build moi
+  hon). May nhan kenh test: tao file `<userData>/update-channel` noi dung `test` (macOS `~/Library/Application Support/
+  auto-capcut/update-channel`, Windows `%APPDATA%\auto-capcut\update-channel`).
+- Workflow: `meta` (ma build = gio VN, chung 2 nen tang; tag phai == package.json) -> `mac` (macos-14: npm ci -> dist ->
+  selftest-packaged -> selftest-update -> publish-update) + `windows` (windows-2022: build-windows.ps1 [npm ci, dist:win,
+  selftest-packaged] -> selftest-update --ci -> publish-update) -> `github-release` (chi tag: .dmg + Setup .exe vao GitHub
+  Releases cua repo PRIVATE — gui cho khach MOI). Secrets: UPDATE_SIGNING_KEY, MAC_CERT_P12, MAC_CERT_PASSWORD, R2_ACCOUNT_ID,
+  R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET. Ban DAY DU cua may chu app van build tay (`STUDIO_FULL_UI=1 npm run dist`,
+  khong tu cap nhat).
+- Tu may chu app (khong qua Actions): `npm run dist` roi `npm run publish:update -- --channel test|stable --notes "..."`
+  (Windows tuong tu tren may Windows sau dist:win).
+
+**Bi mat (KHONG len git, chi ~/.capcut-studio + GitHub Secrets)** — giu ban sao an toan:
+- `update-signing.json` (`scripts/gen-update-key.mjs`; `--print` = khoa cho Secret): Ed25519 ky PHIEU phien ban. Khoa cong
+  khai NHUNG trong app `electron/services/update-core.ts` `UPDATE_PUB`. Mat khoa = app da cai khong nhan ban moi nua (phai cai
+  tay ban co khoa moi); lo khoa = sinh moi + cai tay 1 lan.
+- `mac-codesign.p12` + `mac-codesign.json` (`scripts/gen-mac-cert.mjs`; `--print`): chung chi ky ma TU TAO (SHA-1
+  9A7D7C51...). Ky ad-hoc -> designated requirement = cdhash, moi build khac -> sau MOI lan cap nhat macOS hoi mat khau Keychain
+  ("auto-capcut Safe Storage" chua khoa API + key ban quyen). Chung chi co dinh -> requirement = identifier + chung chi ->
+  KHONG hoi lai (da thu 2026-10-09: 2 binary khac nhau cung chung chi doc muc Keychain cua nhau khong hoi). Gatekeeper van
+  coi la chua xac minh (lan cai DAU tu .dmg van "Vẫn mở"); ban do app tu tai khong co quarantine. Khach dang dung ban ad-hoc
+  cu: bi hoi Keychain 1 lan o ban dau tien ky chung chi. `scripts/adhoc-sign.cjs` nap p12 vao keychain TAM (them vao danh sach
+  tim kiem cua user roi tra lai — `codesign --keychain` khong nhan chung chi chua tin cay), khong co p12 -> ad-hoc nhu cu.
+
+**Phieu + may chu** (`license-server/src/api.js`): R2 `updates/<stable|test>/<darwin|win32>-<arm64|x64>.json` =
+`{m: "<JSON>", sig}` (m = v, channel, platform, arch, version, build, file, size, sha512 base64, notes, released_at), file
+`updates/files/<ten>`. App gui `p.upd {arch, build, channel}` trong op `check` (mo app / phan tich video — KHONG hoi them dinh
+ky, giu luat 13g) + op `update` (nut "Kiem tra cap nhat"). Worker so (version, build) — moi hon moi tra `update: {m, sig, url,
+version, build}`, khong thi `update: null`; app cu khong gui upd -> khong co truong. Link `/v1/update/<file>?t=` HMAC tien to
+`upd.` (token kho khong dung duoc), 24h, key khoa/het han -> 403, ho tro Range (tai tiep). Worker KHONG giu khoa ky (chi chuyen
+tiep) -> Worker / R2 bi chiem van khong day duoc ban gia.
+
+**App** (`electron/services/updater.ts` + `update-core.ts`, UI `src/components/UpdateChip.tsx`):
+- Bat khi: dong goi + ban khach (`__CLIENT_UI__`) + ma build ngay-gio + mac arm64 / win x64. Ban day du (-full) / dev: tat.
+- Phieu -> `verifyOffer` (chu ky UPDATE_PUB, dung nen tang, moi hon, ten file / sha / size hop le) -> TU TAI NEN vao
+  `<userData>/updates/` (Range khi rot mang, 60s khong co byte = thu lai, 403 -> xin link moi, 6 lan) -> SHA-512 (sai -> xoa,
+  tai lai 1 lan) -> macOS: `ditto -x -k` -> kiem bundle id `app.autocapcut.desktop` + version + `codesign --verify --deep
+  --strict` -> phase `ready`. Thanh tieu de: "Dang tai ban x · %", nut "Cap nhat len x" -> hop thoai (ghi chu, can mat khau
+  quan tri?, canh bao dang xu ly video) -> "Cap nhat & mo lai". Con video dang xu ly / dang render -> tu choi. KHONG tu cai
+  khi tat app.
+- macOS ap dung: `MAC_APPLY_SH` (bash, tach khoi app): cho app thoat (60s roi TERM/KILL) + dung tien trinh con tu trong goi
+  -> mv app -> stage/old.app, mv ban moi -> vi tri app (thu muc khong ghi duoc -> osascript "with administrator privileges")
+  -> lsregister -f -> `open -n` (giu tham so cu + `--agent-edit-updated=<tu>`). main.ts `markLaunchedIfUpdated()` ghi
+  `<userData>/updates/launched.ok` NGAY dau main (truoc moi thu co the treo) -> script xoa ban cu. 120s khong thay dau ->
+  TRA BAN CU + mo voi `--agent-edit-update-failed=<ban>` (ban do vao `state.json skip`: khong tu tai lai, nguoi dung bam
+  "Tai lai"). App chay tu .dmg / AppTranslocation -> bao "keo vao Applications".
+- Windows ap dung: tat sidecar + CHO thoat (python.exe giu file) -> `WIN_APPLY_PS1` (PowerShell UTF-8 BOM, tach khoi app): cho
+  app thoat, dung moi tien trinh chay tu thu muc cai, chay bo cai NSIS `/S --updated /D=<thu muc dang cai>` (cai cho rieng
+  user, khong UAC; loi thu lai 1 lan) -> mo app voi co updated / failed, cho dau khoi dong; khong con app -> hop thoai + mo
+  thu muc chua bo cai. PowerShell bi chan -> chay thang bo cai `--force-run`.
+- Nhat ky: `<userData>/updates/apply.log` (ca app + script).
+
+**Kiem chung**: `license-server` npm test 94/94 (24 tinh huong cap nhat: phieu theo kenh / kien truc / ha cap, ten file ..,
+Range 206/416, token gia / token kho, key khoa). `tests/test_updater.mts` (so phien ban, kiem phieu 15 tinh huong, script Mac
+voi goi .app GIA: thay OK / ban moi khong mo -> tra ban cu / thieu ban moi / app treo; updater.ts: du lieu hong -> loi, rot mang
+-> Range -> ready, giai nen + chu ky). `tests/test_license.mts` (+ duong di upd qua lan kiem key). `scripts/selftest-update.mjs`
+tren ban DONG GOI THAT (mac: cai vao /Applications/Agent Edit Update Selftest.app; win: chi CI) — phieu sai chu ky bi tu choi,
+tai (cat giua chung) -> kiem -> thay app that -> mo lai ban moi.
+
 ## 12. CodeGraph
 
 CodeGraph `0.9.9` da duoc cai va index tai root workspace:

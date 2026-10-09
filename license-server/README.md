@@ -10,6 +10,12 @@
 Kho SFX + Meme ở R2 bucket `agent-edit` (**tắt truy cập công khai**). App chỉ tải được qua `api.js`
 (`op=library` → link tải tạm 2 giờ, key bị khoá thì link chết ngay).
 
+**Tự cập nhật app (2026-10-09):** lần kiểm key lúc mở app (`op=check`) + nút "Kiểm tra cập nhật" (`op=update`) gửi kèm
+`p.upd {arch, build, channel}` → Worker đọc phiếu `updates/<stable|test>/<darwin|win32>-<arm64|x64>.json` trên R2 và trả
+`update: {m, sig, url}` nếu mới hơn (không thì `null`). File tải ở `/v1/update/<tên>?t=<token 24h>` (hỗ trợ Range, key
+khoá → 403). Worker **không** giữ khoá ký phiếu — app tự kiểm chữ ký. Phiếu + file do `capcut-ai-studio/scripts/
+publish-update.mjs` (GitHub Actions) đẩy lên. Chi tiết: PROJECT_OVERVIEW.md mục 15.
+
 ## Đang chạy (2026-10-04)
 
 - API: `https://agent-edit-license.agent-edit-license-server.workers.dev` (đã điền vào `PROD_API`)

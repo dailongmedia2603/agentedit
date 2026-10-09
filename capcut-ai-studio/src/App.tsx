@@ -24,6 +24,7 @@ import { IS_WIN } from './lib/platform'
 import { installSecretToggle, useFullUi } from './lib/clientUi'
 import { planLabel, fmtDate } from './components/LicenseGate'
 import { kickHarvest } from './lib/fxHarvest'
+import { UpdateBanner, UpdateCheckRow, UpdateChip, useUpdateState } from './components/UpdateChip'
 
 type Tab = 'doctor' | 'settings' | 'resources' | 'prompts' | 'remotion' | 'projects'
 
@@ -62,6 +63,8 @@ export default function App() {
   // Thong tin key (nut tai khoan goc phai): da qua cong ban quyen thi trang thai luon la ok
   const [license, setLicense] = useState<LicenseState | null>(null)
   const [licOpen, setLicOpen] = useState(false)
+  // Tu cap nhat (ban cai cho khach): nut tren thanh tieu de + thong bao sau khi cap nhat
+  const upd = useUpdateState()
   useEffect(() => {
     window.studio.licenseState().then(setLicense)
     return window.studio.onLicenseChanged(setLicense)
@@ -139,7 +142,9 @@ export default function App() {
           <span className="text-ink-900">Agent Edit</span>
           <span className="text-ink-800/25">·</span>
           <span className="font-normal text-ink-800/40">v{appVersion}</span>
+          <UpdateChip st={upd} busy={rmBusyIds.length > 0} />
         </div>
+        <UpdateBanner st={upd} />
         <div className={`no-drag absolute ${IS_WIN ? 'right-[150px]' : 'right-4'} flex items-center gap-1.5 text-ink-800/45`}>
           <button className="rounded-lg p-1.5 hover:bg-black/5 hover:text-ink-900">
             <HelpCircle className="h-[18px] w-[18px]" />
@@ -173,6 +178,7 @@ export default function App() {
                     <div>{license.plan === 'lifetime' || !license.expiresAt ? 'Không hết hạn' : `Hết hạn: ${fmtDate(license.expiresAt)}`}</div>
                   </div>
                 )}
+                <UpdateCheckRow st={upd} />
               </div>
             )}
           </div>

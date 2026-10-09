@@ -1,0 +1,187 @@
+# PHAT HANH AGENT EDIT: build ban cai cho khach Mac (arm64) + Windows (x64) song song, tu kiem ban dong goi (Doctor, sidecar,
+# render MP4 + tu cap nhat that), roi day ban cap nhat len R2 -> app da cai cua khach tu tai. PROJECT_OVERVIEW muc 15.
+#
+#  - Day tag vX.Y.Z (npm run release -- X.Y.Z --notes "...")  -> kenh stable + GitHub Release (file cai dat cho khach moi)
+#  - Chay tay (Actions -> Release -> Run workflow / npm run release -- --test) -> chon kenh test|stable
+#
+# Secrets (Settings -> Secrets and variables -> Actions): UPDATE_SIGNING_KEY, MAC_CERT_P12, MAC_CERT_PASSWORD,
+# R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET.
+name: Release
+
+on:
+  push:
+    tags: ['v*.*.*']
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Kenh phat hanh
+        type: choice
+        options: [test, stable]
+        default: test
+      notes:
+        description: Ghi chu phien ban (khach thay trong hop thoai cap nhat)
+        type: string
+        default: ''
+      publish:
+        description: Day len R2 (bo chon = chi build + tu kiem)
+        type: boolean
+        default: true
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  meta:
+    runs-on: ubuntu-latest
+    outputs:
+      build: ${{ steps.m.outputs.build }}
+      version: ${{ steps.m.outputs.version }}
+      channel: ${{ steps.m.outputs.channel }}
+      publish: ${{ steps.m.outputs.publish }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: m
+        name: Phien ban, ma build, kenh, ghi chu
+        env:
+          IN_CHANNEL: ${{ inputs.channel }}
+          IN_NOTES: ${{ inputs.notes }}
+          IN_PUBLISH: ${{ inputs.publish }}
+        run: |
+          set -euo pipefail
+          VERSION=$(node -p "require('./capcut-ai-studio/package.json').version")
+          # ma build = ngay-gio Viet Nam, CHUNG cho ca 2 nen tang cua lan phat hanh nay
+          BUILD=$(TZ=Asia/Ho_Chi_Minh date +%Y%m%d-%H%M)
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            [ "${GITHUB_REF_NAME}" = "v${VERSION}" ] || { echo "::error::tag ${GITHUB_REF_NAME} khac package.json v${VERSION}"; exit 1; }
+            git fetch --force --depth=1 origin "+refs/tags/${GITHUB_REF_NAME}:refs/tags/${GITHUB_REF_NAME}"
+            git tag -l --format='%(contents)' "${GITHUB_REF_NAME}" > notes.txt
+            CHANNEL=stable
+            PUBLISH=true
+          else
+            printf '%s\n' "${IN_NOTES:-Bản ${VERSION}}" > notes.txt
+            CHANNEL="${IN_CHANNEL:-test}"
+            PUBLISH="${IN_PUBLISH:-true}"
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "build=${BUILD}" >> "$GITHUB_OUTPUT"
+          echo "channel=${CHANNEL}" >> "$GITHUB_OUTPUT"
+          echo "publish=${PUBLISH}" >> "$GITHUB_OUTPUT"
+          echo "v${VERSION} build ${BUILD} kenh ${CHANNEL} publish=${PUBLISH}"; cat notes.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: notes
+          path: notes.txt
+
+  mac:
+    needs: meta
+    runs-on: macos-14
+    timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: capcut-ai-studio
+    env:
+      STUDIO_BUILD_ID: ${{ needs.meta.outputs.build }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: capcut-ai-studio/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Chung chi ky ma (tu tao — Keychain khach khong hoi lai sau cap nhat)
+        env:
+          MAC_CERT_P12: ${{ secrets.MAC_CERT_P12 }}
+        run: |
+          [ -n "$MAC_CERT_P12" ] || { echo "::error::thieu secret MAC_CERT_P12"; exit 1; }
+          echo "$MAC_CERT_P12" | base64 --decode > "$RUNNER_TEMP/cs.p12"
+          echo "STUDIO_MAC_SIGN_P12=$RUNNER_TEMP/cs.p12" >> "$GITHUB_ENV"
+      - name: Dong goi (dmg)
+        env:
+          STUDIO_MAC_SIGN_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
+        run: node scripts/dist.mjs --mac
+      - name: Tu kiem ban dong goi
+        run: node scripts/selftest-packaged.mjs
+      - name: Tu kiem tu cap nhat (thay app that)
+        env:
+          UPDATE_SIGNING_KEY: ${{ secrets.UPDATE_SIGNING_KEY }}
+        run: node scripts/selftest-update.mjs
+      - uses: actions/download-artifact@v4
+        with:
+          name: notes
+          path: capcut-ai-studio/release
+      - name: Phat hanh ban cap nhat (R2)
+        if: needs.meta.outputs.publish == 'true'
+        env:
+          UPDATE_SIGNING_KEY: ${{ secrets.UPDATE_SIGNING_KEY }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: node scripts/publish-update.mjs --channel ${{ needs.meta.outputs.channel }} --notes-file release/notes.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac-dmg
+          path: capcut-ai-studio/release/*.dmg
+          retention-days: 30
+
+  windows:
+    needs: meta
+    runs-on: windows-2022
+    timeout-minutes: 150
+    defaults:
+      run:
+        working-directory: capcut-ai-studio
+    env:
+      STUDIO_BUILD_ID: ${{ needs.meta.outputs.build }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: capcut-ai-studio/package-lock.json
+      - name: Dong goi + tu kiem (build-windows.ps1)
+        shell: powershell
+        run: powershell -ExecutionPolicy Bypass -File .\build-windows.ps1
+      - name: Tu kiem tu cap nhat (cai im lang that)
+        env:
+          UPDATE_SIGNING_KEY: ${{ secrets.UPDATE_SIGNING_KEY }}
+        run: node scripts/selftest-update.mjs --ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: notes
+          path: capcut-ai-studio/release
+      - name: Phat hanh ban cap nhat (R2)
+        if: needs.meta.outputs.publish == 'true'
+        env:
+          UPDATE_SIGNING_KEY: ${{ secrets.UPDATE_SIGNING_KEY }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: node scripts/publish-update.mjs --channel ${{ needs.meta.outputs.channel }} --notes-file release/notes.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: win-setup
+          path: capcut-ai-studio/release/*-Setup-*.exe
+          retention-days: 30
+
+  # File cai dat cho KHACH MOI (repo private -> chi chu repo tai duoc): GitHub -> Releases
+  github-release:
+    needs: [meta, mac, windows]
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dl
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" --title "Agent Edit ${GITHUB_REF_NAME}" \
+            --notes-file dl/notes/notes.txt dl/mac-dmg/*.dmg dl/win-setup/*.exe

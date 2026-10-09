@@ -221,6 +221,24 @@ function rawSidecarRequest(path: string, body?: unknown, timeoutMs = 1800000): P
   })
 }
 
+/** Tat sidecar va CHO no thoat han (toi da timeoutMs) — tu cap nhat Windows: python.exe con chay thi bo cai khong ghi de
+ *  duoc file trong thu muc app. */
+export function stopSidecarAndWait(timeoutMs = 10000): Promise<void> {
+  const c = child
+  if (!c || c.exitCode !== null || c.signalCode !== null) {
+    stopSidecar()
+    return Promise.resolve()
+  }
+  return new Promise((resolve) => {
+    const timer = setTimeout(resolve, timeoutMs)
+    c.once('exit', () => {
+      clearTimeout(timer)
+      resolve()
+    })
+    stopSidecar()
+  })
+}
+
 export function stopSidecar(): void {
   if (child) {
     const c = child

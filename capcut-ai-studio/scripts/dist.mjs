@@ -7,6 +7,7 @@
 // So phien ban (1.1.0) van o package.json "version" — tang tay khi co dot tinh nang moi.
 //   node scripts/dist.mjs --mac|--win [--dir]      (dat san STUDIO_BUILD_ID thi dung lai ma do)
 import { spawnSync } from 'child_process'
+import { readFileSync, writeFileSync } from 'fs'
 
 const args = process.argv.slice(2)
 const win = args.includes('--win')
@@ -14,7 +15,10 @@ const dir = args.includes('--dir')
 const p = (n) => String(n).padStart(2, '0')
 const d = new Date()
 const stamp = `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`
-const id = process.env.STUDIO_BUILD_ID || stamp + (process.env.STUDIO_FULL_UI === '1' ? '-full' : '')
+let id = process.env.STUDIO_BUILD_ID || stamp
+// ban day du LUON co "-full" (ke ca khi dat san STUDIO_BUILD_ID): app ban day du khong tu cap nhat va
+// scripts/publish-update.mjs tu choi phat hanh ban -full cho khach
+if (process.env.STUDIO_FULL_UI === '1' && !id.endsWith('-full')) id += '-full'
 process.env.STUDIO_BUILD_ID = id
 
 const steps = [
@@ -36,4 +40,10 @@ for (const s of steps) {
     process.exit(r.status ?? 1)
   }
 }
+// Ghi lai lan dong goi nay -> scripts/publish-update.mjs biet CHAC file nao (khong doan theo ten / gio sua file)
+const version = JSON.parse(readFileSync('package.json', 'utf-8')).version
+writeFileSync(
+  `release/build-info-${win ? 'win' : 'mac'}.json`,
+  JSON.stringify({ version, build: id, platform: win ? 'win32' : 'darwin', arch: win ? 'x64' : 'arm64', dir, fullUi: process.env.STUDIO_FULL_UI === '1', at: new Date().toISOString() }, null, 2)
+)
 console.log(`[dist] xong — ma build ${id}`)
