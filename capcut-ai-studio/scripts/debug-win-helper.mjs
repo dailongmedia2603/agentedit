@@ -27,25 +27,39 @@ const psExe = join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'Windows
 const parse = spawnSync(psExe, ['-NoProfile', '-Command', `$e=$null; $null=[System.Management.Automation.Language.Parser]::ParseFile('${ps1}',[ref]$null,[ref]$e); if ($e) { $e | % { $_.ToString() } } else { 'PARSE OK' }`], { encoding: 'utf-8' })
 console.log('[1] parse:', (parse.stdout + parse.stderr).trim())
 
-// 2) goi giong app: cha spawn PS tach roi (stdio ignore, windowsHide) roi thoat ngay
-const b64 = (s) => Buffer.from(s, 'utf-8').toString('base64')
-const args = ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-WindowStyle', 'Hidden', '-File', ps1,
-  '-AppPid', '999999', '-Setup', setup, '-InstDir', inst, '-Exe', fakeApp, '-Log', log, '-Marker', marker,
-  '-FromVer', '1.2.2+20261008-1500', '-ToVer', '1.3.0+20261009-1530', '-ArgsB64', b64(JSON.stringify(['--user-data-dir=C:\\a b\\c', '--x'])), '-MsgB64', b64('Lỗi thử')]
-const parentCode = `const {spawn}=require('child_process');const c=spawn(${JSON.stringify(psExe)},${JSON.stringify(args)},{detached:true,stdio:'ignore',windowsHide:true});c.on('spawn',()=>{c.unref();process.exit(0)});c.on('error',e=>{console.log('SPAWN ERR',e.message);process.exit(1)})`
-const parent = spawnSync(process.execPath, ['-e', parentCode], { encoding: 'utf-8' })
-console.log('[2] cha thoat:', parent.status, (parent.stdout || '').trim())
-const t0 = Date.now()
-while (Date.now() - t0 < 60000 && !existsSync(marker)) await new Promise((r) => setTimeout(r, 1000))
-await new Promise((r) => setTimeout(r, 3000))
-console.log('[2] bo cai gia chay:', existsSync(ranSetup) ? readFileSync(ranSetup, 'utf-8').trim() : 'KHONG')
-console.log('[2] app gia mo:', existsSync(marker) ? readFileSync(marker, 'utf-8').trim() : 'KHONG')
-console.log('[2] apply.log:\n' + (existsSync(log) ? readFileSync(log, 'utf-8') : '(khong co)'))
-
-// 3) neu (2) khong chay: chay lai CO stdout/stderr de thay loi PowerShell
-if (!existsSync(marker)) {
-  const r = spawnSync(psExe, args, { encoding: 'utf-8', timeout: 90000 })
-  console.log('[3] chay truc tiep: ma', r.status, '\nstdout:', r.stdout, '\nstderr:', r.stderr)
-  console.log('[3] apply.log:\n' + (existsSync(log) ? readFileSync(log, 'utf-8') : '(khong co)'))
+// 2) nhieu cach goi TACH ROI (cha thoat ngay sau khi spawn) — moi cach 1 bo log/marker rieng
+const b64 = (x) => Buffer.from(x, 'utf-8').toString('base64')
+const sysRoot = process.env.SystemRoot || 'C:\\Windows'
+function mkArgs(tag, extraPs = []) {
+  return {
+    log: join(dir, `apply-${tag}.log`),
+    marker: join(dir, `m-${tag}.ok`),
+    ps: ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', ...extraPs, '-File', ps1,
+      '-AppPid', '999999', '-Setup', setup, '-InstDir', inst, '-Exe', join(dir, `app-${tag}.cmd`), '-Log', join(dir, `apply-${tag}.log`), '-Marker', join(dir, `m-${tag}.ok`),
+      '-FromVer', '1.2.2+20261008-1500', '-ToVer', '1.3.0+20261009-1530', '-ArgsB64', b64(JSON.stringify(['--user-data-dir=C:\\a b\\c', '--x'])), '-MsgB64', b64('Lỗi thử')]
+  }
+}
+const variants = {
+  A_app_hien_tai: { opts: { detached: true, stdio: 'ignore', windowsHide: true }, extra: ['-WindowStyle', 'Hidden'] },
+  B_khong_windowstyle: { opts: { detached: true, stdio: 'ignore', windowsHide: true }, extra: [] },
+  C_detached_khong_hide: { opts: { detached: true, stdio: 'ignore' }, extra: ['-WindowStyle', 'Hidden'] },
+  D_khong_detached: { opts: { stdio: 'ignore', windowsHide: true }, extra: ['-WindowStyle', 'Hidden'] },
+  E_qua_cmd_start: { viaCmd: true, opts: { detached: true, stdio: 'ignore', windowsHide: true, windowsVerbatimArguments: true }, extra: ['-WindowStyle', 'Hidden'] }
+}
+for (const [tag, v] of Object.entries(variants)) {
+  const a = mkArgs(tag, v.extra)
+  writeFileSync(join(dir, `app-${tag}.cmd`), `@echo off\r\necho started %* > "${a.marker}"\r\n`)
+  let cmd = psExe
+  let args = a.ps
+  if (v.viaCmd) {
+    const q = (x) => (/[\s"]/.test(x) ? '"' + x.replace(/"/g, '\\"') + '"' : x)
+    cmd = join(sysRoot, 'System32', 'cmd.exe')
+    args = ['/d /s /c "start "" /min ' + [psExe, ...a.ps].map(q).join(' ') + '"']
+  }
+  const code = `const {spawn}=require('child_process');const c=spawn(${JSON.stringify(cmd)},${JSON.stringify(args)},${JSON.stringify(v.opts)});c.on('spawn',()=>{c.unref();process.exit(0)});c.on('error',e=>{console.log('SPAWN ERR',e.message);process.exit(1)})`
+  const parent = spawnSync(process.execPath, ['-e', code], { encoding: 'utf-8' })
+  const t0 = Date.now()
+  while (Date.now() - t0 < 30000 && !existsSync(a.marker)) await new Promise((r) => setTimeout(r, 500))
+  console.log(`[2] ${tag}: cha=${parent.status} ${String(parent.stdout || '').trim()} | app gia mo=${existsSync(a.marker)} | log=${existsSync(a.log) ? readFileSync(a.log, 'utf-8').replace(/\r?\n/g, ' / ').slice(0, 200) : '(khong co)'}`)
 }
 void spawn
