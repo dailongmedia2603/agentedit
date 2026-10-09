@@ -105,6 +105,9 @@ jobs:
           STUDIO_MAC_SIGN_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
         run: node scripts/dist.mjs --mac
       - name: Tu kiem ban dong goi
+        env:
+          # may ao macOS khong co Neural Engine -> Vision khong tach nguoi (chi ghi lai, xem selftest-packaged.mjs)
+          SELFTEST_VM_NO_PERSON_SEG: '1'
         run: node scripts/selftest-packaged.mjs
       - name: Tu kiem tu cap nhat (thay app that)
         env:
