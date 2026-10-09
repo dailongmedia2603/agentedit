@@ -1,10 +1,18 @@
-# TAM THOI: chan doan script cai de Windows cua bo tu cap nhat (xoa sau khi xong)
+# TAM THOI: chan doan bo cai NSIS + script cai de Windows ma KHONG build lai (dung bo cai cua 1 lan chay Release)
 name: Debug Windows update helper
 on:
   workflow_dispatch:
+    inputs:
+      run_id:
+        description: ID lan chay Release co artifact win-setup-raw
+        required: true
+permissions:
+  actions: read
+  contents: read
 jobs:
   win:
     runs-on: windows-2022
+    timeout-minutes: 40
     defaults:
       run:
         working-directory: capcut-ai-studio
@@ -13,4 +21,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - uses: actions/download-artifact@v4
+        with:
+          name: win-setup-raw
+          path: capcut-ai-studio/release
+          run-id: ${{ inputs.run_id }}
+          github-token: ${{ github.token }}
       - run: node --experimental-strip-types scripts/debug-win-helper.mjs

@@ -1,67 +1,70 @@
-// CHAN DOAN script cai de Windows (WIN_APPLY_PS1) — chay tren may Windows / CI, KHONG can build app:
-//   node --experimental-strip-types scripts/debug-win-helper.mjs
-// Gia lap dung cach app goi: tien trinh cha (app) spawn PowerShell TACH ROI roi THOAT NGAY; bo cai gia (.cmd ghi file),
-// "app" gia = node ghi dau khoi dong. In nhat ky script + loi PowerShell (neu co).
-import { spawn, spawnSync } from 'node:child_process'
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+// CHAN DOAN bo cai NSIS + script cai de Windows (WIN_APPLY_PS1 lay TU MA NGUON) tren may CI, khong build lai app:
+//   node --experimental-strip-types scripts/debug-win-helper.mjs      (can release/*-Setup-*.exe)
+// 1) cai im lang that  2) mo app da cai (user-data-dir tam)  3) chay script cai de giong app (qua cmd start, cwd tach rieng)
+// voi PID app that -> app bi dung, bo cai chay /S --updated, mo lai app  4) in nhat ky + tien trinh + thu muc cai.
+import { execFileSync, spawn } from 'node:child_process'
+import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 
 const C = await import('../electron/services/update-core.ts')
-const dir = mkdtempSync(join(tmpdir(), 'ae dbg (x) & y '))
-const ps1 = join(dir, 'apply.ps1')
+const root = resolve(import.meta.dirname, '..')
+const setupName = readdirSync(join(root, 'release')).find((f) => /-Setup-.*\.exe$/.test(f))
+if (!setupName) throw new Error('khong co release/*-Setup-*.exe')
+const setup = join(root, 'release', setupName)
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+const ps = (cmd) => execFileSync('powershell.exe', ['-NoProfile', '-Command', cmd], { encoding: 'utf-8' })
+const procs = () => ps("Get-CimInstance Win32_Process | Where-Object { $_.Name -match 'Agent|Setup|Un_|Au_|python|powershell' } | ForEach-Object { $_.Name + ' ' + $_.ProcessId + ' cha=' + $_.ParentProcessId + ' ' + ($_.CommandLine -replace '\\s+', ' ').Substring(0, [Math]::Min(160, ($_.CommandLine + '').Length)) }")
+
+console.log('[1] cai im lang', setupName)
+let t0 = Date.now()
+execFileSync(setup, ['/S'], { stdio: 'inherit', timeout: 15 * 60000 })
+console.log(`    xong sau ${Math.round((Date.now() - t0) / 1000)}s`)
+const inst = ps("Get-ItemProperty HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\* -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -like 'Agent Edit*' } | Select-Object -First 1 -ExpandProperty InstallLocation").trim()
+const exe = join(inst, 'Agent Edit.exe')
+console.log('    thu muc cai:', inst, '| co exe:', existsSync(exe))
+
+const work = mkdtempSync(join(tmpdir(), 'aedbg-'))
+const ud = join(work, 'ud')
+console.log('[2] mo app da cai')
+const env = { ...process.env }
+delete env.ELECTRON_RUN_AS_NODE
+const app = spawn(exe, [`--user-data-dir=${ud}`], { env, stdio: 'ignore', detached: true })
+app.unref()
+await sleep(15000)
+console.log(procs())
+
+console.log('[3] chay script cai de (giong updater.ts)')
+const upd = join(work, 'updates')
+execFileSync('cmd.exe', ['/c', 'mkdir', upd])
+const ps1 = join(upd, 'apply.ps1')
 writeFileSync(ps1, '\ufeff' + C.WIN_APPLY_PS1, 'utf-8')
-const log = join(dir, 'apply.log')
-const marker = join(dir, 'launched.ok')
-const inst = join(dir, 'Agent Edit')
-const ranSetup = join(dir, 'setup-ran.txt')
-// bo cai gia: ghi tham so nhan duoc
-const setup = join(dir, 'fake-setup.cmd')
-writeFileSync(setup, `@echo off\r\necho %* > "${ranSetup}"\r\nexit /b 0\r\n`)
-// "app" gia: ghi marker
-const fakeApp = join(dir, 'fakeapp.cmd')
-writeFileSync(fakeApp, `@echo off\r\necho started %* > "${marker}"\r\n`)
-const psExe = join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe')
-
-// 1) soat cu phap bang PowerShell 5.1 that
-const parse = spawnSync(psExe, ['-NoProfile', '-Command', `$e=$null; $null=[System.Management.Automation.Language.Parser]::ParseFile('${ps1}',[ref]$null,[ref]$e); if ($e) { $e | % { $_.ToString() } } else { 'PARSE OK' }`], { encoding: 'utf-8' })
-console.log('[1] parse:', (parse.stdout + parse.stderr).trim())
-
-// 2) nhieu cach goi TACH ROI (cha thoat ngay sau khi spawn) — moi cach 1 bo log/marker rieng
+const log = join(upd, 'apply.log')
+const marker = join(upd, 'launched.ok')
 const b64 = (x) => Buffer.from(x, 'utf-8').toString('base64')
-const sysRoot = process.env.SystemRoot || 'C:\\Windows'
-function mkArgs(tag, extraPs = []) {
-  return {
-    log: join(dir, `apply-${tag}.log`),
-    marker: join(dir, `m-${tag}.ok`),
-    ps: ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', ...extraPs, '-File', ps1,
-      '-AppPid', '999999', '-Setup', setup, '-InstDir', inst, '-Exe', join(dir, `app-${tag}.cmd`), '-Log', join(dir, `apply-${tag}.log`), '-Marker', join(dir, `m-${tag}.ok`),
-      '-FromVer', '1.2.2+20261008-1500', '-ToVer', '1.3.0+20261009-1530', '-ArgsB64', b64(JSON.stringify(['--user-data-dir=C:\\a b\\c', '--x'])), '-MsgB64', b64('Lỗi thử')]
+const psExe = join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe')
+const args = ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-WindowStyle', 'Hidden', '-File', ps1,
+  '-AppPid', String(app.pid), '-Setup', setup, '-InstDir', inst, '-Exe', exe, '-Log', log, '-Marker', marker,
+  '-FromVer', 'x', '-ToVer', 'y', '-ArgsB64', b64(JSON.stringify([`--user-data-dir=${ud}`])), '-MsgB64', b64('loi thu')]
+const q = (x) => '"' + x.replace(/"/g, '\\"') + '"'
+const line = `/d /s /c "start "" /min ${[psExe, ...args].map(q).join(' ')}"`
+spawn(join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'cmd.exe'), [line], { cwd: upd, detached: true, stdio: 'ignore', windowsHide: true, windowsVerbatimArguments: true }).unref()
+// app tu thoat nhu khi bam "Cap nhat" (o day dung tien trinh de mo phong)
+await sleep(3000)
+try {
+  execFileSync('taskkill', ['/PID', String(app.pid)], { stdio: 'pipe' })
+} catch {}
+t0 = Date.now()
+let last = ''
+while (Date.now() - t0 < 20 * 60000) {
+  const cur = existsSync(log) ? readFileSync(log, 'utf-8') : ''
+  if (cur !== last) {
+    process.stdout.write(cur.slice(last.length))
+    last = cur
   }
+  if (/OK: app da mo|LOI: app khong mo|khong thay app sau khi cai/.test(cur)) break
+  await sleep(5000)
 }
-const variants = {
-  A_app_hien_tai: { opts: { detached: true, stdio: 'ignore', windowsHide: true }, extra: ['-WindowStyle', 'Hidden'] },
-  B_khong_windowstyle: { opts: { detached: true, stdio: 'ignore', windowsHide: true }, extra: [] },
-  C_detached_khong_hide: { opts: { detached: true, stdio: 'ignore' }, extra: ['-WindowStyle', 'Hidden'] },
-  D_khong_detached: { opts: { stdio: 'ignore', windowsHide: true }, extra: ['-WindowStyle', 'Hidden'] },
-  E_qua_cmd_start: { viaCmd: true, opts: { detached: true, stdio: 'ignore', windowsHide: true, windowsVerbatimArguments: true }, extra: ['-WindowStyle', 'Hidden'] },
-  F_giong_updater: { viaCmd: true, allQuoted: true, opts: { detached: true, stdio: 'ignore', windowsHide: true, windowsVerbatimArguments: true }, extra: ['-WindowStyle', 'Hidden'] }
-}
-for (const [tag, v] of Object.entries(variants)) {
-  const a = mkArgs(tag, v.extra)
-  writeFileSync(join(dir, `app-${tag}.cmd`), `@echo off\r\necho started %* > "${a.marker}"\r\n`)
-  let cmd = psExe
-  let args = a.ps
-  if (v.viaCmd) {
-    // F = DUNG ham spawnDetachedWin cua updater.ts: moi tham so trong ngoac kep
-    const q = v.allQuoted ? (x) => '"' + x.replace(/"/g, '\\"') + '"' : (x) => (/[\s"]/.test(x) ? '"' + x.replace(/"/g, '\\"') + '"' : x)
-    cmd = join(sysRoot, 'System32', 'cmd.exe')
-    args = ['/d /s /c "start "" /min ' + [psExe, ...a.ps].map(q).join(' ') + '"']
-  }
-  const code = `const {spawn}=require('child_process');const c=spawn(${JSON.stringify(cmd)},${JSON.stringify(args)},${JSON.stringify(v.opts)});c.on('spawn',()=>{c.unref();process.exit(0)});c.on('error',e=>{console.log('SPAWN ERR',e.message);process.exit(1)})`
-  const parent = spawnSync(process.execPath, ['-e', code], { encoding: 'utf-8' })
-  const t0 = Date.now()
-  while (Date.now() - t0 < 30000 && !existsSync(a.marker)) await new Promise((r) => setTimeout(r, 500))
-  console.log(`[2] ${tag}: cha=${parent.status} ${String(parent.stdout || '').trim()} | app gia mo=${existsSync(a.marker)} | log=${existsSync(a.log) ? readFileSync(a.log, 'utf-8').replace(/\r?\n/g, ' / ').slice(0, 200) : '(khong co)'}`)
-}
-void spawn
+console.log('[4] tien trinh:\n' + procs())
+console.log('[4] thu muc cai:', existsSync(inst) ? readdirSync(inst).join(', ') : '(mat)')
+console.log('[4] marker:', existsSync(marker) ? readFileSync(marker, 'utf-8') : '(khong co)')

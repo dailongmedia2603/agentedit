@@ -151,6 +151,13 @@ jobs:
       - name: Dong goi + tu kiem (build-windows.ps1)
         shell: powershell
         run: powershell -ExecutionPolicy Bypass -File .\build-windows.ps1
+      # luu bo cai NGAY sau khi build (ke ca khi buoc sau hong) -> debug-win-helper.yml dung lai khong phai build lai
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: win-setup-raw
+          path: capcut-ai-studio/release/*-Setup-*.exe
+          retention-days: 7
       - name: Tu kiem tu cap nhat (cai im lang that)
         env:
           UPDATE_SIGNING_KEY: ${{ secrets.UPDATE_SIGNING_KEY }}

@@ -185,6 +185,22 @@ async function waitResult(file, want, ms) {
   return null
 }
 
+function diagnose() {
+  // chan doan: toan bo nhat ky script + tien trinh con lai + noi dung thu muc cai
+  try {
+    const lg = join(ud, 'updates', 'apply.log')
+    console.log('---- apply.log ----\n' + (existsSync(lg) ? readFileSync(lg, 'utf-8') : '(khong co — da xoa thu muc tam?)'))
+  } catch {}
+  if (IS_WIN) {
+    try {
+      console.log('---- tien trinh ----\n' + execFileSync('powershell.exe', ['-NoProfile', '-Command', "Get-CimInstance Win32_Process | Where-Object { $_.Name -match 'Agent|Setup|powershell|python|Un_|Au_' } | ForEach-Object { $_.Name + ' ' + $_.ProcessId + ' cha=' + $_.ParentProcessId + ' ' + $_.CommandLine }"], { encoding: 'utf-8' }).slice(0, 4000))
+      console.log('---- thu muc cai ----\n' + execFileSync('cmd.exe', ['/c', 'dir', '/b', installed], { encoding: 'utf-8' }).slice(0, 2000))
+    } catch (e) {
+      console.log('chan doan loi:', String(e.message).slice(0, 300))
+    }
+  }
+}
+
 try {
   // ---- 3. phieu SAI chu ky -> app tu choi, khong dung toi app ----
   {
@@ -240,6 +256,7 @@ try {
     console.log(`[selftest-update] tong thoi gian luong that: ${Math.round((Date.now() - t0) / 1000)}s`)
   }
 } finally {
+  if (results.some((r) => !r.ok)) diagnose()
   srv.close()
   if (!KEEP) {
     await sleep(2000)

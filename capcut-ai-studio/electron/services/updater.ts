@@ -169,12 +169,14 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
  * bi ket thuc khi app thoat (do that tren may Windows CI 2026-10-09: PowerShell khong chay duoc dong nao; qua `start` thi
  * chay tron ven). Moi tham so dat trong ngoac kep (duong dan co dau cach / & ( ) ^ van dung).
  */
-function spawnDetachedWin(exe: string, args: string[]): Promise<void> {
+function spawnDetachedWin(exe: string, args: string[], cwd: string): Promise<void> {
   const q = (x: string) => '"' + x.replace(/"/g, '\\"') + '"'
   const cmd = join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'cmd.exe')
   const line = `/d /s /c "start "" /min ${[exe, ...args].map(q).join(' ')}"`
   return new Promise((res, rej) => {
-    const child = spawn(cmd, [line], { detached: true, stdio: 'ignore', windowsHide: true, windowsVerbatimArguments: true })
+    // cwd = thu muc updates: KHONG de cmd / PowerShell giu thu muc cai cua app (mo tu loi tat Start Menu thi cwd la thu muc
+    // cai -> bo go cai ban cu khong xoa duoc thu muc)
+    const child = spawn(cmd, [line], { cwd, detached: true, stdio: 'ignore', windowsHide: true, windowsVerbatimArguments: true })
     child.once('error', rej)
     child.once('spawn', () => {
       child.unref()
@@ -536,11 +538,11 @@ export async function applyUpdate(busy = false): Promise<{ ok: boolean; error?: 
       ]
       try {
         if (!existsSync(ps)) throw new Error('khong thay ' + ps)
-        await spawnDetachedWin(ps, args)
+        await spawnDetachedWin(ps, args, updDir())
       } catch (e) {
         // khong co / khong chay duoc PowerShell -> chay thang bo cai im lang, bo cai tu mo app sau khi cai
         log(`khong chay duoc PowerShell (${String((e as Error).message || e)}) -> chay thang bo cai`)
-        await spawnDetachedWin(downloadPath, ['/S', '--updated', '--force-run'])
+        await spawnDetachedWin(downloadPath, ['/S', '--updated', '--force-run'], updDir())
       }
     }
     // Thoat app (before-quit tat sidecar / render / may chu media). Bi chan (cua so tu choi dong...) -> thoat han sau 15s.

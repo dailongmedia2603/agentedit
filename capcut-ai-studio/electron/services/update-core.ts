@@ -259,14 +259,29 @@ function StopLeftovers {
 StopLeftovers
 Start-Sleep -Seconds 1
 
+function Leftovers {
+  @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+    Where-Object { $_.ExecutablePath -and $_.ExecutablePath.StartsWith($pre, [StringComparison]::OrdinalIgnoreCase) } |
+    ForEach-Object { $_.Name + ':' + $_.ProcessId }) -join ', '
+}
 $code = -1
 for ($i = 1; $i -le 2; $i++) {
   try {
+    $left = Leftovers
+    if ($left) { L ('con tien trinh trong thu muc cai: ' + $left) }
+    L ('chay bo cai lan ' + $i)
     $proc = Start-Process -FilePath $Setup -ArgumentList ('/S --updated /D=' + $InstDir) -PassThru
     $null = $proc.Handle
-    if (-not $proc.WaitForExit(900000)) { L 'bo cai chay qua 15 phut'; $code = -2 } else { $code = $proc.ExitCode }
+    $waited = 0
+    while (-not $proc.WaitForExit(30000)) {
+      $waited += 30
+      $kids = @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.ParentProcessId -eq $proc.Id } | ForEach-Object { $_.Name + ':' + $_.ProcessId }) -join ', '
+      L ('bo cai van chay sau ' + $waited + 's; con: ' + $kids + '; trong thu muc cai: ' + (Leftovers) + '; co exe: ' + (Test-Path -LiteralPath $Exe))
+      if ($waited -ge 900) { break }
+    }
+    if (-not $proc.HasExited) { L 'bo cai chay qua 15 phut'; $code = -2 } else { $code = $proc.ExitCode }
   } catch { L ('khong chay duoc bo cai: ' + $_.Exception.Message); $code = -3 }
-  L "bo cai lan $i -> ma $code"
+  L ("bo cai lan $i -> ma $code; co exe: " + (Test-Path -LiteralPath $Exe))
   if ($code -eq 0) { break }
   StopLeftovers
   Start-Sleep -Seconds 5
