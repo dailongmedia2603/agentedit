@@ -49,7 +49,8 @@ if (!existsSync(exe)) {
 // ---- moi truong co lap ----
 const home = mkdtempSync(join(tmpdir(), 'ae-selftest-'))
 const ud = join(home, 'ud')
-const env = { ...process.env, HOME: home, USERPROFILE: home, PYTHONUTF8: '1', PYTHONIOENCODING: 'utf-8' }
+// PYTHONPYCACHEPREFIX: Python khong ghi __pycache__ vao trong goi app (hong chu ky ma -> goi cap nhat nen sau do bi tu choi)
+const env = { ...process.env, HOME: home, USERPROFILE: home, PYTHONUTF8: '1', PYTHONIOENCODING: 'utf-8', PYTHONPYCACHEPREFIX: join(home, 'pycache') }
 delete env.ELECTRON_RUN_AS_NODE // VSCode / terminal IDE dat bien nay -> exe app chay nhu node roi thoat
 const tools = join(home, '.capcut-studio', 'tools', 'bin')
 const ffmpeg = join(tools, IS_WIN ? 'ffmpeg.exe' : 'ffmpeg')
@@ -314,6 +315,20 @@ async function main() {
     }
   }
   record('Render MP4', pass && Math.abs(Number(dur) - 3) < 0.3, pass ? `${out} (${dur}s, ${(statSync(out).size / 1e6).toFixed(1)} MB)` : rr.out.split(/\r?\n/).filter((l) => /RMR|rror/.test(l)).slice(-6).join(' | '))
+
+  // 7) macOS: chay xong moi thu, goi app VAN con nguyen chu ky (khong tien trinh nao ghi vao trong goi — vd __pycache__
+  //    cua Python). Hong -> goi cap nhat nen tu app nay bi updater cua khach tu choi.
+  if (app.endsWith('.app')) {
+    let sealed = true
+    let why = ''
+    try {
+      execFileSync('/usr/bin/codesign', ['--verify', '--deep', '--strict', app], { stdio: 'pipe' })
+    } catch (e) {
+      sealed = false
+      why = String(e.stderr || e.message).trim().split('\n').slice(-3).join(' | ')
+    }
+    record('Gói app còn nguyên chữ ký sau khi chạy (không tự ghi vào chính nó)', sealed, why)
+  }
 
   // ---- tong ket ----
   const bad = results.filter((r) => !r.ok)

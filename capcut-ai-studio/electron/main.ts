@@ -1,6 +1,6 @@
 import { app, BrowserWindow, Menu, nativeTheme } from 'electron'
 import { join } from 'path'
-import { tmpdir } from 'os'
+import { homedir, tmpdir } from 'os'
 import { appendFileSync, existsSync, mkdirSync, writeFileSync } from 'fs'
 import { registerIpc } from './ipc'
 import { stopSidecar } from './services/sidecar'
@@ -38,6 +38,10 @@ if (existsSync(GPU_OFF()) || process.argv.includes('--disable-gpu')) {
 declare const __APP_BUILD__: string
 const APP_BUILD = typeof __APP_BUILD__ !== 'undefined' ? __APP_BUILD__ : ''
 bootLog(`khoi dong v${app.getVersion()}${APP_BUILD ? ' build ' + APP_BUILD : ''} ${process.platform}-${process.arch} gpu=${existsSync(GPU_OFF()) ? 'tat' : 'bat'}`)
+// Python NHUNG khong duoc ghi __pycache__ vao TRONG goi app: lam hong niem phong chu ky ma macOS (codesign --verify bao
+// "a sealed resource is missing or invalid") -> ban cap nhat nen tu app do bi tu choi; Windows thi ban dong thu muc cai.
+// Moi tien trinh Python con (sidecar, Doctor, script) ke thua bien nay -> cache vao ~/.capcut-studio/pycache.
+if (!process.env.PYTHONPYCACHEPREFIX) process.env.PYTHONPYCACHEPREFIX = join(homedir(), '.capcut-studio', 'pycache')
 // Vua duoc script tu cap nhat mo lai -> bao "ban moi da khoi dong" NGAY (truoc moi buoc co the treo, vd hop thoai Keychain);
 // khong co dau nay trong 120s script se tra ban cu ve (updater.ts / update-core.ts)
 markLaunchedIfUpdated()

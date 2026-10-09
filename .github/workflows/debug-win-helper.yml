@@ -1,0 +1,16 @@
+# TAM THOI: chan doan script cai de Windows cua bo tu cap nhat (xoa sau khi xong)
+name: Debug Windows update helper
+on:
+  workflow_dispatch:
+jobs:
+  win:
+    runs-on: windows-2022
+    defaults:
+      run:
+        working-directory: capcut-ai-studio
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --experimental-strip-types scripts/debug-win-helper.mjs
