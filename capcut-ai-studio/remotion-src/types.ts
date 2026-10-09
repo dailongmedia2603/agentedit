@@ -312,6 +312,18 @@ export interface RSOverlay {
   y: number
 }
 
+/** Font tai len: id "uf_*", ho CSS rieng ("UF <id>"), moi file 1 do dam / kieu that. */
+export interface RSCustomFont {
+  id: string
+  family: string
+  label?: string
+  width: number
+  weights: { hero: number; support: number; micro: number }
+  available: number[]
+  italic: boolean
+  files: { path: string; weight: number; italic?: boolean }[]
+}
+
 export interface RenderSpec {
   version: 1
   /** 2 = video HDR da doi sang ban lam viec SDR + lop tach nguoi khop khung (sidecar SPEC_MEDIA_VERSION).
@@ -336,6 +348,8 @@ export interface RenderSpec {
   fx?: RSFx[]
   /** Bien doi KHUNG VIDEO tu viet (so tinh san tung khung) */
   fxTransforms?: RSFxTransform[]
+  /** Font TAI LEN (Brand Guideline, sidecar font_lib) — file tren may, nap bang FontFace truoc khung dau */
+  fonts?: RSCustomFont[]
   /** Electron chen vao luc chay: goc URL cua may chu media cuc bo. */
   mediaBase?: string
 }

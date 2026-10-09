@@ -14,7 +14,7 @@ import {
 } from 'remotion'
 import type { AutoEditProps, RenderSpec, RSClip, RSEffect, RSOverlay } from './types'
 import { CaptionsLayer } from './Captions'
-import { fontLoadQueries } from './fonts'
+import { fontLoadQueries, loadCustomFonts, registerCustomFonts } from './fonts'
 import {
   LayerStyle,
   cameraAt,
@@ -528,6 +528,8 @@ export const AutoEdit: React.FC<AutoEditProps> = ({ spec }) => {
   const frame = useCurrentFrame()
   const { fps } = useVideoConfig()
   const t = frame / fps
+  // Font tai len (Brand Guideline): dang ky TRUOC khi ve (fontOf / fontCss doc FONTS luc ve)
+  registerCustomFonts(spec?.fonts)
   // Doi font nap xong moi ve: khung dau khong bi chu font du phong roi nhay font.
   const [handle] = useState(() => delayRender('Nap font caption + lop chu'))
   useEffect(() => {
@@ -542,7 +544,8 @@ export const AutoEdit: React.FC<AutoEditProps> = ({ spec }) => {
       continueRender(handle)
       return
     }
-    Promise.all(queries.map((q) => fontsApi.load(q, 'Tiếng Việt ĐẦY ĐỦ dấu ắằẳẵặ ơờởỡợ ưừửữự 0123456789')))
+    loadCustomFonts(spec?.fonts, spec?.mediaBase)
+      .then(() => Promise.all(queries.map((q) => fontsApi.load(q, 'Tiếng Việt ĐẦY ĐỦ dấu ắằẳẵặ ơờởỡợ ưừửữự 0123456789'))))
       .catch(() => undefined)
       .then(() => continueRender(handle))
   }, [handle, spec])

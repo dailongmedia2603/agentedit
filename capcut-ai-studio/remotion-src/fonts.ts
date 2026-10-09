@@ -33,7 +33,7 @@ import '@fontsource/barlow-condensed/800-italic.css'
 import '@fontsource/barlow-condensed/900.css'
 import '@fontsource/barlow-condensed/900-italic.css'
 import './local-fonts.css'
-import type { CaptionRole } from './types'
+import type { CaptionRole, RSCustomFont } from './types'
 
 interface FontDef {
   family: string
@@ -64,6 +64,62 @@ export const FONTS: Record<string, FontDef> = {
 }
 
 export const DEFAULT_FONT = 'be_vietnam_pro'
+
+/** Font TAI LEN cua ban dung (spec.fonts) -> them vao FONTS (dong bo, goi luc ve) — fontOf / fontCss / do be rong
+ *  dung nhu font dong goi. Chi id "uf_*" (khong de font tai len ghi de font dong goi). */
+export function registerCustomFonts(list: RSCustomFont[] | undefined) {
+  for (const f of list || []) {
+    if (!f || !/^uf_[0-9a-f]{10}$/.test(f.id) || !f.files?.length) continue
+    const avail = (f.available?.length ? f.available : f.files.map((x) => x.weight)).slice().sort((a, b) => a - b)
+    FONTS[f.id] = {
+      family: f.family,
+      weights: f.weights || { hero: avail[avail.length - 1], support: avail[0], micro: avail[0] },
+      available: avail,
+      italic: !!f.italic,
+      width: f.width || 0.58
+    }
+  }
+}
+
+const loaded = new Map<string, Promise<void>>()
+
+// = Layers.mediaUrl (khong import: Layers -> fonts -> Layers vong)
+function fileSrc(base: string | undefined, path: string): string {
+  if (/^(https?:|data:|blob:)/.test(path)) return path
+  if (!base) return 'file://' + encodeURI((/^[A-Za-z]:/.test(path) ? '/' : '') + path.replace(/\\/g, '/'))
+  const name = path.split(/[\\/]/).pop() || 'font'
+  return `${base}/${encodeURIComponent(name)}?p=${encodeURIComponent(path)}`
+}
+
+/** Nap file font tai len (FontFace qua may chu media cuc bo — ca Player lan render). Loi 1 file -> bo qua file do
+ *  (chu ve bang font du phong), khong treo render. */
+export function loadCustomFonts(list: RSCustomFont[] | undefined, base: string | undefined): Promise<void> {
+  const jobs: Promise<void>[] = []
+  if (typeof document === 'undefined' || typeof FontFace === 'undefined') return Promise.resolve()
+  for (const f of list || []) {
+    for (const file of f.files || []) {
+      const key = `${f.family}|${file.path}|${file.weight}|${file.italic ? 1 : 0}`
+      let p = loaded.get(key)
+      if (!p) {
+        const ff = new FontFace(f.family, `url("${fileSrc(base, file.path)}")`, {
+          weight: String(file.weight),
+          style: file.italic ? 'italic' : 'normal'
+        })
+        p = ff
+          .load()
+          .then((x) => {
+            document.fonts.add(x)
+          })
+          .catch(() => {
+            loaded.delete(key)
+          })
+        loaded.set(key, p)
+      }
+      jobs.push(p)
+    }
+  }
+  return Promise.all(jobs).then(() => undefined)
+}
 
 export function fontOf(id: string | undefined): FontDef {
   return FONTS[id || ''] || FONTS[DEFAULT_FONT]

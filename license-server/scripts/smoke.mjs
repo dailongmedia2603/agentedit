@@ -320,6 +320,33 @@ check('ten file co ../ -> 400', dl.status === 400)
 dl = await fetch(updUrl.replace(encodeURIComponent(updFile), 'khong-co.exe'))
 check('file khong co -> 404', dl.status === 404)
 
+console.log('Kho font chung (fonts-manifest.json rieng)')
+r2del('fonts-manifest.json')
+r = await call(A2, fpA2, L1.key, 'library')
+check('chua co fonts-manifest -> khong co khoa fonts (app khong go font)', r.ok && !('fonts' in r.manifest), Object.keys(r.manifest || {}))
+r2put('fonts/uf_0123456789/Brand-Bold.ttf', 'fake-font-bytes')
+r2put('fonts-manifest.json', JSON.stringify({ fonts: [
+  { id: 'uf_0123456789', family: 'Brand Sans', files: [{ path: 'Brand-Bold.ttf', sha256: 'x', weight: 700 }, { path: '../x.ttf' }, { path: 'a.exe' }] },
+  { id: '../evil', files: [{ path: 'a.ttf' }] }
+] }))
+r = await call(A2, fpA2, L1.key, 'library')
+const fo = (r.manifest && r.manifest.fonts) || []
+check('manifest co fonts (loc id / file nguy hiem)', fo.length === 1 && fo[0].id === 'uf_0123456789' && fo[0].files.length === 1 && fo[0].files[0].url, fo)
+const fUrl = fo[0] && fo[0].files[0].url
+dl = await fetch(fUrl)
+check('tai file font -> 200 + dung noi dung', dl.status === 200 && (await dl.text()) === 'fake-font-bytes')
+dl = await fetch(fUrl.replace(/t=[^&]+/, 't=abc'))
+check('font: token gia -> 403', dl.status === 403)
+dl = await fetch(fUrl.replace('Brand-Bold.ttf', '..%2Fx.ttf'))
+check('font: ten file ../ -> 400 / 404', dl.status === 400 || dl.status === 404)
+dl = await fetch(fUrl.replace('Brand-Bold.ttf', 'secret.json'))
+check('font: duoi khong phai font -> 400 / 404', dl.status === 400 || dl.status === 404)
+r2put('fonts-manifest.json', '{hong')
+r = await call(A2, fpA2, L1.key, 'library')
+check('fonts-manifest hong -> khong gui fonts, kho khac van chay', r.ok && !('fonts' in r.manifest) && r.manifest.sfx.length > 0, r)
+r2del('fonts-manifest.json')
+r2del('fonts/uf_0123456789/Brand-Bold.ttf')
+
 console.log('Khoa / mo / het han')
 let a = await admin(`/api/licenses/${L1.id}/lock`, { reason: 'test' })
 check('admin khoa', a.ok && a.license.status === 'locked', a)

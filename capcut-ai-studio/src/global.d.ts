@@ -271,6 +271,15 @@ interface StudioBridge {
   }>
   sfxDelete(id: string): Promise<{ ok: boolean }>
 
+  // ---- Kho font tai len (font_lib) ----
+  fontsList(): Promise<{ ok: boolean; fonts?: UploadedFont[]; can_publish?: boolean; error?: string }>
+  fontsImport(
+    paths: string[],
+    scope: 'local' | 'shared'
+  ): Promise<{ ok: boolean; fonts?: UploadedFont[]; failed?: { path: string; error: string }[]; error?: string }>
+  fontsDelete(id: string): Promise<{ ok: boolean; error?: string }>
+  pickFont(): Promise<{ canceled: boolean; filePaths?: string[] }>
+
   // ---- Kho nhac nen ----
   musicList(): Promise<{
     ok: boolean
@@ -620,9 +629,25 @@ declare global {
   interface BrandGuide {
     typography?: string
     colors?: string
-    graphics?: string
-    imagery?: string
-    motion?: string
+    /** id font TAI LEN da chon (dau = tieu de / chu nhan, cuoi = noi dung / phu de) */
+    fonts?: string[]
+  }
+
+  /** Bo font tai len (sidecar font_lib): shared = kho chung (may chu day len R2), local = chi may nay */
+  interface UploadedFont {
+    id: string
+    family: string
+    label: string
+    scope: 'local' | 'shared'
+    /** ho CSS dung de xem truoc ("UF <id>") */
+    css: string
+    weights: number[]
+    italic: boolean
+    /** chu tieng Viet font khong co (rong = du dau) */
+    vi_missing: string
+    width?: number
+    created?: string
+    files: { path: string; weight: number; italic: boolean; style?: string }[]
   }
 
   interface SourceAnalysisItem {

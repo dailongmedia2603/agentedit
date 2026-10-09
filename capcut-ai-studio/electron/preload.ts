@@ -192,6 +192,10 @@ const api = {
   },
   pickAudio: () => ipcRenderer.invoke('dialog:pickAudio'),
   // ---- Kho nhac nen ----
+  fontsList: () => ipcRenderer.invoke('fonts:list'),
+  fontsImport: (paths: string[], scope: 'local' | 'shared') => ipcRenderer.invoke('fonts:import', paths, scope),
+  fontsDelete: (id: string) => ipcRenderer.invoke('fonts:delete', id),
+  pickFont: () => ipcRenderer.invoke('dialog:pickFont'),
   musicList: () => ipcRenderer.invoke('music:list'),
   musicImport: (items: unknown) => ipcRenderer.invoke('music:import', items),
   musicUpdate: (payload: unknown) => ipcRenderer.invoke('music:update', payload),

@@ -720,22 +720,52 @@ tieng; (3) chu anh AI: duoi 'g' hang tren con du manh tren hang duoi; (4) SFX kh
   (id noi bo `remotion`, thu muc du an `remotion-*`, muc Doctor "Bo dung Remotion" giu nguyen).
 - AI lap ke hoach LUON Claude: `config.plan_provider()` = "claude" (bo qua state.json `plan_provider` cu); duong GPT chi
   mo cho TEST bang `STUDIO_PLANNER_TEST=gpt`. Electron `planProviderOf` = 'claude'; Cai dat API bo khung "AI lap ke hoach".
-- BRAND GUIDELINE (khong bat buoc) — `src/components/BrandGuideForm.tsx` (5 truong: typography, colors, graphics,
-  imagery, motion), luu `Project.brandGuide`, gui autoplan `brand_guide`. `sidecar/brand_guide.py`:
-  - `STEP_FIELDS`: plan (R4 / R4-visual) = ca 5; captions (R5) = typography + colors; text_art = typography + colors +
-    graphics + imagery; image (anh AI, qua `asset_contexts` -> `thuong_hieu` -> `_context_text`) = colors + graphics +
-    imagery; fx (FX-plan, FX-code / FX-fix, Hook-FX-plan) = motion + colors + graphics. `rule_text` NOI vao system
+- BRAND GUIDELINE (khong bat buoc) — `src/components/BrandGuideForm.tsx` (2 truong: typography, colors — 2026-10-09
+  user bo graphics / imagery / motion; du an cu con luu thi form + `normalize` bo qua), luu `Project.brandGuide`, gui autoplan `brand_guide`. `sidecar/brand_guide.py`:
+  - `STEP_FIELDS`: plan (R4 / R4-visual), captions (R5), text_art = typography + colors; image (anh AI, qua
+    `asset_contexts` -> `thuong_hieu` -> `_context_text`) = colors; fx (FX-plan, FX-code / FX-fix, Hook-FX-plan) = colors. `rule_text` NOI vao system
     prompt bang code (ke ca prompt user da sua); B1/B2/B3/B6/B7 KHONG nhan.
   - Khoa cache: moi buoc chi them "brand" khi CO Brand Guideline -> du an khong co giu nguyen cache + prompt.
   - EP BANG CODE: `fonts()` = font DANH MUC duoc nhac ten (dau = tieu de, cuoi = noi dung / phu de); `hexes()` = ma
-    #hex / rgb(). `apply_kit` (autoplan sau R4 + build_spec): palette ve he thuong hieu, fonts theo vai, subtitle.font,
-    broll_style = Phong cach hinh anh. `enforce_plan` (dau build_spec, TRUOC dung lop chu): font + mau layers / scenes /
+    #hex / rgb(). `apply_kit` (autoplan sau R4 + build_spec): palette ve he thuong hieu, fonts theo vai, subtitle.font. `enforce_plan` (dau build_spec, TRUOC dung lop chu): font + mau layers / scenes /
     caption_theme / captions / style_kit. `enforce_spec` (sau tao spec): mau code tu sinh. FX overlay: ban sao khung
     `-b<hash>.json` da `snap_svg`. Mau trung tinh (trang / den / xam: vien, bong) giu nguyen; sac do cach <= 60 (redmean)
     giu (tong dam / nhat cua mau thuong hieu). Chi mo ta (khong ma / khong ten font) -> chi qua prompt.
-  - Uu tien hon phong cach boc tu video mau o 5 mat nay (yeu cau ro rang cua du an, khong phai phong cach mac dinh).
+  - Uu tien hon phong cach boc tu video mau o 2 mat nay (yeu cau ro rang cua du an, khong phai phong cach mac dinh).
 - Test: `tests/test_brand_guide.py` (don vi + ca luong autoplan AI gia: dung truong tung buoc, ban dung dung font / mau,
-  khong Brand Guideline -> prompt / payload y nhu cu); `test_claude_planner.py` [1].
+  khong Brand Guideline -> prompt / payload y nhu cu; [6] font tai len); `test_claude_planner.py` [1].
+
+## 11s2. FONT TAI LEN — font thuong hieu (font mua...) dung DUNG trong plan + video (2026-10-09, `sidecar/font_lib.py`)
+
+- Hai noi tai len (.ttf / .otf / .woff; .woff2 / .ttc bao loi ro): (a) Tao video > Brand Guideline > Typography: nut
+  "Tai font len" — scope `local`, CHI may nay, KHONG BAO GIO len R2; (b) Tai nguyen > Kho font (`src/pages/FontLibrary.tsx`):
+  MAY CHU (co `~/.capcut-studio/r2-publish.json`, `font_lib.can_publish()`) -> scope `shared` -> day len R2 ngay; may khac
+  trang nay chi tai `local`. Ca hai luu thanh BO FONT (gop file theo ho chu: nameID 16, khong co thi nameID 1 bo duoi do dam)
+  o `~/.capcut-studio/fonts/<scope>/<id>/` + `font_library.json`; id = `uf_` + sha1(scope:ho)[:10], ho CSS "UF <id>".
+- Doc file khong can fontTools (tu doc sfnt / WOFF zlib): ten, do dam (OS/2), nghieng, `vi_missing` (146 chu cai tieng Viet
+  qua cmap), be rong (hmtx tren cau mau x WIDTH_K 1.13 — do khop 12 font dong goi, cung thang `fonts.ts` width). UI con
+  thu nap tung file bang FontFace (Chromium = cung bo kiem OTS voi trinh dung) -> bao file khong doc duoc.
+- Brand Guideline `fonts` = [id] (toi da 3; dau = tieu de / chu nhan, cuoi = noi dung / phu de; nut "Dao vai"). `normalize`
+  bo id khong con trong kho. `fonts()` tra font tai len TRUOC (co thi khong tron font nhac ten trong chu). `view` buoc co
+  typography them `font_tai_len` [{id, ten, vai}] (ke ca khi o Typography de trong); `rule_text` noi DUNG id (chu anh AI:
+  chi ten font — AI ve anh khong dung file). Kho Text bi bo khi co font ep (`text_tpl.brand_blocks`) nhu font danh muc.
+- Danh muc: `remotion_plan.load_catalog()` GOP font kho (danh dau `custom`, cache theo mtime catalog + font_library.json)
+  -> kiem id / `_by_id` / `motion_design._font_k` (be rong do) hop le; `catalog_for_prompt` LOAI custom (danh muc gui AI
+  khong doi -> cache du an khac giu nguyen). `build_spec` -> `attach_fonts(spec)`: font uf_* dang dung -> `spec.fonts`
+  [{id, family, weights theo vai, available, files[{path, weight, italic}]}].
+- Remotion: `fonts.ts registerCustomFonts` (them vao FONTS luc ve) + `loadCustomFonts` (FontFace tung file qua may chu media
+  cuc bo, truoc khung dau — Player + render). CSP `font-src` them `http://127.0.0.1:*` (Player trong app).
+- KHO CHUNG: may chu ghi THANG R2 bang SigV4 (`font_lib._r2`, token r2-publish.json): `fonts/<id>/<file>` +
+  `fonts-manifest.json` RIENG (khong dung library-manifest.json -> publish-library.mjs khong ghi de). R2 loi -> bo muc vua
+  them (kho may chu khop R2). Go o may chu -> bo khoi manifest + xoa file R2. license-server `op=library`: doc
+  fonts-manifest.json -> `manifest.fonts` + link tai tam `/v1/lib/fonts/<uf_id>/<file>`; CHUA co / hong file -> KHONG gui
+  khoa `fonts`. App: `library_sync.pull` -> `font_lib.merge_shared`: tai file thieu / sai sha, muc shared vang khoi
+  manifest -> GO (may chu khong go — luot dong bo bat dau truoc khi vua tai len mang manifest cu); font local khong bao gio bi dong.
+- Test: `tests/test_font_lib.py` (doc file, gop bo, danh muc, R2 gia, may khach nhan / go, route); `test_brand_guide.py` [6]
+  (autoplan: AI nhan id, lop chu + phu de dung font tai len, spec.fonts kem file); license-server `npm test` muc "Kho font
+  chung". Render that da kiem 2026-10-09 (Brush Script + Courier New, chu Viet du dau): `DUMP_FONT_SPEC=<spec.json>
+  FONT_TITLE=<ttf> FONT_BODY_GLOB=<glob>` khi chay test_brand_guide roi `STUDIO_REMOTION_RENDER` — luu y muc cuoi test
+  go 1 font (nhap lai truoc khi render).
 
 ## 11t. Moi chu co tieng, huy hieu bang anh AI, nang giong nho, luat sang tao (2026-10-01)
 

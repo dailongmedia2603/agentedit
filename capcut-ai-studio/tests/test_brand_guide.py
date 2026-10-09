@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""BRAND GUIDELINE (2026-10-01): 5 truong (Typography, Mau sac, Ngon ngu do hoa, Phong cach hinh anh, Ngon ngu chuyen
-dong) phai toi DUNG buoc AI can no + duoc ep bang code (font / ma mau) tren ban dung.
+"""BRAND GUIDELINE (2026-10-01): 2 truong (Typography, Mau sac) phai toi DUNG buoc AI can no + duoc ep bang code
+(font / ma mau) tren ban dung. 2026-10-09 bo 3 truong Ngon ngu do hoa / Phong cach hinh anh / Ngon ngu chuyen dong:
+du an cu con luu chung (BRAND ben duoi van co) thi KHONG truong nao toi AI.
 
 Chay: HOME=$(mktemp -d) <venv_python> tests/test_brand_guide.py      (can flask + ffmpeg)
 """
@@ -39,6 +40,7 @@ def check(name, cond, detail=""):
 
 BRAND = {"typography": "Tiêu đề Montserrat in hoa đậm, nội dung SVN-Gilroy",
          "colors": "Màu chính #E4002B, phụ #FFC72C, nền trắng #FFFFFF, viền rgb(20, 20, 20)",
+         # 3 truong da bo (du an cu con luu) -> phai bi bo qua o moi buoc
          "graphics": "khối bo góc lớn, nét mảnh, sticker tối giản",
          "imagery": "ảnh sản phẩm thật, ánh sáng tự nhiên, tông ấm",
          "motion": "chuyển động mượt, nhẹ nhàng, không rung lắc, không chớp"}
@@ -48,15 +50,19 @@ print("[1] Chuan hoa + truong nao toi buoc nao")
 check("rong / toan khoang trang -> None", BG.normalize({"typography": "  ", "colors": ""}) is None and BG.normalize(None) is None)
 n = BG.normalize({"typography": "  Montserrat   đậm ", "x": "bo"})
 check("gon khoang trang, bo khoa la", n == {"typography": "Montserrat đậm"}, n)
-want = {"plan": {"typography", "colors", "graphics", "imagery", "motion"},
+check("truong da bo (do hoa / anh / chuyen dong) -> bo qua", BG.normalize(BRAND) == {k: BRAND[k] for k in ("typography", "colors")}
+      and BG.normalize({"graphics": "x", "imagery": "y", "motion": "z"}) is None, BG.normalize(BRAND))
+want = {"plan": {"typography", "colors"},
         "captions": {"typography", "colors"},
-        "text_art": {"typography", "colors", "graphics", "imagery"},
-        "image": {"colors", "graphics", "imagery"},
-        "fx": {"motion", "colors", "graphics"}}
+        "text_art": {"typography", "colors"},
+        "image": {"colors"},
+        "fx": {"colors"}}
 for st, ks in want.items():
     v = BG.view(BRAND, st) or {}
-    check("buoc %s nhan dung %s" % (st, sorted(ks)), set(k for k in v if k in BG.FIELDS) == ks, sorted(v))
-check("buoc khong lien quan khong nhan gi (chi chuyen dong -> anh)", BG.view({"motion": "mem"}, "image") is None)
+    check("buoc %s nhan dung %s" % (st, sorted(ks)), set(k for k in v if k in BG.FIELDS) == ks
+          and not {"graphics", "imagery", "motion"} & set(v), sorted(v))
+check("buoc khong lien quan khong nhan gi (chi font -> anh / hieu ung)", BG.view({"typography": "Montserrat"}, "image") is None
+      and BG.view({"typography": "Montserrat"}, "fx") is None)
 check("font trong danh muc theo thu tu nhac ten (tieu de truoc)", BG.fonts(BRAND) == ["montserrat", "gilroy"], BG.fonts(BRAND))
 check("ten font khong dau / viet thuong / 'be vietnam pro'", BG.fonts({"typography": "dung be vietnam pro cho moi chu"}) ==
       ["be_vietnam_pro"])
@@ -86,8 +92,7 @@ check("palette ve he mau thuong hieu (trang giu)", k2["palette"]["primary"] in H
       and k2["palette"]["text"] == "#FFFFFF" and all(c in H for c in k2["palette"]["bg_gradient"]), k2["palette"])
 check("font theo vai + phu de = font thuong hieu", k2["fonts"]["impact"] == "montserrat" and k2["fonts"]["body"] == "gilroy"
       and k2["subtitle"]["font"] == "gilroy", (k2["fonts"], k2["subtitle"]))
-check("kieu anh minh hoa = Phong cach hinh anh (giu ghi chu cu)", k2["broll_style"].startswith(BG.normalize(BRAND)["imagery"])
-      and "flat vector" in k2["broll_style"], k2["broll_style"])
+check("kieu anh minh hoa giu nguyen (bo truong Phong cach hinh anh)", k2["broll_style"] == "flat vector", k2["broll_style"])
 k3 = BG.apply_kit(k2, BRAND)
 check("ap lai on dinh", k3 == k2, (k3, k2))
 check("khong video mau / R4 khong dat style -> van co bo thuong hieu", BG.apply_kit(None, BRAND)["palette"]["primary"] == "#E4002B")
@@ -135,24 +140,24 @@ def fake_chat(name, messages, **k):
 providers._chat = fake_chat
 fx_flow.gpt_fx_code([{"id": "e1", "kind": "overlay", "src_start": 0, "src_end": 1, "visual": "vong tron"}], brand=BRAND)
 fc = SEEN["FX-code"]
-check("FX-code: chuyen dong + mau + do hoa, KHONG typography / anh",
-      "Ngon ngu chuyen dong" in fc["sys"] and "#E4002B" in fc["sys"] and "khối bo góc" in fc["sys"]
+check("FX-code: chi mau, KHONG typography / truong da bo",
+      "#E4002B" in fc["sys"] and "khối bo góc" not in fc["sys"] and "không rung" not in fc["sys"]
       and "Montserrat" not in fc["sys"] and "ánh sáng tự nhiên" not in fc["sys"]
-      and set(k for k in fc["user"]["brand_guideline"] if k in BG.FIELDS) == {"motion", "colors", "graphics"}, fc["user"])
+      and set(k for k in fc["user"]["brand_guideline"] if k in BG.FIELDS) == {"colors"}, fc["user"])
 fx_flow.gpt_fx_code([{"id": "e1", "kind": "overlay", "src_start": 0, "src_end": 1, "visual": "vong tron"}])
 check("FX-code khong Brand Guideline: khong co khoi brand", "BRAND GUIDELINE" not in SEEN["FX-code"]["sys"]
       and "brand_guideline" not in SEEN["FX-code"]["user"])
 ctx = motion_design.asset_contexts({"assets": [{"id": "a1", "kind": "ai_image", "prompt": "x"}]}, brand=BRAND)
 txt = asset_gen._context_text(ctx["a1"])
-check("anh AI: mau + do hoa + phong cach anh (+ ma mau), KHONG font / chuyen dong",
-      "ánh sáng tự nhiên" in txt and "khối bo góc" in txt and "#E4002B" in txt and "Montserrat" not in txt
+check("anh AI: chi mau (+ ma mau), KHONG font / truong da bo",
+      "ánh sáng tự nhiên" not in txt and "khối bo góc" not in txt and "#E4002B" in txt and "Montserrat" not in txt
       and "không rung" not in txt, txt)
 check("anh AI khong Brand Guideline: boi canh y nhu cu",
       "thuong_hieu" not in motion_design.asset_contexts({"assets": [{"id": "a1", "kind": "ai_image", "prompt": "x"}]})["a1"])
 lk = [{"key": "k", "tiers": [{"text": "SALE", "role": "chinh"}]}]
 pr = text_art.sheet_prompt(lk, {}, {}, False, "/tmp/x.png", brand=BRAND)
-check("chu anh AI: font + mau + do hoa + anh, KHONG chuyen dong; truoc dong 'Tao xong'",
-      "Montserrat" in pr and "#E4002B" in pr and "khối bo góc" in pr and "ánh sáng tự nhiên" in pr and "không rung" not in pr
+check("chu anh AI: font + mau, KHONG truong da bo; truoc dong 'Tao xong'",
+      "Montserrat" in pr and "#E4002B" in pr and "khối bo góc" not in pr and "ánh sáng tự nhiên" not in pr and "không rung" not in pr
       and pr.index("BRAND GUIDELINE") < pr.index("Tao xong"), pr[-900:])
 check("chu anh AI khong Brand Guideline: y nhu cu", text_art.sheet_prompt(lk, {}, {}, False, "/tmp/x.png") ==
       text_art.sheet_prompt(lk, {}, {}, False, "/tmp/x.png", brand=None) and "BRAND GUIDELINE" not in
@@ -236,8 +241,10 @@ code, d = run(BRAND)
 check("autoplan co Brand Guideline chay xong", code == 200 and d.get("ok"), d.get("error"))
 plan, spec = d.get("plan") or {}, d.get("spec") or {}
 r4 = NHAN.get("R4-design") or {}
-check("R4 (ke hoach): nhan ca 5 truong + luat trong system prompt",
+check("R4 (ke hoach): nhan ca 2 truong + luat trong system prompt, khong truong da bo",
       set(k for k in (r4.get("brand_guideline") or {}) if k in BG.FIELDS) == set(BG.FIELDS)
+      and not {"graphics", "imagery", "motion"} & set(r4.get("brand_guideline") or {})
+      and "không rung" not in SYS.get("R4-design", "") and "khối bo góc" not in SYS.get("R4-design", "")
       and "BRAND GUIDELINE" in SYS.get("R4-design", "") and "montserrat" in SYS.get("R4-design", ""), r4.get("brand_guideline"))
 r5 = NHAN.get("R5-captions") or {}
 check("R5 (phu de theo loi noi): typography + mau, khong chuyen dong",
@@ -247,12 +254,13 @@ for lab in ("B1-select", "B2-timeline", "B3-hook", "B6-inserts", "B7-audio"):
     check("%s: KHONG nhan Brand Guideline (khong lien quan -> giu cache)" % lab,
           "brand_guideline" not in json.dumps(NHAN.get(lab) or {}) and "BRAND GUIDELINE" not in SYS.get(lab, ""))
 fxp = [l for l in NHAN if l and l.endswith("FX-plan")]
-check("hieu ung (FX-plan / Hook-FX-plan): chuyen dong + mau + do hoa",
-      fxp and all(set(k for k in (NHAN[l].get("brand_guideline") or {}) if k in BG.FIELDS) == {"motion", "colors", "graphics"}
-                  and "Ngon ngu chuyen dong" in SYS[l] for l in fxp), fxp)
-check("anh AI: boi canh tung anh co Brand Guideline (mau / do hoa / anh) + kieu anh = Phong cach hinh anh",
-      CTXS and (CTXS[0][1] or {}).get("img1", {}).get("thuong_hieu", {}).get("imagery") and
-      CTXS[0][0].startswith(BG.normalize(BRAND)["imagery"]), CTXS)
+check("hieu ung (FX-plan / Hook-FX-plan): chi mau",
+      fxp and all(set(k for k in (NHAN[l].get("brand_guideline") or {}) if k in BG.FIELDS) == {"colors"}
+                  and "không rung" not in SYS[l] for l in fxp), fxp)
+check("anh AI: boi canh tung anh co Brand Guideline (mau), khong Phong cach hinh anh",
+      CTXS and (CTXS[0][1] or {}).get("img1", {}).get("thuong_hieu", {}).get("colors")
+      and not (CTXS[0][1] or {}).get("img1", {}).get("thuong_hieu", {}).get("imagery")
+      and BRAND["imagery"] not in (CTXS[0][0] or ""), CTXS)
 check("chu anh AI: nhan Brand Guideline", SHEETS and all(b == BG.normalize(BRAND) for b in SHEETS), SHEETS)
 check("plan luu brand_guide + bo phong cach theo thuong hieu",
       plan.get("brand_guide") == BG.normalize(BRAND) and (plan.get("style_kit") or {}).get("palette", {}).get("primary") in H
@@ -278,6 +286,53 @@ check("khong Brand Guideline: khong buoc nao co khoi brand (prompt + payload y n
 lay0 = [L for L in (d0.get("spec") or {}).get("layers") or [] if L.get("type") == "text"]
 check("khong Brand Guideline: font / mau AI chon giu nguyen",
       any((s.get("font") or L.get("font")) == "anton" for L in lay0 for s in L.get("spans") or []), lay0)
+
+# ---------------------------------------------------------------------------
+print("\n[6] Font TAI LEN (font_lib, 2026-10-09): AI nhan dung id + ban dung dung dung font, spec kem file")
+import font_lib  # noqa: E402
+import glob  # noqa: E402
+# FONT_BODY_GLOB / FONT_TITLE: doi font khi render tay de xem (vd font he thong du dau, de nhan ra)
+GIL = sorted(glob.glob(os.environ.get("FONT_BODY_GLOB") or os.path.join(ROOT, "src", "assets", "fonts", "SVN-Gilroy-*.otf")))
+ANTON = os.environ.get("FONT_TITLE") or os.path.join(ROOT, "node_modules", "@fontsource", "anton", "files", "anton-latin-400-normal.woff")
+r1 = font_lib.import_files(GIL, scope="local")
+r2 = font_lib.import_files([ANTON], scope="local")
+F1, F2 = r1["fonts"][0]["id"], r2["fonts"][0]["id"]
+check("nhap 2 bo font (Gilroy 5 file, Anton 1 file)", len(r1["fonts"]) == 1 and len(r1["fonts"][0]["files"]) == len(GIL)
+      and len(r2["fonts"]) == 1, (r1, r2))
+BRAND_UP = {"typography": "chu in hoa dam", "colors": "#E4002B", "fonts": [F2, F1, "uf_khongco0000"]}
+check("normalize: bo id khong con trong kho", BG.normalize(BRAND_UP)["fonts"] == [F2, F1])
+check("fonts(): font tai len theo thu tu chon (dau = tieu de)", BG.fonts(BRAND_UP) == [F2, F1])
+check("chi chon font (khong ghi chu Typography) van toi AI", (BG.view({"fonts": [F1]}, "captions") or {}).get("font_tai_len"))
+check("anh AI / hieu ung khong nhan font", "font_tai_len" not in (BG.view(BRAND_UP, "image") or {})
+      and "font_tai_len" not in (BG.view(BRAND_UP, "fx") or {}))
+code_u, du = run(BRAND_UP)
+check("autoplan co font tai len chay xong", code_u == 200 and du.get("ok"), du.get("error"))
+r4u = NHAN.get("R4-design") or {}
+check("R4: payload co font_tai_len + system prompt noi DUNG id",
+      [f["id"] for f in (r4u.get("brand_guideline") or {}).get("font_tai_len") or []] == [F2, F1]
+      and F1 in SYS.get("R4-design", "") and F2 in SYS.get("R4-design", ""), r4u.get("brand_guideline"))
+check("R4: danh muc font gui AI KHONG lan font tai len (chi qua Brand Guideline)",
+      "uf_" not in json.dumps(remotion_plan.catalog_for_prompt("fonts")))
+su = du.get("spec") or {}
+layu = [L for L in su.get("layers") or [] if L.get("type") == "text"]
+used_u = {s.get("font") or L.get("font") for L in layu for s in L.get("spans") or []}
+check("ban dung: lop chu chi dung font tai len", layu and used_u <= {F1, F2}, used_u)
+capu = su.get("captions") or []
+check("ban dung: phu de / chu hero dung font tai len", capu and all(c["font"] in (F1, F2) for c in capu), [c["font"] for c in capu])
+sf = {f["id"]: f for f in su.get("fonts") or []}
+check("spec.fonts: dung font da dung, kem file that + ho CSS rieng + do dam that",
+      set(sf) == ({F1, F2} & (used_u | {c["font"] for c in capu})) and all(os.path.isfile(x["path"]) for f in sf.values() for x in f["files"])
+      and all(f["family"] == "UF " + i for i, f in sf.items())
+      and (F1 not in sf or os.environ.get("FONT_BODY_GLOB") or sf[F1]["available"] == [300, 400, 500, 600, 700]),
+      su.get("fonts"))
+rep_u = [c for c in (du.get("guard") or {}).get("fixed") or [] if "brand guideline" in c]
+check("bao cao ghi da ep font thuong hieu", rep_u, (du.get("guard") or {}).get("fixed"))
+check("plan luu font da chon", (du.get("plan") or {}).get("brand_guide", {}).get("fonts") == [F2, F1])
+if os.environ.get("DUMP_FONT_SPEC"):    # render that bang Remotion (STUDIO_REMOTION_RENDER) de xem chu dung font
+    with open(os.environ["DUMP_FONT_SPEC"], "w", encoding="utf-8") as f_:
+        json.dump(su, f_, ensure_ascii=False)
+font_lib.remove(F1)
+check("go font -> du an cu chi con font kia", BG.normalize(BRAND_UP)["fonts"] == [F2])
 motion_design.resolve_assets = _orig_resolve
 
 print("\n%s" % ("TAT CA OK" if not FAILED else "THAT BAI: %d" % len(FAILED)))

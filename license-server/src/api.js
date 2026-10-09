@@ -21,6 +21,9 @@ import {
   logEvent
 } from './shared.js'
 import { FX_ID_RE, FX_FILES, FX_MAX_CODE, FX_MAX_PREVIEW, FX_MAX_META, FX_DAILY_LIMIT, sha256bytes, fxIdOf, cleanMeta } from './fx.js'
+// Kho font chung: id = font_lib.font_id (uf_ + 10 hex); file = ten an toan (font_lib._safe_name) .ttf / .otf / .woff
+const FONT_ID_RE = /^uf_[0-9a-f]{10}$/
+const FONT_FILE_RE = /^[A-Za-z0-9._-]{1,80}\.(ttf|otf|woff)$/
 
 const CLOCK_SKEW_MS = 10 * 60 * 1000 // gio may khach lech qua 10 phut -> bao gio server de app tu bu
 const TICKET_TTL_MS = 3 * 24 * 3600 * 1000 // ve cho sidecar; app lay ve moi moi lan mo + moi lan phan tich
@@ -274,15 +277,38 @@ async function handleLicense(req, env) {
         ]
       }
     })
+    // Kho font chung (2026-10-09): may chu app ghi THANG fonts-manifest.json + fonts/<id>/<file> bang token R2 (khong qua
+    // publish-library.mjs -> 2 ben khong ghi de nhau). Chua co file -> KHONG gui khoa "fonts" (app khong go font nao).
+    let fonts
+    const fobj = await env.LIB.get('fonts-manifest.json')
+    if (fobj) {
+      try {
+        const fm = await fobj.json()
+        fonts = (Array.isArray(fm?.fonts) ? fm.fonts : [])
+          .filter((m) => FONT_ID_RE.test(String(m.id || '')))
+          .map((m) => ({
+            ...m,
+            files: (Array.isArray(m.files) ? m.files : [])
+              .filter((f) => FONT_FILE_RE.test(String(f.path || '')))
+              .map((f) => ({
+                ...f,
+                url: `${base}/v1/lib/fonts/${m.id}/${encodeURIComponent(f.path)}?t=${encodeURIComponent(token)}`
+              }))
+          }))
+      } catch {
+        fonts = undefined // manifest font hong -> khong gui (app giu nguyen font dang co)
+      }
+    }
     out.manifest = {
       ...manifest,
       sfx: withUrl(manifest.sfx, 'sfx'),
       memes: withUrl(manifest.memes, 'memes'),
       texts: withTextUrls(manifest.texts),
       music: withUrl(manifest.music, 'music'),
-      fx
+      fx,
+      ...(fonts ? { fonts } : {})
     }
-    detail += ` — ${out.manifest.sfx.length} SFX, ${out.manifest.memes.length} meme, ${out.manifest.texts.length} mau chu, ${out.manifest.music.length} nhac nen, ${fx.length} hieu ung`
+    detail += ` — ${out.manifest.sfx.length} SFX, ${out.manifest.memes.length} meme, ${out.manifest.texts.length} mau chu, ${out.manifest.music.length} nhac nen, ${fx.length} hieu ung${fonts ? `, ${fonts.length} font` : ''}`
   }
   await logEvent(env, lic.id, event, req, detail)
   return json(out)
@@ -522,8 +548,12 @@ async function handleDownload(req, env, kind, rawName) {
   } catch {
     return new Response('bad name', { status: 400 })
   }
-  if (kind === 'texts' || kind === 'fx' ? !safeRel(name) || name.split('/').length < 2 : !safeSeg(name)) {
+  if (kind === 'texts' || kind === 'fx' || kind === 'fonts' ? !safeRel(name) || name.split('/').length < 2 : !safeSeg(name)) {
     return new Response('bad name', { status: 400 })
+  }
+  if (kind === 'fonts') {
+    const [fid, f, ...rest] = name.split('/')
+    if (rest.length || !FONT_ID_RE.test(fid) || !FONT_FILE_RE.test(f)) return new Response('bad name', { status: 400 })
   }
   if (kind === 'fx') {
     // fx/<id>/<code.js|preview.mp4> va CHI muc da duyet (muc cho duyet / bi tu choi khong tai duoc)
@@ -564,6 +594,17 @@ export default {
       const mf = url.pathname.match(/^\/v1\/lib\/fx\/(fx-[0-9a-f]{12})\/(code\.js|preview\.mp4)$/)
       if (mf && req.method === 'GET') return await handleDownload(req, env, 'fx', encodeURIComponent(`${mf[1]}/${mf[2]}`))
       if (url.pathname === '/v1/fx/upload' && req.method === 'POST') return await handleFxUpload(req, env)
+      // Kho font: /v1/lib/fonts/<id>/<file .ttf|.otf|.woff>
+      const mo = url.pathname.match(/^\/v1\/lib\/fonts\/(uf_[0-9a-f]{10})\/([^/]+)$/)
+      if (mo && req.method === 'GET') {
+        let f
+        try {
+          f = decodeURIComponent(mo[2])
+        } catch {
+          return new Response('bad name', { status: 400 })
+        }
+        return await handleDownload(req, env, 'fonts', encodeURIComponent(`${mo[1]}/${f}`))
+      }
       // File cap nhat app: /v1/update/<ten file>?t=<token 24h>
       const mu = url.pathname.match(/^\/v1\/update\/([^/]+)$/)
       if (mu && (req.method === 'GET' || req.method === 'HEAD')) return await handleUpdateDownload(req, env, mu[1])

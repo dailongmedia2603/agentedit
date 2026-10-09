@@ -13,6 +13,8 @@ SFX + Meme: 1 muc = 1 file (`file` = ten co ban + `url` tai tam cho chinh file d
 Kho Text: 1 muc = 1 THU MUC nhieu file (`files` = [{path tuong doi, sha256, url}, ...] — template.json,
 preview.mp4, fonts/*, audio/*, assets/*) vi 1 mau chu gom nhieu tai nguyen.
 Kho hieu ung (fx, 2026-10-05): muc DA DUYET o kho chung (code.js + preview.mp4) — gop bang fx_lib.merge_shared.
+Kho font (fonts, 2026-10-09): bo font may chu tai len (fonts-manifest.json rieng) — gop bang font_lib.merge_shared;
+KHAC cac kho tren: bo font may chu go khoi kho chung thi may nay cung go (font "local" tu tai len khong bao gio bi dong).
 
 An toan du lieu: sao luu library.json truoc khi ghi; tai xong kiem SHA-256 moi nhan; manifest
 loi / rong -> KHONG dong nao bi xoa (chi them/cap nhat). `file`/`dir` trong kho luu duong dan TUYET
@@ -238,6 +240,14 @@ def pull(manifest, log=None):
         _backup(fx_lib.FX_LIB)
         fx_res = fx_lib.merge_shared(manifest["fx"], _download, log=log)
 
+    # Kho font chung (font may chu tai len o Tai nguyen > Font — fonts-manifest.json rieng tren R2). May chu cu / chua
+    # co manifest font -> khong co khoa "fonts" -> khong dong gi toi font (font tai len o may nay giu nguyen)
+    font_res = None
+    if isinstance(manifest.get("fonts"), list):
+        import font_lib
+        _backup(font_lib.FONT_LIB)
+        font_res = font_lib.merge_shared(manifest["fonts"], _download, log=log)
+
     return {
         "ok": True,
         "sfx": {"added": sfx_add, "updated": sfx_upd, "total": len(sfx_new), "errors": sfx_err},
@@ -245,5 +255,6 @@ def pull(manifest, log=None):
         "texts": {"added": text_add, "updated": text_upd, "total": len(text_new), "errors": text_err},
         "music": {"added": music_add, "updated": music_upd, "total": len(music_new), "errors": music_err},
         "fx": fx_res,
+        "fonts": font_res,
         "manifest_updated": manifest.get("updated"),
     }

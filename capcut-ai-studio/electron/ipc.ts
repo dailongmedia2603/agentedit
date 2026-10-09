@@ -571,6 +571,30 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
     })
   })
 
+  // ---- Kho font tai len (sidecar font_lib.py): scope 'shared' (may chu co token R2) -> kho chung; 'local' -> chi may nay ----
+  const fontCall = async (path: string, payload?: unknown, timeoutMs?: number) => {
+    if (!sidecarInfo().ready) await startSidecar()
+    return sidecarRequest(path, payload, timeoutMs)
+  }
+  ipcMain.handle('fonts:list', () => fontCall('/fonts/list'))
+  ipcMain.handle('fonts:import', (_e, paths: unknown, scope: unknown) =>
+    fontCall(
+      '/fonts/import',
+      { paths: Array.isArray(paths) ? paths.filter((p) => typeof p === 'string') : [], scope: scope === 'shared' ? 'shared' : 'local' },
+      300000
+    )
+  )
+  ipcMain.handle('fonts:delete', (_e, id: string) => fontCall('/fonts/delete', { id }, 120000))
+  ipcMain.handle('dialog:pickFont', async () => {
+    const win = getWindow()
+    if (!win) return { canceled: true }
+    return dialog.showOpenDialog(win, {
+      title: 'Chọn file font (.ttf / .otf / .woff) — chọn được nhiều file của cùng bộ font',
+      properties: ['openFile', 'multiSelections'],
+      filters: [{ name: 'Font', extensions: ['ttf', 'otf', 'woff'] }]
+    })
+  })
+
   // ---- Thu vien phan tich (video nguon / video mau da phan tich) ----
   const libCall = async (path: string, payload?: unknown) => {
     if (!sidecarInfo().ready) await startSidecar()

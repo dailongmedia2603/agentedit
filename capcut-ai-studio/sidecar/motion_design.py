@@ -935,6 +935,17 @@ _NARROW = {"anton": 0.46, "barlow_condensed": 0.42, "oswald": 0.46, "roboto_cond
            "great_vibes": 0.42, "dancing_script": 0.45}
 
 
+def _font_k(fid):
+    """Be rong trung binh 1 ky tu / co chu. Font tai len (font_lib): do tu file (cung thang voi fonts.ts)."""
+    if fid in _NARROW:
+        return _NARROW[fid]
+    if isinstance(fid, str) and fid.startswith("uf_"):
+        f = RP._by_id("fonts").get(fid)
+        if f and f.get("width"):
+            return float(f["width"])
+    return 0.58
+
+
 def _text_width(L):
     """Uoc luong be ngang dong chu dai nhat (phan be ngang canvas). Chu anh AI: be ngang anh that."""
     if L.get("art"):
@@ -945,7 +956,7 @@ def _text_width(L):
             lines.append(cur)
             cur = 0.0
         sz = sp.get("size") or L.get("size") or 80
-        k = _NARROW.get(sp.get("font") or L.get("font"), 0.58)
+        k = _font_k(sp.get("font") or L.get("font"))
         cur += CV.fw(len(sp.get("text") or "") * sz * k)
     lines.append(cur)
     return max(lines)
@@ -969,7 +980,7 @@ def _text_height(L):
             close()
             cur, cur_w = 0.0, 0.0
         cur = max(cur, sz)
-        k = _NARROW.get(sp.get("font") or L.get("font"), 0.58)
+        k = _font_k(sp.get("font") or L.get("font"))
         cur_w += CV.fw(len(sp.get("text") or "") * sz * k)
     close()
     if not lines:

@@ -1,67 +1,61 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""BRAND GUIDELINE (2026-10-01, khong bat buoc) — nguoi dung nhap o menu Tao video, gom 5 truong:
-  typography (Font & chu) | colors (Mau sac) | graphics (Ngon ngu do hoa) | imagery (Phong cach hinh anh) |
-  motion (Ngon ngu chuyen dong).
+"""BRAND GUIDELINE (2026-10-01, khong bat buoc) — nguoi dung nhap o menu Tao video, gom 2 truong:
+  typography (Font & chu) | colors (Mau sac).
+  (2026-10-09 user bo 3 truong Ngon ngu do hoa / Phong cach hinh anh / Ngon ngu chuyen dong — du an cu con luu
+  graphics / imagery / motion thi `normalize` bo qua.)
 
 Moi truong vao DUNG buoc AI can no (STEP_FIELDS) — yeu cau user:
   - Typography + Mau      -> chu anh AI, phu de (R5) + ke hoach (R4) de chu hien theo loi noi dung font / mau.
-  - Mau / Do hoa / Anh    -> chu anh AI, anh AI, ke hoach (R4).
-  - Chuyen dong           -> ke hoach: R4 (chuyen canh, vao / ra cua lop) + hieu ung tu viet (FX-plan / FX-code / hook).
+  - Mau                   -> anh AI + hieu ung tu viet (FX-plan / FX-code / hook).
 Va EP BANG CODE (AI quen van dung): font co trong danh muc app duoc nhac trong Typography -> moi chu dung font do
 (`enforce_plan`); ma mau (#hex / rgb) trong Mau sac -> moi mau NOI (co sac do) trong plan / spec / khung hieu ung
 duoc dua ve mau thuong hieu gan nhat; mau TRUNG TINH (trang / den / xam — vien, bong cho chu de doc) giu nguyen.
 
-Brand Guideline la yeu cau RO RANG cua nguoi dung cho du an nay -> UU TIEN hon phong cach boc tu video mau o 5 mat
+Brand Guideline la yeu cau RO RANG cua nguoi dung cho du an nay -> UU TIEN hon phong cach boc tu video mau o 2 mat
 tren (khong phai "phong cach mac dinh" — chi nam trong plan cua du an do, xem memory capcut-style-only-from-reference).
 """
 import copy
 import re
 import unicodedata
 
-FIELDS = ("typography", "colors", "graphics", "imagery", "motion")
-LABELS = {"typography": "Typography - Font & chu", "colors": "Mau sac", "graphics": "Ngon ngu do hoa",
-          "imagery": "Phong cach hinh anh", "motion": "Ngon ngu chuyen dong"}
+FIELDS = ("typography", "colors")
+LABELS = {"typography": "Typography - Font & chu", "colors": "Mau sac"}
 MAX_CHARS = 800
 
 # buoc -> cac truong duoc dua vao (thu tu = thu tu hien trong prompt)
 STEP_FIELDS = {
     "plan": FIELDS,                                            # R4 thiet ke / R4-visual du phong
     "captions": ("typography", "colors"),                      # R5 phu de theo loi noi
-    "text_art": ("typography", "colors", "graphics", "imagery"),  # chu anh AI (Codex)
-    "image": ("colors", "graphics", "imagery"),                # anh AI (Codex)
-    "fx": ("motion", "colors", "graphics"),                    # FX-plan / FX-code / Hook-FX
+    "text_art": ("typography", "colors"),                      # chu anh AI (Codex)
+    "image": ("colors",),                                      # anh AI (Codex)
+    "fx": ("colors",),                                         # FX-plan / FX-code / Hook-FX
 }
 
 _HOW = {
     "plan": ("- Typography: lop chu / to hop chu / chu hero chi dung font thuong hieu (id trong danh muc ben duoi); "
              "kieu chu (hoa / thuong, dam, nghieng, phan cap) theo mo ta.\n"
              "- Mau sac: palette trong \"style\", mau chu / vien / glow / khung / nen the / nen scene CHI lay tu he mau "
-             "thuong hieu (+ trang / den / xam de tach nen cho chu de doc).\n"
-             "- Ngon ngu do hoa: hinh khoi, khung, the, mui ten, vong, sticker, hoa van theo dung mo ta.\n"
-             "- Phong cach hinh anh: \"style.image_style\" va prompt moi anh AI (assets) theo dung mo ta.\n"
-             "- Ngon ngu chuyen dong: enter / exit / loop cua lop, chuyen canh (transitions, hook_transition), camera "
-             "theo dung mo ta (vd 'mem, khong rung' -> khong shake / glitch / flash gat)."),
+             "thuong hieu (+ trang / den / xam de tach nen cho chu de doc)."),
     "captions": ("- Phu de + chu hero: font_body / font_hero / font tung caption chi dung font thuong hieu (id trong "
                  "danh muc); kieu chu (hoa / thuong, dam) theo mo ta.\n"
                  "- Mau: accent / mau nhan chi lay tu he mau thuong hieu (chu thuong van trang / den de doc ro)."),
     "text_art": ("- Kieu chu (font, do dam, hoa / thuong, nghieng) giong mo ta Typography nhat co the.\n"
-                 "- Mau chu / vien / bong / hieu ung chu CHI dung he mau thuong hieu.\n"
-                 "- Vien, khoi, trang tri quanh chu theo Ngon ngu do hoa; chat lieu / anh sang theo Phong cach hinh anh."),
-    "image": ("- Tong mau anh hai hoa voi he mau thuong hieu (mau nhan dung mau thuong hieu).\n"
-              "- Hinh khoi / bo cuc / trang tri theo Ngon ngu do hoa; chat lieu, anh sang, kieu anh theo Phong cach hinh anh."),
-    "fx": ("- Toc do, easing, nhip, do manh, kieu vao / ra cua hieu ung theo Ngon ngu chuyen dong (vd 'mem, khong "
-           "rung' -> khong rung / loe / glitch gat).\n"
-           "- Mau cua lop hinh tu ve CHI lay tu he mau thuong hieu (ctx.palette) + trang / den.\n"
-           "- Hinh khoi, net, kieu trang tri theo Ngon ngu do hoa."),
+                 "- Mau chu / vien / bong / hieu ung chu CHI dung he mau thuong hieu."),
+    "image": "- Tong mau anh hai hoa voi he mau thuong hieu (mau nhan dung mau thuong hieu).",
+    "fx": "- Mau cua lop hinh tu ve CHI lay tu he mau thuong hieu (ctx.palette) + trang / den.",
 }
 
 
 # ---------------------------------------------------------------------------
 # Chuan hoa + doc
 # ---------------------------------------------------------------------------
+MAX_FONTS = 3
+
+
 def normalize(raw):
-    """dict nguoi dung nhap -> {truong: chu} (bo trong, gon khoang trang, cat MAX_CHARS). Khong co gi -> None."""
+    """dict nguoi dung nhap -> {truong: chu} (bo trong, gon khoang trang, cat MAX_CHARS). Khong co gi -> None.
+    `fonts` = id font TAI LEN (font_lib) nguoi dung chon (dau = tieu de, cuoi = noi dung); id khong con trong kho bi bo."""
     if not isinstance(raw, dict):
         return None
     out = {}
@@ -71,7 +65,31 @@ def normalize(raw):
             v = " ".join(v.split())[:MAX_CHARS]
             if v:
                 out[k] = v
+    if isinstance(raw.get("fonts"), list) and raw["fonts"]:
+        import font_lib
+        ids = []
+        for i in raw["fonts"]:
+            if isinstance(i, str) and i not in ids and font_lib.get(i):
+                ids.append(i)
+        if ids:
+            out["fonts"] = ids[:MAX_FONTS]
     return out or None
+
+
+def uploaded(bg):
+    """Font tai len duoc chon -> [{id, ten, vai}] (vai: tieu de / noi dung theo thu tu)."""
+    bg = normalize(bg) or {}
+    ids = bg.get("fonts") or []
+    if not ids:
+        return []
+    import font_lib
+    out = []
+    for n, i in enumerate(ids):
+        e = font_lib.get(i) or {}
+        vai = "moi chu" if len(ids) == 1 else ("tieu de / chu nhan" if n == 0 else
+                                               "noi dung / phu de" if n == len(ids) - 1 else "chu phu")
+        out.append({"id": i, "ten": e.get("label") or e.get("family") or i, "vai": vai})
+    return out
 
 
 def view(bg, step):
@@ -79,10 +97,13 @@ def view(bg, step):
     bg = normalize(bg)
     if not bg:
         return None
-    out = {k: bg[k] for k in STEP_FIELDS.get(step, FIELDS) if bg.get(k)}
+    keys = STEP_FIELDS.get(step, FIELDS)
+    out = {k: bg[k] for k in keys if bg.get(k)}
+    if "typography" in keys and bg.get("fonts"):
+        out["font_tai_len"] = uploaded(bg)
     if not out:
         return None
-    if "typography" in out:
+    if "typography" in keys and (out.get("typography") or out.get("font_tai_len")):
         f = fonts(bg)
         if f:
             out["font_trong_danh_muc"] = f
@@ -100,7 +121,14 @@ def rule_text(bg, step):
         return ""
     rows = ["%s: %s" % (LABELS[k], v[k]) for k in STEP_FIELDS.get(step, FIELDS) if v.get(k)]
     extra = []
-    if v.get("font_trong_danh_muc"):
+    if v.get("font_tai_len"):
+        if step == "text_art":
+            extra.append("Font thuong hieu khach tai len: %s — ve kieu chu giong font nay nhat co the."
+                         % ", ".join("%s (%s)" % (f["ten"], f["vai"]) for f in v["font_tai_len"]))
+        else:
+            extra.append("Font thuong hieu khach TAI LEN (id): %s — moi chu dung DUNG cac id nay."
+                         % ", ".join("%s = %s (%s)" % (f["id"], f["ten"], f["vai"]) for f in v["font_tai_len"]))
+    elif v.get("font_trong_danh_muc"):
         extra.append("Font thuong hieu co trong app (id): %s — dung DUNG cac id nay." % ", ".join(v["font_trong_danh_muc"]))
     elif v.get("typography") and step in ("plan", "captions"):
         extra.append("Font ten trong Typography khong co trong app -> chon font trong danh muc GAN NHAT voi mo ta.")
@@ -118,8 +146,12 @@ def _plain(s):
 
 
 def fonts(bg):
-    """Font trong DANH MUC app duoc nhac ten trong Typography, theo thu tu xuat hien (font dau = tieu de)."""
+    """Font thuong hieu: font TAI LEN da chon (theo thu tu chon) roi font trong DANH MUC app duoc nhac ten trong
+    Typography (theo thu tu xuat hien). Font dau = tieu de, font cuoi = noi dung / phu de."""
     bg = normalize(bg) or {}
+    picked = list(bg.get("fonts") or [])
+    if picked:
+        return picked           # chon font tai len = y ro rang -> khong tron them font nhac ten trong chu
     txt = _plain(bg.get("typography"))
     if not txt.strip():
         return []
@@ -264,7 +296,7 @@ def _font_for(old, key, ctx, brand_fonts):
 # ---------------------------------------------------------------------------
 def apply_kit(kit, bg):
     """Bo phong cach cua PHIEN (video mau / R4 tu dat) + Brand Guideline -> bo moi (khong sua kit truyen vao):
-    palette ve he mau thuong hieu, font theo vai = font thuong hieu, kieu anh minh hoa kem Phong cach hinh anh."""
+    palette ve he mau thuong hieu, font theo vai = font thuong hieu."""
     bg = normalize(bg)
     if not bg:
         return kit
@@ -286,10 +318,6 @@ def apply_kit(kit, bg):
         out["fonts"] = fonts_
         if isinstance(out.get("subtitle"), dict):
             out["subtitle"]["font"] = fs[-1]
-    if bg.get("imagery"):
-        old = str(out.get("broll_style") or "")
-        if bg["imagery"] not in old:          # da co (ap lai lan 2) -> giu nguyen, khong mat ghi chu cu
-            out["broll_style"] = (bg["imagery"] + ((" | " + old) if old else ""))[:500]
     out["brand_guideline"] = {k: bg[k] for k in FIELDS if bg.get(k)}
     return out
 
@@ -379,8 +407,17 @@ def report(bg):
         return None
     fs, hs = fonts(bg), hexes(bg)
     parts = ["%s" % LABELS[k] for k in FIELDS if bg.get(k)]
+    up = uploaded(bg)
+    if up:
+        parts.append("font tai len")
     s = "Brand Guideline: %s" % ", ".join(parts)
-    if bg.get("typography"):
+    if up:
+        import font_lib
+        s += " · font tải lên: %s" % ", ".join("%s (%s)" % (f["ten"], f["vai"]) for f in up)
+        thieu = [f["ten"] for f in up if (font_lib.get(f["id"]) or {}).get("vi_missing")]
+        if thieu:
+            s += " · ⚠ thiếu dấu tiếng Việt: %s — chữ thiếu hiện bằng font dự phòng" % ", ".join(thieu)
+    elif bg.get("typography"):
         s += " · font có trong app: %s" % (", ".join(fs) if fs else "không thấy tên font nào trong app — AI chọn font gần nhất theo mô tả")
     if bg.get("colors"):
         s += " · mã màu: %s" % (", ".join(hs) if hs else "không có mã #hex — AI theo mô tả màu (code không ép được màu)")

@@ -47,13 +47,19 @@ _CAT = {"mtime": None, "data": None}
 
 
 def load_catalog():
+    """Danh muc Remotion + font TAI LEN (font_lib, danh dau "custom": hop le khi kiem id / do be rong, nhung KHONG
+    vao danh muc gui AI — chi toi AI qua Brand Guideline cua du an chon no)."""
+    import font_lib
     try:
-        mt = os.path.getmtime(CATALOG_PATH)
+        mt = (os.path.getmtime(CATALOG_PATH), font_lib.lib_mtime())
     except OSError:
         mt = None
     if _CAT["data"] is None or _CAT["mtime"] != mt:
         with open(CATALOG_PATH, encoding="utf-8") as f:
-            _CAT["data"] = json.load(f)
+            data = json.load(f)
+        base = {x.get("id") for x in data.get("fonts") or []}
+        data["fonts"] = (data.get("fonts") or []) + [x for x in font_lib.catalog_fonts() if x["id"] not in base]
+        _CAT["data"] = data
         _CAT["mtime"] = mt
     return _CAT["data"]
 
@@ -72,7 +78,7 @@ def catalog_for_prompt(kind):
         "fonts": ("id", "label", "look", "roles"),
     }[kind]
     return [{k: it[k] for k in keep if it.get(k) not in (None, "", [])}
-            for it in load_catalog().get(kind) or []]
+            for it in load_catalog().get(kind) or [] if not it.get("custom")]
 
 
 def _catalog_block():
@@ -1240,7 +1246,32 @@ def build_spec(plan, log=None):
                 spec, report = spec2, rep2
         if report:
             report.pop("_tpl_lost", None)
+        if spec is not None:
+            attach_fonts(spec)
         return spec, report
+
+
+def attach_fonts(spec):
+    """Font TAI LEN (id uf_*) ma chu / phu de dung -> spec["fonts"] (file + do dam) de Remotion nap bang FontFace."""
+    import font_lib
+    used = []
+
+    def add(f):
+        if isinstance(f, str) and f.startswith("uf_") and f not in used:
+            used.append(f)
+    for c in spec.get("captions") or []:
+        add(c.get("font"))
+    for L in spec.get("layers") or []:
+        add(L.get("font"))
+        for sp in L.get("spans") or []:
+            if isinstance(sp, dict):
+                add(sp.get("font"))
+    fonts = font_lib.spec_fonts(used)
+    if fonts:
+        spec["fonts"] = fonts
+    else:
+        spec.pop("fonts", None)
+    return spec
 
 
 def _build_spec(plan, log=None):

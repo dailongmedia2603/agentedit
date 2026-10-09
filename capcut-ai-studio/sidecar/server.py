@@ -17,6 +17,7 @@ Endpoints chinh:
   GET  /sfx/list, POST /sfx/*, /find_sfx         (kho am thanh; /sfx/label = Gemini nghe & gan nhan)
   GET  /meme/list, POST /meme/*                  (kho meme)
   GET  /text/list, POST /text/*                  (kho text — mau chu dong)
+  GET|POST /fonts/list|import|delete|rename      (kho font tai len: may chu -> kho chung R2, Tao video -> chi may nay)
   GET|POST /music/*                              (kho nhac nen: nhap, Gemini nghe gan nhan, bat / tat tu them nhac)
   POST /fxlib/*                                  (kho hieu ung tu viet: dong goi sau render, preview, Gemini nhan, kho chung)
   POST /remotion/understand_reference { video }  -> phan tich video mau (Gemini xem + nghe video)
@@ -705,6 +706,68 @@ def sfx_delete_route():
     b = request.get_json(force=True, silent=True) or {}
     engine.sfx_delete(b.get("id"))
     return jsonify({"ok": True})
+
+
+# ----------------------------------------------------------------------------
+# KHO FONT TAI LEN (font_lib.py, 2026-10-09): Tai nguyen > Font o may chu -> kho chung (R2); Tao video > Typography
+# -> chi may nay. Brand Guideline chon font -> AI + ban dung dung dung font do.
+# ----------------------------------------------------------------------------
+@app.route("/fonts/list", methods=["GET", "POST"])
+@require_token
+def fonts_list_route():
+    import font_lib
+    return jsonify({"ok": True, "fonts": font_lib.list_fonts(), "can_publish": font_lib.can_publish()})
+
+
+@app.route("/fonts/import", methods=["POST"])
+@require_token
+def fonts_import_route():
+    """{paths, scope: local|shared}. shared CHI o may chu (co token R2) -> day len kho chung ngay."""
+    import font_lib
+    b = request.get_json(force=True, silent=True) or {}
+    scope = "shared" if b.get("scope") == "shared" else "local"
+    if scope == "shared" and not font_lib.can_publish():
+        return err("Máy này không có token kho chung — font chỉ lưu trên máy này.", 400)
+    paths = [str(p) for p in (b.get("paths") or []) if isinstance(p, str)][:40]
+    if not paths:
+        return err("Thieu paths", 400)
+    try:
+        res = font_lib.import_files(paths, scope=scope, publish=font_lib.publish if scope == "shared" else None)
+    except Exception as e:
+        logger.exception("font import failed")
+        return err("Nhập font lỗi: %s" % str(e)[:200], 500)
+    return jsonify({"ok": True, **res})
+
+
+@app.route("/fonts/delete", methods=["POST"])
+@require_token
+def fonts_delete_route():
+    import font_lib
+    b = request.get_json(force=True, silent=True) or {}
+    fid = str(b.get("id") or "")
+    e = font_lib.get(fid)
+    if not e:
+        return jsonify({"ok": False, "error": "Không thấy font."})
+    if e.get("scope") == "shared" and not font_lib.can_publish():
+        return err("Font của kho chung — chỉ máy chủ gỡ được.", 400)
+    try:
+        font_lib.remove(fid, unpublish=font_lib.unpublish)
+    except Exception as ex:
+        logger.exception("font delete failed")
+        return err("Gỡ font lỗi: %s" % str(ex)[:200], 500)
+    return jsonify({"ok": True})
+
+
+@app.route("/fonts/rename", methods=["POST"])
+@require_token
+def fonts_rename_route():
+    import font_lib
+    b = request.get_json(force=True, silent=True) or {}
+    e = font_lib.get(str(b.get("id") or ""))
+    if e and e.get("scope") == "shared":
+        return err("Tên font kho chung đi theo kho chung.", 400)
+    row = font_lib.rename(str(b.get("id") or ""), b.get("label"))
+    return jsonify({"ok": row is not None, "font": row})
 
 
 # ----------------------------------------------------------------------------
