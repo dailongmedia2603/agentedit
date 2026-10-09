@@ -32,6 +32,9 @@ const run = (cmd, args) => {
 const remotes = git('remote').split('\n')
 const remote = opt('--remote') || (remotes.includes('agentedit') ? 'agentedit' : 'origin')
 const branch = git('rev-parse', '--abbrev-ref', 'HEAD')
+// owner/repo cua remote (gh mac dinh lay remote "origin" = repo cu -> phai chi ro)
+const repo = /github\.com[:/]([^/]+\/[^/.]+?)(?:\.git)?$/.exec(git('remote', 'get-url', remote))?.[1]
+if (!repo) die(`remote ${remote} khong phai GitHub`)
 // chi xet file DA theo doi (file moi chua add nhu video thu khong chan)
 const dirty = git('status', '--porcelain', '--untracked-files=no')
 if (dirty) die(`con thay doi chua commit:\n${dirty}\n-> commit (hoac bo) truoc khi phat hanh.`)
@@ -45,8 +48,8 @@ const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
 
 if (TEST) {
   run('git', ['push', remote, branch])
-  run('gh', ['workflow', 'run', 'release.yml', '--ref', branch, '-f', 'channel=test', '-f', `notes=${notes || `Bản thử ${pkg.version}`}`])
-  console.log(`[release] da goi build kenh TEST tu nhanh ${branch} (v${pkg.version}). Xem: gh run list --workflow release.yml`)
+  run('gh', ['workflow', 'run', 'release.yml', '--repo', repo, '--ref', branch, '-f', 'channel=test', '-f', `notes=${notes || `Bản thử ${pkg.version}`}`])
+  console.log(`[release] da goi build kenh TEST tu nhanh ${branch} (v${pkg.version}). Xem: gh run list --repo ${repo} --workflow release.yml`)
   process.exit(0)
 }
 
@@ -81,4 +84,4 @@ if (!DRY) {
 run('git', ['tag', '-a', `v${version}`, '-F', notesFile])
 run('git', ['push', remote, branch])
 run('git', ['push', remote, `v${version}`])
-console.log(`[release] XONG — GitHub Actions dang build v${version} cho Mac + Windows (~30-60 phut). Theo doi: gh run list --workflow release.yml`)
+console.log(`[release] XONG — GitHub Actions dang build v${version} cho Mac + Windows (~30-60 phut). Theo doi: gh run list --repo ${repo} --workflow release.yml`)
