@@ -20,7 +20,13 @@ console.log('[1] cai im lang', setupName)
 let t0 = Date.now()
 execFileSync(setup, ['/S'], { stdio: 'inherit', timeout: 15 * 60000 })
 console.log(`    xong sau ${Math.round((Date.now() - t0) / 1000)}s`)
-const inst = ps("Get-ItemProperty HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\* -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -like 'Agent Edit*' } | Select-Object -First 1 -ExpandProperty InstallLocation").trim()
+let inst = ''
+try {
+  inst = ps("Get-ItemProperty HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\* -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -like 'Agent Edit*' } | ForEach-Object { $_.UninstallString }").trim()
+  console.log('    UninstallString:', inst)
+  inst = (/"([^"]+)\\[^\\"]+\.exe"/.exec(inst) || [])[1] || ''
+} catch {}
+if (!inst) inst = join(process.env.LOCALAPPDATA || '', 'Programs', 'Agent Edit')
 const exe = join(inst, 'Agent Edit.exe')
 console.log('    thu muc cai:', inst, '| co exe:', existsSync(exe))
 
