@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 const C = await import('../electron/services/update-core.ts')
-const dir = mkdtempSync(join(tmpdir(), 'ae dbg '))
+const dir = mkdtempSync(join(tmpdir(), 'ae dbg (x) & y '))
 const ps1 = join(dir, 'apply.ps1')
 writeFileSync(ps1, '\ufeff' + C.WIN_APPLY_PS1, 'utf-8')
 const log = join(dir, 'apply.log')
@@ -44,7 +44,8 @@ const variants = {
   B_khong_windowstyle: { opts: { detached: true, stdio: 'ignore', windowsHide: true }, extra: [] },
   C_detached_khong_hide: { opts: { detached: true, stdio: 'ignore' }, extra: ['-WindowStyle', 'Hidden'] },
   D_khong_detached: { opts: { stdio: 'ignore', windowsHide: true }, extra: ['-WindowStyle', 'Hidden'] },
-  E_qua_cmd_start: { viaCmd: true, opts: { detached: true, stdio: 'ignore', windowsHide: true, windowsVerbatimArguments: true }, extra: ['-WindowStyle', 'Hidden'] }
+  E_qua_cmd_start: { viaCmd: true, opts: { detached: true, stdio: 'ignore', windowsHide: true, windowsVerbatimArguments: true }, extra: ['-WindowStyle', 'Hidden'] },
+  F_giong_updater: { viaCmd: true, allQuoted: true, opts: { detached: true, stdio: 'ignore', windowsHide: true, windowsVerbatimArguments: true }, extra: ['-WindowStyle', 'Hidden'] }
 }
 for (const [tag, v] of Object.entries(variants)) {
   const a = mkArgs(tag, v.extra)
@@ -52,7 +53,8 @@ for (const [tag, v] of Object.entries(variants)) {
   let cmd = psExe
   let args = a.ps
   if (v.viaCmd) {
-    const q = (x) => (/[\s"]/.test(x) ? '"' + x.replace(/"/g, '\\"') + '"' : x)
+    // F = DUNG ham spawnDetachedWin cua updater.ts: moi tham so trong ngoac kep
+    const q = v.allQuoted ? (x) => '"' + x.replace(/"/g, '\\"') + '"' : (x) => (/[\s"]/.test(x) ? '"' + x.replace(/"/g, '\\"') + '"' : x)
     cmd = join(sysRoot, 'System32', 'cmd.exe')
     args = ['/d /s /c "start "" /min ' + [psExe, ...a.ps].map(q).join(' ') + '"']
   }

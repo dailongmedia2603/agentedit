@@ -164,6 +164,25 @@ function run(cmd: string, args: string[], timeoutMs = 300000): Promise<string> {
 }
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
+/**
+ * Windows: chay 1 chuong trinh TACH HAN khoi app qua `cmd /c start` — spawn TRUC TIEP (ke ca detached) thi tien trinh con
+ * bi ket thuc khi app thoat (do that tren may Windows CI 2026-10-09: PowerShell khong chay duoc dong nao; qua `start` thi
+ * chay tron ven). Moi tham so dat trong ngoac kep (duong dan co dau cach / & ( ) ^ van dung).
+ */
+function spawnDetachedWin(exe: string, args: string[]): Promise<void> {
+  const q = (x: string) => '"' + x.replace(/"/g, '\\"') + '"'
+  const cmd = join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'cmd.exe')
+  const line = `/d /s /c "start "" /min ${[exe, ...args].map(q).join(' ')}"`
+  return new Promise((res, rej) => {
+    const child = spawn(cmd, [line], { detached: true, stdio: 'ignore', windowsHide: true, windowsVerbatimArguments: true })
+    child.once('error', rej)
+    child.once('spawn', () => {
+      child.unref()
+      res()
+    })
+  })
+}
+
 // ---------------------------------------------------------------------------
 // Khoi dong
 // ---------------------------------------------------------------------------
@@ -516,26 +535,12 @@ export async function applyUpdate(busy = false): Promise<{ ok: boolean; error?: 
         '-Marker', markerPath(), '-FromVer', from, '-ToVer', to, '-ArgsB64', b64(JSON.stringify(rel)), '-MsgB64', b64(msg)
       ]
       try {
-        const child = spawn(ps, args, { detached: true, stdio: 'ignore', windowsHide: true })
-        await new Promise<void>((res, rej) => {
-          child.once('spawn', () => res())
-          child.once('error', rej)
-        })
-        child.unref()
+        if (!existsSync(ps)) throw new Error('khong thay ' + ps)
+        await spawnDetachedWin(ps, args)
       } catch (e) {
-        // PowerShell bi chan (chinh sach may cong ty...) -> chay thang bo cai im lang, tu mo app sau khi cai
+        // khong co / khong chay duoc PowerShell -> chay thang bo cai im lang, bo cai tu mo app sau khi cai
         log(`khong chay duoc PowerShell (${String((e as Error).message || e)}) -> chay thang bo cai`)
-        const child = spawn(downloadPath, [`/S --updated --force-run /D=${instDir}`], {
-          detached: true,
-          stdio: 'ignore',
-          windowsHide: true,
-          windowsVerbatimArguments: true
-        })
-        await new Promise<void>((res, rej) => {
-          child.once('spawn', () => res())
-          child.once('error', rej)
-        })
-        child.unref()
+        await spawnDetachedWin(downloadPath, ['/S', '--updated', '--force-run'])
       }
     }
     // Thoat app (before-quit tat sidecar / render / may chu media). Bi chan (cua so tu choi dong...) -> thoat han sau 15s.
