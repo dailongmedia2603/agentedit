@@ -231,7 +231,7 @@ exit 1
  * Windows — PowerShell 5.1 (luu UTF-8 CO BOM). Tham so ten: -AppPid -Setup -InstDir -Exe -Log -Marker -FromVer -ToVer
  * -ArgsB64 (JSON mang tham so mo lai, base64 UTF-8) -MsgB64 (cau bao loi tieng Viet, base64 UTF-8).
  *  1. Cho app cu thoat (60s, qua han buoc dung) + dung moi tien trinh chay tu thu muc cai (python sidecar, compositor).
- *  2. Chay bo cai NSIS im lang `/S --updated /D=<thu muc dang cai>` (cai cho rieng user, khong UAC), loi thi thu lai 1 lan.
+ *  2. Chay bo cai NSIS im lang `/S --updated` (cai cho rieng user, khong UAC; KHONG /D= — xem duoi), loi thi thu lai 1 lan.
  *  3. Mo app (co --agent-edit-updated=FROMVER, hoac --agent-edit-update-failed=TOVER neu bo cai bao loi), cho MARKER.
  *  4. Khong con app sau khi cai -> hop thoai bao loi + mo thu muc chua bo cai de cai tay.
  */
@@ -270,7 +270,9 @@ for ($i = 1; $i -le 2; $i++) {
     $left = Leftovers
     if ($left) { L ('con tien trinh trong thu muc cai: ' + $left) }
     L ('chay bo cai lan ' + $i)
-    $proc = Start-Process -FilePath $Setup -ArgumentList ('/S --updated /D=' + $InstDir) -PassThru
+    # KHONG truyen /D= : bo cai electron-builder nhan /D= khi da co ban cai thi GO ban cu ma KHONG cai ban moi (van tra ma 0)
+    # — do that tren Windows CI 2026-10-09. Khong /D= -> tu cai vao thu muc cu ghi trong registry.
+    $proc = Start-Process -FilePath $Setup -ArgumentList '/S --updated' -PassThru
     $null = $proc.Handle
     $waited = 0
     while (-not $proc.WaitForExit(30000)) {

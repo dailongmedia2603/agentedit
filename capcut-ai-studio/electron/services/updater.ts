@@ -542,7 +542,8 @@ export async function applyUpdate(busy = false): Promise<{ ok: boolean; error?: 
       } catch (e) {
         // khong co / khong chay duoc PowerShell -> chay thang bo cai im lang, bo cai tu mo app sau khi cai
         log(`khong chay duoc PowerShell (${String((e as Error).message || e)}) -> chay thang bo cai`)
-        await spawnDetachedWin(downloadPath, ['/S', '--updated', '--force-run'], updDir())
+        // khong /D= (bo cai bo trong thu muc cai), khong --force-run (chua kiem) -> app khong tu mo lai, lan sau khach tu mo
+        await spawnDetachedWin(downloadPath, ['/S', '--updated'], updDir())
       }
     }
     // Thoat app (before-quit tat sidecar / render / may chu media). Bi chan (cua so tu choi dong...) -> thoat han sau 15s.
