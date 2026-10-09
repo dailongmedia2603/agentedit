@@ -1540,7 +1540,21 @@ tiep) -> Worker / R2 bi chiem van khong day duoc ban gia.
   thu muc chua bo cai. PowerShell bi chan -> chay thang bo cai `--force-run`.
 - Nhat ky: `<userData>/updates/apply.log` (ca app + script).
 
-**Kiem chung**: `license-server` npm test 94/94 (24 tinh huong cap nhat: phieu theo kenh / kien truc / ha cap, ten file ..,
+**Bay da gap khi chay that (2026-10-09, deu da sua — DUNG lam lai):**
+- Python NHUNG ghi `__pycache__` vao TRONG goi app -> hong niem phong chu ky macOS -> goi cap nhat nen tu app do bi updater
+  tu choi. main.ts dat `PYTHONPYCACHEPREFIX=~/.capcut-studio/pycache` cho moi tien trinh Python con; selftest-packaged co
+  muc chot "goi app con nguyen chu ky sau khi chay".
+- Windows: spawn TRUC TIEP (ke ca detached) PowerShell tu app -> bi ket thuc khi app thoat, script khong chay dong nao.
+  Phai qua `cmd /d /s /c "start "" /min ..."` (`spawnDetachedWin`, moi tham so trong ngoac kep, cwd = thu muc updates).
+- Bo cai NSIS electron-builder: `/D=<thu muc>` khi DA co ban cai -> go ban cu, KHONG cai ban moi, van tra ma 0. Chi dung
+  `/S --updated` (tu cai vao thu muc cu trong registry). Ban moi con tu so `--agent-edit-update-to` voi chinh no.
+- May ao macOS cua GitHub khong co Neural Engine -> Vision khong tach nguoi (release.yml dat SELFTEST_VM_NO_PERSON_SEG=1).
+- `gh workflow run` mac dinh remote `origin` (repo cu) -> release.mjs truyen `--repo`.
+
+**Kiem chung**: CI release.yml lan chay 37881769040 XANH toan bo (mac: dong goi, tu kiem 21 muc + chu ky, tu cap nhat that
+9/9, phat hanh R2; windows: dong goi, tu kiem 21/21, tu cap nhat bang bo cai im lang that 8/8, phat hanh R2). Production:
+key thu tam (xoa sau) — op check tra phieu kenh test, chu ky khop UPDATE_PUB, Range 206, tai ca file dung SHA-512 (mac 266 MB,
+win 311 MB), op update. `license-server` npm test 94/94 (24 tinh huong cap nhat: phieu theo kenh / kien truc / ha cap, ten file ..,
 Range 206/416, token gia / token kho, key khoa). `tests/test_updater.mts` (so phien ban, kiem phieu 15 tinh huong, script Mac
 voi goi .app GIA: thay OK / ban moi khong mo -> tra ban cu / thieu ban moi / app treo; updater.ts: du lieu hong -> loi, rot mang
 -> Range -> ready, giai nen + chu ky). `tests/test_license.mts` (+ duong di upd qua lan kiem key). `scripts/selftest-update.mjs`
