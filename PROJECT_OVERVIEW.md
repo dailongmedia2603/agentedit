@@ -776,7 +776,9 @@ tieng; (3) chu anh AI: duoi 'g' hang tren con du manh tren hang duoi; (4) SFX kh
 - Co BUILD `__CLIENT_UI__` (electron.vite.config.ts, ca main + renderer): `command === 'build'` va KHONG co
   `STUDIO_FULL_UI=1` -> an. Nghia la `npm run build` / `dist` / `dist:win` (build-windows.ps1) mac dinh la BAN CAI;
   `npm run dev` va `STUDIO_FULL_UI=1 npm run dist` = giao dien day du (ban cua chu app tren may cua minh — app trong
-  /Applications may chu app CAI BANG BAN DAY DU, khong cai ban an len may nay).
+  /Applications may chu app CAI BANG BAN DAY DU, khong cai ban an len may nay). **2026-10-09 DOI:** may chu app dung BAN
+  KHACH 1.3.0 (tu cap nhat, muc 15) + cua bi mat Ctrl/Cmd+Shift+Alt+D (localStorage, giu qua moi lan cap nhat); chi mat
+  DevTools. Khong build tay ban day du de len /Applications nua.
 - `src/lib/clientUi.ts`: `isFullUi()` / `useFullUi()`; cua bi mat Ctrl/Cmd+Shift+Alt+D bat / tat (localStorage
   `studio.fullUi`, chi may do). An: menu Prompt & quy tac; RunLogPanel + nut Nhat ky (Tao video, Video da tao); thanh
   cac buoc; khung Ket qua (hieu nguon / video mau / ke hoach / kiem tra ky thuat) + "Dung lai N buoc"; Doctor "Nhat ky
@@ -1495,8 +1497,8 @@ hien "Cap nhat len x.y.z" va tu cai. macOS theo phuong an MIEN PHI (khong Apple 
   selftest-packaged -> selftest-update -> publish-update) + `windows` (windows-2022: build-windows.ps1 [npm ci, dist:win,
   selftest-packaged] -> selftest-update --ci -> publish-update) -> `github-release` (chi tag: .dmg + Setup .exe vao GitHub
   Releases cua repo PRIVATE — gui cho khach MOI). Secrets: UPDATE_SIGNING_KEY, MAC_CERT_P12, MAC_CERT_PASSWORD, R2_ACCOUNT_ID,
-  R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET. Ban DAY DU cua may chu app van build tay (`STUDIO_FULL_UI=1 npm run dist`,
-  khong tu cap nhat).
+  R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET. Ban DAY DU (`STUDIO_FULL_UI=1`) khong tu cap nhat ->
+  tu 2026-10-09 may chu app cung dung ban khach (tu cap nhat) + cua bi mat Ctrl/Cmd+Shift+Alt+D.
 - Tu may chu app (khong qua Actions): `npm run dist` roi `npm run publish:update -- --channel test|stable --notes "..."`
   (Windows tuong tu tren may Windows sau dist:win).
 
