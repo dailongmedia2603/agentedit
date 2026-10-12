@@ -113,7 +113,9 @@ const API = `http://127.0.0.1:${srv.address().port}`
 const home = IS_MAC ? join(work, 'home') : homedir()
 // AGENT_EDIT_MIN_VERSION = chinh ban dang tu kiem (luot CI thu chua nang so phien ban van kiem duoc het luong; luat "ban toi
 // thieu" cua script chi la so sanh so, khong phai thu nghiem o day)
-const baseEnv = { ...process.env, AGENT_EDIT_API: API, AGENT_EDIT_USER_DATA_DIR: ud, AGENT_EDIT_MIN_VERSION: info.version }
+// AGENT_EDIT_TEST_JOB_DELAY_MS: viec nen cho 8s truoc khi chay -> `make` phai tra ve truoc khi viec xong it nhat 3s
+const baseEnv = { ...process.env, AGENT_EDIT_API: API, AGENT_EDIT_USER_DATA_DIR: ud, AGENT_EDIT_MIN_VERSION: info.version,
+  AGENT_EDIT_TEST_JOB_DELAY_MS: '8000' }
 delete baseEnv.ELECTRON_RUN_AS_NODE
 if (IS_MAC) Object.assign(baseEnv, { HOME: home, AGENT_EDIT_ARCH: info.arch, AGENT_EDIT_NO_SYSTEM_APP: '1', PYTHONPYCACHEPREFIX: join(work, 'pycache') })
 
@@ -196,7 +198,8 @@ try {
     record('make -> viec nen chay, wait doc trang thai (dung o ban quyen + goi y activate)',
       w.code === 1 && wj?.status === 'error' && wj?.error?.step === 'prepare' && /activate/.test(wj?.error?.hint || ''), both(w).slice(0, 300))
     const fin = wj?.finishedAt ? Date.parse(wj.finishedAt) : 0
-    record('make tra ma viec NGAY (viec nen khong giu ong stdout cua lenh goi)', !!fin && returnedAt < fin, `make xong ${r.ms}ms, tra luc ${returnedAt}, viec xong luc ${fin}`)
+    record('make tra ma viec NGAY (viec nen khong giu ong stdout cua lenh goi)', !!fin && fin - returnedAt > 3000,
+      `make xong ${r.ms}ms, tra truoc khi viec nen xong ${fin - returnedAt}ms (viec nen giu 8s)`)
   } else record('make -> tra ma viec', false, both(r))
 } finally {
   srv.close()

@@ -397,6 +397,9 @@ function spawnJob(id: string): number | undefined {
   const args = [...pre, CLI_FLAG, '__run-job', id]
   const env = { ...process.env }
   delete env.ELECTRON_RUN_AS_NODE
+  // file ket qua cua lenh `make` (script Windows) KHONG phai cua viec nen
+  delete env.AGENT_EDIT_OUT_FILE
+  delete env.AGENT_EDIT_ERR_FILE
   const child = spawn(process.execPath, args, { detached: true, stdio: ['ignore', fd, fd], env, windowsHide: true })
   child.unref()
   return child.pid

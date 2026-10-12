@@ -1665,9 +1665,12 @@ shell chay qua Rosetta).
 - WINDOWS (1.5.1, 2026-10-12): `scripts/agent-edit.ps1` (Windows PowerShell 5.1 + curl.exe co san, file UTF-8 CO BOM): tim
   "Agent Edit.exe" (AGENT_EDIT_APP, muc go cai dat HKCU/HKLM, %LOCALAPPDATA%\Programs\Agent Edit; phien ban = VersionInfo
   ProductVersion), chua co / < 1.5.1 + `--key` -> /v1/download platform win32 -> curl.exe -C - tai tiep -> SHA-512 -> bo cai NSIS
-  `/S` (cho rieng user, khong UAC; app dang chay -> tu choi) -> doi app hien trong registry. App Windows la app GIAO DIEN: chi in
-  ra khi stdout la ong dan -> script HUNG stdout (`& exe | ForEach-Object`) in lai UTF-8 + tra `$LASTEXITCODE`; thong bao cua
-  script ra stderr. SKILL.md chon script theo he dieu hanh. Sua CLI cho Windows: ffprobe.exe (truoc doc thoi luong = 0), ghi
+  `/S` (cho rieng user, khong UAC; app dang chay -> tu choi) -> doi app hien trong registry. App Windows la app GIAO DIEN (chi in ra
+  ong dan) va chay qua ong dan thi viec nen `make` co the KE THUA ong stdout -> AI agent treo toi khi video xong (do tren CI:
+  `make` tra ve SAU khi viec nen xong) -> script chay app bang ShellExecute (`Start-Process -WindowStyle Hidden`, khong ke thua
+  handle), app ghi ket qua ra FILE (`AGENT_EDIT_OUT_FILE` / `AGENT_EDIT_ERR_FILE`, util.ts `emit`; spawnJob bo 2 bien nay cho
+  viec nen), script doc dan va in lai UTF-8 + tra ExitCode; thong bao cua script ra stderr. SHA-512 tinh bang .NET (Get-FileHash
+  khong nap duoc khi PSModulePath cua PowerShell 7 lot vao — gap that tren CI). SKILL.md chon script theo he dieu hanh. Sua CLI cho Windows: ffprobe.exe (truoc doc thoi luong = 0), ghi
   job.json thu lai khi EPERM / EBUSY, huy = `taskkill /T /F` ca cay, `update` kiem giao dien dang mo bang CIM Win32_Process.
 - TU KIEM KY NANG `scripts/selftest-gettime.mjs` (CI mac + windows, sau selftest-update): may chu tai GIA local -> script ky
   nang `install --key` (key sai -> loi; dung -> tai + SHA-512 + chu ky ma / bo cai /S) -> `version` / `status` / `make` + `wait`

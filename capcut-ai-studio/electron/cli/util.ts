@@ -1,5 +1,5 @@
 // CHE DO CLI (2026-10-12) — tien ich chung: thu muc, doc / ghi JSON an toan, tham so dong lenh, in ket qua.
-import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'fs'
+import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'fs'
 import { dirname, join } from 'path'
 import { ENGINE_HOME } from '../services/paths'
 
@@ -117,16 +117,32 @@ export const optAll = (a: Args, k: string): string[] => a.opts[k] || []
 // ---------------------------------------------------------------------------
 // In ra man hinh (stdout cua tien trinh app = terminal / AI agent doc)
 // ---------------------------------------------------------------------------
+// AGENT_EDIT_OUT_FILE / AGENT_EDIT_ERR_FILE (script Windows agent-edit.ps1): ghi ket qua ra FILE thay vi stdout / stderr.
+// App Windows la app giao dien: chi in ra ong dan, ma chay qua ong dan thi viec nen (`make`) co the KE THUA ong cua lenh goi
+// -> AI agent treo toi khi video xong. Script chay app bang ShellExecute (khong ke thua handle) + doc file nay in lai.
+function emit(stream: 'out' | 'err', text: string): void {
+  const f = stream === 'out' ? process.env.AGENT_EDIT_OUT_FILE : process.env.AGENT_EDIT_ERR_FILE
+  if (f) {
+    try {
+      appendFileSync(f, text, 'utf-8')
+      return
+    } catch {
+      /* khong ghi duoc file -> in thang */
+    }
+  }
+  ;(stream === 'out' ? process.stdout : process.stderr).write(text)
+}
+
 export function out(line = ''): void {
-  process.stdout.write(line + '\n')
+  emit('out', line + '\n')
 }
 
 export function outJson(data: unknown): void {
-  process.stdout.write(JSON.stringify(data, null, 2) + '\n')
+  emit('out', JSON.stringify(data, null, 2) + '\n')
 }
 
 export function errLine(line: string): void {
-  process.stderr.write(line + '\n')
+  emit('err', line + '\n')
 }
 
 export function exists(p: string | undefined | null): p is string {

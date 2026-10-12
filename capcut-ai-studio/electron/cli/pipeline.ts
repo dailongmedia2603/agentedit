@@ -91,6 +91,9 @@ function videoThumb(path: string, duration: number): Promise<string | undefined>
 export async function runJob(id: string): Promise<number> {
   const job = loadJob(id)
   if (!job) return 2
+  // CHI de tu kiem (selftest-gettime): giu viec nen lai vai giay -> kiem `make` tra ma viec TRUOC khi viec nen xong
+  const testDelay = Number(process.env.AGENT_EDIT_TEST_JOB_DELAY_MS || 0)
+  if (testDelay > 0 && testDelay <= 60000) await new Promise((r) => setTimeout(r, testDelay))
   job.pid = process.pid
   job.status = 'running'
   job.startedAt = Date.now()

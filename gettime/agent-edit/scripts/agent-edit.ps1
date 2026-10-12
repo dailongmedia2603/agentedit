@@ -216,10 +216,62 @@ if (-not $app -or -not (VerGe $appv $MinVersion)) {
   }
 }
 
-# ---- chay app o che do CLI, hung stdout (app giao dien Windows chi in ra ong dan) roi in lai ----
+# ---- chay app o che do CLI ----
+# App Windows la app GIAO DIEN (chi in ra ong dan). KHONG chay qua ong dan: viec nen cua `make` co the KE THUA ong stdout ->
+# lenh goi (AI agent) treo toi khi video xong. Chay bang ShellExecute (Start-Process -WindowStyle Hidden: khong ke thua handle
+# nao), app ghi ket qua vao FILE (AGENT_EDIT_OUT_FILE / AGENT_EDIT_ERR_FILE) -> script doc dan va in lai (UTF-8).
+function QuoteArg([string]$a) {
+  if ($a -ne '' -and $a -notmatch '[\s"]') { return $a }
+  $sb = New-Object Text.StringBuilder
+  [void]$sb.Append('"')
+  $bs = 0
+  foreach ($ch in $a.ToCharArray()) {
+    if ($ch -eq [char]92) { $bs++; continue }
+    if ($ch -eq [char]34) { [void]$sb.Append(('\' * ($bs * 2 + 1)) + '"'); $bs = 0; continue }
+    if ($bs) { [void]$sb.Append('\' * $bs); $bs = 0 }
+    [void]$sb.Append($ch)
+  }
+  [void]$sb.Append(('\' * ($bs * 2)) + '"')
+  return $sb.ToString()
+}
+
+$outFile = [IO.Path]::GetTempFileName()
+$errFile = [IO.Path]::GetTempFileName()
+$env:AGENT_EDIT_OUT_FILE = $outFile
+$env:AGENT_EDIT_ERR_FILE = $errFile
 Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue
 $exeArgs = @('--agent-edit-cli') + @($args)
 if ($env:AGENT_EDIT_USER_DATA_DIR) { $exeArgs = @("--user-data-dir=$($env:AGENT_EDIT_USER_DATA_DIR)") + $exeArgs }
+$argLine = (@($exeArgs | ForEach-Object { QuoteArg ([string]$_) }) -join ' ')
+
+# in phan moi cua file ket qua (doc ca file — nho, khong cat giua ky tu UTF-8)
+$shown = @{ out = 0; err = 0 }
+function Relay([string]$file, [string]$k, [IO.TextWriter]$w) {
+  try { $t = [IO.File]::ReadAllText($file, [Text.Encoding]::UTF8) } catch { return }
+  if ($t.Length -gt $shown[$k]) {
+    $w.Write($t.Substring($shown[$k]))
+    $w.Flush()
+    $shown[$k] = $t.Length
+  }
+}
+
 $ErrorActionPreference = 'Continue'
-& $app @exeArgs | ForEach-Object { [Console]::Out.WriteLine($_) }
-exit $LASTEXITCODE
+try {
+  if ($OnWindows) { $p = Start-Process -FilePath $app -ArgumentList $argLine -PassThru -WindowStyle Hidden }
+  else { $p = Start-Process -FilePath $app -ArgumentList $argLine -PassThru }
+  $null = $p.Handle # Windows PowerShell 5.1: giu handle -> doc duoc ExitCode sau khi thoat
+  while (-not $p.HasExited) {
+    Relay $outFile 'out' ([Console]::Out)
+    Relay $errFile 'err' ([Console]::Error)
+    Start-Sleep -Milliseconds 300
+  }
+  $p.WaitForExit()
+  Relay $outFile 'out' ([Console]::Out)
+  Relay $errFile 'err' ([Console]::Error)
+  $code = $p.ExitCode
+} finally {
+  Remove-Item Env:AGENT_EDIT_OUT_FILE, Env:AGENT_EDIT_ERR_FILE -ErrorAction SilentlyContinue
+  Remove-Item -LiteralPath $outFile, $errFile -Force -ErrorAction SilentlyContinue
+}
+if ($null -eq $code) { $code = 1 }
+exit $code
