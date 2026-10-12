@@ -22,7 +22,7 @@ cần thiết.
 ## Dùng
 
 - Lần đầu trên một máy, nhắn AI: *"Cài Agent Edit, key của tôi là XXXXX-XXXXX-XXXXX-XXXXX-XXXXX"*. AI sẽ tải app đúng
-  chip (Apple Silicon / Intel), kích hoạt key, tự cài công cụ (Whisper, trình render, Codex, Claude Code, Antigravity CLI),
+  máy (Mac Apple Silicon / Mac Intel / Windows — Windows cài im lặng cho riêng tài khoản, không cần quyền admin), kích hoạt key, tự cài công cụ (Whisper, trình render, Codex, Claude Code, Antigravity CLI),
   rồi nhờ bạn đăng nhập Gemini / Claude trên trình duyệt nếu máy chưa đăng nhập.
 - Ra lệnh: *"Dựng video TikTok từ file ~/Desktop/goc.mp4, giới thiệu sản phẩm, dưới 60 giây, lưu vào Desktop"*. Có thể
   thêm video mẫu, ảnh sản phẩm hoặc logo chèn lên, video ngang… AI trả lời ngay mã việc, rồi theo dõi cho tới khi xong
@@ -31,19 +31,29 @@ cần thiết.
 
 ## Điều kiện
 
-- macOS 14 trở lên, Apple Silicon hoặc **Intel**.
+- macOS 14 trở lên (Apple Silicon hoặc **Intel**) hoặc **Windows 10 (bản 1809+) / 11 64-bit**. Cùng một thư mục kỹ năng
+  cho mọi máy: AI tự gọi `scripts/agent-edit` (macOS) hoặc `scripts/agent-edit.ps1` (Windows).
 - Key bản quyền Agent Edit. Mỗi key dùng cho 1 máy, **dùng chung với app** Agent Edit trên cùng máy (CLI chính là app
   chạy không giao diện).
 - Đăng nhập AI: Gemini (tài khoản Google, qua Antigravity CLI) + Claude (Claude Code). Codex (ChatGPT) không bắt buộc,
   dùng cho ảnh AI. Có thể dùng API key thay đăng nhập.
 - Video làm qua kỹ năng cũng hiện trong app Agent Edit → **Video đã tạo** (mở ra xem lại / render lại được).
 
-## Chạy tay (Terminal)
+## Chạy tay
+
+macOS (Terminal):
 
 ```bash
 bash gettime/agent-edit/scripts/agent-edit help
 bash gettime/agent-edit/scripts/agent-edit setup --key <KEY>
 bash gettime/agent-edit/scripts/agent-edit make --video ~/Desktop/goc.mp4 --request "Giới thiệu sản phẩm" --wait
+```
+
+Windows (PowerShell):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File gettime\agent-edit\scripts\agent-edit.ps1 setup --key <KEY>
+powershell -ExecutionPolicy Bypass -File gettime\agent-edit\scripts\agent-edit.ps1 make --video C:\Users\a\Desktop\goc.mp4 --request "Giới thiệu sản phẩm" --wait
 ```
 
 Chi tiết kỹ thuật: `PROJECT_OVERVIEW.md` mục 16.

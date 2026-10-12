@@ -124,6 +124,8 @@ jobs:
         env:
           UPDATE_SIGNING_KEY: ${{ secrets.UPDATE_SIGNING_KEY }}
         run: node scripts/selftest-update.mjs
+      - name: Tu kiem ky nang GetTime (bash agent-edit — cai qua may chu gia + goi CLI)
+        run: node scripts/selftest-gettime.mjs
       - uses: actions/download-artifact@v4
         with:
           name: notes
@@ -173,6 +175,8 @@ jobs:
         env:
           UPDATE_SIGNING_KEY: ${{ secrets.UPDATE_SIGNING_KEY }}
         run: node scripts/selftest-update.mjs --ci
+      - name: Tu kiem ky nang GetTime (agent-edit.ps1 — cai qua may chu gia + goi CLI)
+        run: node scripts/selftest-gettime.mjs --ci
       - uses: actions/download-artifact@v4
         with:
           name: notes

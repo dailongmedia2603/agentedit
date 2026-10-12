@@ -2,7 +2,7 @@
 name: agent-edit
 description: 'Dựng và edit video bằng AI với Agent Edit (cắt khoảng lặng, hook mạnh, phụ đề karaoke, chữ hiệu ứng, ảnh AI, SFX, nhạc nền) rồi xuất MP4 dọc 9:16 hoặc ngang 16:9. Dùng khi người trực muốn làm video TikTok, Reels, Shorts hay video quảng cáo từ file video có sẵn, edit lại một video, thêm phụ đề hoặc hiệu ứng, làm theo phong cách một video mẫu, chèn ảnh sản phẩm hay logo lên video, hoặc hỏi tiến độ và kết quả của việc tạo video đang chạy.'
 license: Proprietary
-compatibility: 'macOS 14 trở lên (Apple Silicon hoặc Intel). Cần key bản quyền Agent Edit và chat bật Toàn quyền.'
+compatibility: 'macOS 14 trở lên (Apple Silicon hoặc Intel) hoặc Windows 10 (1809+) / 11 64-bit. Cần key bản quyền Agent Edit và chat bật Toàn quyền.'
 allowed-tools: Bash Read
 metadata:
   ten: Dựng video AI (Agent Edit)
@@ -20,17 +20,23 @@ của người trực, chạy lệnh, theo dõi và báo kết quả.
 
 - Chat phải bật **Toàn quyền** (để chạy script). Lệnh không chạy được do thiếu quyền → nhắn người trực bật Toàn quyền
   cho chat này rồi thử lại.
-- Máy macOS 14 trở lên. Script tự chọn bản Apple Silicon hoặc Intel.
+- Máy **macOS 14 trở lên** (script tự chọn bản Apple Silicon / Intel) hoặc **Windows 10 (1809+) / 11 64-bit**. Script tự
+  cài đúng bản cho máy đang chạy.
 
 ## 2. Gọi lệnh
 
-Script nằm trong thư mục kỹ năng này: `scripts/agent-edit` (Claude Code báo đường dẫn ở dòng "Base directory for this
-skill"). Không rõ thư mục thì dùng `$HOME/.gettime/skills/agent-edit/scripts/agent-edit`. Luôn chạy bằng `bash`:
+Script nằm trong thư mục `scripts/` của kỹ năng này (Claude Code báo đường dẫn ở dòng "Base directory for this skill";
+không rõ thì là `~/.gettime/skills/agent-edit` — Windows: `%USERPROFILE%\.gettime\skills\agent-edit`). **Chọn theo hệ điều
+hành** (xem `uname -s` hoặc biến `OS`):
 
-```bash
-AE="<thư mục kỹ năng>/scripts/agent-edit"
-bash "$AE" status --json
-```
+| Máy | Lệnh gọi (gọi tắt là `AE` trong tài liệu này) |
+|---|---|
+| macOS | `bash "<thư mục kỹ năng>/scripts/agent-edit"` |
+| Windows | `powershell -NoProfile -ExecutionPolicy Bypass -File "<thư mục kỹ năng>\scripts\agent-edit.ps1"` |
+
+Ví dụ: macOS `bash "$DIR/scripts/agent-edit" status --json` · Windows (trong Git Bash / PowerShell)
+`powershell -NoProfile -ExecutionPolicy Bypass -File "$DIR\scripts\agent-edit.ps1" status --json`. Mọi lệnh và tham số bên
+dưới giống hệt nhau trên 2 hệ điều hành; đường dẫn file trên Windows dạng `C:\Users\...\video.mp4`.
 
 - Luôn thêm `--json` rồi đọc kết quả JSON (thông báo phụ in ra stderr, bỏ qua được).
 - Đặt thời gian chờ của lệnh Bash là **600000 ms** (10 phút).
@@ -38,17 +44,18 @@ bash "$AE" status --json
 
 ## 3. Lần đầu trên máy (cài đặt)
 
-1. `bash "$AE" status --json`
+1. `AE status --json`
    - Báo **"Máy chưa cài Agent Edit"** hoặc bản quá cũ → hỏi người trực **key bản quyền Agent Edit**, rồi chạy
-     `bash "$AE" setup --key <KEY> --json`. Lệnh này tự tải app (~300 MB, đúng chip), kích hoạt key, cài toàn bộ công cụ
+     `AE setup --key <KEY> --json`. Lệnh này tự tải + cài app đúng máy (~300 MB; Windows cài im lặng cho riêng tài khoản,
+     không cần quyền admin), kích hoạt key, cài toàn bộ công cụ
      (Whisper, trình render, Codex, Claude Code, Antigravity CLI… ~1 GB) và đồng bộ kho SFX / nhạc / mẫu chữ.
      Lần đầu có thể mất 5–20 phút. Lệnh Bash bị cắt vì quá giờ → **chạy lại đúng lệnh đó**, nó tải tiếp chỗ dở.
    - `ready: true` → sẵn sàng, sang mục 4.
-2. `next` có `agent-edit login gemini` / `login claude` / `login codex` → chạy `bash "$AE" login gemini --json` (lần lượt
+2. `next` có `agent-edit login gemini` / `login claude` / `login codex` → chạy `AE login gemini --json` (lần lượt
    từng cái). Trình duyệt mở **trên máy này**: nhắn người trực đăng nhập tài khoản trong trình duyệt rồi đợi lệnh xong.
    Gemini = tài khoản Google (hiểu video), Claude = tài khoản Claude (lập kế hoạch), Codex = ChatGPT (ảnh AI, không bắt
-   buộc). Dùng API key thay đăng nhập: `bash "$AE" config --gemini-key <KEY>` / `--claude-key <KEY>`.
-3. `next` có `agent-edit activate <KEY>` → hỏi key rồi `bash "$AE" activate <KEY> --json`. Mỗi key dùng cho **1 máy**
+   buộc). Dùng API key thay đăng nhập: `AE config --gemini-key <KEY>` / `--claude-key <KEY>`.
+3. `next` có `agent-edit activate <KEY>` → hỏi key rồi `AE activate <KEY> --json`. Mỗi key dùng cho **1 máy**
    (dùng chung với app Agent Edit trên cùng máy). Báo "đã kích hoạt trên máy khác" → người trực liên hệ người bán.
 
 Không bao giờ nhắc lại nguyên văn key trong câu trả lời.
@@ -65,12 +72,12 @@ Không bao giờ nhắc lại nguyên văn key trong câu trả lời.
 2. **Chạy** (trả mã việc ngay, video dựng nền 10–40 phút):
 
    ```bash
-   bash "$AE" make --video "/Users/a/Desktop/goc.mp4" --request "Giới thiệu sản phẩm, hook mạnh, giọng vui" \
+   AE make --video "/Users/a/Desktop/goc.mp4" --request "Giới thiệu sản phẩm, hook mạnh, giọng vui" \
      --duration "dưới 60 giây" --out "/Users/a/Desktop/Video xong" --json
    ```
 
    → `{"ok": true, "id": "r_…"}`. Báo người trực: đã bắt đầu, thường mất 10–40 phút.
-3. **Theo dõi**: `bash "$AE" wait <id> --json` — mỗi lần chờ tối đa 9 phút. Còn chạy (`status` = `running` / `queued`,
+3. **Theo dõi**: `AE wait <id> --json` — mỗi lần chờ tối đa 9 phút. Còn chạy (`status` = `running` / `queued`,
    mã thoát 3) → báo ngắn `message` (vd "Đang phân tích video…", "Đang xuất video MP4 — 45%") rồi gọi `wait` tiếp.
    Lượt chat kết thúc trước khi xong cũng không sao: việc vẫn chạy nền, lần sau xem bằng `wait` / `job` / `jobs`.
 4. **Xong** (`status: done`) → báo `result.copy` (nếu có `--out`) hoặc `result.output`, kèm thời lượng (`result.duration`
@@ -103,13 +110,13 @@ Nhiều tư liệu: ghép theo thứ tự, vd
 
 | Lệnh | Dùng khi |
 |---|---|
-| `bash "$AE" jobs --json` | Liệt kê việc gần đây (mã, trạng thái, file kết quả) |
-| `bash "$AE" job <id> --json` | Xem 1 việc |
-| `bash "$AE" cancel <id> --json` | Huỷ việc đang chạy |
-| `bash "$AE" status --json` | Kiểm tra bản quyền, công cụ, đăng nhập AI |
-| `bash "$AE" doctor --fix --json` | Tự cài lại công cụ bị thiếu / hỏng |
-| `bash "$AE" sync --json` | Đồng bộ kho SFX / nhạc nền / mẫu chữ / hiệu ứng |
-| `bash "$AE" update --json` | Cập nhật Agent Edit (đóng app Agent Edit trước; đợi ~30 giây rồi chạy `version`) |
+| `AE jobs --json` | Liệt kê việc gần đây (mã, trạng thái, file kết quả) |
+| `AE job <id> --json` | Xem 1 việc |
+| `AE cancel <id> --json` | Huỷ việc đang chạy |
+| `AE status --json` | Kiểm tra bản quyền, công cụ, đăng nhập AI |
+| `AE doctor --fix --json` | Tự cài lại công cụ bị thiếu / hỏng |
+| `AE sync --json` | Đồng bộ kho SFX / nhạc nền / mẫu chữ / hiệu ứng |
+| `AE update --json` | Cập nhật Agent Edit (đóng app Agent Edit trước; đợi ~30 giây rồi chạy `version`) |
 
 ## 6. Lưu ý
 

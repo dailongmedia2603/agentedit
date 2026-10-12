@@ -1662,6 +1662,18 @@ ban quyen (license.enc + khoa thiet bi trong Keychain cua app — CLI tu tao kho
 DUNG chung chi Agent Edit (`certificate root = H"9a7d7c51..."`) -> cai ~/Applications (hoac thay ban cu tai cho) ->
 `--agent-edit-cli setup --key` (kich hoat + tu cai cong cu + dong bo kho). Chon chip bang `hw.optional.arm64` (dung ca khi
 shell chay qua Rosetta).
+- WINDOWS (1.5.1, 2026-10-12): `scripts/agent-edit.ps1` (Windows PowerShell 5.1 + curl.exe co san, file UTF-8 CO BOM): tim
+  "Agent Edit.exe" (AGENT_EDIT_APP, muc go cai dat HKCU/HKLM, %LOCALAPPDATA%\Programs\Agent Edit; phien ban = VersionInfo
+  ProductVersion), chua co / < 1.5.1 + `--key` -> /v1/download platform win32 -> curl.exe -C - tai tiep -> SHA-512 -> bo cai NSIS
+  `/S` (cho rieng user, khong UAC; app dang chay -> tu choi) -> doi app hien trong registry. App Windows la app GIAO DIEN: chi in
+  ra khi stdout la ong dan -> script HUNG stdout (`& exe | ForEach-Object`) in lai UTF-8 + tra `$LASTEXITCODE`; thong bao cua
+  script ra stderr. SKILL.md chon script theo he dieu hanh. Sua CLI cho Windows: ffprobe.exe (truoc doc thoi luong = 0), ghi
+  job.json thu lai khi EPERM / EBUSY, huy = `taskkill /T /F` ca cay, `update` kiem giao dien dang mo bang CIM Win32_Process.
+- TU KIEM KY NANG `scripts/selftest-gettime.mjs` (CI mac + windows, sau selftest-update): may chu tai GIA local -> script ky
+  nang `install --key` (key sai -> loi; dung -> tai + SHA-512 + chu ky ma / bo cai /S) -> `version` / `status` / `make` + `wait`
+  QUA script -> kiem `make` tra ma viec TRUOC khi viec nen xong (tien trinh nen khong giu ong stdout cua lenh goi — giu thi AI
+  agent treo toi khi video xong) -> go. macOS: HOME tam + AGENT_EDIT_NO_SYSTEM_APP=1 (khong dung /Applications that).
+  selftest-packaged [6b] (CLI) chay ca Windows.
 - license-server `POST /v1/download` {key, platform, arch, channel}: sai key tinh vao chan do key 20 / gio / IP; key khoa / het
   han -> tu choi; tra phieu (m + sig NGUYEN chuoi) + link `/v1/update/<file>` 24h (cung token 'upd.'); su kien `cli_download`.
 

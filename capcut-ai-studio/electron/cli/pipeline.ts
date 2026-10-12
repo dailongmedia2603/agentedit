@@ -9,6 +9,7 @@ import { execFile } from 'child_process'
 import { appendFileSync, copyFileSync, existsSync, mkdirSync, statSync } from 'fs'
 import { basename, join } from 'path'
 import { autoFix, DoctorCheck, runDoctor } from '../services/doctor'
+import { exeName } from '../services/env'
 import { fxRenderPreview, fxShare } from '../services/fx-harvest'
 import { libraryManifest, licenseState, requireLicense } from '../services/license'
 import { ENGINE_HOME, TOOLS_BIN } from '../services/paths'
@@ -59,8 +60,8 @@ function todayStr(): string {
 }
 
 function ffbin(name: 'ffmpeg' | 'ffprobe'): string {
-  const p = join(TOOLS_BIN, name)
-  return existsSync(p) ? p : name
+  const p = join(TOOLS_BIN, exeName(name)) // Windows: ffprobe.exe
+  return existsSync(p) ? p : exeName(name)
 }
 
 /** Thoi luong (giay) bang ffprobe cua app; khong doc duoc -> 0 (giao dien cung tra 0 khi video loi). */

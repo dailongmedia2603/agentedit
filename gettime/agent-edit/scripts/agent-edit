@@ -10,7 +10,8 @@
 #
 # Bien moi truong (tuy chon): AGENT_EDIT_APP (duong dan .app), AGENT_EDIT_CHANNEL (stable|test),
 #   AGENT_EDIT_ARCH (arm64|x64 — ep kien truc khi tai). Chi de tu kiem: AGENT_EDIT_API (may chu), AGENT_EDIT_MIN_VERSION,
-#   AGENT_EDIT_USER_DATA_DIR (thu muc du lieu Electron rieng — khong dung khoa API / key that cua may).
+#   AGENT_EDIT_USER_DATA_DIR (thu muc du lieu Electron rieng — khong dung khoa API / key that cua may),
+#   AGENT_EDIT_NO_SYSTEM_APP=1 (bo qua /Applications — tu kiem khong dung toi app that cua may).
 # Chi dung bash 3.2 + cong cu co san cua macOS (curl, plutil, shasum, ditto, codesign) — khong can Node / Python / jq.
 set -u
 
@@ -49,6 +50,7 @@ find_app() {
   local best="" bestv="0" p v
   for p in "${AGENT_EDIT_APP:-}" "/Applications/Agent Edit.app" "$HOME/Applications/Agent Edit.app"; do
     [ -n "$p" ] && [ -x "$p/Contents/MacOS/Agent Edit" ] || continue
+    [ -n "${AGENT_EDIT_NO_SYSTEM_APP:-}" ] && [ "$p" = "/Applications/Agent Edit.app" ] && continue
     [ -n "${AGENT_EDIT_APP:-}" ] && [ "$p" = "$AGENT_EDIT_APP" ] && { printf '%s\n' "$p"; return 0; }
     v=$(app_version "$p")
     if [ -z "$best" ] || ! ver_ge "$bestv" "$v"; then best="$p"; bestv="$v"; fi

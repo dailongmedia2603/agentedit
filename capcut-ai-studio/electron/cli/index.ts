@@ -17,6 +17,8 @@ import { maskedProviders, providersConfigured, ProvidersMap, saveProviders } fro
 import { sidecarInfo, sidecarRequest, startSidecar, stopSidecar } from '../services/sidecar'
 import { startAgyLogin, startClaudeLogin, startCodexLogin, sendCliInput, agyFailureText, CLI_PACKAGES } from '../services/cli-login'
 import { applyUpdate, checkForUpdateNow, initUpdater, updateState, updaterEnabled } from '../services/updater'
+import { killTree } from '../services/env'
+import { powershell } from '../services/toolchain'
 import { activeJobs, cancelFile, Job, JobInsert, jobLog, listJobs, loadJob, newJobId, saveJob, TERMINAL } from './jobs'
 import { ensureTools, runJob, syncLibrary } from './pipeline'
 import { Args, CLI_FLAG, errLine, opt, optAll, out, outJson, parseArgs, pidAlive, sleep } from './util'
@@ -540,18 +542,25 @@ async function cmdCancel(a: Args): Promise<number> {
   }
   // 1) yeu cau huy qua file (tien trinh tu dung sidecar / render, ghi "da huy"); 2) khong phan hoi -> SIGTERM; 3) SIGKILL
   if (!(await settled(20000))) {
-    try {
-      process.kill(j.pid, 'SIGTERM')
-    } catch {
-      /* da thoat */
-    }
-    if (!(await settled(10000))) {
+    const pid = j.pid
+    if (process.platform === 'win32') {
+      // Windows: khong co SIGTERM that -> dung CA CAY (sidecar python, ffmpeg, chrome con chau) bang taskkill /T /F
+      killTree(pid)
+      await settled(10000)
+    } else {
       try {
-        process.kill(j.pid, 'SIGKILL')
+        process.kill(pid, 'SIGTERM')
       } catch {
         /* da thoat */
       }
-      await sleep(500)
+      if (!(await settled(10000))) {
+        try {
+          process.kill(pid, 'SIGKILL')
+        } catch {
+          /* da thoat */
+        }
+        await sleep(500)
+      }
     }
   }
   const after = loadJob(j.id)
@@ -576,6 +585,17 @@ async function cmdCancel(a: Args): Promise<number> {
 // ---------------------------------------------------------------------------
 /** Tien trinh giao dien Agent Edit dang mo (cung binary, khong co co CLI). */
 function guiRunning(): boolean {
+  if (process.platform === 'win32') {
+    try {
+      // dong lenh tung tien trinh cung exe (PowerShell CIM) — tien trinh phu cua Electron co --type=, viec CLI co co CLI
+      const exe = process.execPath.replace(/'/g, "''")
+      const ps = `Get-CimInstance Win32_Process | Where-Object { $_.ExecutablePath -eq '${exe}' -and $_.ProcessId -ne ${process.pid} } | ForEach-Object { $_.CommandLine }`
+      const outp = execFileSync(powershell(), ['-NoProfile', '-NonInteractive', '-Command', ps], { encoding: 'utf-8', windowsHide: true, timeout: 30000 })
+      return outp.split(/\r?\n/).some((l) => l.trim() && !l.includes(CLI_FLAG) && !l.includes('--type='))
+    } catch {
+      return false
+    }
+  }
   try {
     const exe = process.execPath
     const ps = execFileSync('/bin/ps', ['-axo', 'pid=,command='], { encoding: 'utf-8' })
@@ -591,7 +611,7 @@ function guiRunning(): boolean {
 async function cmdUpdate(a: Args): Promise<number> {
   initUpdater()
   if (!updaterEnabled()) return fail(a, 'Bản này không tự cập nhật (bản phát triển / bản đầy đủ / chưa đóng gói).', EXIT.usage)
-  if (process.platform === 'darwin' && guiRunning()) {
+  if (guiRunning()) {
     return fail(a, 'App Agent Edit đang mở — đóng app (hoặc cập nhật ngay trong app) rồi chạy lại.', EXIT.usage)
   }
   const busy = activeJobs()

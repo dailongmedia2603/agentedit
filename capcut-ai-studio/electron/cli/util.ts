@@ -1,5 +1,5 @@
 // CHE DO CLI (2026-10-12) — tien ich chung: thu muc, doc / ghi JSON an toan, tham so dong lenh, in ket qua.
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'fs'
 import { dirname, join } from 'path'
 import { ENGINE_HOME } from '../services/paths'
 
@@ -25,7 +25,24 @@ export function writeJsonAtomic(path: string, data: unknown): void {
   mkdirSync(dirname(path), { recursive: true })
   const tmp = `${path}.${process.pid}.tmp`
   writeFileSync(tmp, JSON.stringify(data, null, 2), 'utf-8')
-  renameSync(tmp, path)
+  // Windows: tien trinh khac (wait / giao dien / trinh quet virus) dang mo file dich -> doi ten bao EPERM / EBUSY vai ms -> thu lai
+  for (let i = 0; ; i++) {
+    try {
+      renameSync(tmp, path)
+      return
+    } catch (e) {
+      const code = (e as NodeJS.ErrnoException).code
+      if (i >= 20 || !['EPERM', 'EBUSY', 'EACCES'].includes(String(code))) {
+        try {
+          rmSync(tmp, { force: true })
+        } catch {
+          /* bo qua */
+        }
+        throw e
+      }
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 50)
+    }
+  }
 }
 
 export function cliState(): Record<string, unknown> {

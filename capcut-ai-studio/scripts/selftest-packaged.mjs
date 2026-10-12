@@ -317,10 +317,10 @@ async function main() {
   }
   record('Render MP4', pass && Math.abs(Number(dur) - 3) < 0.3, pass ? `${out} (${dur}s, ${(statSync(out).size / 1e6).toFixed(1)} MB)` : rr.out.split(/\r?\n/).filter((l) => /RMR|rror/.test(l)).slice(-6).join(' | '))
 
-  // 6b) CHE DO CLI (2026-10-12 — ky nang GetTime / AI agent, chi macOS): chinh binary app (ban da lam roi + bytecode) chay
+  // 6b) CHE DO CLI (2026-10-12 — ky nang GetTime / AI agent; Windows tu 1.5.1): chinh binary app (ban da lam roi + bytecode) chay
   //     `--agent-edit-cli`: khong cua so, in JSON, ma thoat dung; `make` tach tien trinh nen, job dung o buoc ban quyen
   //     (may tu kiem khong co key) kem goi y kich hoat; `wait` doc trang thai tu tien trinh khac.
-  if (!IS_WIN) {
+  {
     console.log('\n[6b] Chế độ CLI (agent-edit)...')
     const cli = (args, timeoutMs = 120000) =>
       new Promise((res) => {
