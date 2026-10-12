@@ -43,6 +43,21 @@ a = U.parseArgs([])
 check('khong lenh -> help', a.cmd === 'help')
 a = U.parseArgs(['wait', 'r_abc123', '--timeout', '0'])
 check('wait --timeout 0', a.cmd === 'wait' && a.pos[0] === 'r_abc123' && U.opt(a, 'timeout') === '0', a)
+a = U.parseArgs(['wait', '--until-change', 'r_abc123', '--json'])
+check('--until-change la co, khong nuot ma viec', a.flags.has('until-change') && a.pos[0] === 'r_abc123' && a.flags.has('json'), a)
+
+console.log('[1b] moc tien do (wait --until-change)')
+{
+  const base = { id: 'r_x', createdAt: 0, updatedAt: 0, status: 'running' as const, input: { videos: [], inserts: [], orientation: 'portrait' as const, fresh: false } }
+  const M = (o: Record<string, unknown>) => J.jobMilestone({ ...base, ...o } as Parameters<typeof J.jobMilestone>[0])
+  check('queued -> running cung buoc: KHONG doi moc', M({ status: 'queued', step: 'prepare' }) === M({ step: 'prepare' }))
+  check('dong Doctor khac nhau cung buoc: KHONG doi moc', M({ step: 'prepare', message: 'a' }) === M({ step: 'prepare', message: 'b' }))
+  check('sang buoc moi: doi moc', M({ step: 'prepare' }) !== M({ step: 'import' }))
+  check('bat dau cho luot: doi moc', M({ step: 'analyze' }) !== M({ step: 'analyze', waiting: 'gemini' }))
+  check('render 10% -> 20%: KHONG doi moc', M({ step: 'render', progress: 0.1 }) === M({ step: 'render', progress: 0.2 }))
+  check('render 20% -> 26%: doi moc', M({ step: 'render', progress: 0.2 }) !== M({ step: 'render', progress: 0.26 }))
+  check('progress ngoai buoc render bi bo qua', M({ step: 'finish', progress: 1 }) === M({ step: 'finish' }))
+}
 
 console.log('[2] job: luu / doc / tien trinh chet')
 const id = J.newJobId()

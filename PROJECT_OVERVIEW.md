@@ -1609,7 +1609,10 @@ ban quyen (license.enc + khoa thiet bi trong Keychain cua app — CLI tu tao kho
 - `electron/cli/index.ts` (lenh), `pipeline.ts` (1 viec tao video), `jobs.ts` (job + lan cho luot), `util.ts`.
 - Lenh: `setup [--key]`, `status`, `doctor [--fix]`, `activate <KEY>`, `license`, `login gemini|claude|codex`,
   `config --gemini-key/--claude-key/--openai-key/--*-mode`, `sync`, `update`, `version`, `make ...`, `wait <id>
-  [--timeout s]` (mac dinh 540s — duoi gioi han 10 phut / lenh cua AI agent), `job <id>`, `jobs`, `cancel <id>`.
+  [--timeout s] [--until-change]` (mac dinh 540s — duoi gioi han 10 phut / lenh cua AI agent; `--until-change` (1.6.0) tra
+  ve NGAY khi sang moc moi = `jobs.jobMilestone`: doi `step`, bat dau / het cho luot, render qua moi 25% — KHONG tinh
+  queued->running va tung dong Doctor; JSON them `changed`. SKILL.md goi lap lai de bao nguoi truc tung buoc; app cu bo qua
+  co la -> cho 9 phut nhu truoc, khong co `changed`), `job <id>`, `jobs`, `cancel <id>`.
   `--json` moi lenh. Ma thoat: 0 xong / 1 loi / 2 sai lenh - chua du dieu kien / 3 con chay / 130 huy.
 - `make` = 1 JOB = 1 tien trinh app NEN (`__run-job <id>`, tach khoi lenh goi, giu tham so truoc co CLI vd
   --user-data-dir). Trang thai `~/.capcut-studio/cli/jobs/<id>/job.json` (ghi nguyen tu) + `log.txt`. Job id = id du an =

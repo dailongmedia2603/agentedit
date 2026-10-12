@@ -77,7 +77,7 @@ export interface Args {
 }
 
 /** Khoa KHONG nhan gia tri (co bat / tat). Moi khoa khac lay doi so tiep theo lam gia tri. */
-const BOOL_FLAGS = new Set(['json', 'wait', 'fresh', 'new-plan', 'landscape', 'portrait', 'all', 'fix', 'help', 'device', 'quiet'])
+const BOOL_FLAGS = new Set(['json', 'wait', 'fresh', 'new-plan', 'landscape', 'portrait', 'all', 'fix', 'help', 'device', 'quiet', 'until-change'])
 
 export function parseArgs(argv: string[]): Args {
   const pos: string[] = []

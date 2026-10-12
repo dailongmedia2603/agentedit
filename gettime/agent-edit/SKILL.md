@@ -76,9 +76,23 @@ Không bao giờ nhắc lại nguyên văn key trong câu trả lời.
      --duration "dưới 60 giây" --out "/Users/a/Desktop/Video xong" --json
    ```
 
-   → `{"ok": true, "id": "r_…"}`. Báo người trực: đã bắt đầu, thường mất 10–40 phút.
-3. **Theo dõi**: `AE wait <id> --json` — mỗi lần chờ tối đa 9 phút. Còn chạy (`status` = `running` / `queued`,
-   mã thoát 3) → báo ngắn `message` (vd "Đang phân tích video…", "Đang xuất video MP4 — 45%") rồi gọi `wait` tiếp.
+   → `{"ok": true, "id": "r_…"}`. Báo người trực ngay: **đã nhận video, bắt đầu dựng** (thường 10–40 phút) + mã việc.
+3. **Báo tiến độ từng bước**: gọi `AE wait <id> --until-change --json`. Lệnh trả về **ngay khi việc sang bước mới**
+   (hoặc xuất thêm 25%, hoặc tối đa 9 phút). Mỗi lần trả về mà còn chạy (`status` = `running` / `queued`, mã thoát 3)
+   → nhắn người trực **1 dòng ngắn** theo bảng dưới (bỏ qua nếu trùng dòng vừa báo), rồi gọi lại **đúng lệnh đó** ngay.
+   Lặp tới khi `status` là `done` / `error` / `cancelled`.
+
+   | `step` | Báo người trực |
+   |---|---|
+   | `prepare` | Đang chuẩn bị (kiểm tra bản quyền, công cụ) |
+   | `import` | Đã nhận video, đang chép vào dự án |
+   | `analyze` | Đang phân tích video (AI xem và nghe video) |
+   | `plan` | Đang lên kịch bản và dựng video |
+   | `render` | Đang xuất video MP4 — `progress` × 100 % |
+   | `finish` | Sắp xong, đang hoàn tất |
+
+   `waiting` khác `null` → "Đang chờ lượt (có video khác đang chạy)". Kết quả **không có trường `changed`** → app trên
+   máy là bản cũ chưa hỗ trợ: vẫn làm như trên (mỗi lần chờ tối đa 9 phút), xong video thì chạy `AE update --json`.
    Lượt chat kết thúc trước khi xong cũng không sao: việc vẫn chạy nền, lần sau xem bằng `wait` / `job` / `jobs`.
 4. **Xong** (`status: done`) → báo `result.copy` (nếu có `--out`) hoặc `result.output`, kèm thời lượng (`result.duration`
    giây), khổ hình, dung lượng, và từng dòng trong `result.warnings`. Video cũng hiện trong app Agent Edit → "Video đã tạo".

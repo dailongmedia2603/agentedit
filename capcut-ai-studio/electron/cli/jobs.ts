@@ -81,6 +81,13 @@ export interface Job {
 
 export const TERMINAL: JobStatus[] = ['done', 'error', 'cancelled']
 
+/** Moc tien do cho `wait --until-change`: doi buoc, bat dau / het cho luot, hoac render qua moi 25%.
+ *  Khong tinh queued -> running va tung dong cua Doctor (cung buoc 'prepare') — tranh AI bao lien tuc vo ich. */
+export function jobMilestone(j: Job): string {
+  const quarter = j.step === 'render' ? Math.floor((j.progress || 0) * 4) : 0
+  return `${j.step || ''}|${j.waiting || ''}|${quarter}`
+}
+
 export const newJobId = () => 'r_' + Date.now().toString(36) + randomBytes(4).toString('hex').slice(0, 6)
 
 const safeId = (id: string) => /^r_[a-z0-9]{6,24}$/.test(id)

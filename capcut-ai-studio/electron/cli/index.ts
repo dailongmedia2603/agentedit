@@ -19,7 +19,7 @@ import { startAgyLogin, startClaudeLogin, startCodexLogin, sendCliInput, agyFail
 import { applyUpdate, checkForUpdateNow, initUpdater, updateState, updaterEnabled } from '../services/updater'
 import { killTree } from '../services/env'
 import { powershell } from '../services/toolchain'
-import { activeJobs, cancelFile, Job, JobInsert, jobLog, listJobs, loadJob, newJobId, saveJob, TERMINAL } from './jobs'
+import { activeJobs, cancelFile, Job, JobInsert, jobLog, jobMilestone, listJobs, loadJob, newJobId, saveJob, TERMINAL } from './jobs'
 import { ensureTools, runJob, syncLibrary } from './pipeline'
 import { Args, CLI_FLAG, errLine, opt, optAll, out, outJson, parseArgs, pidAlive, sleep } from './util'
 
@@ -59,7 +59,9 @@ TẠO VIDEO (chạy nền, mỗi video 10–40 phút)
       --out <thư mục>                chép video xong ra thư mục này     --name "<tên file>"
       --fresh                        phân tích lại video (bỏ kết quả đã lưu)   --new-plan  lập kế hoạch mới
       --wait                         chờ tới khi xong (in tiến độ) thay vì trả mã việc ngay
-  agent-edit wait <mã> [--timeout <giây>]   Chờ việc (mặc định tối đa ${DEFAULT_WAIT_S}s, 0 = không giới hạn)
+  agent-edit wait <mã> [--timeout <giây>] [--until-change]
+                                            Chờ việc (mặc định tối đa ${DEFAULT_WAIT_S}s, 0 = không giới hạn)
+                                            --until-change: trả về ngay khi sang bước mới / xuất thêm 25%
   agent-edit job <mã>                       Trạng thái 1 việc       agent-edit jobs [--all]   Danh sách việc
   agent-edit cancel <mã>                    Huỷ việc đang chạy
 
@@ -437,9 +439,11 @@ function printJobFinal(j: Job) {
 
 const exitOf = (j: Job) => (j.status === 'done' ? EXIT.ok : j.status === 'error' ? EXIT.error : j.status === 'cancelled' ? EXIT.cancelled : EXIT.running)
 
-async function waitJob(a: Args, id: string, timeoutS: number): Promise<number> {
+/** untilChange: tra ve ngay khi viec sang moc moi (jobMilestone) — AI agent goi lap lai de bao tien do tung buoc. */
+async function waitJob(a: Args, id: string, timeoutS: number, untilChange = false): Promise<number> {
   const t0 = Date.now()
   let last = ''
+  let base: string | null = null
   for (;;) {
     const j = loadJob(id)
     if (!j) return fail(a, `Không có việc ${id}`)
@@ -450,8 +454,11 @@ async function waitJob(a: Args, id: string, timeoutS: number): Promise<number> {
       out(`[${new Date().toLocaleTimeString('vi-VN')}] ${line}`)
       last = key
     }
-    if (TERMINAL.includes(j.status) || (timeoutS > 0 && Date.now() - t0 > timeoutS * 1000)) {
-      if (json(a)) outJson({ ok: j.status === 'done', ...jobView(j) })
+    const mark = jobMilestone(j)
+    base ??= mark
+    const changed = mark !== base
+    if (TERMINAL.includes(j.status) || (untilChange && changed) || (timeoutS > 0 && Date.now() - t0 > timeoutS * 1000)) {
+      if (json(a)) outJson({ ok: j.status === 'done', ...(untilChange ? { changed } : {}), ...jobView(j) })
       else {
         printJobFinal(j)
         if (!TERMINAL.includes(j.status)) out(`  Việc vẫn đang chạy — chờ tiếp: agent-edit wait ${id}`)
@@ -495,7 +502,7 @@ async function cmdWait(a: Args): Promise<number> {
   if (!id) return fail(a, 'Thiếu mã việc: agent-edit wait <mã>')
   const t = opt(a, 'timeout')
   const timeout = t === undefined ? DEFAULT_WAIT_S : Math.max(0, Number(t) || 0)
-  return waitJob(a, id, timeout)
+  return waitJob(a, id, timeout, a.flags.has('until-change'))
 }
 
 function cmdJob(a: Args): number {
