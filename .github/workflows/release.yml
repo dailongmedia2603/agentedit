@@ -1,4 +1,4 @@
-# PHAT HANH AGENT EDIT: build ban cai cho khach Mac (arm64) + Windows (x64) song song, tu kiem ban dong goi (Doctor, sidecar,
+# PHAT HANH AGENT EDIT: build ban cai cho khach Mac Apple Silicon (arm64) + Mac Intel (x64, tu 2026-10-12) + Windows (x64) song song, tu kiem ban dong goi (Doctor, sidecar,
 # render MP4 + tu cap nhat that), roi day ban cap nhat len R2 -> app da cai cua khach tu tai. PROJECT_OVERVIEW muc 15.
 #
 #  - Day tag vX.Y.Z (npm run release -- X.Y.Z --notes "...")  -> kenh stable + GitHub Release (file cai dat cho khach moi)
@@ -78,8 +78,19 @@ jobs:
 
   mac:
     needs: meta
-    runs-on: macos-14
-    timeout-minutes: 120
+    # Mac Apple Silicon + Mac INTEL (2026-10-12: app + che do CLI chay tren may Intel). Khong build cheo: Python nhung,
+    # .so Cython, bytecode V8 phai tao tren dung kien truc -> moi ban 1 may ao rieng (macos-15-intel = may Intel cua GitHub).
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-14
+            arch: arm64
+          - runner: macos-15-intel
+            arch: x64
+    name: mac (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 150
     defaults:
       run:
         working-directory: capcut-ai-studio
@@ -128,7 +139,7 @@ jobs:
         run: node scripts/publish-update.mjs --channel ${{ needs.meta.outputs.channel }} --notes-file release/notes.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: mac-dmg
+          name: mac-dmg-${{ matrix.arch }}
           path: capcut-ai-studio/release/*.dmg
           retention-days: 30
 
@@ -194,4 +205,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" --title "Agent Edit ${GITHUB_REF_NAME}" \
-            --notes-file dl/notes/notes.txt dl/mac-dmg/*.dmg dl/win-setup/*.exe
+            --notes-file dl/notes/notes.txt dl/mac-dmg-*/*.dmg dl/win-setup/*.exe

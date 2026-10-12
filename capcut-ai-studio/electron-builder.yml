@@ -54,10 +54,10 @@ asarUnpack:
 
 mac:
   category: public.app-category.video
+  # Kien truc do scripts/dist.mjs chon (--arm64 tren Apple Silicon, --x64 tren Mac Intel — 2026-10-12): khong ghi arch
+  # o day de 1 cau hinh dung cho ca 2 ban. Ban x64 ra release/mac/, arm64 ra release/mac-arm64/ (scripts/mac-app-path.mjs).
   target:
     - target: dmg
-      arch:
-        - arm64
   # ma build (scripts/dist.mjs) trong ten file -> nhan ra ngay ban nao
   artifactName: ${productName}-${version}-b${env.STUDIO_BUILD_ID}-${arch}.${ext}
   darkModeSupport: true

@@ -1593,6 +1593,91 @@ voi goi .app GIA: thay OK / ban moi khong mo -> tra ban cu / thieu ban moi / app
 tren ban DONG GOI THAT (mac: cai vao /Applications/Agent Edit Update Selftest.app; win: chi CI) — phieu sai chu ky bi tu choi,
 tai (cat giua chung) -> kiem -> thay app that -> mo lai ban moi.
 
+## 16. CHE DO CLI + MAC INTEL + KY NANG GETTIME (2026-10-12)
+
+Muc tieu (user): ban dong lenh cua app de gan vao app agent khac (GetTime Desktop) — "tai tien ich + ky nang len, ra
+lenh la duoc", chay ca Mac INTEL; co che y nhu app. Tai lieu GetTime: `tai-lieu-app-gettime/` (2 file).
+
+**Vi sao la KY NANG, khong phai tien ich GetTime:** tien ich GetTime CHI co `kind: "channel"` (noi nen tang nhan tin:
+authenticate / connect / threads / send). Viec "AI lam cho nguoi truc" (tao anh, xuat PDF...) la ky nang `loai: cong-cu`,
+cai tang HE THONG (tep kem + script giu nguyen), chat bat TOAN QUYEN moi chay script. -> `gettime/agent-edit/`.
+
+**CLI = CHINH APP chay khong cua so** (khong viet bo may rieng): `"<Agent Edit.app>/Contents/MacOS/Agent Edit"
+--agent-edit-cli <lenh>` (main.ts `CLI_MODE`: an Dock, bo khoa 1 phien, chay lenh roi `app.exit(ma)`). Ly do: dung chung
+ban quyen (license.enc + khoa thiet bi trong Keychain cua app — CLI tu tao khoa thiet bi rieng se thanh "kich hoat lai"
+-> 3 lan / 7 ngay TU KHOA key), khoa API (secrets.enc), Doctor tu cai, sidecar, render, ~/.capcut-studio.
+- `electron/cli/index.ts` (lenh), `pipeline.ts` (1 viec tao video), `jobs.ts` (job + lan cho luot), `util.ts`.
+- Lenh: `setup [--key]`, `status`, `doctor [--fix]`, `activate <KEY>`, `license`, `login gemini|claude|codex`,
+  `config --gemini-key/--claude-key/--openai-key/--*-mode`, `sync`, `update`, `version`, `make ...`, `wait <id>
+  [--timeout s]` (mac dinh 540s — duoi gioi han 10 phut / lenh cua AI agent), `job <id>`, `jobs`, `cancel <id>`.
+  `--json` moi lenh. Ma thoat: 0 xong / 1 loi / 2 sai lenh - chua du dieu kien / 3 con chay / 130 huy.
+- `make` = 1 JOB = 1 tien trinh app NEN (`__run-job <id>`, tach khoi lenh goi, giu tham so truoc co CLI vd
+  --user-data-dir). Trang thai `~/.capcut-studio/cli/jobs/<id>/job.json` (ghi nguyen tu) + `log.txt`. Job id = id du an =
+  id nhat ky xu ly (`runs/<id>`) nhu giao dien. Tien trinh chet giua chung -> `loadJob` bao "dung bat thuong".
+- Thu tu (`pipeline.runJob`) GIONG HET RemotionStudio: requireLicense (hoi may chu nhu bam "Phan tich video") -> Doctor
+  (`ensureTools`: con muc tu cai duoc -> autoFix, khoa `doctor-fix` giua cac tien trinh; van "fail" -> loi kem lenh can chay)
+  -> sidecar -> dong bo kho NEN (khoa `library-sync`, toi da 1 lan / 30 phut, xong truoc khi lap ke hoach) -> thu muc du
+  an `remotion-video-*` + `importMedia` (source / reference / insert) + ffprobe thoi luong + anh thu nho 160px -> tu lieu doc
+  NGAY (`/remotion/understand_media`, khong qua lan) // lan `gemini`: `/understand_sources` + `/remotion/understand_reference`
+  song song -> lan `claude`: `/remotion/autoplan` (payload y runPlan; `--fresh` = phan tich lai, `--new-plan` = fresh cua
+  autoplan) -> lan `render`: `render-job.renderProject` (CUNG ham voi ipc 'remotion:render': ten file, nhat ky, assertLicensed)
+  -> chep ra `--out` -> luu du an vao projects.json (ghi nguyen tu, KHONG dung con tro the; doc loi JSON -> thu lai, van loi
+  thi BO QUA — khong bao gio ghi de bang danh sach rong; `createdBy: 'cli'`) -> xong; sau do lam tiep viec nen Kho hieu ung
+  (harvest -> preview -> Gemini nhan -> gui kho chung, `services/fx-harvest.ts` dung chung voi ipc).
+- LAN giua tien trinh: file khoa `~/.capcut-studio/cli/locks/<lan>-<cho>.lock` (pid; tien trinh chet -> khoa het hieu luc),
+  gioi han gemini / claude = state.json (Cai dat "Tao nhieu video cung luc"), render 1. Giao dien va CLI KHONG chung hang doi.
+- Huy: `cancel` tao file `jobs/<id>/cancel` (job kiem moi giay: dung render / sidecar, ghi "cancelled"), 20s chua dung ->
+  SIGTERM, roi SIGKILL.
+- Moi truong: AI agent goi CLI -> `cleanAgentEnv` bo bien PHIEN cua agent me (CLAUDECODE, CLAUDE_CODE_SESSION_ID /
+  MESSAGING_SOCKET / ENTRYPOINT..., CLAUDE_EFFORT, AI_AGENT, ELECTRON_RUN_AS_NODE) truoc khi sidecar / `claude -p` ke thua
+  (do that: `claude -p` long van chay nhung nap them ngu canh + noi socket phien me).
+- Loi user doc duoc: client chi thay "Dang phan tich / Dang tao video / Dang xuat video — %"; canh bao chi muc "Tu lieu..." + 1
+  dong chung (giong giao dien ban khach).
+- `update`: chi khi giao dien dang TAT + khong job nao chay; tai nhu nut cap nhat roi `applyUpdate(false, [--agent-edit-cli,
+  __updated])` -> ban moi mo lai o che do CLI (ghi dau khoi dong roi thoat, khong bat cua so).
+- Refactor dung chung (giao dien KHONG doi hanh vi): `services/render-job.ts` (slugify, ensureWorkDir, renderProject — tu
+  ipc.ts), `services/fx-harvest.ts` (fxRenderPreview, fxShare — tu ipc.ts), `applyUpdate(busy, relaunch?)`.
+
+**MAC INTEL (darwin-x64)** — app + CLI:
+- `toolchain.json`: `python_embed.darwin-x64` (python-build-standalone x86_64 3.12.14), `platforms.darwin-x64` ffmpeg
+  (zackees darwin.zip = evermeet 8.0.1 tinh x86_64, macOS >= 10.12, du libx264 / libvpx-vp9 / zscale / tonemap /
+  silencedetect / ebur128...) + codex x86_64 cung 0.156.1. Claude / agy: trinh cai chinh chu tu chon ban Intel.
+- `requirements.lock`: onnxruntime >= 1.23 KHONG con wheel Intel -> `onnxruntime==1.22.0` (universal2, macOS 13+) + coloredlogs /
+  humanfriendly / sympy / mpmath CHI cho `sys_platform == "darwin" and platform_machine == "x86_64"`; may khac giu 1.26.0.
+  Do that Python x86_64 (Rosetta): 51/51 goi dung ban, Vision tach nguoi + OCR vi, Whisper small + VAD nghe dung 210 chu.
+- Doctor nhan Intel khi co `python_embed.darwin-x64`; updater bat cho darwin-x64; `dist.mjs` build THEO KIEN TRUC NODE DANG
+  CHAY (khong build cheo: Python nhung / .so Cython / .jsc phai dung kien truc) -> `release/mac/` (x64) hoac `release/mac-arm64/`;
+  `scripts/mac-app-path.mjs` cho publish-update / selftest-update / selftest-packaged; goi cap nhat `...-mac-x64.zip`, phieu
+  `updates/<kenh>/darwin-x64.json` (license-server da ho tro arch x64 tu truoc).
+- release.yml: job `mac` thanh ma tran `macos-14` (arm64) + `macos-15-intel` (x64); artifact `mac-dmg-<arch>`.
+- Build Intel TREN MAY Apple Silicon (tu kiem): Node x64 + `arch -x86_64 npm ci` — electron tu tai ban ARM khi phat hien
+  Rosetta -> phai `npm_config_arch=x64 node node_modules/electron/install.js` (xoa dist + path.txt truoc) — roi
+  `arch -x86_64 node scripts/dist.mjs --mac`.
+
+**KY NANG GETTIME** `gettime/agent-edit/` (SKILL.md + icon.png 128px + `scripts/agent-edit`): SKILL.md theo chuan Agent Skills
++ luat GetTime (YAML 1 tang, description boc '...', `metadata.loai: cong-cu`, moi chi dan nam trong SKILL.md).
+`scripts/agent-edit` (bash 3.2 + cong cu co san cua macOS, khong can Node / jq): tim app MOI nhat (AGENT_EDIT_APP,
+/Applications, ~/Applications); chua co / cu hon `MIN_VERSION` (1.5.0 — ban dau tien co CLI) + co `--key` -> `POST
+/v1/download` (license-server, key hop le, KHONG gan may) -> tai zip (curl -C - tai tiep) -> kiem SHA-512 + `codesign -R`
+DUNG chung chi Agent Edit (`certificate root = H"9a7d7c51..."`) -> cai ~/Applications (hoac thay ban cu tai cho) ->
+`--agent-edit-cli setup --key` (kich hoat + tu cai cong cu + dong bo kho). Chon chip bang `hw.optional.arm64` (dung ca khi
+shell chay qua Rosetta).
+- license-server `POST /v1/download` {key, platform, arch, channel}: sai key tinh vao chan do key 20 / gio / IP; key khoa / het
+  han -> tu choi; tra phieu (m + sig NGUYEN chuoi) + link `/v1/update/<file>` 24h (cung token 'upd.'); su kien `cli_download`.
+
+**Kiem chung** (2026-10-12): tsc 0 loi; test_toolchain.py + .mts (them darwin-x64 + lock tung nen tang), `tests/test_cli.mts`
+(24 muc: tham so, job, tien trinh chet, lan cho luot giua tien trinh, withLock), test_updater / project_delete / project_media /
+cli_login / job_queue / license PASS; license-server smoke 112/112 (11 muc /v1/download). Ban dong goi arm64: selftest-packaged
+26/26 (them 4 muc CLI [6b]) + selftest-update 9/9 (goi `-mac-arm64.zip` theo kien truc). Ban dong goi INTEL (build qua Rosetta):
+selftest-packaged 26/26, Doctor "Intel (x64)" 51/51 goi, Vision + OCR + tach nguoi + hop cach ly + sidecar .so x86_64.
+JOB THAT qua CLI: (a) ban dev arm64 — video 23s 1080x1920 (Gemini agy + Claude opus-5-5 + Codex) ra MP4 22.5s sau 19 phut, du an
+vao projects.json, Kho hieu ung dong goi -> preview -> Gemini nhan chay nen; (b) ban INTEL dong goi, HOME tam — tu cai ffmpeg x64 +
+Chrome x64 + dong bo kho, Whisper x64 khop 87% chu, luat hook dat, anh AI + chu anh AI, MP4 21.8s sau 28 phut (Rosetta, render CPU
+479s). Script ky nang: `install --key` qua license-server local tai 324 MB, kiem SHA-512 + chu ky, cai ~/Applications, chay CLI x64.
+Do tren ban x64 (Rosetta): h264_videotoolbox loi o khau ghep (ffmpeg 187) -> Mac Intel mac dinh render CPU (STUDIO_REMOTION_ACCEL=1
+ep bat); lan dau mo Chrome x64 qua 25s -> remotion-worker thu lai selectComposition khi loi "connect to the browser".
+CHUA kiem tren may Intel THAT (khong co may): GPU / VideoToolbox, toc do.
+
 ## 12. CodeGraph
 
 CodeGraph `0.9.9` da duoc cai va index tai root workspace:

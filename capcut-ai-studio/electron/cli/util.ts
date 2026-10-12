@@ -1,0 +1,117 @@
+// CHE DO CLI (2026-10-12) — tien ich chung: thu muc, doc / ghi JSON an toan, tham so dong lenh, in ket qua.
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'fs'
+import { dirname, join } from 'path'
+import { ENGINE_HOME } from '../services/paths'
+
+/** Moi thu cua CLI (viec dang chay, khoa lan, trang thai) nam rieng o day — khong dung toi du lieu cua giao dien. */
+export const CLI_HOME = join(ENGINE_HOME, 'cli')
+export const JOBS_DIR = join(CLI_HOME, 'jobs')
+export const LOCKS_DIR = join(CLI_HOME, 'locks')
+export const CLI_STATE = join(CLI_HOME, 'state.json')
+
+/** Co danh dau che do CLI tren dong lenh cua app (scripts `agent-edit` truyen vao). */
+export const CLI_FLAG = '--agent-edit-cli'
+
+export function readJson<T>(path: string, fallback: T): T {
+  try {
+    return JSON.parse(readFileSync(path, 'utf-8')) as T
+  } catch {
+    return fallback
+  }
+}
+
+/** Ghi qua file tam roi doi ten -> tien trinh khac (wait / giao dien) khong bao gio doc phai file do dang. */
+export function writeJsonAtomic(path: string, data: unknown): void {
+  mkdirSync(dirname(path), { recursive: true })
+  const tmp = `${path}.${process.pid}.tmp`
+  writeFileSync(tmp, JSON.stringify(data, null, 2), 'utf-8')
+  renameSync(tmp, path)
+}
+
+export function cliState(): Record<string, unknown> {
+  return readJson<Record<string, unknown>>(CLI_STATE, {})
+}
+
+export function setCliState(patch: Record<string, unknown>): void {
+  writeJsonAtomic(CLI_STATE, { ...cliState(), ...patch })
+}
+
+export function pidAlive(pid: unknown): boolean {
+  const n = Number(pid)
+  if (!Number.isInteger(n) || n <= 0) return false
+  try {
+    process.kill(n, 0)
+    return true
+  } catch (e) {
+    return (e as NodeJS.ErrnoException).code === 'EPERM'
+  }
+}
+
+export const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
+
+// ---------------------------------------------------------------------------
+// Tham so dong lenh: `lenh vi-tri... --khoa gia-tri --co` (khoa lap lai -> mang)
+// ---------------------------------------------------------------------------
+export interface Args {
+  cmd: string
+  pos: string[]
+  opts: Record<string, string[]>
+  flags: Set<string>
+}
+
+/** Khoa KHONG nhan gia tri (co bat / tat). Moi khoa khac lay doi so tiep theo lam gia tri. */
+const BOOL_FLAGS = new Set(['json', 'wait', 'fresh', 'new-plan', 'landscape', 'portrait', 'all', 'fix', 'help', 'device', 'quiet'])
+
+export function parseArgs(argv: string[]): Args {
+  const pos: string[] = []
+  const opts: Record<string, string[]> = {}
+  const flags = new Set<string>()
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i]
+    if (a === '--') {
+      pos.push(...argv.slice(i + 1))
+      break
+    }
+    if (a.startsWith('--') && a.length > 2) {
+      const eq = a.indexOf('=')
+      const key = (eq > 0 ? a.slice(2, eq) : a.slice(2)).toLowerCase()
+      if (eq > 0) (opts[key] ||= []).push(a.slice(eq + 1))
+      else if (BOOL_FLAGS.has(key)) flags.add(key)
+      // khoa la khong co gia tri phia sau (doi so ke tiep cung la --khoa) -> coi la co bat
+      else if (i + 1 < argv.length && !/^--[a-z]/i.test(argv[i + 1])) (opts[key] ||= []).push(argv[++i])
+      else flags.add(key)
+      continue
+    }
+    if (a === '-h') {
+      flags.add('help')
+      continue
+    }
+    pos.push(a)
+  }
+  return { cmd: (pos.shift() || 'help').toLowerCase(), pos, opts, flags }
+}
+
+export const opt = (a: Args, k: string): string | undefined => {
+  const v = a.opts[k]
+  return v && v.length ? v[v.length - 1] : undefined
+}
+export const optAll = (a: Args, k: string): string[] => a.opts[k] || []
+
+// ---------------------------------------------------------------------------
+// In ra man hinh (stdout cua tien trinh app = terminal / AI agent doc)
+// ---------------------------------------------------------------------------
+export function out(line = ''): void {
+  process.stdout.write(line + '\n')
+}
+
+export function outJson(data: unknown): void {
+  process.stdout.write(JSON.stringify(data, null, 2) + '\n')
+}
+
+export function errLine(line: string): void {
+  process.stderr.write(line + '\n')
+}
+
+export function exists(p: string | undefined | null): p is string {
+  return !!p && existsSync(p)
+}

@@ -51,3 +51,6 @@ capcut-ai-studio/resources/models/
 
 # R2 upload token (publish kho) - CHI o may tac gia, KHONG len git
 r2-publish.json
+
+# Icon cua ky nang GetTime (bat buoc di kem thu muc ky nang)
+!gettime/agent-edit/icon.png

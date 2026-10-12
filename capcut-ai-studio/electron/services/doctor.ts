@@ -179,11 +179,14 @@ export async function runDoctor(providersReady: ProvidersReady): Promise<DoctorC
       ]
     }
     const osv = process.getSystemVersion?.() || ''
-    const osOk = T.versionGte(osv, m.macos_min) && process.arch === 'arm64'
+    // Mac Intel (x64, 2026-10-12): duoc ho tro khi toolchain.json co ban Intel (python_embed.darwin-x64 + ffmpeg / codex)
+    const archOk = process.arch === 'arm64' || (process.arch === 'x64' && !!T.pyEmbedTarget())
+    const osOk = T.versionGte(osv, m.macos_min) && archOk
+    const cpu = process.arch === 'arm64' ? 'Apple Silicon' : 'Intel'
     return [
       row({ id: 'macos', label: 'macOS', group: 'system', purpose: 'Chạy app, tách người (Vision), nhận diện chữ tiếng Việt, Whisper',
-            required: `macOS ≥ ${m.macos_min} · Apple Silicon`, found: `macOS ${osv} · ${process.arch}`,
-            status: osOk ? 'ok' : 'fail', detail: osOk ? 'Đạt.' : `Cần macOS ${m.macos_min} trở lên trên máy Apple Silicon (${m.macos_why}).` }),
+            required: `macOS ≥ ${m.macos_min} · Apple Silicon hoặc Intel`, found: `macOS ${osv} · ${cpu} (${process.arch})`,
+            status: osOk ? 'ok' : 'fail', detail: osOk ? 'Đạt.' : `Cần macOS ${m.macos_min} trở lên trên máy Apple Silicon hoặc Intel 64-bit (${m.macos_why}).` }),
       row({ id: 'avconvert', label: 'avconvert (có sẵn trong macOS)', group: 'system', purpose: 'Đổi video HDR iPhone sang SDR đúng màu',
             required: 'có sẵn', found: existsSync('/usr/bin/avconvert') ? '/usr/bin/avconvert' : 'không thấy',
             status: existsSync('/usr/bin/avconvert') ? 'ok' : 'warn',

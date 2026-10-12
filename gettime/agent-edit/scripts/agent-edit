@@ -1,0 +1,175 @@
+#!/bin/bash
+# AGENT EDIT CLI — loi vao cho ky nang GetTime (va moi AI agent / Terminal). Chay bang: bash agent-edit <lenh> [tham so]
+#
+# 1. Tim app "Agent Edit.app" tren may (AGENT_EDIT_APP, /Applications, ~/Applications — lay ban MOI nhat).
+#    Chua co / cu hon MIN_VERSION -> `setup --key <KEY>` / `install --key <KEY>` tu tai ban moi nhat DUNG CHIP (Apple
+#    Silicon / Intel) qua may chu ban quyen (key hop le moi tai duoc), kiem SHA-512 + CHU KY MA (chung chi rieng cua
+#    Agent Edit), cai vao ~/Applications (hoac thay ban cu tai cho neu ghi duoc).
+# 2. Chay app o CHE DO CLI (khong cua so, khong icon Dock): "<app>/Contents/MacOS/Agent Edit" --agent-edit-cli <lenh> ...
+#    Moi lenh / tham so: bash agent-edit help
+#
+# Bien moi truong (tuy chon): AGENT_EDIT_APP (duong dan .app), AGENT_EDIT_CHANNEL (stable|test),
+#   AGENT_EDIT_ARCH (arm64|x64 — ep kien truc khi tai). Chi de tu kiem: AGENT_EDIT_API (may chu), AGENT_EDIT_MIN_VERSION,
+#   AGENT_EDIT_USER_DATA_DIR (thu muc du lieu Electron rieng — khong dung khoa API / key that cua may).
+# Chi dung bash 3.2 + cong cu co san cua macOS (curl, plutil, shasum, ditto, codesign) — khong can Node / Python / jq.
+set -u
+
+MIN_VERSION="${AGENT_EDIT_MIN_VERSION:-1.5.0}"
+API="${AGENT_EDIT_API:-https://agent-edit-license.agent-edit-license-server.workers.dev}"
+# Chu ky ma cua MOI ban Agent Edit phat hanh (chung chi tu tao "Agent Edit Code Signing", scripts/gen-mac-cert.mjs)
+SIGN_REQ='identifier "app.autocapcut.desktop" and certificate root = H"9a7d7c51b4f600386062947f759b2247d42709d2"'
+WORK="$HOME/.capcut-studio/cli/download"
+
+say() { printf '%s\n' "$*" >&2; } # thong bao ra stderr -> stdout cua lenh `--json` van la JSON sach
+die() {
+  say "Lỗi: $*"
+  exit 2
+}
+
+[ "$(uname -s)" = "Darwin" ] || die "Agent Edit CLI chỉ chạy trên macOS."
+
+# $1 >= $2 (x.y.z)
+ver_ge() {
+  local a b i x y
+  IFS=. read -r -a a <<<"$1"
+  IFS=. read -r -a b <<<"$2"
+  for i in 0 1 2; do
+    x="${a[$i]:-0}"; y="${b[$i]:-0}"
+    x="${x%%[!0-9]*}"; y="${y%%[!0-9]*}"
+    [ "${x:-0}" -gt "${y:-0}" ] && return 0
+    [ "${x:-0}" -lt "${y:-0}" ] && return 1
+  done
+  return 0
+}
+
+app_version() { /usr/bin/plutil -extract CFBundleShortVersionString raw "$1/Contents/Info.plist" 2>/dev/null || echo 0; }
+
+# App Agent Edit MOI nhat tren may (khong lay ban tu kiem "Agent Edit Update Selftest.app")
+find_app() {
+  local best="" bestv="0" p v
+  for p in "${AGENT_EDIT_APP:-}" "/Applications/Agent Edit.app" "$HOME/Applications/Agent Edit.app"; do
+    [ -n "$p" ] && [ -x "$p/Contents/MacOS/Agent Edit" ] || continue
+    [ -n "${AGENT_EDIT_APP:-}" ] && [ "$p" = "$AGENT_EDIT_APP" ] && { printf '%s\n' "$p"; return 0; }
+    v=$(app_version "$p")
+    if [ -z "$best" ] || ! ver_ge "$bestv" "$v"; then best="$p"; bestv="$v"; fi
+  done
+  [ -n "$best" ] && printf '%s\n' "$best"
+}
+
+cpu_arch() {
+  if [ -n "${AGENT_EDIT_ARCH:-}" ]; then echo "$AGENT_EDIT_ARCH"; return; fi
+  # hw.optional.arm64 = 1 tren Apple Silicon ke ca khi shell nay chay qua Rosetta -> van tai ban arm64 (nhanh hon)
+  [ "$(/usr/sbin/sysctl -n hw.optional.arm64 2>/dev/null)" = "1" ] && echo arm64 || echo x64
+}
+
+jget() { /usr/bin/plutil -extract "$2" raw -o - "$1" 2>/dev/null; }
+
+# install_app <KEY> [duong dan .app can thay] -> in duong dan app da cai (stdout)
+install_app() {
+  local key="$1" replace="${2:-}" arch osv meta code url file size sha ver build zip got stage new target old n
+  arch=$(cpu_arch)
+  osv=$(/usr/bin/sw_vers -productVersion)
+  ver_ge "$osv" "14.0" || die "Agent Edit cần macOS 14 trở lên (máy đang chạy macOS $osv)."
+  mkdir -p "$WORK"
+  meta="$WORK/offer.json"
+  say "Lấy bản Agent Edit mới nhất cho máy $([ "$arch" = arm64 ] && echo 'Apple Silicon' || echo 'Intel')..."
+  # key di trong than yeu cau (stdin), khong nam tren dong lenh (ps khong thay)
+  code=$(printf '{"key":"%s","platform":"darwin","arch":"%s","channel":"%s"}' "$key" "$arch" "${AGENT_EDIT_CHANNEL:-stable}" |
+    /usr/bin/curl -sS --max-time 60 -o "$meta" -w '%{http_code}' -X POST -H 'content-type: application/json' \
+      --data-binary @- "$API/v1/download") || die "Không kết nối được máy chủ Agent Edit — kiểm tra mạng rồi chạy lại."
+  if [ "$(jget "$meta" ok)" != "true" ]; then
+    die "$(jget "$meta" message || echo "Máy chủ trả mã HTTP $code.")"
+  fi
+  url=$(jget "$meta" url); file=$(jget "$meta" file); size=$(jget "$meta" size); sha=$(jget "$meta" sha512)
+  ver=$(jget "$meta" version); build=$(jget "$meta" build)
+  if [ -n "$replace" ] && ver_ge "$(app_version "$replace")" "$ver"; then
+    say "Agent Edit trên máy ($(app_version "$replace")) đã là bản mới nhất ($ver) — không cần tải."
+    rm -f "$meta"
+    printf '%s\n' "$replace"
+    return 0
+  fi
+  case "$file" in *.zip) ;; *) die "Máy chủ trả gói không hợp lệ ($file).";; esac
+  case "$file" in */* | *..*) die "Tên gói không hợp lệ ($file).";; esac
+  zip="$WORK/$file"
+  say "Tải Agent Edit $ver (build $build) — $((size / 1048576)) MB (mạng rớt thì chạy lại, tải tiếp chỗ dở)..."
+  n=0
+  while ! { [ -f "$zip" ] && [ "$(stat -f %z "$zip")" = "$size" ]; }; do
+    n=$((n + 1))
+    [ "$n" -gt 6 ] && die "Tải chưa trọn sau 6 lần — kiểm tra mạng rồi chạy lại (tải tiếp chỗ dở)."
+    if [ -f "$zip" ] && [ "$(stat -f %z "$zip")" -gt "$size" ]; then rm -f "$zip"; fi
+    /usr/bin/curl -fL -sS -C - --retry 3 --retry-delay 3 -o "$zip" "$url" || sleep 3
+  done
+  got=$(/usr/bin/shasum -a 512 -b "$zip" | cut -d' ' -f1 | /usr/bin/xxd -r -p | /usr/bin/base64)
+  if [ "$got" != "$sha" ]; then
+    rm -f "$zip"
+    die "File tải về sai mã SHA-512 — đã xoá, chạy lại để tải lại."
+  fi
+  stage="$WORK/stage-$ver-$build"
+  rm -rf "$stage"
+  mkdir -p "$stage"
+  /usr/bin/ditto -x -k "$zip" "$stage" || die "Giải nén gói cài lỗi."
+  new="$stage/Agent Edit.app"
+  [ -d "$new" ] || die "Gói cài thiếu Agent Edit.app."
+  /usr/bin/codesign --verify --deep --strict -R="$SIGN_REQ" "$new" 2>/dev/null ||
+    die "Chữ ký mã của app tải về KHÔNG khớp bản chính chủ Agent Edit — đã dừng, không cài."
+  target="$HOME/Applications/Agent Edit.app"
+  if [ -n "$replace" ] && [ -w "$(dirname "$replace")" ] && [ -w "$replace" ]; then target="$replace"; fi
+  # app dang mo (giao dien / viec CLI dang chay tu goi do) -> khong thay giua chung
+  if [ -e "$target" ] && /usr/bin/pgrep -f "$target/Contents/MacOS/Agent Edit" >/dev/null 2>&1; then
+    die "Agent Edit đang chạy ($target) — đóng app / đợi việc đang chạy xong rồi chạy lại."
+  fi
+  mkdir -p "$(dirname "$target")"
+  if [ -e "$target" ]; then
+    old="$target.cu-$(date +%Y%m%d%H%M%S)"
+    mv "$target" "$old" || die "Không thay được $target (app đang mở? thiếu quyền?)."
+    if ! mv "$new" "$target"; then
+      mv "$old" "$target"
+      die "Không cài được vào $target."
+    fi
+    rm -rf "$old"
+  else
+    mv "$new" "$target" || die "Không cài được vào $target."
+  fi
+  /usr/bin/xattr -dr com.apple.quarantine "$target" 2>/dev/null || true
+  /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "$target" >/dev/null 2>&1 || true
+  rm -rf "$stage" "$zip" "$meta"
+  say "Đã cài Agent Edit $ver tại: $target"
+  printf '%s\n' "$target"
+}
+
+# ---- tham so --key (setup / install) ----
+cmd="${1:-help}"
+KEY=""
+prev=""
+for a in "$@"; do
+  [ "$prev" = "--key" ] && KEY="$a"
+  case "$a" in --key=*) KEY="${a#--key=}";; esac
+  prev="$a"
+done
+KEY=$(printf '%s' "$KEY" | tr -cd 'A-Za-z0-9-')
+
+APP=$(find_app)
+APPV=$([ -n "$APP" ] && app_version "$APP" || echo 0)
+
+if [ "$cmd" = "install" ]; then
+  # Cai / cap nhat app len ban moi nhat (ke ca khi da co) — can key
+  [ -n "$KEY" ] || die "Cần key bản quyền: bash agent-edit install --key <KEY>"
+  install_app "$KEY" "$APP" >/dev/null || exit 2
+  exit 0
+fi
+
+if [ -z "$APP" ] || ! ver_ge "$APPV" "$MIN_VERSION"; then
+  if [ -n "$KEY" ]; then
+    APP=$(install_app "$KEY" "$APP") || exit 2
+  elif [ -z "$APP" ]; then
+    die "Máy chưa cài Agent Edit. Chạy: bash agent-edit setup --key <KEY>  (tự tải + cài app đúng chip, rồi cài công cụ)."
+  else
+    die "Agent Edit trên máy là bản $APPV, cần bản $MIN_VERSION trở lên để chạy dòng lệnh. Mở app Agent Edit để nó tự cập nhật, hoặc chạy: bash agent-edit setup --key <KEY>"
+  fi
+fi
+
+# VSCode / mot so terminal dat ELECTRON_RUN_AS_NODE -> binary app chay nhu node roi thoat ngay
+if [ -n "${AGENT_EDIT_USER_DATA_DIR:-}" ]; then
+  exec /usr/bin/env -u ELECTRON_RUN_AS_NODE "$APP/Contents/MacOS/Agent Edit" "--user-data-dir=$AGENT_EDIT_USER_DATA_DIR" --agent-edit-cli "$@"
+fi
+exec /usr/bin/env -u ELECTRON_RUN_AS_NODE "$APP/Contents/MacOS/Agent Edit" --agent-edit-cli "$@"

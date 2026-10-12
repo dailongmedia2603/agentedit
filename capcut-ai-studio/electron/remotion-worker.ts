@@ -103,14 +103,27 @@ async function run(job: RenderJob) {
     const binDir = binariesDirectory()
     send({ type: 'progress', jobId: job.jobId, stage: 'prepare', progress: 0 })
     const inputProps = { spec: job.spec }
-    const composition = await selectComposition({
-      serveUrl: job.serveUrl,
-      id: job.compositionId,
-      inputProps,
-      binariesDirectory: binDir,
-      timeoutInMilliseconds: 120000,
-      logLevel: 'warn'
-    })
+    // Lan dau mo Chrome Headless co the qua 25s (may cham / Mac Intel ban x64 chay qua Rosetta: dich ~200MB lan dau) ->
+    // Remotion bao "Timed out ... while trying to connect to the browser". Chi loi DO -> thu lai (Chrome da san sang).
+    const select = () =>
+      selectComposition({
+        serveUrl: job.serveUrl,
+        id: job.compositionId,
+        inputProps,
+        binariesDirectory: binDir,
+        timeoutInMilliseconds: 120000,
+        logLevel: 'warn'
+      })
+    let composition: Awaited<ReturnType<typeof selectComposition>> | null = null
+    for (let attempt = 1; !composition; attempt++) {
+      try {
+        composition = await select()
+      } catch (e) {
+        const msg = String((e as Error)?.message || e)
+        if (cancelled || attempt >= 3 || !/connect to the browser/i.test(msg)) throw e
+        send({ type: 'log', jobId: job.jobId, level: 'warn', message: `Trình render khởi động chậm — thử lại (${attempt}/2)` })
+      }
+    }
     const totalFrames = composition.durationInFrames
     const renderOnce = (accel: boolean) => renderMedia({
       composition,

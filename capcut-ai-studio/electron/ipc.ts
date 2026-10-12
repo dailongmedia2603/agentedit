@@ -37,15 +37,15 @@ import {
   activateLicense,
   forgetLicense,
   requireLicense,
-  assertLicensed,
   libraryManifest,
-  fxUpload,
   onLicenseChange
 } from './services/license'
 import { updateState, onUpdateChange, checkForUpdateNow, applyUpdate, startDownload } from './services/updater'
 import { readState, writeState, planProviderOf, PlanProvider, jobLimitsOf, saveJobLimits, JobLimits } from './services/state'
 import { mediaBase, mediaUrl } from './services/media-server'
-import { startRender, cancelRender, renderStatus, browserInstalled } from './services/remotion'
+import { cancelRender, renderStatus, browserInstalled } from './services/remotion'
+import { ensureWorkDir, renderProject, slugify } from './services/render-job'
+import { fxRenderPreview, fxShare } from './services/fx-harvest'
 import { readRunLog, appendRunLog, clearRunLog, runDir } from './services/runlog'
 import {
   fetchLinks as miFetchLinks,
@@ -75,23 +75,7 @@ const LONG_AI_MS = 2 * 60 * 60 * 1000
 declare const __APP_BUILD__: string
 const APP_BUILD = typeof __APP_BUILD__ !== 'undefined' ? __APP_BUILD__ : ''
 
-function slugify(s: string): string {
-  return (
-    s
-      .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '')
-      .replace(/[^a-zA-Z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .toLowerCase()
-      .slice(0, 40) || 'project'
-  )
-}
-
-export function ensureWorkDir(name: string): string {
-  const dir = join(ENGINE_HOME, 'projects', slugify(name) + '-' + Date.now().toString(36))
-  mkdirSync(dir, { recursive: true })
-  return dir
-}
+export { ensureWorkDir } from './services/render-job'
 
 export function registerIpc(getWindow: () => BrowserWindow | null) {
   // ---- App / system ----
@@ -680,39 +664,11 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
   // dong goi (sau render) -> preview (lan render, chi khi ranh) -> Gemini nhan (lan gemini) -> gui kho chung ----
   ipcMain.handle('fxlib:list', () => rmCall('/fxlib/list'))
   ipcMain.handle('fxlib:harvest', (_e, payload: unknown) => rmCall('/fxlib/harvest', payload))
-  ipcMain.handle('fxlib:renderPreview', async (_e, id: string) => {
-    const job = (await rmCall('/fxlib/preview_job', { id })) as {
-      ok?: boolean
-      spec?: Record<string, unknown>
-      out?: string
-      error?: string
-    }
-    if (!job?.ok || !job.spec || !job.out) return { ok: false, error: job?.error || 'Không chuẩn bị được preview' }
-    if ((renderStatus() as { running: boolean }).running) return { ok: false, busy: true, error: 'Đang render video khác' }
-    // 540x960 khong tieng: du cho Gemini xem + UI phat, render ~10-20s
-    const res = await startRender(job.spec, job.out, () => undefined, { compositionId: 'FxPreview', scale: 0.5, muted: true })
-    const ok = res.type === 'done'
-    const error = ok ? undefined : String(res.message || res.type).split('\n')[0].slice(0, 300)
-    if (res.type !== 'cancelled') await rmCall('/fxlib/preview_done', { id, ok, error })
-    return { ok, error, cancelled: res.type === 'cancelled' }
-  })
+  ipcMain.handle('fxlib:renderPreview', (_e, id: string) => fxRenderPreview(id))
   ipcMain.handle('fxlib:label', (_e, ids: string[]) => rmCall('/fxlib/label', { ids }, LONG_AI_MS))
   // Gui kho chung qua may chu ban quyen (may tin cay tu duyet, may khach cho duyet). Loi tam thoi (mat mang...)
   // -> khong danh dau, lan mo app sau thu lai; loi han (goi hong / key khoa...) -> danh dau loi, nut "Thu lai"
-  ipcMain.handle('fxlib:share', async (_e, id: string) => {
-    const r = (await rmCall('/fxlib/share_payload', { id })) as {
-      ok?: boolean
-      payload?: { meta: Record<string, unknown>; code: string; preview: string }
-    }
-    if (!r?.ok || !r.payload) {
-      await rmCall('/fxlib/share_done', { id, status: 'error', error: 'Thiếu preview / nhãn / code' })
-      return { ok: false, error: 'Thiếu preview / nhãn / code' }
-    }
-    const res = await fxUpload(r.payload)
-    if (res.ok) await rmCall('/fxlib/share_done', { id, status: res.status })
-    else if (!res.retry) await rmCall('/fxlib/share_done', { id, status: 'error', error: res.message || res.code })
-    return { ok: res.ok, status: res.status, error: res.message, retry: res.retry }
-  })
+  ipcMain.handle('fxlib:share', (_e, id: string) => fxShare(id))
   ipcMain.handle('fxlib:retry', (_e, id: string) => rmCall('/fxlib/retry', { id }))
   ipcMain.handle('fxlib:toggle', (_e, id: string, disabled: boolean) => rmCall('/fxlib/toggle', { id, disabled }))
   ipcMain.handle('fxlib:delete', (_e, id: string) => rmCall('/fxlib/delete', { id }))
@@ -723,67 +679,9 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
   ipcMain.handle('remotion:mediaUrl', (_e, path: string) => mediaUrl(path))
   ipcMain.handle(
     'remotion:render',
-    async (
-      _e,
-      payload: { spec: Record<string, unknown>; workDir?: string; name?: string; _run?: { id: string } }
-    ) => {
-      assertLicensed() // khong hoi server (chi 2 luc: mo app + phan tich) — lan kiem gan nhat phai OK
-      const dir =
-        payload.workDir && existsSync(payload.workDir) ? payload.workDir : ensureWorkDir(payload.name || 'remotion')
-      const d = new Date()
-      const stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}-${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}${String(d.getSeconds()).padStart(2, '0')}`
-      const out = join(dir, `${slugify(payload.name || 'video')}-${stamp}.mp4`)
+    (_e, payload: { spec: Record<string, unknown>; workDir?: string; name?: string; _run?: { id: string } }) => {
       const win = getWindow()
-      // Render chay trong app (khong qua sidecar) -> tu ghi nhat ky xu ly cua project
-      const runId = payload._run?.id
-      const log = (title: string, level = 'info', extra: Record<string, unknown> = {}) => {
-        if (!runId) return
-        try {
-          appendRunLog(runId, { kind: 'note', step: 'render', title, level, ...extra })
-        } catch {
-          /* log khong bao gio duoc lam hong render */
-        }
-      }
-      const spec = payload.spec as { duration?: number; clips?: unknown[]; captions?: unknown[]; effects?: unknown[]; audio?: unknown[] }
-      log(`Bắt đầu render MP4 bằng Remotion (${Math.round(spec.duration || 0)}s video)`, 'info', {
-        output: out,
-        so_doan: spec.clips?.length,
-        so_caption: spec.captions?.length,
-        so_hieu_ung: spec.effects?.length,
-        so_sfx: spec.audio?.length
-      })
-      let lastStage = ''
-      let lastMoc = -1
-      const t0 = Date.now()
-      const res = await startRender(payload.spec, out, (ev) => {
-        win?.webContents.send('remotion:progress', ev)
-        if (ev.type === 'log' && ev.message) log(ev.message)
-        if (ev.type !== 'progress') return
-        if (ev.stage && ev.stage !== lastStage) {
-          lastStage = ev.stage
-          const ten: Record<string, string> = {
-            browser: 'Tải trình render Chrome Headless (chỉ lần đầu)',
-            prepare: 'Chuẩn bị bản dựng (nạp composition, font, media)',
-            render: 'Đang vẽ từng khung hình',
-            encode: 'Đang ghép khung hình + âm thanh thành MP4'
-          }
-          log(ten[ev.stage] || ev.stage)
-        }
-        const moc = Math.floor(((ev.progress || 0) * 100) / 25) * 25
-        if (ev.stage === 'render' && moc > lastMoc && moc > 0 && moc < 100) {
-          lastMoc = moc
-          log(`Render ${moc}% (khung ${ev.renderedFrames ?? 0}/${ev.totalFrames ?? '?'})`)
-        }
-      })
-      const giay = Math.round((Date.now() - t0) / 1000)
-      if (res.type === 'done') {
-        log(`Render xong sau ${giay}s — ${((res.size || 0) / 1e6).toFixed(1)} MB`, 'ok', { output: res.output })
-      } else if (res.type === 'cancelled') {
-        log(`Đã huỷ render sau ${giay}s`, 'warn')
-      } else {
-        log('Render lỗi', 'error', { error: res.message })
-      }
-      return res
+      return renderProject(payload, (ev) => win?.webContents.send('remotion:progress', ev))
     }
   )
   ipcMain.handle('remotion:cancel', () => cancelRender())

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// PHAT HANH 1 LENH (may chu app) — GitHub Actions (.github/workflows/release.yml) build Mac + Windows, tu kiem roi day ban
+// PHAT HANH 1 LENH (may chu app) — GitHub Actions (.github/workflows/release.yml) build Mac (Apple Silicon + Intel) + Windows, tu kiem roi day ban
 // cap nhat len R2 -> app da cai cua khach tu tai. PROJECT_OVERVIEW muc 15.
 //
 //   npm run release -- 1.3.0 --notes "Sửa lỗi xuất video; thêm hiệu ứng mới"   -> kenh STABLE (moi khach)
@@ -84,4 +84,4 @@ if (!DRY) {
 run('git', ['tag', '-a', `v${version}`, '-F', notesFile])
 run('git', ['push', remote, branch])
 run('git', ['push', remote, `v${version}`])
-console.log(`[release] XONG — GitHub Actions dang build v${version} cho Mac + Windows (~30-60 phut). Theo doi: gh run list --repo ${repo} --workflow release.yml`)
+console.log(`[release] XONG — GitHub Actions dang build v${version} cho Mac Apple Silicon + Mac Intel + Windows (~40-70 phut). Theo doi: gh run list --repo ${repo} --workflow release.yml`)

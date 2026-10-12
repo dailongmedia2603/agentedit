@@ -8,7 +8,7 @@
 // 1. Doc release/build-info-<mac|win>.json (dist.mjs ghi) -> phien ban + ma build cua LAN DONG GOI VUA XONG.
 //    Tu choi: ban day du (-full / STUDIO_FULL_UI) — app cua chu app, khong phat cho khach; ban --dir khong co bo cai.
 // 2. macOS: kiem chu ky ma (chung chi tu tao — ad-hoc thi khach bi hoi Keychain sau cap nhat: chan, --allow-adhoc de bo
-//    qua), nen release/mac-arm64/Agent Edit.app bang `ditto` (giu symlink Electron Framework + chu ky) -> .zip.
+//    qua), nen release/mac-arm64/Agent Edit.app (Mac Intel: release/mac/, scripts/mac-app-path.mjs) bang `ditto` (giu symlink Electron Framework + chu ky) -> .zip.
 //    Windows: chinh file Setup .exe (NSIS) — app chay `/S --updated` de cai im lang.
 // 3. Phieu m = JSON {v,channel,platform,arch,version,build,file,size,sha512,notes,released_at}, KY Ed25519 bang khoa
 //    ~/.capcut-studio/update-signing.json (hoac env UPDATE_SIGNING_KEY = khoa pkcs8 base64). App kiem bang UPDATE_PUB.
@@ -21,6 +21,7 @@ import { existsSync, readFileSync, rmSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { macAppPath } from './mac-app-path.mjs'
 
 const root = resolve(import.meta.dirname, '..')
 const argv = process.argv.slice(2)
@@ -60,17 +61,21 @@ notes = notes.trim().slice(0, 4000)
 let src
 let file
 if (IS_MAC) {
-  const app = join(root, 'release', 'mac-arm64', 'Agent Edit.app')
+  if (info.arch !== 'arm64' && info.arch !== 'x64') die(`kien truc "${info.arch}" trong build-info khong hop le`)
+  const app = macAppPath(root, info.arch)
   if (!existsSync(app)) die(`khong thay ${app}`)
   const plistVer = execFileSync('/usr/bin/plutil', ['-extract', 'CFBundleShortVersionString', 'raw', join(app, 'Contents', 'Info.plist')], { encoding: 'utf-8' }).trim()
-  if (plistVer !== version) die(`app trong release/mac-arm64 la ${plistVer}, khong phai ${version}`)
+  if (plistVer !== version) die(`app trong ${app} la ${plistVer}, khong phai ${version}`)
+  // goi app dung KIEN TRUC ghi trong build-info (phat nham ban Intel cho may Apple Silicon -> app khach tu choi phieu)
+  const bin = execFileSync('/usr/bin/lipo', ['-archs', join(app, 'Contents', 'MacOS', 'Agent Edit')], { encoding: 'utf-8' }).trim()
+  if (bin.split(/\s+/).join(' ') !== (info.arch === 'x64' ? 'x86_64' : 'arm64')) die(`app la ${bin}, build-info ghi ${info.arch}`)
   execFileSync('/usr/bin/codesign', ['--verify', '--deep', '--strict', app], { stdio: 'inherit' })
   const dr = execFileSync('/usr/bin/codesign', ['-dr', '-', app], { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'] })
   if (!/certificate/.test(dr)) {
     if (!flag('--allow-adhoc')) die('app ky AD-HOC (khong co chung chi) -> khach bi hoi mat khau Keychain sau cap nhat. Chay `node scripts/gen-mac-cert.mjs` roi dong goi lai (hoac --allow-adhoc).')
     log('CANH BAO: ban ky ad-hoc (--allow-adhoc)')
   }
-  file = `Agent-Edit-${version}-b${build}-mac-arm64.zip`
+  file = `Agent-Edit-${version}-b${build}-mac-${info.arch}.zip`
   src = join(root, 'release', file)
   rmSync(src, { force: true })
   log(`nen ${app} -> ${file}`)
@@ -95,7 +100,7 @@ function signingKey() {
   return JSON.parse(readFileSync(f, 'utf-8')).sk
 }
 const platform = IS_MAC ? 'darwin' : 'win32'
-const arch = IS_MAC ? 'arm64' : 'x64'
+const arch = IS_MAC ? info.arch : 'x64'
 const m = JSON.stringify({ v: 1, channel, platform, arch, version, build, file, size, sha512, notes, released_at: Date.now() })
 const sk = createPrivateKey({ key: Buffer.from(signingKey(), 'base64'), format: 'der', type: 'pkcs8' })
 const sig = sign(null, Buffer.from(m, 'utf-8'), sk).toString('base64')

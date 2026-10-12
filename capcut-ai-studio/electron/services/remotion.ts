@@ -155,8 +155,11 @@ export async function startRender(
   const state = readState() as Record<string, unknown>
   const concurrency = typeof state.remotion_concurrency === 'number' ? (state.remotion_concurrency as number) : null
   const licenseKey = typeof state.remotion_license_key === 'string' ? (state.remotion_license_key as string) : null
-  // Tang toc GPU + chip nen chi tren Mac; STUDIO_REMOTION_ACCEL=0 tat (do so sanh / may Mac loi hinh)
-  const accel = process.platform === 'darwin' && process.env.STUDIO_REMOTION_ACCEL !== '0'
+  // Tang toc GPU + chip nen chi tren Mac Apple Silicon; STUDIO_REMOTION_ACCEL=0 tat (do so sanh / may Mac loi hinh).
+  // Mac INTEL (2026-10-12): mac dinh CPU — do tren ban x64 (Rosetta) h264_videotoolbox loi o khau GHEP CUOI (ffmpeg 187) ->
+  // worker render lai tu dau bang CPU = ton gap doi; chua co may Intel that de kiem GPU. STUDIO_REMOTION_ACCEL=1 = ep bat.
+  const accelEnv = process.env.STUDIO_REMOTION_ACCEL
+  const accel = process.platform === 'darwin' && accelEnv !== '0' && (process.arch === 'arm64' || accelEnv === '1')
 
   return new Promise<RenderEvent>((resolve) => {
     let finished = false

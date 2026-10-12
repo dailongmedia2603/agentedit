@@ -55,14 +55,18 @@ import toolchain as TC  # noqa: E402
 
 lock = {}          # goi AP DUNG cho may nay (theo dieu kien nen tang)
 lock_all = {}      # moi dong (moi nen tang)
+# Dieu kien nen tang duoc phep trong lock (PEP 508): macOS / Windows + Mac Intel (onnxruntime 1.22 — 2026-10-12)
+X86_MAC = 'sys_platform == "darwin" and platform_machine == "x86_64"'
+LOCK_MARKERS = {'sys_platform == "darwin"', 'sys_platform == "win32"', X86_MAC,
+                'sys_platform != "darwin" or platform_machine != "x86_64"'}
 for line in open(os.path.join(SIDE, M["python_packages"]["lock"]), encoding="utf-8"):
     line = line.split("#")[0].strip()
     if line:
         spec, _, marker = line.partition(";")
         spec, marker = spec.strip(), marker.strip()
-        check("lock: dong '%s' dung dang ten==ban [; sys_platform == ...]" % line,
+        check("lock: dong '%s' dung dang ten==ban [; dieu kien nen tang]" % line,
               re.match(r"^[a-z0-9][a-z0-9._-]*==[0-9][^\s]*$", spec)
-              and (not marker or re.match(r"""^sys_platform == "(darwin|win32)"$""", marker)), line)
+              and (not marker or marker in LOCK_MARKERS), line)
         name, ver = spec.split("==")
         lock_all[name] = ver
         if TC._marker_ok(marker):
@@ -76,6 +80,31 @@ check("_marker_ok hieu dieu kien nen tang", TC._marker_ok('sys_platform == "%s"'
 missing_top = [p for p in (x.split(" (")[0] for x in M["python_packages"]["top"]) if p not in lock_all]
 check("lock co du %d goi chinh" % len(M["python_packages"]["top"]), not missing_top, missing_top)
 check("lock co faster-whisper + onnxruntime (VAD)", "faster-whisper" in lock and "onnxruntime" in lock)
+
+# Moi nen tang nhan DUNG 1 ban moi goi (Mac Intel: onnxruntime 1.22 + goi phu; con lai 1.26) — danh gia dieu kien PEP 508
+from packaging.markers import Marker  # noqa: E402
+ENVS = {"darwin-arm64": {"sys_platform": "darwin", "platform_machine": "arm64"},
+        "darwin-x64": {"sys_platform": "darwin", "platform_machine": "x86_64"},
+        "win-x64": {"sys_platform": "win32", "platform_machine": "AMD64"}}
+for key, env in ENVS.items():
+    got = {}
+    for l in open(os.path.join(SIDE, M["python_packages"]["lock"]), encoding="utf-8"):
+        l = l.split("#")[0].strip()
+        if not l:
+            continue
+        spec, _, mk = l.partition(";")
+        if mk.strip() and not Marker(mk.strip()).evaluate(env):
+            continue
+        n, v = spec.strip().split("==")
+        got.setdefault(n, []).append(v)
+    dup = {n: v for n, v in got.items() if len(v) > 1}
+    want_ort = "1.22.0" if key == "darwin-x64" else "1.26.0"
+    check("lock[%s]: moi goi 1 ban, onnxruntime %s" % (key, want_ort), not dup and got.get("onnxruntime") == [want_ort], dup or got.get("onnxruntime"))
+    if key == "darwin-x64":
+        check("lock[darwin-x64]: du goi onnxruntime 1.22 can (coloredlogs, humanfriendly, sympy, mpmath)",
+              all(k in got for k in ("coloredlogs", "humanfriendly", "sympy", "mpmath")), sorted(got))
+    else:
+        check("lock[%s]: khong keo goi rieng cua Mac Intel" % key, not any(k in got for k in ("coloredlogs", "humanfriendly", "sympy", "mpmath")))
 check("ffmpeg: ma SHA-256 zip + tung file dung dinh dang",
       HEX64.match(M["ffmpeg"]["zip_sha256"]) and all(HEX64.match(f["sha256"]) and f["size"] > 1e6 for f in M["ffmpeg"]["files"].values()))
 check("ffmpeg: nguon tai ghim theo MA COMMIT (khong phai nhanh main)",
@@ -96,6 +125,10 @@ tgt = pe.get("darwin-arm64")
 check("python_embed[darwin-arm64]: co url https + sha256 64 hex + archive_top + bin",
       bool(tgt) and tgt["url"].startswith("https://") and HEX64.match(tgt["sha256"]) and tgt.get("archive_top") and tgt.get("bin"), tgt)
 check("python_embed[darwin-arm64]: url chua dung version ghim", tgt and pe["version"] in tgt["url"].replace("%2B", "+"), tgt and tgt.get("url"))
+tx = pe.get("darwin-x64")
+check("python_embed[darwin-x64] (Mac Intel): x86_64 install_only + sha256 + dung version + bin",
+      bool(tx) and tx["url"].startswith("https://") and HEX64.match(tx["sha256"]) and "x86_64-apple-darwin-install_only" in tx["url"]
+      and pe["version"] in tx["url"].replace("%2B", "+") and tx.get("bin") == "bin/python3.12", tx)
 tw = pe.get("win-x64")
 check("python_embed[win-x64]: install_only (co pip) + python.exe + sha256 + dung version",
       bool(tw) and HEX64.match(tw["sha256"]) and tw["bin"] == "python.exe" and "windows-msvc-install_only" in tw["url"]
@@ -114,6 +147,18 @@ check("platforms[win-x64]: codex = goi chinh chu cung phien ban macOS + SHA",
 check("platforms[win-x64]: trinh cai .ps1 https", all(W.get(k, {}).get("installer", "").startswith("https://") and
                                                     W[k]["installer"].endswith(".ps1") for k in ("claude", "agy", "uv")))
 check("platforms[win-x64]: yeu cau Windows 10 1809+", (W.get("os") or {}).get("min_build", 0) >= 17763)
+# Ghi de theo nen tang (Mac Intel)
+X = (M.get("platforms") or {}).get("darwin-x64") or {}
+check("platforms[darwin-x64]: ffmpeg zip ghim commit + ffmpeg / ffprobe co SHA + du ma hoa / bo loc",
+      re.search(r"/raw/[0-9a-f]{40}/", X.get("ffmpeg", {}).get("url", "")) and HEX64.match(X["ffmpeg"]["zip_sha256"])
+      and set(X["ffmpeg"]["files"]) == {"ffmpeg", "ffprobe"} and X["ffmpeg"]["zip_dir"] == "darwin"
+      and all(HEX64.match(f["sha256"]) and f["size"] > 1e6 for f in X["ffmpeg"]["files"].values()), X.get("ffmpeg"))
+check("platforms[darwin-x64]: codex x86_64 cung phien ban macOS + SHA",
+      HEX64.match(X.get("codex", {}).get("sha256", "")) and X["codex"].get("member") == "codex-x86_64-apple-darwin"
+      and X["codex"]["url"].startswith("https://github.com/openai/codex/releases/download/rust-v%s/" % M["cli"]["codex"]["install_version"]),
+      X.get("codex"))
+check("platforms[darwin-x64]: dung trinh cai .sh + macos_min chung (khong ghi de os / installer)",
+      not any(k in X for k in ("os", "claude", "agy", "uv")))
 VM = M.get("vision_models") or {}
 check("vision_models: du 5 model (tach nguoi, tach nen, mat, 2 OCR) + SHA + https + kich thuoc",
       len(VM) == 5 and all(HEX64.match(v["sha256"]) and v["url"].startswith("https://") and v["size"] > 1e5 and v.get("license")

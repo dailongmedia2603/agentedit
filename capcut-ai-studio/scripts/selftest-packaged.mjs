@@ -1,4 +1,4 @@
-// TU KIEM BAN DONG GOI (Windows: release/win-unpacked; macOS: release/mac-arm64/Agent Edit.app) — chay sau
+// TU KIEM BAN DONG GOI (Windows: release/win-unpacked; macOS: release/mac-arm64/Agent Edit.app, Mac Intel: release/mac/) — chay sau
 // `npm run dist:win` (build-windows.ps1 tu goi). HOME / USERPROFILE TAM + --user-data-dir tam: khong dung toi du lieu
 // that (khoa API, du an, ~/.capcut-studio) cua may build.
 //
@@ -14,6 +14,7 @@ import { createServer } from 'node:net'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { macAppPath } from './mac-app-path.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const IS_WIN = process.platform === 'win32'
@@ -26,7 +27,7 @@ let app = argOf('--app')
 if (!app) {
   app = IS_WIN
     ? join(root, 'release', 'win-unpacked', 'Agent Edit.exe')
-    : join(root, 'release', 'mac-arm64', 'Agent Edit.app')
+    : macAppPath(root)
 }
 app = resolve(app)
 let exe = app
@@ -315,6 +316,61 @@ async function main() {
     }
   }
   record('Render MP4', pass && Math.abs(Number(dur) - 3) < 0.3, pass ? `${out} (${dur}s, ${(statSync(out).size / 1e6).toFixed(1)} MB)` : rr.out.split(/\r?\n/).filter((l) => /RMR|rror/.test(l)).slice(-6).join(' | '))
+
+  // 6b) CHE DO CLI (2026-10-12 — ky nang GetTime / AI agent, chi macOS): chinh binary app (ban da lam roi + bytecode) chay
+  //     `--agent-edit-cli`: khong cua so, in JSON, ma thoat dung; `make` tach tien trinh nen, job dung o buoc ban quyen
+  //     (may tu kiem khong co key) kem goi y kich hoat; `wait` doc trang thai tu tien trinh khac.
+  if (!IS_WIN) {
+    console.log('\n[6b] Chế độ CLI (agent-edit)...')
+    const cli = (args, timeoutMs = 120000) =>
+      new Promise((res) => {
+        const p = spawn(exe, [`--user-data-dir=${ud}`, '--agent-edit-cli', ...args], { env, windowsHide: true })
+        let so = ''
+        let se = ''
+        p.stdout.on('data', (d) => (so += d.toString('utf-8')))
+        p.stderr.on('data', (d) => (se += d.toString('utf-8')))
+        const timer = setTimeout(() => {
+          try {
+            p.kill('SIGKILL')
+          } catch {
+            /* da thoat */
+          }
+        }, timeoutMs)
+        p.on('close', (code) => {
+          clearTimeout(timer)
+          res({ code, so, se })
+        })
+      })
+    const parse = (t) => {
+      try {
+        return JSON.parse(t)
+      } catch {
+        return null
+      }
+    }
+    const pkgVersion = JSON.parse(readFileSync(join(root, 'package.json'), 'utf-8')).version
+    let c = await cli(['version', '--json'])
+    const v = parse(c.so)
+    record('CLI: version --json', c.code === 0 && v?.version === pkgVersion && ['arm64', 'x64'].includes(v?.arch), (c.so + c.se).trim())
+    c = await cli(['status', '--json'], 5 * 60 * 1000)
+    const st = parse(c.so)
+    record('CLI: status --json (Doctor qua CLI; chưa có key -> báo rõ, mã 2)',
+      c.code === 2 && Array.isArray(st?.checks) && st.checks.some((x) => x.id === 'ffmpeg' && x.status === 'ok') &&
+        st.license?.status !== 'ok' && (st.next || []).some((x) => x.includes('activate')),
+      (c.so + c.se).trim().slice(0, 400))
+    c = await cli(['make', '--json'])
+    const mk = parse(c.so)
+    record('CLI: make thiếu video -> lỗi rõ ràng (mã 2)', c.code === 2 && mk?.ok === false && /video/i.test(mk?.error || ''), c.so.trim())
+    c = await cli(['make', '--video', vid, '--request', 'tự kiểm', '--json'])
+    const job = parse(c.so)
+    if (job?.id) {
+      c = await cli(['wait', job.id, '--timeout', '150', '--json'], 200000)
+      const w = parse(c.so)
+      record('CLI: make -> việc chạy nền, dừng ở bước bản quyền + gợi ý kích hoạt',
+        c.code === 1 && w?.status === 'error' && w?.error?.step === 'prepare' && /activate/.test(w?.error?.hint || ''),
+        (c.so + c.se).trim().slice(0, 400))
+    } else record('CLI: make -> trả mã việc', false, (c.so + c.se).trim())
+  }
 
   // 7) macOS: chay xong moi thu, goi app VAN con nguyen chu ky (khong tien trinh nao ghi vao trong goi — vd __pycache__
   //    cua Python). Hong -> goi cap nhat nen tu app nay bi updater cua khach tu choi.

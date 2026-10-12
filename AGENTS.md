@@ -3,7 +3,8 @@
 ## Persistent context
 
 - Read `PROJECT_OVERVIEW.md` before making architectural or cross-module changes.
-- This workspace contains the Electron product in `capcut-ai-studio/`. It edits
+- This workspace contains the Electron product in `capcut-ai-studio/`. The same app also runs headless as a CLI
+  (`--agent-edit-cli`, `capcut-ai-studio/electron/cli/`) — packaged for GetTime as the skill `gettime/agent-edit/`. It edits
   videos only through Remotion (the CapCut draft flow was removed on 2026-09-26).
   `CapCutAPI/` is the legacy CapCut engine; the app no longer imports it, but the
   sidecar's Python venv currently lives at `CapCutAPI/.venv` — do not delete it.
@@ -22,8 +23,8 @@ Day la quy trinh CHUAN, user da dong y tu truoc — lam du cac buoc, khong hoi l
 3. Chinh thuc: `npm run release -- X.Y.Z --notes "<ghi chu tieng Viet co dau>"` (tu tang version, tag, day remote
    `agentedit`). User khong ghi so -> sua loi tang so cuoi, tinh nang moi tang so giua. Khong ghi ghi chu -> tu tom tat ngan
    gon tu cac commit tu ban truoc (khach doc trong hop thoai cap nhat). "Ban thu" -> `npm run release -- --test --notes "..."`.
-4. Theo doi GitHub Actions (`gh run list --repo dailongmedia2603/agentedit --workflow release.yml`) toi khi xong ca mac +
-   windows (~40 phut). Buoc nao do -> doc log (`gh api repos/dailongmedia2603/agentedit/actions/jobs/<id>/logs`), sua, phat
+4. Theo doi GitHub Actions (`gh run list --repo dailongmedia2603/agentedit --workflow release.yml`) toi khi xong ca mac arm64 +
+   mac Intel (x64, may `macos-15-intel`) + windows (~40-70 phut). Buoc nao do -> doc log (`gh api repos/dailongmedia2603/agentedit/actions/jobs/<id>/logs`), sua, phat
    hanh lai. KHONG bao "xong" khi chua xanh.
 5. Bao user: link GitHub Release (file .dmg / Setup .exe cho khach moi) + may da cai se thay nut "Cap nhat len X.Y.Z" o lan
    mo app ke tiep.
@@ -72,5 +73,12 @@ Day la quy trinh CHUAN, user da dong y tu truoc — lam du cac buoc, khong hoi l
   Windows -> R2; khach tu cap nhat), `npm run release -- --test` (kenh test). Test: `HOME=$(mktemp -d) node tests/test_updater.mts`,
   ban dong goi `node scripts/selftest-update.mjs`. Bi mat `~/.capcut-studio/update-signing.json` + `mac-codesign.p12/.json`
   (KHONG len git; mat khoa ky = app da cai khong nhan ban moi). Ban day du khong tu cap nhat.
+- CHE DO CLI + ky nang GetTime (PROJECT_OVERVIEW 16): app chay khong cua so `"<app>/Contents/MacOS/Agent Edit" --agent-edit-cli
+  <lenh>` (ban dev: `env -u ELECTRON_RUN_AS_NODE STUDIO_LICENSE=off node_modules/electron/dist/Electron.app/Contents/MacOS/Electron .
+  --user-data-dir=<tmp> --agent-edit-cli status`). Ky nang GetTime: `gettime/agent-edit/` (SKILL.md + scripts/agent-edit, cai
+  tang He thong, chat bat Toan quyen). Job CLI: `~/.capcut-studio/cli/jobs/<id>/`. Ban dong goi: selftest-packaged muc [6b].
+- Mac INTEL (x64): CI `macos-15-intel`. Tren may Apple Silicon: Node x64 + `arch -x86_64 npm ci` (roi
+  `npm_config_arch=x64 node node_modules/electron/install.js` — electron tu tai ban ARM khi thay Rosetta) + `arch -x86_64 node
+  scripts/dist.mjs --mac` -> `release/mac/`. onnxruntime Intel ghim 1.22.0 trong requirements.lock (marker platform_machine).
 - Render self-test: `env -u ELECTRON_RUN_AS_NODE STUDIO_REMOTION_RENDER=<spec.json> STUDIO_REMOTION_OUT=<out.mp4> <app binary>`
   (VSCode terminals set `ELECTRON_RUN_AS_NODE=1`, which makes the app binary exit silently)

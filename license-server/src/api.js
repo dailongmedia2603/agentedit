@@ -48,7 +48,8 @@ const MSG = {
   no_library: 'Kho chưa sẵn sàng trên máy chủ.',
   fx_bad: 'Gói hiệu ứng không hợp lệ.',
   fx_limit: 'Đã gửi quá nhiều hiệu ứng hôm nay — thử lại ngày mai.',
-  server: 'Máy chủ bản quyền gặp lỗi. Thử lại sau.'
+  server: 'Máy chủ bản quyền gặp lỗi. Thử lại sau.',
+  no_release: 'Chưa có bản cài Agent Edit cho máy này trên máy chủ.'
 }
 
 function fail(code, extra = {}, status = 200) {
@@ -408,6 +409,70 @@ async function handleUpdateDownload(req, env, rawName) {
   return new Response(obj.body, { headers: { ...base, 'content-length': String(obj.size), etag: obj.httpEtag } })
 }
 
+/**
+ * CAI APP QUA DONG LENH (2026-10-12 — ky nang GetTime / script `agent-edit setup --key`): may CHUA co app thi chua co khoa
+ * thiet bi de ky yeu cau -> chi can KEY hop le (dang dung, chua het han). Tra phieu ban moi nhat cua kenh (m + sig NGUYEN
+ * CHUOI da ky — ai muon tu kiem bang UPDATE_PUB) + link tai tam 24h (CUNG token 'upd.' / handleUpdateDownload). KHONG gan
+ * may: kich hoat van la op=activate cua app sau khi cai. Sai key -> tinh vao gioi han 20 lan / gio / IP nhu kich hoat.
+ * Body JSON: {key, platform: darwin|win32, arch: arm64|x64, channel?: stable|test}
+ */
+async function handleCliDownload(req, env) {
+  let b
+  try {
+    b = await req.json()
+  } catch {
+    return fail('bad_request', {}, 400)
+  }
+  if (!b || typeof b !== 'object') return fail('bad_request', {}, 400)
+  const platform = b.platform === 'darwin' || b.platform === 'win32' ? b.platform : null
+  const arch = b.arch === 'arm64' || b.arch === 'x64' ? b.arch : null
+  const channel = UPD_CHANNELS.includes(b.channel) ? b.channel : 'stable'
+  if (!platform || !arch) return fail('bad_request', {}, 400)
+  const ip = clientIp(req)
+  if (await throttled(env, ip)) return fail('throttled')
+  const norm = normalizeKey(b.key)
+  if (!norm) {
+    await addFail(env, ip)
+    return fail('invalid_key')
+  }
+  const lic = await env.DB.prepare('SELECT * FROM licenses WHERE key_hash = ?').bind(await keyHash(norm)).first()
+  if (!lic) {
+    await addFail(env, ip)
+    return fail('invalid_key')
+  }
+  if (lic.status !== 'active') return fail('locked')
+  if (lic.expires_at && Date.now() > lic.expires_at) return fail('expired', { expires_at: lic.expires_at })
+  const obj = await env.LIB.get(`updates/${channel}/${platform}-${arch}.json`)
+  if (!obj) return fail('no_release')
+  let rec
+  let m
+  try {
+    rec = await obj.json()
+    m = JSON.parse(rec.m)
+  } catch {
+    return fail('no_release')
+  }
+  if (!m || typeof rec.sig !== 'string' || !UPD_FILE_RE.test(String(m.file || '')) || m.file.includes('..')) return fail('no_release')
+  const exp = Date.now() + UPD_TTL_MS
+  const t = `${lic.id}.${exp}`
+  const token = t + '.' + (await hmacSign(env.DL_SECRET, 'upd.' + t))
+  await logEvent(env, lic.id, 'cli_download', req, `${platform}-${arch} ${m.version} (${m.build}) kenh ${channel}`)
+  return json({
+    ok: true,
+    version: m.version,
+    build: m.build,
+    file: m.file,
+    size: m.size,
+    sha512: m.sha512,
+    platform,
+    arch,
+    channel,
+    url: `${new URL(req.url).origin}/v1/update/${encodeURIComponent(m.file)}?t=${encodeURIComponent(token)}`,
+    m: rec.m,
+    sig: rec.sig
+  })
+}
+
 /** 1 doan ten an toan (khong /, \\, ., ..) */
 function safeSeg(x) {
   return !!x && !x.includes('/') && !x.includes('\\') && x !== '.' && x !== '..'
@@ -608,6 +673,8 @@ export default {
       // File cap nhat app: /v1/update/<ten file>?t=<token 24h>
       const mu = url.pathname.match(/^\/v1\/update\/([^/]+)$/)
       if (mu && (req.method === 'GET' || req.method === 'HEAD')) return await handleUpdateDownload(req, env, mu[1])
+      // Cai app qua dong lenh (script agent-edit / ky nang GetTime): key hop le -> phieu ban moi nhat + link tai tam
+      if (url.pathname === '/v1/download' && req.method === 'POST') return await handleCliDownload(req, env)
       if (url.pathname === '/v1/time') return json({ ok: true, server_time: Date.now() })
       return new Response('Not found', { status: 404 })
     } catch (e) {

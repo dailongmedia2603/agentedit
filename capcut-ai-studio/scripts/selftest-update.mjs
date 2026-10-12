@@ -15,6 +15,7 @@ import { createReadStream, existsSync, mkdtempSync, readFileSync, rmSync, statSy
 import { createServer } from 'node:http'
 import { homedir, tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
+import { macAppPath } from './mac-app-path.mjs'
 
 const root = resolve(import.meta.dirname, '..')
 const argv = process.argv.slice(2)
@@ -58,7 +59,7 @@ const cleanups = []
 
 // ---- 1. cai app vao cho thu + chuan bi goi cap nhat ----
 if (IS_MAC) {
-  const src = join(root, 'release', 'mac-arm64', 'Agent Edit.app')
+  const src = macAppPath(root, info.arch)
   if (!existsSync(src)) die(`khong thay ${src}`)
   let dir = opt('--install-dir')
   if (!dir) {
@@ -74,7 +75,7 @@ if (IS_MAC) {
   execFileSync('/usr/bin/ditto', [src, installed])
   cleanups.push(() => rmSync(installed, { recursive: true, force: true }))
   exe = join(installed, 'Contents', 'MacOS', 'Agent Edit')
-  pkgName = `Agent-Edit-${info.version}-b${info.build}-mac-arm64.zip`
+  pkgName = `Agent-Edit-${info.version}-b${info.build}-mac-${info.arch}.zip`
   pkgFile = join(work, pkgName)
   console.log(`[selftest-update] cai thu: ${installed}\n[selftest-update] nen goi cap nhat (ditto)…`)
   execFileSync('/usr/bin/ditto', ['-c', '-k', '--sequesterRsrc', '--keepParent', src, pkgFile])
@@ -148,7 +149,7 @@ const offerFor = (patch = {}) => {
     v: 1,
     channel: 'test',
     platform: process.platform,
-    arch: IS_MAC ? 'arm64' : 'x64',
+    arch: IS_MAC ? info.arch : 'x64',
     version: info.version,
     build: info.build,
     file: pkgName,

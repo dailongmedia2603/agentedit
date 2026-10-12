@@ -1,15 +1,29 @@
 import { app, BrowserWindow, Menu, nativeTheme } from 'electron'
 import { join } from 'path'
 import { homedir, tmpdir } from 'os'
-import { appendFileSync, existsSync, mkdirSync, writeFileSync } from 'fs'
+import { appendFileSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'fs'
 import { registerIpc } from './ipc'
 import { stopSidecar } from './services/sidecar'
 import { stopRender } from './services/remotion'
 import { stopMediaServer } from './services/media-server'
 import { cancelCliTask } from './services/cli-login'
 import { initUpdater, markLaunchedIfUpdated, runUpdateSelftest, selftestConfigPath } from './services/updater'
+import { CLI_FLAG } from './cli/util'
+import { cleanAgentEnv, runCli } from './cli/index'
 
 let mainWindow: BrowserWindow | null = null
+
+// CHE DO CLI (2026-10-12, electron/cli/): `<app> --agent-edit-cli <lenh>` — khong cua so, khong icon Dock, khong khoa
+// "1 phien" (chay song song voi giao dien + nhieu viec nen), chay lenh xong thi thoat voi ma thoat cua lenh.
+const CLI_MODE = process.argv.includes(CLI_FLAG)
+// Du lieu PHIEN Chromium (cookies, cache, Local Storage) RIENG tung tien trinh CLI: giao dien + nhieu viec CLI chay cung luc
+// khong tranh khoa SQLite trong userData. userData (secrets.enc, license.enc, Keychain) van DUNG CHUNG voi app.
+const CLI_SESSION_DIR = CLI_MODE ? join(tmpdir(), 'agent-edit-cli', String(process.pid)) : ''
+if (CLI_MODE) {
+  cleanAgentEnv() // AI agent goi CLI -> bo bien phien cua agent me truoc khi sidecar / claude / codex ke thua
+  app.dock?.hide()
+  app.setPath('sessionData', CLI_SESSION_DIR)
+}
 
 /** Ten hien thi. app.name van la "auto-capcut" (package.json) — Electron dung no cho thu muc du lieu
  *  + muc Keychain chua khoa API; doi thi mat khoa da luu. Menu mac dinh cua Electron in app.name
@@ -161,7 +175,7 @@ function createWindow() {
 const SELF_TEST = Object.keys(process.env).some((k) =>
   ['STUDIO_TESTCONN', 'STUDIO_DUMPCFG', 'STUDIO_RAWGPT', 'STUDIO_DOCTOR', 'STUDIO_REMOTION_RENDER', 'STUDIO_SIDECAR_SMOKE'].includes(k)
 )
-if (!SELF_TEST && !app.requestSingleInstanceLock()) {
+if (!SELF_TEST && !CLI_MODE && !app.requestSingleInstanceLock()) {
   bootLog('da co 1 phien dang chay -> bao phien do mo cua so, thoat')
   app.quit()
 } else {
@@ -181,6 +195,28 @@ if (IS_WIN) app.setAppUserModelId('app.autocapcut.desktop')
 
 app.whenReady().then(async () => {
   bootLog('app ready')
+  if (CLI_MODE) {
+    app.dock?.hide()
+    const argv = process.argv.slice(process.argv.indexOf(CLI_FLAG) + 1)
+    bootLog('che do CLI: ' + (argv[0] || 'help'))
+    let code = 1
+    try {
+      code = await runCli(argv)
+    } catch (e) {
+      process.stderr.write(`Lỗi: ${String((e as Error)?.stack || e)}\n`)
+    }
+    stopSidecar()
+    stopRender()
+    stopMediaServer()
+    cancelCliTask()
+    try {
+      rmSync(CLI_SESSION_DIR, { recursive: true, force: true })
+    } catch {
+      /* bo qua */
+    }
+    app.exit(code)
+    return
+  }
   nativeTheme.themeSource = 'light'
   setAppMenu()
   registerIpc(() => mainWindow)

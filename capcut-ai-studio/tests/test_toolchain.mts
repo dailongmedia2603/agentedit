@@ -193,7 +193,24 @@ try {
   Object.defineProperty(process, 'platform', realPlat)
   Object.defineProperty(process, 'arch', realArch)
 }
-if (!IS_WIN) {
+// Gia lap Mac INTEL (2026-10-12): Python x86_64, ffmpeg zip darwin (x86_64), codex x86_64, trinh cai .sh nhu Apple Silicon
+Object.defineProperty(process, 'platform', { value: 'darwin' })
+Object.defineProperty(process, 'arch', { value: 'x64' })
+try {
+  check('[mac-intel] platformKey = darwin-x64', T.platformKey() === 'darwin-x64')
+  const xpe = T.pyEmbedTarget()
+  check('[mac-intel] python nhung x86_64', !!xpe && xpe.url.includes('x86_64-apple-darwin-install_only') && xpe.bin === 'bin/python3.12', xpe)
+  const xff = T.ffSpec()
+  check('[mac-intel] ffmpeg = zip darwin + ffmpeg / ffprobe, giu danh sach ma hoa / bo loc', xff.zip_dir === 'darwin' &&
+        'ffmpeg' in xff.files && 'ffprobe' in xff.files && xff.encoders.includes('libx264') && xff.filters.includes('zscale'), xff)
+  const xcx = T.codexSpec()
+  check('[mac-intel] codex x86_64 (1 binary, cung min)', !xcx.package && xcx.member === 'codex-x86_64-apple-darwin' && xcx.min === T.manifest().cli.codex.min, xcx)
+  check('[mac-intel] trinh cai .sh + khong ghi de yeu cau he dieu hanh', T.installerOf('claude').endsWith('install.sh') && T.osReq() === null)
+} finally {
+  Object.defineProperty(process, 'platform', realPlat)
+  Object.defineProperty(process, 'arch', realArch)
+}
+if (!IS_WIN && process.arch === 'arm64') {
   check('[mac] ffmpeg / codex / trinh cai giu nguyen ban macOS', T.ffSpec().zip_dir === 'darwin_arm64' && !T.codexSpec().package &&
         T.installerOf('claude').endsWith('install.sh') && T.osReq() === null)
 }

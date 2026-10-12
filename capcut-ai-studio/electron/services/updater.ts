@@ -46,7 +46,8 @@ const argOf = (flag: string) => process.argv.find((a) => a.startsWith(flag))?.sl
 
 /** Ban nay tu cap nhat duoc: da dong goi + ban cai cho khach (khong phai ban day du / dev) + co ma build + nen tang ho tro. */
 export function updaterEnabled(): boolean {
-  const plat = (IS_MAC && process.arch === 'arm64') || (IS_WIN && process.arch === 'x64')
+  // Mac Apple Silicon (arm64) + Mac Intel (x64, tu 2026-10-12) + Windows x64
+  const plat = (IS_MAC && (process.arch === 'arm64' || process.arch === 'x64')) || (IS_WIN && process.arch === 'x64')
   return app.isPackaged && CLIENT_UI && /^\d{8}-\d{4}$/.test(APP_BUILD) && plat
 }
 
@@ -480,8 +481,9 @@ function preflight(): Partial<UpdateState> {
 // ---------------------------------------------------------------------------
 // Ap dung: chay script rieng roi thoat app
 // ---------------------------------------------------------------------------
-/** busy = renderer dang xu ly video (hang doi Tao video). */
-export async function applyUpdate(busy = false): Promise<{ ok: boolean; error?: string }> {
+/** busy = renderer dang xu ly video (hang doi Tao video). relaunch = tham so mo lai ban moi (CLI: mo lai o che do CLI
+ *  khong cua so — `agent-edit update`); mac dinh = tham so cua lan mo hien tai. */
+export async function applyUpdate(busy = false, relaunch?: string[]): Promise<{ ok: boolean; error?: string }> {
   if (st.phase !== 'ready' || !manifest) return { ok: false, error: 'Bản cập nhật chưa sẵn sàng.' }
   if (busy) return { ok: false, error: 'Đang xử lý video — đợi xong rồi cập nhật.' }
   if ((renderStatus() as { running?: boolean }).running) return { ok: false, error: 'Đang xuất video — đợi xuất xong rồi cập nhật.' }
@@ -495,7 +497,7 @@ export async function applyUpdate(busy = false): Promise<{ ok: boolean; error?: 
   try {
     const from = releaseKey(app.getVersion(), APP_BUILD)
     const to = releaseKey(m.version, m.build)
-    const rel = relaunchArgs(process.argv.slice(1))
+    const rel = relaunch ?? relaunchArgs(process.argv.slice(1))
     log(`ap dung ${to} (tu ${from})`)
     if (IS_MAC) {
       if (!stagedApp || !existsSync(stagedApp)) throw new Error('Không thấy bản đã giải nén — tải lại bản cập nhật.')
