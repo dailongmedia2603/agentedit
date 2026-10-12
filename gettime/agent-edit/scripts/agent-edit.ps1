@@ -92,12 +92,14 @@ function CurlExe {
   return '/usr/bin/curl'
 }
 
-# SHA-512 cua file dang base64 (giong phieu phat hanh)
+# SHA-512 cua file dang base64 (giong phieu phat hanh) — dung .NET truc tiep, KHONG dung Get-FileHash: Windows PowerShell 5.1
+# goi tu tien trinh co PSModulePath cua PowerShell 7 (vd Node / Git Bash / AI agent) khong nap duoc cmdlet do (do that CI 2026-10-12)
 function Sha512B64([string]$file) {
-  $hex = (Get-FileHash -LiteralPath $file -Algorithm SHA512).Hash
-  $bytes = New-Object byte[] ($hex.Length / 2)
-  for ($i = 0; $i -lt $hex.Length; $i += 2) { $bytes[$i / 2] = [Convert]::ToByte($hex.Substring($i, 2), 16) }
-  return [Convert]::ToBase64String($bytes)
+  $fs = [IO.File]::OpenRead($file)
+  try {
+    $sha = [Security.Cryptography.SHA512]::Create()
+    return [Convert]::ToBase64String($sha.ComputeHash($fs))
+  } finally { $fs.Dispose() }
 }
 
 # Hoi may chu ban quyen: key hop le -> phieu ban moi nhat + link tai tam
