@@ -57,6 +57,33 @@ console.log('[1b] moc tien do (wait --until-change)')
   check('render 10% -> 20%: KHONG doi moc', M({ step: 'render', progress: 0.1 }) === M({ step: 'render', progress: 0.2 }))
   check('render 20% -> 26%: doi moc', M({ step: 'render', progress: 0.2 }) !== M({ step: 'render', progress: 0.26 }))
   check('progress ngoai buoc render bi bo qua', M({ step: 'finish', progress: 1 }) === M({ step: 'finish' }))
+  check('setup: doi cong cu dang cai -> doi moc', M({ step: 'tools', sub: 'whisper' }) !== M({ step: 'tools', sub: 'chrome' }))
+  check('setup: dong bo kho 30% -> 55% -> doi moc', M({ step: 'sync', progress: 0.3 }) !== M({ step: 'sync', progress: 0.55 }))
+  check('setup: dong bo kho 30% -> 40% -> KHONG doi moc', M({ step: 'sync', progress: 0.3 }) === M({ step: 'sync', progress: 0.4 }))
+  check('login: co link -> doi moc', M({ step: 'login' }) !== M({ step: 'login', sub: 'url' }))
+}
+
+console.log('[1c] ma viec theo loai + doi job')
+{
+  const s = J.newJobId('setup')
+  const l = J.newJobId('login')
+  check('ma setup s_ / login l_ / make r_', s.startsWith('s_') && l.startsWith('l_') && J.newJobId().startsWith('r_'), [s, l])
+  const input = { videos: [], inserts: [], orientation: 'portrait' as const, fresh: false }
+  J.saveJob({ id: l, kind: 'login', createdAt: Date.now(), updatedAt: 0, status: 'running', step: 'login', input, pid: process.pid, info: { account: 'claude' } })
+  check('doc lai job login (ma l_ hop le)', J.loadJob(l)?.kind === 'login' && J.loadJob(l)?.info?.account === 'claude')
+  setTimeout(() => {
+    const j = J.loadJob(l)!
+    j.info = { ...j.info, url: 'https://claude.ai/oauth/authorize?x' }
+    J.saveJob(j)
+  }, 800)
+  const t0 = Date.now()
+  const got = await J.waitJobUntil(l, 10000, (j) => !!j.info?.url)
+  check('waitJobUntil tra ve ngay khi co link', !!got?.info?.url && Date.now() - t0 < 4000, Date.now() - t0)
+  const t1 = Date.now()
+  await J.waitJobUntil(l, 1000, () => false)
+  check('waitJobUntil het gio', Date.now() - t1 >= 1000 && Date.now() - t1 < 3000)
+  check('file ma nam trong thu muc job', J.codeFile(l).replace(/\\/g, '/').endsWith(`/${l}/code`))
+  check('loadJob ma la (x_...) -> null', J.loadJob('x_abcdef12') === null)
 }
 
 console.log('[2] job: luu / doc / tien trinh chet')

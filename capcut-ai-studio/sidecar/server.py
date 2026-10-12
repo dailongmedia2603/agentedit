@@ -192,7 +192,7 @@ import subprocess as _subprocess
 _LICENSE_PUB = "qsPtITJCcT/BcJQIVP0p4ILdenDc34yJ+8sA8txQeTA="
 _LIC = {"payload": None, "fp": None}
 # Duoc goi khi chua co ve: khoi dong, cau hinh AI, kiem dang nhap CLI (trang Cai dat + tu kiem dong goi)
-_LIC_OPEN = {"/health", "/config", "/license/ticket", "/cli_status", "/test_connection", "/providers"}
+_LIC_OPEN = {"/health", "/config", "/license/ticket", "/cli_status", "/test_connection", "/providers", "/library/sync_progress"}
 _LIC_GRACE_MS = 86400000  # gio may lech toi 1 ngay van nhan ve
 
 
@@ -971,6 +971,14 @@ def library_sync_route():
     except Exception as e:
         logger.exception("library sync failed")
         return err("Dong bo kho loi: %s" % (str(e)[:200]), 500)
+
+
+@app.route("/library/sync_progress", methods=["GET", "POST"])
+@require_token
+def library_sync_progress_route():
+    """Tien do luot /library/sync dang chay (server threaded -> hoi duoc trong luc luot do chua tra ve)."""
+    import library_sync
+    return jsonify({"ok": True, **library_sync.PROGRESS})
 
 
 @app.route("/meme/fetch", methods=["POST"])

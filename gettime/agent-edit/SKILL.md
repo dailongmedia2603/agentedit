@@ -42,23 +42,41 @@ dưới giống hệt nhau trên 2 hệ điều hành; đường dẫn file trê
 - Đặt thời gian chờ của lệnh Bash là **600000 ms** (10 phút).
 - Mã thoát: `0` xong · `1` lỗi · `2` sai lệnh / máy chưa đủ điều kiện · `3` việc còn đang chạy · `130` đã huỷ.
 
-## 3. Lần đầu trên máy (cài đặt)
+## 3. Lần đầu trên máy (cài đặt) — báo từng bước
 
-1. `AE status --json`
-   - Báo **"Máy chưa cài Agent Edit"** hoặc bản quá cũ → hỏi người trực **key bản quyền Agent Edit**, rồi chạy
-     `AE setup --key <KEY> --json`. Lệnh này tự tải + cài app đúng máy (~300 MB; Windows cài im lặng cho riêng tài khoản,
-     không cần quyền admin), kích hoạt key, cài toàn bộ công cụ
-     (Whisper, trình render, Codex, Claude Code, Antigravity CLI… ~1 GB) và đồng bộ kho SFX / nhạc / mẫu chữ.
-     Lần đầu có thể mất 5–20 phút. Lệnh Bash bị cắt vì quá giờ → **chạy lại đúng lệnh đó**, nó tải tiếp chỗ dở.
-   - `ready: true` → sẵn sàng, sang mục 4.
-2. `next` có `agent-edit login gemini` / `login claude` / `login codex` → chạy `AE login gemini --json` (lần lượt
-   từng cái). Trình duyệt mở **trên máy này**: nhắn người trực đăng nhập tài khoản trong trình duyệt rồi đợi lệnh xong.
-   Gemini = tài khoản Google (hiểu video), Claude = tài khoản Claude (lập kế hoạch), Codex = ChatGPT (ảnh AI, không bắt
-   buộc). Dùng API key thay đăng nhập: `AE config --gemini-key <KEY>` / `--claude-key <KEY>`.
-3. `next` có `agent-edit activate <KEY>` → hỏi key rồi `AE activate <KEY> --json`. Mỗi key dùng cho **1 máy**
-   (dùng chung với app Agent Edit trên cùng máy). Báo "đã kích hoạt trên máy khác" → người trực liên hệ người bán.
+Mỗi lần lệnh trả về, nhắn người trực **1 dòng ngắn** theo `message` (bỏ qua nếu trùng dòng vừa báo) rồi làm bước kế.
 
-Không bao giờ nhắc lại nguyên văn key trong câu trả lời.
+1. `AE status --json` → `ready: true` thì sang mục 4. Báo **"Máy chưa cài Agent Edit"**, bản quá cũ, hoặc `next` có
+   `agent-edit activate` → hỏi người trực **key bản quyền Agent Edit**.
+2. **Cài**: `AE setup --key <KEY> --background --json` (máy đã kích hoạt key thì bỏ `--key <KEY>`).
+   - `step: "download"` (mã thoát 3) → báo `message` (vd "Đang tải Agent Edit 1.7.0 — 42% (130/310 MB)") rồi chạy lại
+     **đúng lệnh đó** ngay (tải tiếp chỗ dở). Lặp tới khi hết `download`.
+   - Trả `id` (`s_…`) → app đã cài + kích hoạt key, đang cài công cụ nền (~1 GB, 5–20 phút). Báo "Đã cài app, đang cài
+     công cụ", rồi lặp `AE wait <id> --until-change --json` như mục 4 bước 3, báo `message` mỗi lần:
+     `license` kiểm tra bản quyền · `tools` "Đang cài Whisper (3/7)…" · `sync` "Đang đồng bộ kho nhạc nền — 50%".
+   - Xong (`status: done`): `info.ready: true` → báo "Đã cài xong, sẵn sàng tạo video". `info.next` có `login …` → bước 3.
+     `status: error` → báo ngắn `error.message`, làm theo `error.hint` (thường là chạy lại đúng lệnh cài).
+   - Kết quả có `ready` mà không có `id` → app bản cũ cài một mạch: đọc `ready` / `next` như trên.
+3. **Đăng nhập AI** — lần lượt từng tài khoản trong `next` (`gemini`, `claude`; `codex` tuỳ chọn, cho ảnh AI):
+   1. `AE login <tk> --start --json` → `status: "running"` kèm `url` / `lines`. Nhắn người trực theo bảng rồi **kết thúc
+      lượt trả lời** để chờ họ (lượt đăng nhập giữ 10 phút):
+
+      | `<tk>` | Nhắn người trực |
+      |---|---|
+      | `claude` | Trình duyệt đã mở trên máy cài Agent Edit để đăng nhập Claude. Không ở cạnh máy thì mở link `url` trên điện thoại / máy khác. Đăng nhập xong: trang hiện **mã** thì gửi mã cho em; trang báo thành công thì nhắn "xong". |
+      | `gemini` | Trình duyệt đã mở trang đăng nhập Google **trên máy cài Agent Edit** — đăng nhập ngay trên máy đó rồi nhắn "xong" (link này không mở được ở máy khác). Windows: làm đúng `message` (bấm Enter trong cửa sổ Antigravity). |
+      | `codex` | Dùng `AE login codex --start --device --json`: gửi link + mã thiết bị trong `lines`; người trực mở link, nhập mã, nhắn "xong". |
+
+      `status: "done"` / `already: true` → đã đăng nhập, sang tài khoản kế.
+   2. Người trực gửi mã → `AE login <tk> --code "<MÃ>" --json`. Nhắn "xong" → `AE login <tk> --check --json`.
+      `done` → báo đã đăng nhập · `running` → còn chờ, nhắc lại bước trên · `error` / `none` → báo lỗi, chạy lại `--start`.
+   3. Kết quả không có `id` → app bản cũ: lệnh tự chờ tới khi đăng nhập xong trên máy đó (không gửi mã qua chat được).
+
+   Dùng API key thay đăng nhập: `AE config --gemini-key <KEY>` / `--claude-key <KEY>`.
+4. Cuối cùng `AE status --json` → `ready: true` → báo "Sẵn sàng tạo video".
+
+Không bao giờ nhắc lại nguyên văn key bản quyền, API key hay mã đăng nhập trong câu trả lời. Mỗi key bản quyền dùng cho
+**1 máy** (dùng chung với app Agent Edit trên cùng máy). Báo "đã kích hoạt trên máy khác" → người trực liên hệ người bán.
 
 ## 4. Tạo video
 

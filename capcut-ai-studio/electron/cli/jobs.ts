@@ -14,7 +14,12 @@ import { jobLimitsOf, readState } from '../services/state'
 import { JOBS_DIR, LOCKS_DIR, pidAlive, readJson, sleep, writeJsonAtomic } from './util'
 
 export type JobStatus = 'queued' | 'running' | 'done' | 'error' | 'cancelled'
-export type JobStep = 'prepare' | 'import' | 'analyze' | 'plan' | 'render' | 'finish'
+/** make = tao video (r_) · setup = cai cong cu + dong bo kho (s_) · login = dang nhap AI cho ma qua chat (l_) */
+export type JobKind = 'make' | 'setup' | 'login'
+export type JobStep =
+  | 'prepare' | 'import' | 'analyze' | 'plan' | 'render' | 'finish'
+  | 'license' | 'tools' | 'sync' // setup
+  | 'login' // login
 
 export interface JobInsert {
   path: string
@@ -57,6 +62,8 @@ export interface JobResult {
 
 export interface Job {
   id: string
+  /** khong co = make (job truoc 1.7.0) */
+  kind?: JobKind
   createdAt: number
   updatedAt: number
   /** tien trinh dang chay job (chet ma chua xong = loi bat thuong) */
@@ -67,8 +74,12 @@ export interface Job {
   message?: string
   /** dang cho luot lan nao (null = khong cho) */
   waiting?: string | null
-  /** tien do render 0..1 */
+  /** tien do render / cai cong cu / dong bo kho 0..1 */
   progress?: number
+  /** moc phu trong buoc (vd cong cu dang cai) — doi -> `wait --until-change` tra ve */
+  sub?: string | null
+  /** ket qua / trang thai rieng cua setup (ready, next...) va login (account, url, lines...) */
+  info?: Record<string, unknown>
   input: JobInput
   workDir?: string
   result?: JobResult
@@ -81,21 +92,35 @@ export interface Job {
 
 export const TERMINAL: JobStatus[] = ['done', 'error', 'cancelled']
 
-/** Moc tien do cho `wait --until-change`: doi buoc, bat dau / het cho luot, hoac render qua moi 25%.
- *  Khong tinh queued -> running va tung dong cua Doctor (cung buoc 'prepare') — tranh AI bao lien tuc vo ich. */
+/** Moc tien do cho `wait --until-change`: doi buoc / moc phu (cong cu dang cai, link dang nhap), bat dau / het cho luot,
+ *  hoac render / dong bo kho qua moi 25%. Khong tinh queued -> running va tung dong cua Doctor — tranh AI bao vo ich. */
 export function jobMilestone(j: Job): string {
-  const quarter = j.step === 'render' ? Math.floor((j.progress || 0) * 4) : 0
-  return `${j.step || ''}|${j.waiting || ''}|${quarter}`
+  const quarter = j.step === 'render' || j.step === 'sync' ? Math.floor((j.progress || 0) * 4) : 0
+  return `${j.step || ''}|${j.sub || ''}|${j.waiting || ''}|${quarter}`
 }
 
-export const newJobId = () => 'r_' + Date.now().toString(36) + randomBytes(4).toString('hex').slice(0, 6)
+const ID_PREFIX: Record<JobKind, string> = { make: 'r', setup: 's', login: 'l' }
+export const newJobId = (kind: JobKind = 'make') =>
+  ID_PREFIX[kind] + '_' + Date.now().toString(36) + randomBytes(4).toString('hex').slice(0, 6)
 
-const safeId = (id: string) => /^r_[a-z0-9]{6,24}$/.test(id)
+const safeId = (id: string) => /^[rsl]_[a-z0-9]{6,24}$/.test(id)
 export const jobDir = (id: string) => join(JOBS_DIR, id)
 const jobFile = (id: string) => join(jobDir(id), 'job.json')
 export const jobLog = (id: string) => join(jobDir(id), 'log.txt')
 /** `agent-edit cancel` tao file nay -> tien trinh cua job tu dung (pipeline.ts kiem moi giay) */
 export const cancelFile = (id: string) => join(jobDir(id), 'cancel')
+/** `agent-edit login <tk> --code <MA>` ghi ma vao day -> viec dang nhap nen chuyen cho CLI chinh chu (login.ts) */
+export const codeFile = (id: string) => join(jobDir(id), 'code')
+
+/** Doi file job thoa dieu kien (hoac het gio) — tra job cuoi cung doc duoc. */
+export async function waitJobUntil(id: string, ms: number, ok: (j: Job) => boolean): Promise<Job | null> {
+  const t0 = Date.now()
+  for (;;) {
+    const j = loadJob(id)
+    if (!j || ok(j) || TERMINAL.includes(j.status) || Date.now() - t0 > ms) return j
+    await sleep(700)
+  }
+}
 
 export function saveJob(j: Job): Job {
   j.updatedAt = Date.now()
@@ -113,7 +138,12 @@ export function loadJob(id: string): Job | null {
     j.error = {
       step: j.step || 'prepare',
       message: 'Tiến trình xử lý đã dừng bất thường (máy tắt / app bị đóng giữa chừng).',
-      hint: `Chạy lại: agent-edit make ... (phần phân tích đã xong được dùng lại, không tốn lại AI). Nhật ký: ${jobLog(id)}`
+      hint:
+        j.kind === 'setup'
+          ? `Chạy lại: agent-edit setup --background (phần đã cài giữ nguyên). Nhật ký: ${jobLog(id)}`
+          : j.kind === 'login'
+            ? `Chạy lại: agent-edit login ${String(j.info?.account || '<tài khoản>')} --start. Nhật ký: ${jobLog(id)}`
+            : `Chạy lại: agent-edit make ... (phần phân tích đã xong được dùng lại, không tốn lại AI). Nhật ký: ${jobLog(id)}`
     }
     j.finishedAt = j.finishedAt || Date.now()
     try {

@@ -11,7 +11,10 @@
 # Bien moi truong (tuy chon): AGENT_EDIT_APP (duong dan .app), AGENT_EDIT_CHANNEL (stable|test),
 #   AGENT_EDIT_ARCH (arm64|x64 — ep kien truc khi tai). Chi de tu kiem: AGENT_EDIT_API (may chu), AGENT_EDIT_MIN_VERSION,
 #   AGENT_EDIT_USER_DATA_DIR (thu muc du lieu Electron rieng — khong dung khoa API / key that cua may),
-#   AGENT_EDIT_NO_SYSTEM_APP=1 (bo qua /Applications — tu kiem khong dung toi app that cua may).
+#   AGENT_EDIT_NO_SYSTEM_APP=1 (bo qua /Applications — tu kiem khong dung toi app that cua may), AGENT_EDIT_DL_BUDGET (giay).
+# --background (1.7.0, AI agent): moi lan goi chi tai toi da AGENT_EDIT_DL_BUDGET giay (mac dinh 150) -> chua xong thi in JSON
+#   {"status":"running","step":"download","progress":...} + ma thoat 3; goi lai dung lenh do tai tiep (curl -C -). Tai xong ->
+#   cai app -> `setup --background` cua app (tra ma viec cai cong cu + dong bo kho).
 # Chi dung bash 3.2 + cong cu co san cua macOS (curl, plutil, shasum, ditto, codesign) — khong can Node / Python / jq.
 set -u
 
@@ -20,6 +23,9 @@ API="${AGENT_EDIT_API:-https://agent-edit-license.agent-edit-license-server.work
 # Chu ky ma cua MOI ban Agent Edit phat hanh (chung chi tu tao "Agent Edit Code Signing", scripts/gen-mac-cert.mjs)
 SIGN_REQ='identifier "app.autocapcut.desktop" and certificate root = H"9a7d7c51b4f600386062947f759b2247d42709d2"'
 WORK="$HOME/.capcut-studio/cli/download"
+DL_BUDGET="${AGENT_EDIT_DL_BUDGET:-150}"
+BACKGROUND=""
+for a in "$@"; do [ "$a" = "--background" ] && BACKGROUND=1; done
 
 say() { printf '%s\n' "$*" >&2; } # thong bao ra stderr -> stdout cua lenh `--json` van la JSON sach
 die() {
@@ -99,6 +105,19 @@ install_app() {
     n=$((n + 1))
     [ "$n" -gt 6 ] && die "Tải chưa trọn sau 6 lần — kiểm tra mạng rồi chạy lại (tải tiếp chỗ dở)."
     if [ -f "$zip" ] && [ "$(stat -f %z "$zip")" -gt "$size" ]; then rm -f "$zip"; fi
+    if [ -n "$BACKGROUND" ]; then
+      # AI agent: tai toi da DL_BUDGET giay roi bao tien do (lenh khong bi cat o gioi han 10 phut, nguoi truc thay %)
+      /usr/bin/curl -fL -sS -C - --retry 2 --retry-delay 3 --max-time "$DL_BUDGET" -o "$zip" "$url" 2>/dev/null
+      got=0
+      [ -f "$zip" ] && got=$(stat -f %z "$zip")
+      if [ "$got" != "$size" ]; then
+        pct=$((got * 100 / size))
+        printf '{"ok":true,"status":"running","step":"download","progress":0.%02d,"message":"Đang tải Agent Edit %s — %d%% (%d/%d MB)","next":"Chạy lại đúng lệnh này để tải tiếp"}\n' \
+          "$pct" "$ver" "$pct" "$((got / 1048576))" "$((size / 1048576))" >"$WORK/progress.json"
+        exit 3
+      fi
+      break
+    fi
     /usr/bin/curl -fL -sS -C - --retry 3 --retry-delay 3 -o "$zip" "$url" || sleep 3
   done
   got=$(/usr/bin/shasum -a 512 -b "$zip" | cut -d' ' -f1 | /usr/bin/xxd -r -p | /usr/bin/base64)
@@ -153,16 +172,24 @@ KEY=$(printf '%s' "$KEY" | tr -cd 'A-Za-z0-9-')
 APP=$(find_app)
 APPV=$([ -n "$APP" ] && app_version "$APP" || echo 0)
 
+# install_app chay trong subshell: ma 3 = tai chua xong (--background) -> in JSON tien do, thoat 3
+dl_partial() {
+  [ "$1" = 3 ] || exit 2
+  cat "$WORK/progress.json" 2>/dev/null
+  rm -f "$WORK/progress.json"
+  exit 3
+}
+
 if [ "$cmd" = "install" ]; then
   # Cai / cap nhat app len ban moi nhat (ke ca khi da co) — can key
   [ -n "$KEY" ] || die "Cần key bản quyền: bash agent-edit install --key <KEY>"
-  install_app "$KEY" "$APP" >/dev/null || exit 2
+  (install_app "$KEY" "$APP") >/dev/null || dl_partial $?
   exit 0
 fi
 
 if [ -z "$APP" ] || ! ver_ge "$APPV" "$MIN_VERSION"; then
   if [ -n "$KEY" ]; then
-    APP=$(install_app "$KEY" "$APP") || exit 2
+    APP=$(install_app "$KEY" "$APP") || dl_partial $?
   elif [ -z "$APP" ]; then
     die "Máy chưa cài Agent Edit. Chạy: bash agent-edit setup --key <KEY>  (tự tải + cài app đúng chip, rồi cài công cụ)."
   else

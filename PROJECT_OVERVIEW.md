@@ -1613,6 +1613,19 @@ ban quyen (license.enc + khoa thiet bi trong Keychain cua app — CLI tu tao kho
   ve NGAY khi sang moc moi = `jobs.jobMilestone`: doi `step`, bat dau / het cho luot, render qua moi 25% — KHONG tinh
   queued->running va tung dong Doctor; JSON them `changed`. SKILL.md goi lap lai de bao nguoi truc tung buoc; app cu bo qua
   co la -> cho 9 phut nhu truoc, khong co `changed`), `job <id>`, `jobs`, `cancel <id>`.
+- CAI DAT + DANG NHAP QUA CHAT (1.7.0) — AI agent khong go them duoc vao lenh dang chay va moi lenh bi cat o 10 phut:
+  - `setup [--key K] --background`: kich hoat key NGAY (key khong vao job.json / dong lenh viec nen) roi tach viec nen
+    `__run-setup` (job `s_...`, kind 'setup'): buoc `license` -> `tools` (autoFix onProgress: `sub` = cong cu dang cai, "Dang cai
+    Whisper (3/7)") -> `sync` (sidecar `/library/sync_progress` — library_sync.PROGRESS dem theo muc, server threaded nen hoi
+    duoc giua luot; % qua moi 25% = moc moi) -> `info` {ready, license, checks, synced, next}. Dang co luot setup -> tra luot do.
+  - `login <tk> --start [--device]`: viec nen `__run-login` (job `l_...`, electron/cli/login.ts) giu CLI chinh chu song qua nhieu
+    luot chat; tra NGAY `url` (link dang nhap, uu tien link oauth / accounts.google.com) + `lines` (12 dong cuoi — ma thiet bi
+    Codex). `--code <MA>` ghi jobs/<id>/code (0600) -> viec nen sendCliInput; `--check` = cli_status that + trang thai luot.
+    Claude: link in ra la luong "dan ma" -> mo duoc o may khac. Gemini (agy) callback localhost -> CHI dang nhap tren chinh may
+    do; Windows van mo cua so agy (nguoi dung bam Enter). Het 10 phut (LOGIN_TIMEOUT_MS) -> loi, chay lai --start.
+  - Script ky nang `--background`: tai bo cai toi da AGENT_EDIT_DL_BUDGET giay (150) / lan goi -> chua xong in JSON
+    `step: download` + `progress` + ma 3, goi lai tai tiep (curl -C -). App cu bo qua `--background` / `--start` -> chay mot mach
+    nhu truoc (SKILL.md xu ly ca hai).
   `--json` moi lenh. Ma thoat: 0 xong / 1 loi / 2 sai lenh - chua du dieu kien / 3 con chay / 130 huy.
 - `make` = 1 JOB = 1 tien trinh app NEN (`__run-job <id>`, tach khoi lenh goi, giu tham so truoc co CLI vd
   --user-data-dir). Trang thai `~/.capcut-studio/cli/jobs/<id>/job.json` (ghi nguyen tu) + `log.txt`. Job id = id du an =

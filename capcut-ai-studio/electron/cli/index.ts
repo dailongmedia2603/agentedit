@@ -14,13 +14,14 @@ import { isAbsolute, resolve } from 'path'
 import { autoFix, DoctorCheck, fixCheck, runDoctor } from '../services/doctor'
 import { activateLicense, checkLicense, LicenseState } from '../services/license'
 import { maskedProviders, providersConfigured, ProvidersMap, saveProviders } from '../services/secrets'
-import { sidecarInfo, sidecarRequest, startSidecar, stopSidecar } from '../services/sidecar'
+import { startSidecar, stopSidecar } from '../services/sidecar'
 import { startAgyLogin, startClaudeLogin, startCodexLogin, sendCliInput, agyFailureText, CLI_PACKAGES } from '../services/cli-login'
 import { applyUpdate, checkForUpdateNow, initUpdater, updateState, updaterEnabled } from '../services/updater'
 import { killTree } from '../services/env'
 import { powershell } from '../services/toolchain'
-import { activeJobs, cancelFile, Job, JobInsert, jobLog, jobMilestone, listJobs, loadJob, newJobId, saveJob, TERMINAL } from './jobs'
-import { ensureTools, runJob, syncLibrary } from './pipeline'
+import { activeJobs, cancelFile, codeFile, Job, JobInput, JobInsert, jobLog, jobMilestone, listJobs, loadJob, newJobId, saveJob, TERMINAL, waitJobUntil } from './jobs'
+import { accountArg, accountOf, activeLogin, cliStatusOf, loginView, runLoginJob } from './login'
+import { aiHints, doctorSummary, ensureTools, runJob, runSetup, syncLibrary } from './pipeline'
 import { Args, CLI_FLAG, errLine, opt, optAll, out, outJson, parseArgs, pidAlive, sleep } from './util'
 
 declare const __APP_BUILD__: string
@@ -36,11 +37,16 @@ const EXIT = { ok: 0, error: 1, usage: 2, running: 3, cancelled: 130 }
 const HELP = `Agent Edit CLI — dựng video bằng AI, không cần mở giao diện (cùng bộ máy với app Agent Edit).
 
 CÀI ĐẶT / KIỂM TRA
-  agent-edit setup [--key <KEY>]       Kích hoạt key (nếu có) + tự cài toàn bộ công cụ còn thiếu + đồng bộ kho
+  agent-edit setup [--key <KEY>] [--background]
+                                       Kích hoạt key (nếu có) + tự cài toàn bộ công cụ còn thiếu + đồng bộ kho
+                                       --background: chạy nền, trả mã việc ngay (theo dõi: wait <mã> --until-change)
   agent-edit status                    Bản quyền, công cụ, đăng nhập AI, việc đang chạy
   agent-edit doctor [--fix]            Kiểm tra từng công cụ (--fix: tự cài mục còn thiếu)
   agent-edit activate <KEY>            Kích hoạt key bản quyền trên máy này (1 key = 1 máy, dùng chung với app)
   agent-edit login gemini|claude|codex Đăng nhập tài khoản AI (mở trình duyệt trên máy này)
+      --start          chạy nền, trả link đăng nhập ngay (cho AI agent / chat)   [--device: Codex đăng nhập bằng mã thiết bị]
+      --code <MÃ>      gửi mã trang đăng nhập hiện ra cho lượt đang chờ
+      --check          đã đăng nhập chưa / lượt đăng nhập đang ở đâu
   agent-edit config [--gemini-key K] [--claude-key K] [--openai-key K]
                     [--gemini-mode subscription|api_key] [--claude-mode ...] [--openai-mode ...]
   agent-edit sync                      Đồng bộ kho SFX / meme / nhạc nền / mẫu chữ / hiệu ứng
@@ -106,25 +112,9 @@ function licenseLine(s: LicenseState): string {
   return `${s.status} — ${s.message || 'chưa kích hoạt'}`
 }
 
-function doctorSummary(checks: DoctorCheck[]) {
-  return checks.map((c) => ({ id: c.id, label: c.label, status: c.status, detail: c.detail, found: c.found, required: c.required }))
-}
-
 function printChecks(checks: DoctorCheck[]) {
   const icon = (s: string) => (s === 'ok' ? '✓' : s === 'warn' ? '!' : '✗')
   for (const c of checks) out(`  ${icon(c.status)} ${c.label}${c.found ? ` (${c.found})` : ''} — ${c.detail}`)
-}
-
-/** Lenh can lam tiep cho tung muc AI chua dat (dang nhap / khoa API). */
-function aiHints(checks: DoctorCheck[]): string[] {
-  const h: string[] = []
-  for (const c of checks) {
-    if (c.status === 'ok' || c.group !== 'ai') continue
-    if (c.id === 'ai_gemini') h.push(c.detail.includes('API key') ? 'agent-edit config --gemini-key <KEY>' : 'agent-edit login gemini')
-    if (c.id === 'ai_planner') h.push(c.detail.includes('API key') ? 'agent-edit config --claude-key <KEY>' : 'agent-edit login claude')
-    if (c.id === 'codex') h.push('agent-edit login codex   (tuỳ chọn: ảnh AI + chữ ảnh AI)')
-  }
-  return h
 }
 
 async function cmdStatus(a: Args): Promise<number> {
@@ -184,6 +174,9 @@ async function cmdActivate(a: Args, key?: string): Promise<LicenseState> {
   return st
 }
 
+/** JobInput rong cho viec khong phai tao video (setup / login) */
+const NO_INPUT: JobInput = { videos: [], inserts: [], orientation: 'portrait', fresh: false }
+
 async function cmdSetup(a: Args): Promise<number> {
   const say = (m: string) => !json(a) && out(m)
   const key = opt(a, 'key')
@@ -192,6 +185,7 @@ async function cmdSetup(a: Args): Promise<number> {
     say('Kích hoạt key...')
     lic = await cmdActivate(a, key)
   } else lic = await checkLicense('open')
+  if (a.flags.has('background')) return setupBackground(a, lic, !!key)
   say(`Bản quyền: ${licenseLine(lic)}`)
   say('Kiểm tra + tự cài công cụ (lần đầu: Whisper ~490 MB, Chrome ~90 MB, Codex, Claude Code, Antigravity CLI — có thể mất 5–15 phút)...')
   let checks: DoctorCheck[] = []
@@ -219,23 +213,96 @@ async function cmdSetup(a: Args): Promise<number> {
   return ready ? EXIT.ok : EXIT.usage
 }
 
+/** `setup --background`: key da kich hoat o tren (khong dua key vao viec nen) -> tach viec cai cong cu + dong bo kho,
+ *  tra ma viec ngay. Dang co luot cai chay -> tra luot do (khong chay 2 luot). */
+async function setupBackground(a: Args, lic: LicenseState, keyGiven: boolean): Promise<number> {
+  if (keyGiven && lic.status !== 'ok') {
+    return fail(a, 'Kích hoạt key không thành công: ' + licenseLine(lic), EXIT.error, { license: { status: lic.status, message: lic.message } })
+  }
+  const running = activeJobs().find((j) => j.kind === 'setup')
+  const job: Job = running || {
+    id: newJobId('setup'), kind: 'setup', createdAt: Date.now(), updatedAt: Date.now(), status: 'queued', step: 'license',
+    message: 'Đang khởi động cài đặt…', input: NO_INPUT
+  }
+  if (!running) {
+    saveJob(job)
+    const pid = spawnJob(job.id, '__run-setup')
+    if (!pid) {
+      saveJob({ ...job, status: 'error', finishedAt: Date.now(), error: { step: 'license', message: 'Không khởi động được tiến trình cài đặt.' } })
+      return fail(a, 'Không khởi động được tiến trình cài đặt.', EXIT.error)
+    }
+    job.pid = pid
+    saveJob(job)
+  }
+  const license = { status: lic.status, message: lic.message }
+  if (json(a)) outJson({ ok: true, id: job.id, status: job.status, step: job.step, message: job.message, license, next: `agent-edit wait ${job.id} --until-change` })
+  else {
+    out(`Bản quyền: ${licenseLine(lic)}`)
+    out(`${running ? 'Đang có lượt cài chạy' : 'Bắt đầu cài'}: ${job.id}`)
+    out(`Theo dõi: agent-edit wait ${job.id} --until-change`)
+  }
+  return EXIT.running
+}
+
 // ---------------------------------------------------------------------------
 // Dang nhap AI (cung luong voi nut "Dang nhap" o Cai dat API) + cau hinh khoa API
 // ---------------------------------------------------------------------------
-async function cliStatusOf(id: string, fresh = false): Promise<Record<string, any> | null> {
-  if (!sidecarInfo().ready) {
-    const s = await startSidecar()
-    if (!s.ok) throw new Error('Không khởi động được bộ xử lý: ' + s.error)
+/** In ket qua 1 viec dang nhap nen (--start / --code / --check) + ma thoat: xong 0 · loi 1 · con cho 3 */
+function loginOut(a: Args, j: Job, extra: Record<string, unknown> = {}): number {
+  const v = loginView(j)
+  if (json(a)) outJson({ ok: j.status === 'done', ...v, ...extra })
+  else {
+    out(v.message || v.status)
+    if (v.url) out('Link đăng nhập: ' + v.url)
+    if (j.status === 'error' && j.error?.hint) out('Gợi ý: ' + j.error.hint)
   }
-  const r = await sidecarRequest('/cli_status', fresh ? { name: id, fresh: true } : { name: id }, 120000).catch(() => null)
-  return r?.status?.[id] || null
+  return j.status === 'done' ? EXIT.ok : j.status === 'error' || j.status === 'cancelled' ? EXIT.error : EXIT.running
 }
 
 async function cmdLogin(a: Args): Promise<number> {
   const raw = (a.pos[0] || '').toLowerCase()
-  const id = raw === 'gemini' || raw === 'agy' ? 'gemini' : raw === 'claude' ? 'claude' : raw === 'codex' || raw === 'gpt' || raw === 'openai' ? 'gpt' : ''
+  const id = accountOf(raw)
   if (!id) return fail(a, 'Chọn tài khoản: agent-edit login gemini | claude | codex')
   const label = CLI_PACKAGES[id].label
+  const name = accountArg(id)
+
+  // ---- gui ma nguoi dung dan trong chat cho luot dang nhap dang cho ----
+  const code = opt(a, 'code')
+  if (code !== undefined) {
+    const t = code.trim()
+    if (!t || t.length > 4096 || /[\r\n]/.test(t)) return fail(a, 'Mã không hợp lệ.')
+    const j = (opt(a, 'id') ? loadJob(opt(a, 'id') as string) : null) || activeLogin(id)
+    if (!j || j.kind !== 'login' || TERMINAL.includes(j.status)) {
+      return fail(a, `Không có lượt đăng nhập ${label} nào đang chờ mã.`, EXIT.usage, { hint: `agent-edit login ${name} --start` })
+    }
+    writeFileSync(codeFile(j.id), t, { mode: 0o600 })
+    const after = (await waitJobUntil(j.id, 90000, () => false)) || j
+    return loginOut(a, after)
+  }
+
+  // ---- hoi trang thai: da dang nhap chua / luot nen dang o dau ----
+  if (a.flags.has('check')) {
+    const j = activeLogin(id)
+    if (j) return loginOut(a, j)
+    const st = await cliStatusOf(id, true)
+    if (st?.logged_in) {
+      if (json(a)) outJson({ ok: true, account: name, status: 'done', loggedIn: true, message: `${label}: đã đăng nhập.` })
+      else out(`${label}: đã đăng nhập.`)
+      return EXIT.ok
+    }
+    const last = listJobs().find((x) => x.kind === 'login' && x.info?.account === id)
+    if (json(a)) {
+      outJson({ ok: false, account: name, status: 'none', loggedIn: false, message: `${label}: chưa đăng nhập.`,
+        lastError: last?.status === 'error' ? last.error : null, next: `agent-edit login ${name} --start` })
+    } else out(`${label}: chưa đăng nhập. Chạy: agent-edit login ${name} --start`)
+    return EXIT.usage
+  }
+
+  // ---- --start: luot dang nhap chay nen, tra link ngay ----
+  if (a.flags.has('start')) {
+    const cur = activeLogin(id)
+    if (cur) return loginOut(a, cur, { reused: true })
+  }
   let st = await cliStatusOf(id)
   if (!st?.installed || !st?.path) {
     // chua cai CLI -> Doctor tu cai (giong nut "Cai" trong Cai dat API)
@@ -247,9 +314,28 @@ async function cmdLogin(a: Args): Promise<number> {
     if (!st?.installed || !st?.path) return fail(a, `Chưa cài được ${label}. Chạy: agent-edit doctor --fix`, EXIT.error)
   }
   if (st.logged_in) {
-    if (json(a)) outJson({ ok: true, already: true, account: id })
+    if (json(a)) outJson({ ok: true, already: true, account: id, status: 'done', message: `${label}: đã đăng nhập.` })
     else out(`${label}: đã đăng nhập.`)
     return EXIT.ok
+  }
+  if (a.flags.has('start')) {
+    const job: Job = {
+      id: newJobId('login'), kind: 'login', createdAt: Date.now(), updatedAt: Date.now(), status: 'queued', step: 'login',
+      message: `Đang mở đăng nhập ${label}…`, input: NO_INPUT,
+      info: { account: id, bin: st.path, workdir: st.workdir || '', device: a.flags.has('device') }
+    }
+    saveJob(job)
+    const pid = spawnJob(job.id, '__run-login')
+    if (!pid) {
+      // khong de viec "queued" khong tien trinh -> --start lan sau tuong con luot dang cho
+      saveJob({ ...job, status: 'error', finishedAt: Date.now(), error: { step: 'login', message: 'Không khởi động được tiến trình đăng nhập.' } })
+      return fail(a, 'Không khởi động được tiến trình đăng nhập.', EXIT.error)
+    }
+    job.pid = pid
+    saveJob(job)
+    // doi CLI in link / mo cua so (Windows agy) — toi da 40 giay
+    const j = (await waitJobUntil(job.id, 40000, (x) => !!x.info?.url || x.sub === 'window')) || job
+    return loginOut(a, j)
   }
   if (!json(a)) out(`Đăng nhập ${label}: trình duyệt sẽ mở trên máy này — đăng nhập rồi quay lại. (Nếu trang hiện mã, dán mã vào đây rồi Enter.)`)
   // ma xac thuc nguoi dung dan vao (chi khi chay tay trong Terminal)
@@ -389,14 +475,15 @@ function buildInput(a: Args): { input?: Job['input']; error?: string } {
   }
 }
 
-/** Tach 1 tien trinh app (khong cua so) chay job — ban dong goi: chinh binary app; dev: electron + thu muc app. */
-function spawnJob(id: string): number | undefined {
+/** Tach 1 tien trinh app (khong cua so) chay job — ban dong goi: chinh binary app; dev: electron + thu muc app.
+ *  cmd: __run-job (tao video) · __run-setup (cai dat) · __run-login (dang nhap). */
+function spawnJob(id: string, cmd = '__run-job'): number | undefined {
   const fd = openSync(jobLog(id), 'a')
   // giu nguyen tham so dung TRUOC co CLI (vd --user-data-dir khi tu kiem) -> tien trinh job dung cung du lieu app;
   // ban dev: tham so dau la thu muc app (`electron . ...`) -> doi sang duong dan tuyet doi
   const pre = process.argv.slice(1, process.argv.indexOf(CLI_FLAG)).filter((x) => !/^--agent-edit-update/.test(x))
   if (!app.isPackaged && pre.length && !pre[0].startsWith('-')) pre[0] = app.getAppPath()
-  const args = [...pre, CLI_FLAG, '__run-job', id]
+  const args = [...pre, CLI_FLAG, cmd, id]
   const env = { ...process.env }
   delete env.ELECTRON_RUN_AS_NODE
   // file ket qua cua lenh `make` (script Windows) KHONG phai cua viec nen
@@ -410,6 +497,7 @@ function spawnJob(id: string): number | undefined {
 function jobView(j: Job) {
   return {
     id: j.id,
+    kind: j.kind || 'make',
     status: j.status,
     step: j.step,
     message: j.message,
@@ -419,7 +507,9 @@ function jobView(j: Job) {
     error: j.error || null,
     createdAt: new Date(j.createdAt).toISOString(),
     finishedAt: j.finishedAt ? new Date(j.finishedAt).toISOString() : null,
-    log: jobLog(j.id)
+    log: jobLog(j.id),
+    // setup: ready / next (dang nhap con thieu) · login: link, dong cuoi CLI — KHONG dua duong dan CLI / thu muc ra
+    ...(j.kind === 'setup' ? { info: j.info || null } : j.kind === 'login' ? { info: loginView(j) } : {})
   }
 }
 
@@ -717,6 +807,10 @@ export async function runCli(argv: string[]): Promise<number> {
         return await cmdCancel(a)
       case '__run-job':
         return await runJob(a.pos[0] || '')
+      case '__run-setup':
+        return await runSetup(a.pos[0] || '')
+      case '__run-login':
+        return await runLoginJob(a.pos[0] || '')
       case '__updated':
         // ban moi vua duoc script cap nhat mo lai (main.ts da ghi dau khoi dong) -> ghi nhan ket qua roi thoat
         initUpdater()
@@ -727,6 +821,6 @@ export async function runCli(argv: string[]): Promise<number> {
   } catch (e) {
     return fail(a, String((e as Error)?.message || e), EXIT.error)
   } finally {
-    if (a.cmd !== '__run-job') stopSidecar()
+    if (!a.cmd.startsWith('__run-')) stopSidecar()
   }
 }

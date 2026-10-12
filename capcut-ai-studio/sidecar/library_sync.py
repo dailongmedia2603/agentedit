@@ -31,6 +31,10 @@ import engine       # kho SFX: SFX_DIR, SFX_LIB, _load_lib, _save_lib
 import meme_lib     # kho meme: MEME_DIR, MEME_LIB, load_lib, save_lib
 import text_lib     # kho text: TEXT_DIR, TEXT_LIB, load_lib, save_lib
 
+# Tien do luot dong bo dang chay — route /library/sync_progress doc (CLI `setup` bao "Dang dong bo kho — 40%").
+# Dem theo MUC (1 am thanh / 1 meme / 1 mau chu...), muc da co san dung SHA-256 van tinh la xong. 1 luot 1 luc (Electron khoa).
+PROGRESS = {"running": False, "kind": "", "done": 0, "total": 0}
+
 
 
 def _sha256(path):
@@ -93,6 +97,7 @@ def _merge_kind(entries, media_dir, cur, log):
     added = updated = 0
     errors = []
     for m in entries:
+        PROGRESS["done"] += 1
         mid = m.get("id")
         fname = m.get("file")            # manifest luu TEN file (basename)
         url = m.get("url")               # link tai tam do may chu ban quyen cap
@@ -142,6 +147,7 @@ def _merge_texts(entries, texts_dir, cur, log):
     added = updated = 0
     errors = []
     for t in entries:
+        PROGRESS["done"] += 1
         tid = t.get("id")
         files = t.get("files") or []
         if not tid or not isinstance(files, list) or not files:
@@ -184,13 +190,23 @@ def pull(manifest, log=None):
     """Gop kho SFX + Meme + Text tu manifest (da kem link tai) do may chu ban quyen cap. Khong bao gio xoa muc local."""
     if not isinstance(manifest, dict):
         return {"ok": False, "error": "Thieu manifest kho (may chu ban quyen)."}
+    kinds = ("sfx", "memes", "texts", "music", "fx", "fonts")
+    PROGRESS.update(running=True, kind="", done=0,
+                    total=sum(len(manifest.get(k) or []) if isinstance(manifest.get(k), list) else 0 for k in kinds))
+    try:
+        return _pull(manifest, log)
+    finally:
+        PROGRESS.update(running=False, done=PROGRESS["total"])
 
+
+def _pull(manifest, log):
     if log:
         log("Manifest R2: %d SFX, %d meme, %d mau chu, %d nhac nen" % (
             len(manifest.get("sfx") or []), len(manifest.get("memes") or []), len(manifest.get("texts") or []),
             len(manifest.get("music") or [])))
 
     # SFX
+    PROGRESS["kind"] = "sfx"
     sfx_lib = engine._load_lib()
     sfx_new, sfx_add, sfx_upd, sfx_err = _merge_kind(
         manifest.get("sfx") or [], engine.SFX_DIR, sfx_lib.get("sfx", []), log)
@@ -199,6 +215,7 @@ def pull(manifest, log=None):
     engine._save_lib(sfx_lib)
 
     # Meme
+    PROGRESS["kind"] = "memes"
     meme_lib_data = meme_lib.load_lib()
     meme_new, meme_add, meme_upd, meme_err = _merge_kind(
         manifest.get("memes") or [], meme_lib.MEME_DIR, meme_lib_data.get("memes", []), log)
@@ -207,6 +224,7 @@ def pull(manifest, log=None):
     meme_lib.save_lib(meme_lib_data)
 
     # Text (mau chu dong)
+    PROGRESS["kind"] = "texts"
     text_lib_data = text_lib.load_lib()
     text_new, text_add, text_upd, text_err = _merge_texts(
         manifest.get("texts") or [], text_lib.TEXT_DIR, text_lib_data.get("templates", []), log)
@@ -216,6 +234,7 @@ def pull(manifest, log=None):
 
     # Nhac nen (chi nhac CC0 — duoc phat lai tu do; 1 muc = 1 file nhu SFX). May chu cu khong co khoa "music" -> 0
     import music_lib
+    PROGRESS["kind"] = "music"
     with music_lib._lock:
         music_data = music_lib.load_lib()
         music_new, music_add, music_upd, music_err = _merge_kind(
@@ -237,16 +256,20 @@ def pull(manifest, log=None):
     fx_res = None
     if isinstance(manifest.get("fx"), list):
         import fx_lib
+        PROGRESS["kind"] = "fx"
         _backup(fx_lib.FX_LIB)
         fx_res = fx_lib.merge_shared(manifest["fx"], _download, log=log)
+        PROGRESS["done"] += len(manifest["fx"])
 
     # Kho font chung (font may chu tai len o Tai nguyen > Font — fonts-manifest.json rieng tren R2). May chu cu / chua
     # co manifest font -> khong co khoa "fonts" -> khong dong gi toi font (font tai len o may nay giu nguyen)
     font_res = None
     if isinstance(manifest.get("fonts"), list):
         import font_lib
+        PROGRESS["kind"] = "fonts"
         _backup(font_lib.FONT_LIB)
         font_res = font_lib.merge_shared(manifest["fonts"], _download, log=log)
+        PROGRESS["done"] += len(manifest["fonts"])
 
     return {
         "ok": True,

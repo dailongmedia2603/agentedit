@@ -8,7 +8,9 @@
 #    ONG DAN: script nay hung ket qua roi in lai (UTF-8), tra dung ma thoat cua lenh.
 #
 # Bien moi truong (tuy chon): AGENT_EDIT_APP (duong dan Agent Edit.exe), AGENT_EDIT_CHANNEL (stable|test). Chi de tu kiem:
-#   AGENT_EDIT_API, AGENT_EDIT_MIN_VERSION, AGENT_EDIT_USER_DATA_DIR, AGENT_EDIT_TEST_ANY_OS.
+#   AGENT_EDIT_API, AGENT_EDIT_MIN_VERSION, AGENT_EDIT_USER_DATA_DIR, AGENT_EDIT_TEST_ANY_OS, AGENT_EDIT_DL_BUDGET (giay).
+# --background (1.7.0, AI agent): moi lan goi chi tai bo cai toi da AGENT_EDIT_DL_BUDGET giay (mac dinh 150) -> chua xong thi in
+#   JSON {"status":"running","step":"download","progress":...} + ma thoat 3; goi lai dung lenh do tai tiep (curl -C -).
 # Chi dung Windows PowerShell 5.1 + curl.exe co san (Windows 10 1803+) — khong can Node / Python.
 
 $ErrorActionPreference = 'Stop'
@@ -22,6 +24,9 @@ if ($env:AGENT_EDIT_CHANNEL) { $Channel = $env:AGENT_EDIT_CHANNEL }
 $UserHome = $env:USERPROFILE
 if (-not $UserHome) { $UserHome = $HOME }
 $Work = Join-Path $UserHome '.capcut-studio\cli\download'
+$DlBudget = 150
+if ($env:AGENT_EDIT_DL_BUDGET) { $DlBudget = [int]$env:AGENT_EDIT_DL_BUDGET }
+$Background = @($args | Where-Object { [string]$_ -eq '--background' }).Count -gt 0
 
 try { [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false) } catch { }
 $OutputEncoding = New-Object System.Text.UTF8Encoding($false)
@@ -151,6 +156,21 @@ function InstallApp([string]$key, [string]$existing) {
     if ((Test-Path -LiteralPath $setup) -and ((Get-Item -LiteralPath $setup).Length -eq $size)) { break }
     if ($n -gt 6) { Die 'Tải chưa trọn sau 6 lần — kiểm tra mạng rồi chạy lại (tải tiếp chỗ dở).' }
     if ((Test-Path -LiteralPath $setup) -and ((Get-Item -LiteralPath $setup).Length -gt $size)) { Remove-Item -LiteralPath $setup -Force }
+    if ($Background) {
+      # AI agent: tai toi da $DlBudget giay roi bao tien do (lenh khong bi cat o gioi han 10 phut, nguoi truc thay %)
+      & $curl -fL -sS -C - --retry 2 --retry-delay 3 --max-time $DlBudget -o $setup ([string]$o.url) 2>$null
+      $got = 0
+      if (Test-Path -LiteralPath $setup) { $got = (Get-Item -LiteralPath $setup).Length }
+      if ($got -ne $size) {
+        $pct = [math]::Floor($got * 100 / $size)
+        $mb = "$([math]::Floor($got / 1048576))/$([math]::Floor($size / 1048576)) MB"
+        $j = [ordered]@{ ok = $true; status = 'running'; step = 'download'; progress = [math]::Round($got / $size, 2)
+          message = "Đang tải Agent Edit $($o.version) — $pct% ($mb)"; next = 'Chạy lại đúng lệnh này để tải tiếp' }
+        [Console]::Out.WriteLine(($j | ConvertTo-Json -Compress))
+        exit 3
+      }
+      break
+    }
     & $curl -fL -sS -C - --retry 3 --retry-delay 3 -o $setup ([string]$o.url) 2>$null
     if ($LASTEXITCODE -ne 0) { Start-Sleep -Seconds 3 }
   }

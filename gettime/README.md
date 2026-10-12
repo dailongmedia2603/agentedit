@@ -23,7 +23,9 @@ cần thiết.
 
 - Lần đầu trên một máy, nhắn AI: *"Cài Agent Edit, key của tôi là XXXXX-XXXXX-XXXXX-XXXXX-XXXXX"*. AI sẽ tải app đúng
   máy (Mac Apple Silicon / Mac Intel / Windows — Windows cài im lặng cho riêng tài khoản, không cần quyền admin), kích hoạt key, tự cài công cụ (Whisper, trình render, Codex, Claude Code, Antigravity CLI),
-  rồi nhờ bạn đăng nhập Gemini / Claude trên trình duyệt nếu máy chưa đăng nhập.
+  rồi nhờ bạn đăng nhập Gemini / Claude trên trình duyệt nếu máy chưa đăng nhập. Trong lúc cài, AI báo từng bước: đang tải
+  app 40%, đang cài Whisper (3/7), đang đồng bộ kho nhạc nền 50%… Đăng nhập Claude: AI gửi link vào chat (mở được trên điện
+  thoại), trang hiện mã thì dán mã vào chat. Đăng nhập Gemini phải làm trên chính máy cài Agent Edit.
 - Ra lệnh: *"Dựng video TikTok từ file ~/Desktop/goc.mp4, giới thiệu sản phẩm, dưới 60 giây, lưu vào Desktop"*. Có thể
   thêm video mẫu, ảnh sản phẩm hoặc logo chèn lên, video ngang… AI trả lời ngay mã việc, rồi theo dõi cho tới khi xong
   (thường 10–40 phút) và báo đường dẫn file MP4.

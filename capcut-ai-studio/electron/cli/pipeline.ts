@@ -11,7 +11,7 @@ import { basename, join } from 'path'
 import { autoFix, DoctorCheck, runDoctor } from '../services/doctor'
 import { exeName } from '../services/env'
 import { fxRenderPreview, fxShare } from '../services/fx-harvest'
-import { libraryManifest, licenseState, requireLicense } from '../services/license'
+import { checkLicense, libraryManifest, licenseState, requireLicense } from '../services/license'
 import { ENGINE_HOME, TOOLS_BIN } from '../services/paths'
 import { importMedia, MediaKind } from '../services/project-media'
 import { cancelRender } from '../services/remotion'
@@ -542,10 +542,132 @@ export async function ensureTools(log: (l: string) => void, say: (m: string) => 
   return checks
 }
 
+export function doctorSummary(checks: DoctorCheck[]) {
+  return checks.map((c) => ({ id: c.id, label: c.label, status: c.status, detail: c.detail, found: c.found, required: c.required }))
+}
+
+/** Lenh can lam tiep cho tung muc AI chua dat (dang nhap / khoa API). */
+export function aiHints(checks: DoctorCheck[]): string[] {
+  const h: string[] = []
+  for (const c of checks) {
+    if (c.status === 'ok' || c.group !== 'ai') continue
+    if (c.id === 'ai_gemini') h.push(c.detail.includes('API key') ? 'agent-edit config --gemini-key <KEY>' : 'agent-edit login gemini')
+    if (c.id === 'ai_planner') h.push(c.detail.includes('API key') ? 'agent-edit config --claude-key <KEY>' : 'agent-edit login claude')
+    if (c.id === 'codex') h.push('agent-edit login codex   (tuỳ chọn: ảnh AI + chữ ảnh AI)')
+  }
+  return h
+}
+
+// ---------------------------------------------------------------------------
+// CAI DAT CHAY NEN (`setup --background`, 1.7.0): ban quyen -> tu cai tung cong cu -> dong bo kho, bao tung moc qua job.json
+// (`wait --until-change`) — AI agent bao nguoi truc "dang cai Whisper (3/6)", "dong bo kho 50%"... thay vi 1 lenh im 20 phut.
+// Kich hoat key lam o lenh `setup` (truoc khi tach) -> key KHONG nam trong job.json / dong lenh tien trinh nen.
+// ---------------------------------------------------------------------------
+const SYNC_KIND: Record<string, string> = {
+  sfx: 'âm thanh SFX', memes: 'meme', texts: 'mẫu chữ', music: 'nhạc nền', fx: 'hiệu ứng', fonts: 'font'
+}
+
+export async function runSetup(id: string): Promise<number> {
+  const job = loadJob(id)
+  if (!job) return 2
+  job.pid = process.pid
+  job.status = 'running'
+  job.startedAt = Date.now()
+  saveJob(job)
+  const fileLog = (line: string) => {
+    try {
+      appendFileSync(jobLog(id), `[${new Date().toISOString()}] ${line}\n`)
+    } catch {
+      /* bo qua */
+    }
+  }
+  const set = (step: JobStep, message: string, extra: Partial<Job> = {}) => {
+    Object.assign(job, { step, message, waiting: null, sub: null }, extra)
+    saveJob(job)
+    fileLog(message)
+  }
+  try {
+    set('license', 'Đang kiểm tra bản quyền…')
+    const lic = await checkLicense('open')
+
+    set('tools', 'Đang kiểm tra công cụ trên máy…')
+    let checks = await runDoctor(providersConfigured())
+    if (needsFix(checks)) {
+      await withLock('doctor-fix', async () => {
+        checks = await runDoctor(providersConfigured())
+        if (!needsFix(checks)) return
+        const label = (fid: string) => checks.find((c) => c.fix === fid)?.label || fid
+        const r = await autoFix(() => providersConfigured(), (fid, line) => fileLog(`[cài ${fid}] ${line}`), (p) => {
+          if (!p.current || p.current === job.sub) return
+          const n = p.done.length + p.failed.length + 1
+          const total = n + p.queue.length
+          set('tools', `Đang cài ${label(p.current)} (${n}/${total})…`, { sub: p.current, progress: (n - 1) / total })
+        })
+        checks = r.checks
+      }, () => set('tools', 'Đang chờ tiến trình khác cài xong công cụ…', { sub: 'wait' }))
+      checks = await runDoctor(providersConfigured())
+    }
+
+    let synced: Record<string, unknown> | null = null
+    if (lic.status === 'ok') {
+      set('sync', 'Đang đồng bộ kho SFX / meme / nhạc nền / mẫu chữ / hiệu ứng…', { progress: 0 })
+      const sc = await startSidecar((l) => fileLog('[sidecar] ' + l))
+      if (sc.ok) {
+        let lastPct = -1
+        synced = await syncLibrary(fileLog, true, (p) => {
+          if (!p.total) return
+          const pct = Math.min(99, Math.floor((p.done / p.total) * 100))
+          if (pct === lastPct) return
+          lastPct = pct
+          set('sync', `Đang đồng bộ kho${SYNC_KIND[p.kind] ? ' ' + SYNC_KIND[p.kind] : ''} — ${pct}%`, { progress: p.done / p.total })
+        })
+      } else fileLog('Không khởi động được bộ xử lý: ' + (sc.error || ''))
+      stopSidecar()
+    }
+
+    const fails = checks.filter((c) => c.status === 'fail')
+    const toolFails = fails.filter((c) => c.group !== 'ai')
+    const next = [...(lic.status !== 'ok' ? ['agent-edit activate <KEY>'] : []), ...aiHints(checks)]
+    const ready = lic.status === 'ok' && !fails.length
+    job.info = {
+      ready,
+      license: { status: lic.status, message: lic.message, plan: lic.plan, expiresAt: lic.expiresAt },
+      checks: doctorSummary(checks),
+      synced: synced ? synced.ok !== false : null,
+      next
+    }
+    job.finishedAt = Date.now()
+    if (toolFails.length) {
+      job.status = 'error'
+      job.error = {
+        step: 'tools',
+        message: 'Chưa cài được: ' + toolFails.map((c) => `${c.label} — ${c.detail}`).join('; '),
+        hint: 'Chạy lại: agent-edit setup --background (hoặc agent-edit doctor --fix để xem chi tiết)'
+      }
+      set('finish', 'Lỗi: ' + job.error.message.slice(0, 300))
+      return 1
+    }
+    job.status = 'done'
+    set('finish', ready ? 'Đã cài xong — sẵn sàng tạo video.' : 'Đã cài xong công cụ — còn cần: ' + next.join(' ; '), { progress: 1 })
+    return 0
+  } catch (e) {
+    job.status = 'error'
+    job.finishedAt = Date.now()
+    job.error = { step: job.step || 'tools', message: String((e as Error)?.message || e).slice(0, 2000), hint: `Xem nhật ký: ${jobLog(id)}` }
+    set(job.step || 'tools', 'Lỗi: ' + job.error.message.split('\n')[0].slice(0, 300))
+    stopSidecar()
+    return 1
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Dong bo kho (giong nut "Dong bo kho" / luot tu chay luc mo app): chi qua may chu ban quyen, 1 tien trinh 1 luc
 // ---------------------------------------------------------------------------
-export async function syncLibrary(log: (l: string) => void, force = false): Promise<Record<string, unknown> | null> {
+/** Tien do luot dong bo (sidecar /library/sync_progress): kind = loai kho dang gop, done / total = so muc. */
+export type SyncProgress = { kind: string; done: number; total: number }
+
+export async function syncLibrary(log: (l: string) => void, force = false,
+  onProgress?: (p: SyncProgress) => void): Promise<Record<string, unknown> | null> {
   const recent = () => Date.now() - Number(cliState().librarySyncAt || 0) < SYNC_EVERY_MS
   if (!force && recent()) return null
   try {
@@ -555,7 +677,19 @@ export async function syncLibrary(log: (l: string) => void, force = false): Prom
       for (let attempt = 1; attempt <= 2; attempt++) {
         try {
           const manifest = await libraryManifest()
-          last = (await sidecarRequest('/library/sync', { manifest }, 30 * 60 * 1000)) as Record<string, unknown>
+          // sidecar threaded -> hoi tien do trong luc luot dong bo chua tra ve (sidecar cu khong co route -> bo qua)
+          const poll = onProgress
+            ? setInterval(() => {
+                sidecarRequest('/library/sync_progress', undefined, 5000)
+                  .then((r) => r?.running && onProgress({ kind: String(r.kind || ''), done: Number(r.done) || 0, total: Number(r.total) || 0 }))
+                  .catch(() => undefined)
+              }, 2000)
+            : null
+          try {
+            last = (await sidecarRequest('/library/sync', { manifest }, 30 * 60 * 1000)) as Record<string, unknown>
+          } finally {
+            if (poll) clearInterval(poll)
+          }
           if (last?.ok !== false) {
             setCliState({ librarySyncAt: Date.now() })
             log('Đồng bộ kho xong')
