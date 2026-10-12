@@ -111,7 +111,9 @@ const API = `http://127.0.0.1:${srv.address().port}`
 
 // ---- goi script ky nang ----
 const home = IS_MAC ? join(work, 'home') : homedir()
-const baseEnv = { ...process.env, AGENT_EDIT_API: API, AGENT_EDIT_USER_DATA_DIR: ud }
+// AGENT_EDIT_MIN_VERSION = chinh ban dang tu kiem (luot CI thu chua nang so phien ban van kiem duoc het luong; luat "ban toi
+// thieu" cua script chi la so sanh so, khong phai thu nghiem o day)
+const baseEnv = { ...process.env, AGENT_EDIT_API: API, AGENT_EDIT_USER_DATA_DIR: ud, AGENT_EDIT_MIN_VERSION: info.version }
 delete baseEnv.ELECTRON_RUN_AS_NODE
 if (IS_MAC) Object.assign(baseEnv, { HOME: home, AGENT_EDIT_ARCH: info.arch, AGENT_EDIT_NO_SYSTEM_APP: '1', PYTHONPYCACHEPREFIX: join(work, 'pycache') })
 

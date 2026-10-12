@@ -56,7 +56,8 @@ function VerGe([string]$a, [string]$b) {
 }
 
 function AppVersion([string]$exe) {
-  try { return [string](Get-Item -LiteralPath $exe).VersionInfo.ProductVersion } catch { return '0' }
+  # ProductVersion cua bo cai electron-builder dang 1.5.1.0 -> lay 3 so dau
+  try { return ((([string](Get-Item -LiteralPath $exe).VersionInfo.ProductVersion).Split('.') | Select-Object -First 3) -join '.') } catch { return '0' }
 }
 
 # Agent Edit.exe MOI nhat tren may (muc go cai dat HKCU / HKLM + noi cai mac dinh cho rieng nguoi dung)
