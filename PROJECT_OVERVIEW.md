@@ -1740,8 +1740,8 @@ CO DINH SaydiVoice; Cai dat API them the SaydiVoice. Luong Edit Video (Remotion,
   hang doi Edit Video): `state.json motion_jobs` (1..5, mac dinh 1). Thoat app -> giet tien trinh, job -> "bi gian doan";
   mo lai: job dang cho xep hang lai.
 - **Moi truong skill tren may khach** (`motion/tools.ts`, lenh trong `~/.capcut-studio/motion/bin` dat dau PATH rieng):
-  `node` = Node he thong >= 22, khong co thi CHINH Electron cua app (`ELECTRON_RUN_AS_NODE=1` + `NODE_OPTIONS=
-  --experimental-websocket` — Electron 33 = Node 20.18, da thu that render.mjs); `python3` = Python nhung (numpy + PIL);
+  `node` = Node he thong >= 22, khong co thi CHINH Electron cua app (`ELECTRON_RUN_AS_NODE=1` + co
+  `--experimental-websocket` TRUYEN QUA THAM SO — ban dong goi tat NODE_OPTIONS bang fuse; Electron 33 = Node 20.18); `python3` = Python nhung (numpy + PIL);
   ffmpeg = tools/bin; `CHROME_PATH` = Google Chrome cua may, khong co thi Chrome Headless Shell cua Remotion (tu tai neu
   chua co). SAYDI_API_KEY + SAYDI_VOICE chi khi video co loi doc; bo ELEVENLABS_API_KEY. Windows: co ca lenh sh (Git Bash
   cua Claude Code) + .cmd — CHUA thu tren Windows.

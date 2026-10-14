@@ -396,8 +396,9 @@ async function main() {
     const chrome = findShell(join(home, '.capcut-studio', 'remotion', 'node_modules', '.remotion', 'chrome-headless-shell'))
     if (!miss.length && chrome) {
       const out = join(home, 'motion-demo.mp4')
-      const r = spawnSync(exe, [join(skill, 'scripts', 'render.mjs'), join(skill, 'examples', 'demo', 'index.html'), out, '--scale', '0.25', '--to', '2'], {
-        env: { ...env, ELECTRON_RUN_AS_NODE: '1', NODE_OPTIONS: '--experimental-websocket', CHROME_PATH: chrome, PATH: tools + (IS_WIN ? ';' : ':') + (env.PATH || '') },
+      // co WebSocket qua THAM SO (ban dong goi tat NODE_OPTIONS bang fuse) — khop lenh `node` cua motion/tools.ts
+      const r = spawnSync(exe, ['--experimental-websocket', join(skill, 'scripts', 'render.mjs'), join(skill, 'examples', 'demo', 'index.html'), out, '--scale', '0.25', '--to', '2'], {
+        env: { ...env, ELECTRON_RUN_AS_NODE: '1', CHROME_PATH: chrome, PATH: tools + (IS_WIN ? ';' : ':') + (env.PATH || '') },
         encoding: 'utf-8',
         timeout: 240000,
         windowsHide: true

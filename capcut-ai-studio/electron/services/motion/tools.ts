@@ -1,7 +1,8 @@
 // MOI TRUONG CHAY SKILL tren may khach (2026-10-14). Skill goi `node` (>= 22, can WebSocket), `python3` (numpy + PIL),
 // `ffmpeg`, Google Chrome. May khach khong chac co Node / Python / Chrome nen:
 //  - node: Node he thong >= 22 neu co; khong thi dung CHINH Electron cua app o che do Node (ELECTRON_RUN_AS_NODE) + co
-//    --experimental-websocket (Electron 33 = Node 20.18, da thu that render.mjs + Chrome Headless chay dung);
+//    --experimental-websocket TRUYEN QUA THAM SO (Electron 33 = Node 20.18). KHONG dung NODE_OPTIONS: ban dong goi tat
+//    NODE_OPTIONS bang Electron fuse (scripts/adhoc-sign.cjs) — selftest-packaged [6c] bat duoc 2026-10-14;
 //  - python3: Python NHUNG cua app (co numpy + pillow cho sidecar) / venv cua sidecar;
 //  - ffmpeg: ~/.capcut-studio/tools/bin (Doctor cai) — da nam dau PATH (augmentedEnv);
 //  - Chrome: Google Chrome cua may neu co; khong thi Chrome Headless Shell ma app tai cho Remotion (tu tai neu chua co).
@@ -71,9 +72,9 @@ export function ensureShims(): { node: string; python: string } {
     // Git Bash (Claude Code tren Windows) chay file sh khong duoi; cmd / PowerShell chay .cmd
     writeIfChanged(
       join(BIN, 'node'),
-      `#!/bin/sh\nexport ELECTRON_RUN_AS_NODE=1\nexport NODE_OPTIONS="--experimental-websocket \${NODE_OPTIONS:-}"\nexec ${sh(IS_WIN ? slash(exe) : exe)} "$@"\n`
+      `#!/bin/sh\nexport ELECTRON_RUN_AS_NODE=1\nexec ${sh(IS_WIN ? slash(exe) : exe)} --experimental-websocket "$@"\n`
     )
-    if (IS_WIN) writeIfChanged(join(BIN, 'node.cmd'), `@echo off\r\nset ELECTRON_RUN_AS_NODE=1\r\nset NODE_OPTIONS=--experimental-websocket\r\n"${exe}" %*\r\n`)
+    if (IS_WIN) writeIfChanged(join(BIN, 'node.cmd'), `@echo off\r\nset ELECTRON_RUN_AS_NODE=1\r\n"${exe}" --experimental-websocket %*\r\n`)
   } else {
     // co Node that -> bo lenh gia (neu lan truoc da tao) de PATH tim Node that
     for (const f of ['node', 'node.cmd']) rmSync(join(BIN, f), { force: true })
