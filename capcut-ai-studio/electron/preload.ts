@@ -203,7 +203,51 @@ const api = {
   musicLabel: (ids: string[]) => ipcRenderer.invoke('music:label', ids),
   musicSettings: (payload: unknown) => ipcRenderer.invoke('music:settings', payload),
   musicPreviewVolume: (id: string) => ipcRenderer.invoke('music:previewVolume', id),
-  pickMusic: () => ipcRenderer.invoke('dialog:pickMusic')
+  pickMusic: () => ipcRenderer.invoke('dialog:pickMusic'),
+
+  // ---- Tao video bang AI (skill motionmaxxing) + Automation Video + SaydiVoice (electron/motion-ipc.ts) ----
+  motionMeta: () => ipcRenderer.invoke('motion:meta'),
+  motionCheck: () => ipcRenderer.invoke('motion:check'),
+  motionList: (filter?: unknown) => ipcRenderer.invoke('motion:list', filter),
+  motionGet: (id: string) => ipcRenderer.invoke('motion:get', id),
+  motionCreate: (brief: unknown) => ipcRenderer.invoke('motion:create', brief),
+  motionRerun: (id: string) => ipcRenderer.invoke('motion:rerun', id),
+  motionCancel: (id: string) => ipcRenderer.invoke('motion:cancel', id),
+  motionDelete: (id: string) => ipcRenderer.invoke('motion:delete', id),
+  motionLog: (id: string, from?: number) => ipcRenderer.invoke('motion:log', id, from),
+  motionBusy: () => ipcRenderer.invoke('motion:busy'),
+  motionOpenTabs: () => ipcRenderer.invoke('motion:openTabs'),
+  motionSetOpenTabs: (ids: string[], active: string | null) => ipcRenderer.invoke('motion:setOpenTabs', ids, active),
+  motionGetLimit: () => ipcRenderer.invoke('motion:getLimit'),
+  motionSetLimit: (n: number) => ipcRenderer.invoke('motion:setLimit', n),
+  motionPickAssets: () => ipcRenderer.invoke('motion:pickAssets'),
+  onMotionJob: (cb: (job: unknown) => void) => {
+    const fn = (_e: unknown, job: unknown) => cb(job)
+    ipcRenderer.on('motion:job', fn)
+    return () => ipcRenderer.removeListener('motion:job', fn)
+  },
+  onMotionRemoved: (cb: (id: string) => void) => {
+    const fn = (_e: unknown, id: string) => cb(id)
+    ipcRenderer.on('motion:removed', fn)
+    return () => ipcRenderer.removeListener('motion:removed', fn)
+  },
+  saydiOpenSite: () => ipcRenderer.invoke('saydi:openSite'),
+  saydiGet: () => ipcRenderer.invoke('saydi:get'),
+  saydiSave: (key: string) => ipcRenderer.invoke('saydi:save', key),
+  saydiTest: (key?: string) => ipcRenderer.invoke('saydi:test', key),
+  saydiVoices: (force?: boolean) => ipcRenderer.invoke('saydi:voices', force),
+  saydiPreview: (id: string, custom?: boolean) => ipcRenderer.invoke('saydi:preview', id, custom),
+  automationList: () => ipcRenderer.invoke('automation:list'),
+  automationSave: (p: unknown) => ipcRenderer.invoke('automation:save', p),
+  automationDelete: (id: string) => ipcRenderer.invoke('automation:delete', id),
+  automationToggle: (id: string, enabled: boolean) => ipcRenderer.invoke('automation:toggle', id, enabled),
+  automationCheckNow: (id: string) => ipcRenderer.invoke('automation:checkNow', id),
+  automationTestSource: (s: unknown) => ipcRenderer.invoke('automation:testSource', s),
+  onAutomationChanged: (cb: (list: unknown) => void) => {
+    const fn = (_e: unknown, list: unknown) => cb(list)
+    ipcRenderer.on('automation:changed', fn)
+    return () => ipcRenderer.removeListener('automation:changed', fn)
+  }
 }
 
 contextBridge.exposeInMainWorld('studio', api)

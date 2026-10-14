@@ -8,8 +8,8 @@
 // dich (.pyd/.so) nap duoc, ffmpeg cua app dung; (3) thi giac may (Windows: model ONNX — tach nguoi ra WebM alpha,
 // tim mat, OCR, ve SVG) ; (4) hop cach ly hieu ung chay bang chinh exe app (Electron-as-Node); (5) sidecar Flask
 // tra loi /health; (6) render MP4 that qua Remotion (compositor + Chrome) co phu de tieng Viet.
-import { execFileSync, spawn } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { execFileSync, spawn, spawnSync } from 'node:child_process'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:net'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
@@ -370,6 +370,44 @@ async function main() {
         c.code === 1 && w?.status === 'error' && w?.error?.step === 'prepare' && /activate/.test(w?.error?.hint || ''),
         (c.so + c.se).trim().slice(0, 400))
     } else record('CLI: make -> trả mã việc', false, (c.so + c.se).trim())
+  }
+
+  // 6c) "TAO VIDEO" BANG SKILL motionmaxxing (2026-10-14): skill dong goi du + dung dung duong cua may khach KHONG co
+  //     Node / Chrome: render.mjs chay bang CHINH exe app (Electron-as-Node + --experimental-websocket, nhu
+  //     electron/services/motion/tools.ts) voi Chrome Headless cua Remotion (buoc [1] da tai), look.py bang Python nhung.
+  {
+    console.log('\n[6c] Skill motionmaxxing (Tạo video / Automation Video)...')
+    const skill = join(resDir, 'skills', 'motionmaxxing')
+    const need = ['SKILL.md', 'NOTICE', 'scripts/voice.py', 'scripts/render.mjs', 'scripts/look.py', 'runtime/motion.js', 'runtime/vendor/gsap.min.js', 'examples/demo/index.html']
+    const miss = need.filter((f) => !existsSync(join(skill, f)))
+    record('Skill motionmaxxing có trong gói app', !miss.length, miss.length ? 'thiếu: ' + miss.join(', ') : skill)
+    const findShell = (d, depth = 6) => {
+      if (depth < 0 || !existsSync(d)) return null
+      for (const e of readdirSync(d)) {
+        const p = join(d, e)
+        if (statSync(p).isFile() && e === (IS_WIN ? 'chrome-headless-shell.exe' : 'chrome-headless-shell')) return p
+        if (statSync(p).isDirectory()) {
+          const r = findShell(p, depth - 1)
+          if (r) return r
+        }
+      }
+      return null
+    }
+    const chrome = findShell(join(home, '.capcut-studio', 'remotion', 'node_modules', '.remotion', 'chrome-headless-shell'))
+    if (!miss.length && chrome) {
+      const out = join(home, 'motion-demo.mp4')
+      const r = spawnSync(exe, [join(skill, 'scripts', 'render.mjs'), join(skill, 'examples', 'demo', 'index.html'), out, '--scale', '0.25', '--to', '2'], {
+        env: { ...env, ELECTRON_RUN_AS_NODE: '1', NODE_OPTIONS: '--experimental-websocket', CHROME_PATH: chrome, PATH: tools + (IS_WIN ? ';' : ':') + (env.PATH || '') },
+        encoding: 'utf-8',
+        timeout: 240000,
+        windowsHide: true
+      })
+      record('Skill: render.mjs chạy bằng Electron của app + Chrome Headless', r.status === 0 && existsSync(out), (r.stderr || r.stdout || '').trim().split('\n').slice(-3).join(' | '))
+      if (existsSync(out)) {
+        const lk = spawnSync(pyBin, [join(skill, 'scripts', 'look.py'), out, '--out', join(home, 'motion-look')], { env, encoding: 'utf-8', timeout: 120000, windowsHide: true })
+        record('Skill: look.py chạy bằng Python nhúng (numpy + PIL)', lk.status === 0 || /GATES/.test(lk.stdout || ''), (lk.stderr || lk.stdout || '').trim().split('\n').slice(-2).join(' | '))
+      }
+    } else if (!chrome) record('Skill: Chrome Headless để dựng video', false, 'bước [1] chưa tải được Chrome Headless')
   }
 
   // 7) macOS: chay xong moi thu, goi app VAN con nguyen chu ky (khong tien trinh nao ghi vao trong goi — vd __pycache__

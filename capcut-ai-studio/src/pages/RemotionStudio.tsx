@@ -512,7 +512,7 @@ export default function RemotionStudioPage({
     setProjectId(id)
     return id
   }
-  const runCtx = (id: string) => ({ id, label: `Tạo video · ${deriveTopic(brief)}` })
+  const runCtx = (id: string) => ({ id, label: `Edit Video · ${deriveTopic(brief)}` })
   const logUi = (id: string, title: string, level: 'info' | 'ok' | 'warn' | 'error' = 'info', detail?: unknown) => {
     window.studio.runlogAppend(id, { kind: 'ui', title, level, detail }).catch(() => {})
   }
@@ -1079,7 +1079,7 @@ export default function RemotionStudioPage({
             <Lock className="mx-auto mb-3 h-8 w-8 text-ink-800/25" />
             <div className="font-semibold text-ink-900">Chưa sẵn sàng</div>
             <p className="mt-1 text-sm text-ink-800/50">
-              Hoàn tất Doctor (môi trường + kết nối AI) để mở khoá Tạo video.
+              Hoàn tất Doctor (môi trường + kết nối AI) để mở khoá Edit Video.
             </p>
           </CardBody>
         </Card>
@@ -1180,7 +1180,7 @@ export default function RemotionStudioPage({
     <div className="w-full px-8 py-7">
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-ink-900">Tạo video</h1>
+          <h1 className="text-2xl font-bold text-ink-900">Edit Video</h1>
           <p className="mt-0.5 text-sm text-ink-800/45">
             {videos.length
               ? `${videos.length} video nguồn đã chọn · AI dựng video, xem và xuất MP4 ngay trong app`
@@ -1781,7 +1781,7 @@ export default function RemotionStudioPage({
                 {notice && <div className="text-xs text-emerald-700">{notice}</div>}
                 <div className="flex justify-end pt-2">
                   <Button variant="ghost" onClick={reset}>
-                    <Sparkles className="h-4 w-4" /> Tạo video mới
+                    <Sparkles className="h-4 w-4" /> Edit video mới
                   </Button>
                 </div>
               </div>
@@ -1794,7 +1794,7 @@ export default function RemotionStudioPage({
         <RunLogPanel
           runId={projectId}
           live={!!running}
-          title={videos.length ? `Tạo video · ${deriveTopic(brief)} · ${videos.map((v) => v.name).join(', ')}` : projectId}
+          title={videos.length ? `Edit Video · ${deriveTopic(brief)} · ${videos.map((v) => v.name).join(', ')}` : projectId}
           onClose={() => setLogOpen(false)}
         />
       )}

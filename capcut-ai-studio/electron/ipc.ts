@@ -41,6 +41,7 @@ import {
   onLicenseChange
 } from './services/license'
 import { updateState, onUpdateChange, checkForUpdateNow, applyUpdate, startDownload } from './services/updater'
+import { busyMotionIds } from './services/motion/runner'
 import { readState, writeState, planProviderOf, PlanProvider, jobLimitsOf, saveJobLimits, JobLimits } from './services/state'
 import { mediaBase, mediaUrl } from './services/media-server'
 import { cancelRender, renderStatus, browserInstalled } from './services/remotion'
@@ -102,7 +103,8 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
     return updateState()
   })
   // busy = trang Tao video con video dang xu ly
-  ipcMain.handle('update:apply', (_e, busy?: boolean) => applyUpdate(!!busy))
+  // busy: renderer bao Edit Video dang chay; video tao bang AI (Tao video / Automation) kiem o main (tranh lech luc)
+  ipcMain.handle('update:apply', (_e, busy?: boolean) => applyUpdate(!!busy || busyMotionIds().length > 0))
 
   // ---- Doctor ----
   // Chi dung khi tu kiem giao dien (chay kem --user-data-dir tam): coi moi dieu kien

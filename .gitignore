@@ -33,6 +33,8 @@ work_video-test-new/
 # App images are source, not generated media
 !capcut-ai-studio/build/**/*.png
 !capcut-ai-studio/src/assets/**/*.png
+# Skill motionmaxxing dong goi trong app: anh / am thanh cua skill la NGUON (Claude doc khi tao video)
+!capcut-ai-studio/skills/**
 
 # Legacy CapCut engine: separate upstream clone (sun-guannan/CapCutAPI) with its
 # own .git; the app no longer imports it. Its .venv must stay on disk locally.

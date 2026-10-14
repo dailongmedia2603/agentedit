@@ -78,6 +78,10 @@ Day la quy trinh CHUAN, user da dong y tu truoc — lam du cac buoc, khong hoi l
   --user-data-dir=<tmp> --agent-edit-cli status`). Ky nang GetTime: `gettime/agent-edit/` (SKILL.md + scripts/agent-edit, cai
   tang He thong, chat bat Toan quyen). Job CLI: `~/.capcut-studio/cli/jobs/<id>/`. Ban dong goi: selftest-packaged muc [6b] + `node scripts/selftest-gettime.mjs`
   (script ky nang bash / agent-edit.ps1 cai qua may chu gia + goi CLI; Windows chi tren CI).
+- TAO VIDEO bang skill motionmaxxing + AUTOMATION VIDEO + SaydiVoice (PROJECT_OVERVIEW 17): skill dong goi o
+  `capcut-ai-studio/skills/motionmaxxing` (BAN CHINH — `~/.claude/skills/motionmaxxing` la lien ket toi day). Test:
+  `cd capcut-ai-studio && node tests/test_motion.mts`; tu kiem that (ton han muc Claude + Saydi): `env -u ELECTRON_RUN_AS_NODE
+  STUDIO_LICENSE=off STUDIO_MOTION_TEST=<brief.json> <app binary> . --user-data-dir=<tmp>`.
 - Mac INTEL (x64): CI `macos-15-intel`. Tren may Apple Silicon: Node x64 + `arch -x86_64 npm ci` (roi
   `npm_config_arch=x64 node node_modules/electron/install.js` — electron tu tai ban ARM khi thay Rosetta) + `arch -x86_64 node
   scripts/dist.mjs --mac` -> `release/mac/`. onnxruntime Intel ghim 1.22.0 trong requirements.lock (marker platform_machine).

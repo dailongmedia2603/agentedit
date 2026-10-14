@@ -39,6 +39,15 @@ extraResources:
   - from: out/remotion-bundle
     to: remotion-bundle
 
+  # SKILL motionmaxxing ("Tao video" + "Automation Video", 2026-10-14) — de nguyen chu (Claude doc). Lan dau chay ban
+  # moi, electron/services/motion/skill.ts chep ra ~/.capcut-studio/motion/skill/<phien-ban> -> cap nhat app la cap nhat skill.
+  - from: skills/motionmaxxing
+    to: skills/motionmaxxing
+    filter:
+      - "**/*"
+      - "!**/.DS_Store"
+      - "!**/__pycache__/**"
+
 # Sau khi dong goi app (da nhet Python nhung + .so): ad-hoc ky SAU toan bo -> tranh loi "bi hong"
 # tren may tai ve (identity:null lam electron-builder bo qua ky -> seal khong khop Resources moi). Chi macOS
 # (hook tu bo qua tren Windows; afterAllArtifactBuild chi xu ly file .dmg).

@@ -8,7 +8,9 @@ import {
   FolderClock,
   Library,
   ScrollText,
-  MonitorPlay
+  MonitorPlay,
+  Sparkles,
+  Bot
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import logoUrl from '@/assets/logo.png'
@@ -20,13 +22,15 @@ import ResourcesPage from '@/pages/Resources'
 import { useLibrarySyncStatus } from '@/lib/useLibrarySync'
 import PromptsPage from '@/pages/Prompts'
 import CreateVideoPage from '@/pages/CreateVideo'
+import MotionCreatePage from '@/pages/MotionCreate'
+import MotionAutomationPage from '@/pages/MotionAutomation'
 import { IS_WIN } from './lib/platform'
 import { installSecretToggle, useFullUi } from './lib/clientUi'
 import { planLabel, fmtDate } from './components/LicenseGate'
 import { kickHarvest } from './lib/fxHarvest'
 import { UpdateBanner, UpdateCheckRow, UpdateChip, useUpdateState } from './components/UpdateChip'
 
-type Tab = 'doctor' | 'settings' | 'resources' | 'prompts' | 'remotion' | 'projects'
+type Tab = 'doctor' | 'settings' | 'resources' | 'prompts' | 'remotion' | 'motion' | 'automation' | 'projects'
 
 function Sparkline() {
   const pts = [6, 10, 7, 13, 9, 15, 11, 17, 12, 18, 14]
@@ -81,6 +85,20 @@ export default function App() {
   useEffect(() => {
     if (tab === 'prompts') setPromptsMounted(true)
   }, [tab])
+  // Tao video (skill) + Automation Video: mount lan dau mo, sau do giu (form dang nhap / trang dang xem khong mat)
+  const [motionMounted, setMotionMounted] = useState(false)
+  const [autoMounted, setAutoMounted] = useState(false)
+  useEffect(() => {
+    if (tab === 'motion') setMotionMounted(true)
+    if (tab === 'automation') setAutoMounted(true)
+  }, [tab])
+  // Video dang tao bang AI (khong cho cap nhat app giua chung — giong Edit Video)
+  const [motionBusy, setMotionBusy] = useState(false)
+  useEffect(() => {
+    const refresh = () => window.studio.motionBusy().then((ids) => setMotionBusy(ids.length > 0)).catch(() => undefined)
+    refresh()
+    return window.studio.onMotionJob(() => refresh())
+  }, [])
 
   useEffect(() => {
     window.studio.appInfo().then((i) => setAppVersion(i.build ? `${i.version} · build ${i.build}` : i.version))
@@ -130,7 +148,9 @@ export default function App() {
     { id: 'settings', label: 'Cài đặt API', icon: SettingsIcon },
     { id: 'resources', label: 'Tài nguyên', icon: Library },
     { id: 'prompts', label: 'Prompt & quy tắc', icon: ScrollText },
-    { id: 'remotion', label: 'Tạo video', icon: MonitorPlay },
+    { id: 'remotion', label: 'Edit Video', icon: MonitorPlay },
+    { id: 'motion', label: 'Tạo video', icon: Sparkles },
+    { id: 'automation', label: 'Automation Video', icon: Bot },
     { id: 'projects', label: 'Video đã tạo', icon: FolderClock }
   ].filter((n) => fullUi || (n.id !== 'prompts' && n.id !== 'resources')) as { id: Tab; label: string; icon: typeof Stethoscope }[]
 
@@ -142,7 +162,7 @@ export default function App() {
           <span className="text-ink-900">Agent Edit</span>
           <span className="text-ink-800/25">·</span>
           <span className="font-normal text-ink-800/40">v{appVersion}</span>
-          <UpdateChip st={upd} busy={rmBusyIds.length > 0} />
+          <UpdateChip st={upd} busy={rmBusyIds.length > 0 || motionBusy} />
         </div>
         <UpdateBanner st={upd} />
         <div className={`no-drag absolute ${IS_WIN ? 'right-[150px]' : 'right-4'} flex items-center gap-1.5 text-ink-800/45`}>
@@ -258,6 +278,16 @@ export default function App() {
           <div className={tab === 'remotion' ? '' : 'hidden'}>
             <CreateVideoPage ready={ready} openReq={openReq} deletedReq={deletedReq} onBusyIds={setRmBusyIds} />
           </div>
+          {motionMounted && (
+            <div className={tab === 'motion' ? '' : 'hidden'}>
+              <MotionCreatePage visible={tab === 'motion'} />
+            </div>
+          )}
+          {autoMounted && (
+            <div className={tab === 'automation' ? '' : 'hidden'}>
+              <MotionAutomationPage visible={tab === 'automation'} />
+            </div>
+          )}
         </main>
       </div>
     </div>

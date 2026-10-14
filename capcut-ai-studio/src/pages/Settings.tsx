@@ -27,6 +27,7 @@ import { cn } from '@/lib/utils'
 import { IS_WIN, KEY_STORE, TERM } from '../lib/platform'
 import { isFullUi } from '@/lib/clientUi'
 import { DEFAULT_LIMITS, MAX_LIMITS, clampLimit, setLimits } from '@/lib/jobQueue'
+import { SaydiSettingsCard } from '@/components/motion/SaydiSettingsCard'
 
 interface ProviderMeta {
   id: string
@@ -725,7 +726,7 @@ function JobLimitsCard() {
         <div className="flex-1">
           <div className="text-[15px] font-semibold text-ink-900">Tạo nhiều video cùng lúc</div>
           <div className="text-xs text-ink-800/45">
-            Ở “Tạo video”, bấm “Thêm video” để làm video khác trong lúc video trước đang chạy. Quá số dưới đây thì video
+            Ở “Edit Video”, bấm “Thêm video” để làm video khác trong lúc video trước đang chạy. Quá số dưới đây thì video
             sau tự xếp hàng chờ, tới lượt sẽ tự chạy. Xuất video (render) luôn 1 video một lúc cho máy khỏi nặng. Nhập số
             từ 1 đến {MAX_LIMITS.gemini}, bấm Enter (hoặc bấm ra ngoài) để lưu.
           </div>
@@ -1286,6 +1287,7 @@ export default function SettingsPage() {
           )
         })}
         <JobLimitsCard />
+        <SaydiSettingsCard />
       </div>
     </div>
   )

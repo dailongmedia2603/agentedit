@@ -1709,6 +1709,66 @@ Do tren ban x64 (Rosetta): h264_videotoolbox loi o khau ghep (ffmpeg 187) -> Mac
 ep bat); lan dau mo Chrome x64 qua 25s -> remotion-worker thu lai selectComposition khi loi "connect to the browser".
 CHUA kiem tren may Intel THAT (khong co may): GPU / VideoToolbox, toc do.
 
+## 17. TAO VIDEO BANG AI (skill motionmaxxing) + AUTOMATION VIDEO + SAYDIVOICE (2026-10-14)
+
+User: doi menu "Tao video" (luong Remotion) thanh **"Edit Video"** (ca tieu de trong trang + chu nhac toi menu o Video da
+tao / Doctor / Cai dat); them 2 menu MOI tach HOAN TOAN khoi Edit Video: **"Tao video"** (tao video tu con so 0 bang
+skill motionmaxxing, khong duyet kich ban) va **"Automation Video"** (du an tu theo doi tin moi -> tu tao video). Giong doc
+CO DINH SaydiVoice; Cai dat API them the SaydiVoice. Luong Edit Video (Remotion, sidecar, projects.json) KHONG doi.
+
+- **Skill dong goi**: `capcut-ai-studio/skills/motionmaxxing/` = github.com/Tejashmakwana/motionmaxxing (Apache-2.0) commit
+  8c8ec0f + SaydiVoice cua user (scripts/voice.py, providers.sh, SKILL.md...) + GSAP 3.15.0 (thay 3.12.5; giay phep
+  Standard 2025 cho dung thuong mai); bo .git / docs/media / docs/hero. Ghi chu sua doi o cuoi NOTICE (Apache 4b). Day la
+  BAN CHINH: `~/.claude/skills/motionmaxxing` tren may chu app la LIEN KET toi thu muc nay (ban cai cu:
+  `~/.claude/motionmaxxing-backup-20261014`). `.gitignore` goc co `!capcut-ai-studio/skills/**` (anh studies/*.jpg).
+  electron-builder `extraResources` -> `Resources/skills/motionmaxxing` -> **cap nhat app = cap nhat skill**.
+- **Cai skill tren may** (`electron/services/motion/skill.ts`): phien ban = sha1 noi dung (12 ky tu); lan dau chay ban
+  moi chep ra `~/.capcut-studio/motion/skill/<phien-ban>/` (goi .app chi doc + co chu ky), xoa ban cu. Moi video tro skill
+  qua `<job>/.claude/skills/motionmaxxing` (symlink; Windows junction). KHONG cai vao ~/.claude/skills cua khach.
+- **Chay 1 video** (`motion/runner.ts`): `~/.capcut-studio/motion/jobs/<id>/` (brief.md, prompt.txt, inputs/ = logo/anh
+  nguoi dung chep vao ten an toan, film/, progress.log, claude.jsonl). `claude -p` (prompt qua STDIN) `--output-format
+  stream-json --verbose --model <Cai dat API > Claude> [--effort] --setting-sources project --strict-mcp-config --mcp-config
+  <rong> --permission-mode bypassPermissions --tools Bash,Read,Write,Edit,Glob,Grep,Skill,TodoWrite,WebFetch,WebSearch
+  --no-session-persistence` — da thu that CLI 2.1.283: chi nap skill cua thu muc job, dung dung bo cong cu. Claude theo
+  cau hinh Claude o Cai dat API: goi dang ky (bo bien ANTHROPIC_*) hoac API key (ANTHROPIC_API_KEY + BASE_URL neu khac).
+  Prompt (`motion/prompt.ts`): CHAY KHONG CAN NGUOI (khong hoi, khong cho duyet y tuong / storyboard, bo blind_review,
+  khong ghi taste), toi da 2 luot sua, ra `film/final.mp4` WxH 30fps + NOTE.md, giu dau tieng Viet (khong dung font 3D
+  Latin cho chu Viet), Saydi `voice.py vo --provider saydi --voice <id> --speed`, khong ElevenLabs (bo sfx/nhac); tin tuc:
+  khong bia. Tien do: doc stream-json -> buoc (`motion/stages.ts`: Chuan bi / Tim hieu thuong hieu / Y tuong / Giong doc
+  / Dung / Tu kiem tra / Xuat / Bao cao). Xong: final.mp4 (> 20KB) -> done + ffprobe; chi co nhap -> loi + xem ban nhap.
+  Loi Claude doi sang tieng Viet (`friendlyError`: dang nhap / han muc / model). Tran 2,5 gio. Hang doi RIENG (khong dung
+  hang doi Edit Video): `state.json motion_jobs` (1..5, mac dinh 1). Thoat app -> giet tien trinh, job -> "bi gian doan";
+  mo lai: job dang cho xep hang lai.
+- **Moi truong skill tren may khach** (`motion/tools.ts`, lenh trong `~/.capcut-studio/motion/bin` dat dau PATH rieng):
+  `node` = Node he thong >= 22, khong co thi CHINH Electron cua app (`ELECTRON_RUN_AS_NODE=1` + `NODE_OPTIONS=
+  --experimental-websocket` — Electron 33 = Node 20.18, da thu that render.mjs); `python3` = Python nhung (numpy + PIL);
+  ffmpeg = tools/bin; `CHROME_PATH` = Google Chrome cua may, khong co thi Chrome Headless Shell cua Remotion (tu tai neu
+  chua co). SAYDI_API_KEY + SAYDI_VOICE chi khi video co loi doc; bo ELEVENLABS_API_KEY. Windows: co ca lenh sh (Git Bash
+  cua Claude Code) + .cmd — CHUA thu tren Windows.
+- **SaydiVoice** (`motion/saydi.ts`, da goi that): giong co san `GET /samples` (~1000, khong can key, cache 6h), nghe thu
+  `/samples/<id>/audio`; giong rieng `GET /v1/voices` + `/v1/voices/<id>/preview` (key); kiem key `GET /v1/models` (401 =
+  sai). Key ma hoa safeStorage o `<userData>/saydi.enc` (RIENG, khong dung secrets.enc). File nghe thu cache
+  `motion/cache/voice-preview/`, phat qua may chu media.
+- **Automation** (`motion/automation.ts`, `motion/sources.ts`): `motion/automation.json` (token Facebook ma hoa
+  safeStorage, renderer chi thay has_token). Moi phut xem du an toi gio (`intervalMin` >= 5). Nguon web: link RSS/Atom ->
+  doc; trang -> `<link rel=alternate>`; khong co -> link bai "chac chan" tren trang (`articleScore`: .html + ma so, ngay
+  trong duong dan, slug >= 6 gach) -> doan duong RSS (`/rss<path>.rss`, `<path>.rss`, `/feed`) -> link "co the". Bai thieu
+  noi dung -> tai trang bai (og:* + cac <p>), tai anh bai vao inputs/. Facebook: Graph API `/<trang>/posts` can Page
+  Access Token (khong co -> huong dan dung RSS cua rss.app / fetchrss). Lan dau 1 nguon (`skipExisting`, mac dinh bat) chi
+  GHI NHAN tin dang co; tran `maxPerCheck` / lan, `maxPerDay` / ngay, tin vuot tran giu cho lan sau; seen <= 500 / nguon.
+  App phai dang mo (macOS dong cua so van chay). Da thu that: vnexpress /so-hoa (link bai), tuoitre / thanhnien / genk /
+  cafef (RSS). Entity co dau (`&oacute;`, ma hoa 2 lan) da giai.
+- **UI**: `src/pages/MotionCreate.tsx` (the nhu Edit Video, form `components/motion/BriefForm.tsx`, giong
+  `VoicePicker.tsx`, theo doi `JobView.tsx`: buoc, thoi gian, huy / chay lai, xem + luu MP4, "Bao cao cua AI" = NOTE.md;
+  nhat ky chi o giao dien day du), `src/pages/MotionAutomation.tsx` (danh sach / form / chi tiet du an, "Thu lay tin",
+  "Kiem tin ngay"), `components/motion/SaydiSettingsCard.tsx` (Cai dat API). IPC rieng `electron/motion-ipc.ts`
+  (motion:* / saydi:* / automation:*; su kien motion:job, automation:changed). Nut cap nhat app bi chan khi con video AI
+  dang tao (giong Edit Video).
+- **Kiem**: `node tests/test_motion.mts` (HOME tam + claude GIA: skill, prompt, stream-json, lay tin, runner, automation);
+  tu kiem that `env -u ELECTRON_RUN_AS_NODE STUDIO_MOTION_TEST=<brief.json> <app binary> --user-data-dir=<tam>` (goi
+  Claude + Saydi THAT, in [MOTION] buoc / RESULT); ban dong goi: `selftest-packaged.mjs` [6c] (skill trong goi + render.mjs
+  bang Electron-as-Node + Chrome Headless + look.py bang Python nhung).
+
 ## 12. CodeGraph
 
 CodeGraph `0.9.9` da duoc cai va index tai root workspace:

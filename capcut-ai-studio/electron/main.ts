@@ -3,6 +3,9 @@ import { join } from 'path'
 import { homedir, tmpdir } from 'os'
 import { appendFileSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'fs'
 import { registerIpc } from './ipc'
+import { registerMotionIpc } from './motion-ipc'
+import { startMotion, stopAllMotion } from './services/motion/runner'
+import { startAutomation, stopAutomation } from './services/motion/automation'
 import { stopSidecar } from './services/sidecar'
 import { stopRender } from './services/remotion'
 import { stopMediaServer } from './services/media-server'
@@ -173,7 +176,7 @@ function createWindow() {
 // Chi 1 phien app: mo lan 2 (Windows hay bam 2 lan) -> 2 sidecar + 2 Doctor tu cai tranh nhau tools/bin,
 // 2 ben cung ghi projects.json. Lan 2 chi dua cua so dang mo len truoc roi thoat. Che do tu kiem (STUDIO_*) bo qua.
 const SELF_TEST = Object.keys(process.env).some((k) =>
-  ['STUDIO_TESTCONN', 'STUDIO_DUMPCFG', 'STUDIO_RAWGPT', 'STUDIO_DOCTOR', 'STUDIO_REMOTION_RENDER', 'STUDIO_SIDECAR_SMOKE'].includes(k)
+  ['STUDIO_TESTCONN', 'STUDIO_DUMPCFG', 'STUDIO_RAWGPT', 'STUDIO_DOCTOR', 'STUDIO_REMOTION_RENDER', 'STUDIO_SIDECAR_SMOKE', 'STUDIO_MOTION_TEST'].includes(k)
 )
 if (!SELF_TEST && !CLI_MODE && !app.requestSingleInstanceLock()) {
   bootLog('da co 1 phien dang chay -> bao phien do mo cua so, thoat')
@@ -220,6 +223,7 @@ app.whenReady().then(async () => {
   nativeTheme.themeSource = 'light'
   setAppMenu()
   registerIpc(() => mainWindow)
+  registerMotionIpc(() => mainWindow)
   initUpdater()
 
   // Tu kiem TU CAP NHAT (ban dong goi): --update-selftest=<json> — khong mo cua so (scripts/selftest-update.mjs)
@@ -351,6 +355,45 @@ app.whenReady().then(async () => {
     return
   }
 
+  // Tu kiem TAO VIDEO BANG SKILL motionmaxxing (khong mo cua so, goi Claude + Saydi THAT):
+  // STUDIO_MOTION_TEST=<brief.json> <app binary>  -> in [MOTION] buoc / ket qua, ma thoat 0 = co final.mp4
+  if (process.env.STUDIO_MOTION_TEST) {
+    const fs = await import('fs')
+    const { createMotionJob, onMotionJob } = await import('./services/motion/runner')
+    const log = (...a: unknown[]) => console.log('[MOTION]', ...a)
+    let code = 1
+    try {
+      const brief = JSON.parse(fs.readFileSync(process.env.STUDIO_MOTION_TEST, 'utf-8'))
+      startMotion({ recover: false })
+      const job = await createMotionJob(brief, { kind: 'single' })
+      log('job', job.id, job.dir)
+      code = await new Promise<number>((resolve) => {
+        let last = ''
+        onMotionJob((j) => {
+          if (j.id !== job.id) return
+          const sig = `${j.status}/${j.stage || ''}`
+          if (sig !== last) {
+            last = sig
+            log(new Date().toTimeString().slice(0, 8), sig)
+          }
+          if (j.status === 'done' || j.status === 'error' || j.status === 'cancelled') {
+            log('RESULT:', j.status === 'done' ? 'PASS' : 'FAIL', JSON.stringify({ output: j.output, meta: j.meta, error: j.error, cost: j.costUsd, model: j.model }))
+            resolve(j.status === 'done' ? 0 : 1)
+          }
+        })
+      })
+    } catch (e) {
+      log('RESULT: FAIL', String(e))
+    }
+    stopAllMotion()
+    stopMediaServer()
+    app.exit(code)
+    return
+  }
+
+  // Tao video (skill) + Automation Video: xep hang lai video dang cho tu lan truoc, bat chu ky kiem tin moi
+  startMotion()
+  startAutomation()
   createWindow()
 
   app.on('activate', () => {
@@ -369,6 +412,8 @@ app.on('window-all-closed', () => {
 })
 
 app.on('before-quit', () => {
+  stopAutomation()
+  stopAllMotion()
   stopSidecar()
   stopRender()
   stopMediaServer()

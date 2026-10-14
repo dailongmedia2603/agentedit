@@ -289,14 +289,14 @@ export default function ProjectsPage({
               </Button>
             )}
             <Button size="sm" onClick={() => openProject(p.id)}>
-              <ArrowRight className="h-4 w-4" /> Mở trong Tạo video
+              <ArrowRight className="h-4 w-4" /> Mở trong Edit Video
             </Button>
             <Button
               variant="danger"
               size="sm"
               onClick={() => setConfirmDel(p)}
               disabled={!!busyIds?.includes(p.id)}
-              title={busyIds?.includes(p.id) ? 'Dự án đang xử lý ở Tạo video — đợi xong rồi xoá' : undefined}
+              title={busyIds?.includes(p.id) ? 'Dự án đang xử lý ở Edit Video — đợi xong rồi xoá' : undefined}
             >
               <Trash2 className="h-4 w-4" /> Xoá
             </Button>
@@ -387,8 +387,8 @@ export default function ProjectsPage({
           <h1 className="text-2xl font-bold text-ink-900">Video đã tạo</h1>
           <p className="mt-1 text-sm text-ink-800/50">
             {fullUi
-              ? 'Xem lại các dự án Tạo video: phân tích nguồn, video mẫu, kế hoạch dựng và video đã render.'
-              : 'Xem lại các dự án Tạo video và video đã xuất.'}
+              ? 'Xem lại các dự án Edit Video: phân tích nguồn, video mẫu, kế hoạch dựng và video đã render.'
+              : 'Xem lại các dự án Edit Video và video đã xuất.'}
             {hidden > 0 && ` (Ẩn ${hidden} dự án CapCut cũ — dữ liệu vẫn giữ nguyên.)`}
           </p>
         </div>
@@ -406,7 +406,7 @@ export default function ProjectsPage({
           <CardBody className="flex flex-col items-center py-16 text-center">
             <MonitorPlay className="mb-3 h-9 w-9 text-ink-800/25" />
             <div className="font-semibold text-ink-900">Chưa có dự án nào</div>
-            <p className="mt-1 text-sm text-ink-800/45">Sang tab “Tạo video” để bắt đầu dự án đầu tiên.</p>
+            <p className="mt-1 text-sm text-ink-800/45">Sang tab “Edit Video” để bắt đầu dự án đầu tiên.</p>
           </CardBody>
         </Card>
       ) : (

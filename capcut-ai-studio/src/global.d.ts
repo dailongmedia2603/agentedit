@@ -319,9 +319,165 @@ interface StudioBridge {
   /** Nghe ngong file user tai ve tu cua so Myinstants trong app. Tra ham huy dang ky. */
   onSfxStaged(cb: (item: StagedSfx) => void): () => void
   pickAudio(): Promise<OpenDialogReturn>
+
+  // ---- Tao video bang AI (skill motionmaxxing) + Automation Video + SaydiVoice (electron/motion-ipc.ts) ----
+  motionMeta(): Promise<{ videoTypes: { id: string; label: string }[]; saydiSite: string }>
+  motionCheck(): Promise<MotionCheck>
+  motionList(filter?: { kind?: 'single' | 'auto'; automationId?: string }): Promise<MotionJob[]>
+  motionGet(id: string): Promise<MotionJob | null>
+  motionCreate(brief: MotionBrief): Promise<{ ok: boolean; job?: MotionJob; error?: string }>
+  motionRerun(id: string): Promise<{ ok: boolean; job?: MotionJob; error?: string }>
+  motionCancel(id: string): Promise<{ ok: boolean }>
+  motionDelete(id: string): Promise<{ ok: boolean; error?: string }>
+  motionLog(id: string, from?: number): Promise<{ lines: string[]; next: number }>
+  motionBusy(): Promise<string[]>
+  motionOpenTabs(): Promise<{ ids: string[]; active: string | null }>
+  motionSetOpenTabs(ids: string[], active: string | null): Promise<void>
+  motionGetLimit(): Promise<number>
+  motionSetLimit(n: number): Promise<number>
+  motionPickAssets(): Promise<string[]>
+  onMotionJob(cb: (job: MotionJob) => void): () => void
+  onMotionRemoved(cb: (id: string) => void): () => void
+  saydiOpenSite(): Promise<void>
+  saydiGet(): Promise<{ has_key: boolean; key_hint: string }>
+  saydiSave(key: string): Promise<{ has_key: boolean; key_hint: string }>
+  saydiTest(key?: string): Promise<{ ok: boolean; detail?: string; error?: string }>
+  saydiVoices(force?: boolean): Promise<{ ok: boolean; voices: SaydiVoice[]; customError?: string; error?: string }>
+  saydiPreview(id: string, custom?: boolean): Promise<{ ok: boolean; url?: string; error?: string }>
+  automationList(): Promise<AutoProject[]>
+  automationSave(p: AutoProjectInput): Promise<{ ok: boolean; project?: AutoProject; error?: string }>
+  automationDelete(id: string): Promise<{ ok: boolean }>
+  automationToggle(id: string, enabled: boolean): Promise<{ ok: boolean }>
+  automationCheckNow(id: string): Promise<{ ok: boolean; created: number; message: string }>
+  automationTestSource(s: AutoSourceInput & { projectId?: string }): Promise<{ ok: boolean; via?: string; items?: MotionSourceItem[]; error?: string }>
+  onAutomationChanged(cb: (list: AutoProject[]) => void): () => void
 }
 
 declare global {
+  // ---- Tao video bang AI / Automation Video — khop electron/services/motion/types.ts ----
+  type MotionAspect = '9:16' | '16:9' | '1:1'
+  interface MotionVoice {
+    enabled: boolean
+    voiceId?: string
+    voiceName?: string
+    speed?: number
+    script?: string
+  }
+  interface MotionSourceItem {
+    id: string
+    title: string
+    url?: string
+    summary?: string
+    content?: string
+    image?: string
+    published?: string
+    sourceName?: string
+  }
+  interface MotionBrief {
+    name: string
+    website?: string
+    videoType: string
+    message: string
+    audience?: string
+    goal?: string
+    cta?: string
+    tone?: string
+    aspect: MotionAspect
+    duration: number
+    language: string
+    colors?: string
+    fonts?: string
+    assets?: string[]
+    voice: MotionVoice
+    notes?: string
+    source?: MotionSourceItem
+  }
+  type MotionStatus = 'queued' | 'running' | 'done' | 'error' | 'cancelled' | 'interrupted'
+  interface MotionJob {
+    id: string
+    kind: 'single' | 'auto'
+    automationId?: string
+    title: string
+    brief: MotionBrief
+    status: MotionStatus
+    stage?: string
+    stages?: string[]
+    createdAt: number
+    startedAt?: number
+    finishedAt?: number
+    dir: string
+    output?: string
+    draftOnly?: boolean
+    meta?: { width?: number; height?: number; seconds?: number; size?: number }
+    note?: string
+    error?: string
+    model?: string
+    costUsd?: number
+  }
+  interface MotionCheck {
+    claude: { installed: boolean; mode: 'subscription' | 'api_key'; hasKey: boolean; model: string }
+    saydi: { has_key: boolean; key_hint: string }
+    python: { ok: boolean; path: string | null }
+    ffmpeg: { ok: boolean }
+    chrome: { ok: boolean; path: string | null; via: string }
+  }
+  interface SaydiVoice {
+    id: string
+    name: string
+    language: string
+    gender?: string
+    age?: string
+    description?: string
+    sample?: string
+    featured?: boolean
+    custom?: boolean
+  }
+  type AutoDefaults = Omit<MotionBrief, 'message' | 'source'> & { message?: string }
+  interface AutoSourceInput {
+    id?: string
+    type: 'web' | 'facebook'
+    url: string
+    label?: string
+    /** chi gui khi nguoi dung vua nhap (Facebook) */
+    token?: string
+  }
+  interface AutoSource extends AutoSourceInput {
+    id: string
+    has_token: boolean
+  }
+  interface AutoProject {
+    id: string
+    name: string
+    enabled: boolean
+    createdAt: number
+    defaults: AutoDefaults
+    sources: AutoSource[]
+    intervalMin: number
+    maxPerCheck: number
+    maxPerDay: number
+    skipExisting: boolean
+    lastCheckAt?: number
+    nextCheckAt?: number
+    lastResult?: string
+    lastError?: string
+    primed: Record<string, boolean>
+    daily?: Record<string, number>
+    seenCount: number
+    videoCount: number
+    running: number
+  }
+  interface AutoProjectInput {
+    id?: string
+    name: string
+    enabled?: boolean
+    defaults: AutoDefaults
+    sources: AutoSourceInput[]
+    intervalMin: number
+    maxPerCheck: number
+    maxPerDay: number
+    skipExisting: boolean
+  }
+
   type UpdatePhase = 'disabled' | 'idle' | 'available' | 'downloading' | 'ready' | 'applying' | 'error'
   interface UpdateState {
     phase: UpdatePhase

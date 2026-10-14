@@ -17,7 +17,16 @@ export interface EngineState {
   /** Tao nhieu video cung luc (src/lib/jobQueue.ts): so video PHAN TICH (Gemini) / LAP PLAN (Claude) cung luc */
   video_jobs_gemini?: number
   video_jobs_claude?: number
+  /** "Tao video" / "Automation Video" (skill motionmaxxing): so video Claude TAO cung luc (motion/runner.ts) */
+  motion_jobs?: number
   note?: string
+}
+
+export const MOTION_JOB_DEFAULT = 1
+export const MOTION_JOB_MAX = 5
+
+export function motionJobsOf(s: EngineState): number {
+  return clampJob(s.motion_jobs, MOTION_JOB_DEFAULT, MOTION_JOB_MAX)
 }
 
 /** Gioi han so video chay cung luc — khop src/lib/jobQueue.ts DEFAULT_LIMITS / MAX_LIMITS */

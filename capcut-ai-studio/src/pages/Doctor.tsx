@@ -132,7 +132,7 @@ export default function DoctorPage({
                     ? 'Có thể dùng các trang khác trong lúc chờ; máy mới tải khoảng 1 GB (Python, Whisper, Chrome, FFmpeg, CLI).'
                     : 'Có thể dùng các trang khác trong lúc chờ.'
                   : allReady
-                    ? `${okN}/${checks.length} mục đạt${warns.length ? ` · ${warns.length} mục cảnh báo (vẫn tạo video được)` : ''}. Sang tab “Tạo video”.`
+                    ? `${okN}/${checks.length} mục đạt${warns.length ? ` · ${warns.length} mục cảnh báo (vẫn tạo video được)` : ''}. Sang tab “Edit Video”.`
                     : needLogin.length && needLogin.length === fails.length
                       ? 'Công cụ đã đủ — còn kết nối AI (đăng nhập tài khoản hoặc API key) trong Cài đặt API.'
                       : progress?.failed.length
