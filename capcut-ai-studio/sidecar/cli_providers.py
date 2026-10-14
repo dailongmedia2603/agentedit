@@ -123,11 +123,12 @@ SPEC = {
         "install_cmd": "curl -fsSL https://antigravity.google/cli/install.sh | bash",
         "npm_package": None,
         "login_cmd": "agy",
-        "default_model": "gemini-3.1-pro-high",
+        # Tu 2026-10-14 agy KHONG con gemini-3.1-pro-* (do that `agy models` 1.2.16) -> mac dinh 3.8 Flash High
+        "default_model": "gemini-3.8-flash-high",
         "models": [
-            {"id": "gemini-3.1-pro-high", "label": "Gemini 3.1 Pro (High)", "note": "Hiểu video kỹ nhất (chậm hơn)"},
-            {"id": "gemini-3.1-pro-low", "label": "Gemini 3.1 Pro (Low)", "note": "Nhanh hơn Pro High"},
-            {"id": "gemini-3.8-flash-high", "label": "Gemini 3.8 Flash (High)", "note": "Nhanh, nhẹ hạn mức"},
+            {"id": "gemini-3.8-flash-high", "label": "Gemini 3.8 Flash (High)", "note": "Hiểu video kỹ nhất (mặc định)"},
+            {"id": "gemini-3.8-flash-medium", "label": "Gemini 3.8 Flash (Medium)", "note": "Nhanh hơn, nhẹ hạn mức"},
+            {"id": "gemini-3.8-flash-low", "label": "Gemini 3.8 Flash (Low)", "note": "Nhanh nhất"},
         ],
     },
 }
@@ -933,11 +934,14 @@ _AGY_MODELS = {"at": 0.0, "data": None}
 _agy_tl = threading.local()
 
 
-# Ten model cua Gemini CLI cu (da luu trong Cai dat truoc 2026-09-26) -> ten tuong ung trong agy
+# Ten model cu da luu trong Cai dat -> ten tuong ung trong agy: ten cua Gemini CLI (truoc 2026-09-26)
+# + gemini-3.1-pro-* (agy bo tu 2026-10-14, bao "invalid model selection")
 AGY_LEGACY_MODELS = {
-    "gemini-3.1-pro-preview": "gemini-3.1-pro-high",
-    "gemini-3-pro-preview": "gemini-3.1-pro-high",
-    "gemini-2.5-pro": "gemini-3.1-pro-high",
+    "gemini-3.1-pro-high": "gemini-3.8-flash-high",
+    "gemini-3.1-pro-low": "gemini-3.8-flash-high",
+    "gemini-3.1-pro-preview": "gemini-3.8-flash-high",
+    "gemini-3-pro-preview": "gemini-3.8-flash-high",
+    "gemini-2.5-pro": "gemini-3.8-flash-high",
     "gemini-3-flash-preview": "gemini-3.8-flash-high",
     "gemini-2.5-flash": "gemini-3.8-flash-medium",
 }
@@ -1056,15 +1060,15 @@ def agy_account_email():
 
 
 def _agy_model_note(mid):
-    if mid == "gemini-3.1-pro-high":
-        return "Hiểu video kỹ nhất (chậm hơn)"
+    if mid == SPEC["gemini"]["default_model"]:
+        return "Hiểu video kỹ nhất (mặc định)"
     if mid.startswith("gemini-") and "-pro" in mid:
-        return "Nhanh hơn Pro High"
-    return "Nhanh, nhẹ hạn mức"
+        return "Bản Pro"
+    return "Nhanh hơn, nhẹ hạn mức"
 
 
 def agy_models(refresh=False):
-    """[{id,label,note}] cac model GEMINI tu `agy models` (cache 10 phut), Pro dung dau.
+    """[{id,label,note}] cac model GEMINI tu `agy models` (cache 10 phut), model mac dinh dung dau.
     Model khac (Claude, GPT-OSS...) bi bo: buoc nay can XEM video, chi Gemini lam duoc.
     Loi -> [] (UI dung danh sach du phong)."""
     if not refresh and _AGY_MODELS["data"] is not None and time.time() - _AGY_MODELS["at"] < 600:
@@ -1078,8 +1082,9 @@ def agy_models(refresh=False):
             if len(parts) >= 2 and parts[0].strip().startswith("gemini-") and " " not in parts[0].strip():
                 mid, label = parts[0].strip(), parts[1].strip()
                 out.append({"id": mid, "label": label, "note": _agy_model_note(mid)})
-        # Pro truoc (hieu video tot hon), giu thu tu agy trong tung nhom
-        out.sort(key=lambda m: 0 if "-pro" in m["id"] else 1)
+        # Model da doi ten (AGY_LEGACY_MODELS) chon cung bi doi -> an; mac dinh dung dau, giu thu tu agy
+        out = [m for m in out if m["id"] not in AGY_LEGACY_MODELS]
+        out.sort(key=lambda m: 0 if m["id"] == SPEC["gemini"]["default_model"] else 1)
     _AGY_MODELS["at"], _AGY_MODELS["data"] = time.time(), out
     return out
 
@@ -1145,7 +1150,24 @@ def _agy_result(so):
     return _first_json(so)
 
 
+class AgyUnknownModel(CliError):
+    """agy khong co model nay cho tai khoan (Google go model, vd gemini-3.1-pro-* tu 2026-10-14)."""
+
+
 def _agy_call(path, model, prompt, files, req_timeout, step_label):
+    """Nhu _agy_call_once; model khong con trong agy -> chay lai 1 lan bang model mac dinh
+    (may khach con luu ten model cu khong bi dung buoc)."""
+    try:
+        return _agy_call_once(path, model, prompt, files, req_timeout, step_label)
+    except AgyUnknownModel:
+        fallback = SPEC["gemini"]["default_model"]
+        if model == fallback:
+            raise
+        log_step_note(step_label, "agy: không còn model %s -> chạy lại bằng %s" % (model, fallback))
+        return _agy_call_once(path, fallback, prompt, files, req_timeout, step_label)
+
+
+def _agy_call_once(path, model, prompt, files, req_timeout, step_label):
     """Chay `agy -p` trong thu muc lam viec rieng. files = video dinh kem (theo thu tu).
     Tra text tra loi; nem CliError. Co video ma model khong mo xem -> CliError (tranh ket qua bia)."""
     work = agy_workdir()
@@ -1182,8 +1204,10 @@ def _agy_call(path, model, prompt, files, req_timeout, step_label):
 
     def unknown_model(blob):
         # "Headless mode exits non-zero if an unknown model is specified" — co the chi in ra stderr
-        if "unknown model" in blob.lower() or "model not found" in blob.lower():
-            raise CliError("Antigravity CLI không có model %r cho tài khoản này — chọn model khác trong "
+        low = blob.lower()
+        if ("unknown model" in low or "model not found" in low or "invalid model selection" in low
+                or "not recognized as a known model" in low):
+            raise AgyUnknownModel("Antigravity CLI không có model %r cho tài khoản này — chọn model khác trong "
                            "Cài đặt API.\n\nBước: %s\nCLI báo: %s" % (model, step_label, blob.strip()[:300]))
 
     if not isinstance(data, dict):

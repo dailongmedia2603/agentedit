@@ -63,7 +63,7 @@ try:
         seen.update(model=model, prompt=prompt, files=files, step=step_label)
         return '{"summary": "agy ok"}'
     cli_providers.gemini_video = fake_gv
-    config.set_providers({"gemini": {"auth_mode": "subscription", "sub_model": "gemini-3.1-pro-high"}})
+    config.set_providers({"gemini": {"auth_mode": "subscription", "sub_model": "gemini-3.8-flash-high"}})
     r = providers.gemini_files(items, "PROMPT", step_label="T-agy")
     check("agy: gui dung file theo thu tu", seen.get("files") == [VID, IMG], seen.get("files"))
     check("agy: prompt liet ke file + nhan", "CAC FILE DINH KEM" in seen.get("prompt", "")

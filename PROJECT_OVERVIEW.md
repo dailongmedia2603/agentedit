@@ -259,8 +259,10 @@ is no longer supported...` (do that tren may user). Thay bang Antigravity CLI `a
 bang tai khoan Pro cua user):
 - `agy -p <prompt> --output-format json --disable-slash-commands --print-timeout <n>s --model <m>`,
   thu muc lam viec `~/.capcut-studio/agy-work/`. JSON: `conversation_id`, `status` (SUCCESS|ERROR…),
-  `response`, `error`, `usage`. Model: `agy models` (app chi lay model `gemini-*`, Pro dung dau);
-  mac dinh `gemini-3.1-pro-high`. Ten model cu cua Gemini CLI da luu -> `agy_model()` doi ten.
+  `response`, `error`, `usage`. Model: `agy models` (app chi lay model `gemini-*`, mac dinh dung dau);
+  mac dinh `gemini-3.8-flash-high` (tu 2026-10-14 / v1.8.2: agy 1.2.16 bo `gemini-3.1-pro-*`, bao "invalid model
+  selection"). Ten model cu da luu (Gemini CLI + 3.1 Pro) -> `agy_model()` doi ten (khop `AGY_LEGACY_MODELS` trong
+  Settings.tsx). Model bi Google go sau nay -> `_agy_call` tu chay lai 1 lan bang model mac dinh (AgyUnknownModel).
 - agy la AGENT: video den model qua cong cu `view_file` (image/pdf/video/audio, <= 100 MB) -> inlineData
   video/mp4 (ca hinh + tieng). Prompt liet ke duong dan TUYET DOI tung video (hard link vao
   `jobs/<id>/`). Do that: video thu 12s (so tren man hinh, vat chuyen dong, loi noi tieng Viet) -> dung

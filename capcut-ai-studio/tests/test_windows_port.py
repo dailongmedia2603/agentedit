@@ -83,7 +83,7 @@ finally:
 print("[2] agy: prompt qua stdin (stream-json) tren Windows")
 try:
     C.IS_WIN = True
-    argv, stdin = C._agy_argv("C:\\agy\\agy.exe", BIG, "gemini-3.1-pro-high", 900)
+    argv, stdin = C._agy_argv("C:\\agy\\agy.exe", BIG, "gemini-3.8-flash-high", 900)
     check("Windows: argv KHONG chua prompt", BIG not in " ".join(argv) and "-p=" in argv and "--input-format" in argv
           and argv[argv.index("--input-format") + 1] == "stream-json", argv)
     msg = json.loads(stdin)

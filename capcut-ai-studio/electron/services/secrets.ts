@@ -34,7 +34,7 @@ const DEFAULTS: ProvidersMap = {
     model: 'gemini-2.5-flash',
     api_key: '',
     auth_mode: 'subscription',
-    sub_model: 'gemini-3.1-pro-preview',
+    sub_model: 'gemini-3.8-flash-high',
     sub_effort: ''
   },
   gpt: {

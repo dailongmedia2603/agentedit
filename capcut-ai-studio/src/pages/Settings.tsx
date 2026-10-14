@@ -168,11 +168,13 @@ const CLAUDE_LOGIN_STEPS = [
 /** Provider dang nhap trong cua so Terminal (app chi hoi lai trang thai) */
 const TERMINAL_LOGIN = new Set(['gemini', 'claude'])
 
-/** Ten model cua Gemini CLI cu da luu -> ten trong Antigravity CLI (khop sidecar AGY_LEGACY_MODELS) */
+/** Ten model cu da luu -> ten trong Antigravity CLI (khop sidecar AGY_LEGACY_MODELS; agy bo 3.1 Pro tu 2026-10-14) */
 const AGY_LEGACY_MODELS: Record<string, string> = {
-  'gemini-3.1-pro-preview': 'gemini-3.1-pro-high',
-  'gemini-3-pro-preview': 'gemini-3.1-pro-high',
-  'gemini-2.5-pro': 'gemini-3.1-pro-high',
+  'gemini-3.1-pro-high': 'gemini-3.8-flash-high',
+  'gemini-3.1-pro-low': 'gemini-3.8-flash-high',
+  'gemini-3.1-pro-preview': 'gemini-3.8-flash-high',
+  'gemini-3-pro-preview': 'gemini-3.8-flash-high',
+  'gemini-2.5-pro': 'gemini-3.8-flash-high',
   'gemini-3-flash-preview': 'gemini-3.8-flash-high',
   'gemini-2.5-flash': 'gemini-3.8-flash-medium'
 }

@@ -66,6 +66,7 @@ if "--version" in args:
 if args[:1] == ["models"]:
     print("Fetching available models...")
     print("gemini-3.8-flash-medium\tGemini 3.8 Flash (Medium)")
+    print("gemini-3.8-flash-high\tGemini 3.8 Flash (High)")
     print("gemini-3.1-pro-high\tGemini 3.1 Pro (High)")
     print("claude-sonnet-4-6\tClaude Sonnet 4.6 (Thinking)")
     sys.exit(0)
@@ -82,6 +83,10 @@ with open(os.environ["FAKE_AGY_LOG"], "a") as f:
 mode = os.environ.get("FAKE_AGY_MODE", "ok")
 if mode == "badmodel":
     sys.stderr.write("Error: unknown model %r\n" % model); sys.exit(1)
+if model in os.environ.get("FAKE_AGY_GONE", "").split(","):
+    # agy 1.2.16 that khi Google go model (vd gemini-3.1-pro-high, 2026-10-14)
+    sys.stderr.write('ERROR invalid model selection (--model "%s" --effort ""): model %s is not recognized '
+                     'as a known model or custom model in settings\n' % (model, model)); sys.exit(1)
 os.makedirs(os.path.join(home, "conversations"), exist_ok=True)
 open(os.path.join(home, "conversations", conv + ".db"), "w").write("x" * 3000)
 media = os.path.join(home, "brain", conv, ".tempmediaStorage")
@@ -106,6 +111,11 @@ os.environ["FAKE_AGY_LOG"] = LOG
 def last_rec():
     with open(LOG, encoding="utf-8") as f:
         return json.loads(f.read().strip().splitlines()[-1])
+
+
+def recs():
+    with open(LOG, encoding="utf-8") as f:
+        return [json.loads(l) for l in f.read().strip().splitlines()]
 
 
 def n_recs():
@@ -139,10 +149,10 @@ st = cli_providers.cli_status("gemini")
 check("co file phien -> da dang nhap", st["logged_in"] is True, st)
 check("khong lo token", "BI MAT" not in json.dumps(st, ensure_ascii=False))
 ids = [m["id"] for m in st["models"]]
-check("model lay tu `agy models`, chi Gemini (xem duoc video), Pro dung dau",
-      ids == ["gemini-3.1-pro-high", "gemini-3.8-flash-medium"], ids)
+check("model lay tu `agy models`, chi Gemini (xem duoc video), mac dinh dung dau, an 3.1 Pro (da doi ten)",
+      ids == ["gemini-3.8-flash-high", "gemini-3.8-flash-medium"], ids)
 check("moi model co ghi chu", all(m["note"] for m in st["models"]), st["models"])
-check("mac dinh gemini-3.1-pro-high", st["default_model"] == "gemini-3.1-pro-high")
+check("mac dinh gemini-3.8-flash-high", st["default_model"] == "gemini-3.8-flash-high")
 
 # ---------------------------------------------------------------------------
 section("[2] Goi video qua agy")
@@ -164,7 +174,7 @@ check("tra ve response", '{"sources": []}' in text, text)
 check("--output-format json + --disable-slash-commands + --print-timeout",
       argv[argv.index("--output-format") + 1] == "json" and "--disable-slash-commands" in argv
       and argv[argv.index("--print-timeout") + 1].endswith("s"), argv)
-check("ten model cu Gemini CLI -> gemini-3.1-pro-high", argv[argv.index("--model") + 1] == "gemini-3.1-pro-high", argv)
+check("ten model cu Gemini CLI -> gemini-3.8-flash-high", argv[argv.index("--model") + 1] == "gemini-3.8-flash-high", argv)
 check("prompt goc + huong dan view_file", rec["prompt"].startswith("PROMPT HIEU NGUON") and "view_file" in rec["prompt"])
 check("2 duong dan TUYET DOI dung thu tu, file ton tai luc goi",
       [os.path.basename(p) for p in rec["paths"]] == ["video_1.mp4", "video_2.mov"]
@@ -200,6 +210,22 @@ for mode, want, label in [("auth", "Đăng nhập Google (mở Terminal)", "chua
     except cli_providers.CliError as e:
         check(label + " -> thong bao ro", want in str(e), str(e)[:300])
 os.environ["FAKE_AGY_MODE"] = "ok"
+cli_providers.gemini_video("gemini-3.1-pro-high", "P", [v1], step_label="t4b")
+check("model 3.1 Pro da luu -> chay bang gemini-3.8-flash-high",
+      last_rec()["argv"][last_rec()["argv"].index("--model") + 1] == "gemini-3.8-flash-high", last_rec()["argv"])
+os.environ["FAKE_AGY_GONE"] = "gemini-9-gone"
+before = n_recs()
+txt = cli_providers.gemini_video("gemini-9-gone", "P", [v1], step_label="t4c")
+models = [r["argv"][r["argv"].index("--model") + 1] for r in recs()[before:]]
+check("Google go model (invalid model selection) -> tu chay lai bang mac dinh",
+      models == ["gemini-9-gone", "gemini-3.8-flash-high"] and txt, models)
+os.environ["FAKE_AGY_GONE"] = "gemini-9-gone,gemini-3.8-flash-high"
+try:
+    cli_providers.gemini_video("gemini-9-gone", "P", [v1], step_label="t4d")
+    check("mac dinh cung mat -> nem loi", False, "khong nem")
+except cli_providers.CliError as e:
+    check("mac dinh cung mat -> thong bao ro", "không có model" in str(e), str(e)[:300])
+os.environ.pop("FAKE_AGY_GONE")
 check("loi van don hoi thoai", convs() == ["user-own.db"] and brains() == ["user-own"], (convs(), brains()))
 
 # ---------------------------------------------------------------------------
@@ -223,7 +249,7 @@ os.environ["FAKE_AGY_REPLY"] = json.dumps({"summary": "S", "sources": [{"id": "s
 res = providers._gemini_analyze_videos([{"id": "source_1", "path": v1, "name": "a.mp4", "duration": 3}],
                                        "PROMPT HIEU NGUON", "VIDEO NGUON", step_label="t6")
 rec = last_rec()
-check("di duong agy", res.get("_source") == "agy:gemini-3.1-pro-high", res.get("_source"))
+check("di duong agy", res.get("_source") == "agy:gemini-3.8-flash-high", res.get("_source"))
 check("prompt kem danh sach video", "1. VIDEO NGUON id=source_1, file=a.mp4" in rec["prompt"], rec["prompt"][-300:])
 check("parse JSON", res.get("summary") == "S")
 os.environ["FAKE_AGY_REPLY"] = '{"summary": "GHEP"}'
@@ -234,7 +260,7 @@ check("buoc ghep: system + user trong prompt", "SYS" in rec["prompt"] and "USER"
 os.environ["FAKE_AGY_REPLY"] = '{"ping": "ok"}'
 tc = providers.test_connection("gemini")
 check("test_connection OK qua tai khoan Google", tc.get("ok") and "Antigravity CLI" in tc.get("detail", ""), tc)
-check("test_connection dung ten model agy", "gemini-3.1-pro-high" in tc.get("detail", ""), tc)
+check("test_connection dung ten model agy", "gemini-3.8-flash-high" in tc.get("detail", ""), tc)
 config.set_providers({"gemini": {"auth_mode": "api_key"}})
 check("doi ve API key -> khong con dung CLI", config.uses_subscription("gemini") is False)
 
