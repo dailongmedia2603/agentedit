@@ -98,8 +98,25 @@ export function briefMarkdown(b: MotionBrief, assets: string[]): string {
   return L.join('\n') + '\n'
 }
 
-/** Prompt cho `claude -p` (tieng Anh — skill viet bang tieng Anh; brief tieng Viet nam trong ./brief.md). */
-export function runPrompt(b: MotionBrief): string {
+/** Khoi AM THANH khi co thu vien am thanh cua app (<job>/sound/catalog.json — motion/sound.ts, 2026-10-15). */
+function soundBlock(vo: boolean): string[] {
+  return [
+    '',
+    'SOUND DESIGN (there is no ElevenLabs key; use the local library instead — do NOT call voice.py sfx/music):',
+    '- Read sound/catalog.json. Paths in it are relative to the current folder; pass them to mix.py exactly as written.',
+    '- Pick ONE sound world from sfx_worlds whose character fits the brand and your idea (e.g. cong_nghe for a SaaS UI film, am_ap for a warm human story, dien_anh for a big reveal, vui_nhon for playful, toi_gian for premium / finance / health) and use ITS sounds (whoosh, swoosh, pop, click, boom, riser, ding, typing) for the picture events. Add a sfx_library sound only when its summary / use_when fits one specific moment; never use joke / meme sounds unless the brief is comedic.',
+    '- Place SFX on PICTURE events: render the draft, read film/draft.mp4.events.json (render.mjs writes it from window.__events), choose the few events that deserve sound (a new world, a reveal, the product / logo hit, a deliberate click) and write film/events.json as [{"t": <seconds>, "sfx": "<path from the catalog>", "gain": <dB, about -6 to -14>}]. To land a sound\'s peak on an event at time T use t = T - peak_time. Restraint is the craft: SFX mark changes, not every word; leave a beat of silence before the hero reveal; vary the sounds.',
+    '- Music: choose at most ONE track from music whose energy / tempo / moods fit the film (or none for a very short sting) and say why in NOTE.md. It starts with the film; mix.py trims it with a 1 s fade-out.',
+    vo
+      ? '- Mix: python3 "$SKILL/scripts/mix.py" --duration <s> --vo <your VO clips> --music <track path> --duck --events film/events.json --out film/audio/mix.wav, then render the final with --audio film/audio/mix.wav.'
+      : '- Mix (music-led film, no voice): python3 "$SKILL/scripts/mix.py" --duration <s> --music <track path> --music-gain -14 --events film/events.json --out film/audio/mix.wav, then render the final with --audio film/audio/mix.wav. Cut the picture to the music grid where it helps.',
+    '- Run look.py on the final with --expect-audio and fix anything it flags about loudness or silence. In NOTE.md, name the sound world, the track and each SFX moment and why.'
+  ]
+}
+
+/** Prompt cho `claude -p` (tieng Anh — skill viet bang tieng Anh; brief tieng Viet nam trong ./brief.md).
+ *  opts.sound: co thu vien am thanh (<job>/sound/catalog.json) -> skill tu thiet ke SFX + nhac nen. */
+export function runPrompt(b: MotionBrief, opts: { sound?: boolean } = {}): string {
   const sz = ASPECT_SIZE[b.aspect] || ASPECT_SIZE['9:16']
   const dur = clampDuration(b.duration)
   const lang = LANGS[b.language] || b.language || LANGS.vi
@@ -127,8 +144,13 @@ export function runPrompt(b: MotionBrief): string {
       clean(b.voice.script)
         ? '- The brief contains the user\'s voice-over script: use it word for word (you may only split it into lines).'
         : '- Write the script yourself in the brand\'s voice (one short line per beat, about 2.5-3 words per second for the planned length).',
-      '- Cut the picture to the voice (sync.mjs) and mix the VO into the final with mix.py; there is no ElevenLabs key, so skip sfx and music (do not call voice.py sfx/music).'
+      opts.sound
+        ? '- Cut the picture to the voice (sync.mjs) and mix the VO into the final with mix.py, together with the SFX and music below.'
+        : '- Cut the picture to the voice (sync.mjs) and mix the VO into the final with mix.py; there is no ElevenLabs key, so skip sfx and music (do not call voice.py sfx/music).'
     )
+    if (opts.sound) P.push(...soundBlock(true))
+  } else if (opts.sound) {
+    P.push('', 'No voice-over in this film (do not call voice.py vo).', ...soundBlock(false))
   } else {
     P.push('', 'SOUND: no voice-over in this film and there is no ElevenLabs key — make a film that works silent (do not call voice.py).')
   }

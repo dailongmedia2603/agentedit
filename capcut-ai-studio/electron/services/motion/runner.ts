@@ -10,10 +10,12 @@ import { basename, extname, join } from 'path'
 import { randomBytes } from 'crypto'
 import { cmdQuote, killTree, needsShell, IS_WIN } from '../env'
 import { readState, writeState, motionJobsOf, MOTION_JOB_MAX } from '../state'
-import { TOOLS_BIN } from '../paths'
+import { ENGINE_HOME, TOOLS_BIN } from '../paths'
+import { sidecarRequest } from '../sidecar'
 import { bundledSkillDir, MOTION_HOME, MOTION_JOBS_DIR } from './paths'
 import { installSkill, linkSkill } from './skill'
 import { briefMarkdown, briefTitle, runPrompt, validateBrief } from './prompt'
+import { prepareSound, type SoundSummary } from './sound'
 import { parseStreamLine, stageLabel } from './stages'
 import { allJobs, getJob, patchJob, putJob, recoverOnStart, removeJob } from './store'
 import { claudeRun, ensureChrome, ensureShims, skillEnv } from './tools'
@@ -337,7 +339,17 @@ async function runJob(job: MotionJob, r: Running): Promise<void> {
   log(`Skill motionmaxxing ${sk.version}`)
   const assets = readdirSync(join(dir, 'inputs')).filter((f) => !f.startsWith('.'))
   writeFileSync(join(dir, 'brief.md'), briefMarkdown(job.brief, assets))
-  const prompt = runPrompt(job.brief)
+  // Am thanh: bo tieng the gioi + SFX kho + nhac nen (sidecar) -> <job>/sound/ (khong co -> video chi co loi doc / cam)
+  let sound: SoundSummary | null = null
+  try {
+    const cat = await sidecarRequest('/sound/catalog', {}, 120000)
+    sound = cat?.ok ? prepareSound(dir, cat, join(ENGINE_HOME, 'sfx'), join(ENGINE_HOME, 'music')) : null
+    log(sound ? `Âm thanh: ${sound.worlds} bộ tiếng, ${sound.library} SFX trong kho, ${sound.music} bài nhạc nền`
+      : 'Không có thư viện âm thanh — video không có SFX / nhạc nền')
+  } catch (e) {
+    log('Không lấy được thư viện âm thanh: ' + String((e as Error).message || e).slice(0, 200))
+  }
+  const prompt = runPrompt(job.brief, { sound: !!sound })
   writeFileSync(join(dir, 'prompt.txt'), prompt)
   const mcp = join(dir, '.mcp-empty.json')
   writeFileSync(mcp, '{"mcpServers":{}}')

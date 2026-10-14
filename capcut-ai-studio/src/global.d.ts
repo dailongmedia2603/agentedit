@@ -1300,7 +1300,56 @@ declare global {
     /** nhac nen ca video (B7 chon trong Kho nhac nen); track_id null = AI chon khong dung (co ly do) */
     music?: { track_id: string | null; name?: string; muc?: string; ly_do?: string; by?: 'ai' | 'code' } | null
     _pipeline?: { story_arc?: string; tone?: string; notes?: string; [k: string]: unknown }
+    /** BAN CHI DAO cua dao dien (sidecar director.py) — null khi buoc dao dien loi / du an cu */
+    chi_dao?: DirectorTreatment | null
     [k: string]: unknown
+  }
+  interface DirectorBeat {
+    tu_segment: number
+    den_segment: number
+    timeline_tu?: number | null
+    timeline_den?: number | null
+    vai_tro: string
+    cam_xuc?: string
+    nang_luong: number
+    hinh?: string
+    camera?: string
+    chuyen_canh_vao?: string
+    am_thanh?: string
+    chu_nhan?: string[]
+    tiet_che?: string
+  }
+  interface DirectorTreatment {
+    chu_de_that?: string
+    dieu_dong_lai?: string
+    y_tuong_lon?: string
+    the_gioi_hinh?: string
+    mo_tip?: { ten: string; mo_ta: string }[]
+    the_loai?: string
+    cuong_do: number
+    ly_do_cuong_do?: string
+    nhip_cat?: string
+    mau_nhan?: string
+    chu?: string
+    am_thanh?: {
+      the_gioi: string
+      ly_do?: string
+      nhac?: string
+      nhac_tat?: { loi_noi?: string; khi?: 'truoc' | 'sau' } | null
+      mat_do_sfx?: string
+      mo_tip_am?: string
+    }
+    hook?: { cam_xuc?: string; cach_mo?: string; muc_do?: string }
+    nhip?: DirectorBeat[]
+    khoanh_khac_dau_an?: { segment: number; loi_noi?: string; y_tuong?: string; vi_sao?: string }[]
+    khoang_lang?: { segment: number; loi_noi?: string; vi_sao?: string }[]
+    cam?: string[]
+  }
+  /** Ket qua buoc dao dien duyet ban dung (plan._pipeline.dao_dien_duyet) */
+  interface DirectorReview {
+    nhan_xet?: string
+    diem?: Record<string, number> | null
+    thay_doi?: string[]
   }
   interface RemotionSummary {
     do_dai?: number

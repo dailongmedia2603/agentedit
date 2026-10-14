@@ -169,6 +169,22 @@ PROMPTS = [
              "rất nhỏ / nhỏ / vừa. Độ to THẬT do code tính theo giọng nói của chính video (thanh trượt ở Kho nhạc nền), "
              "không bao giờ lấn giọng; nhạc bắt đầu SAU hook, tự giảm khi meme cắt vào, fade ở cuối. AI không chọn / "
              "chọn sai id → hệ thống tự chọn bài hợp nhãn nhất."},
+    {"id": "_DIRECTOR_SYSTEM", "group": "plan", "module": "director", "own_key": True,
+     "title": "DD · Đạo diễn — bản chỉ đạo",
+     "used_in": "Bước Plan — ngay sau B2 (nội dung đã chốt), trước B3 hook",
+     "info": "Một lượt AI làm ĐẠO DIỄN: đọc toàn bộ lời nói đã chốt + phân tích Gemini (cảm xúc, khoảnh khắc, bằng "
+             "chứng) + video mẫu + yêu cầu edit + SỔ TAY các video gần đây (ý tưởng, chiêu đã dùng — để không lặp) rồi viết "
+             "BẢN CHỈ ĐẠO riêng cho video: chủ đề thật, ý tưởng lớn bám chi tiết thật của video, thế giới hình, mô-típ, "
+             "cường độ 1-5, đường cong cảm xúc theo từng nhịp, khoảnh khắc dấu ấn, khoảng lặng có chủ đích, thế giới âm "
+             "thanh, cách mở hook, danh sách cấm. Bản chỉ đạo đi vào MỌI bước sau (hook, thiết kế, chữ, hiệu ứng, meme, "
+             "SFX); code ép mức hook, bộ âm thanh và khoảng lặng. Lỗi → các bước chạy như trước (không có chỉ đạo)."},
+    {"id": "_DIRECTOR_REVIEW_SYSTEM", "group": "plan", "module": "director", "own_key": True,
+     "title": "DD · Đạo diễn — duyệt bản dựng",
+     "used_in": "Bước Plan — sau B7 (mọi bộ phận đã đặt xong), trước khi ráp bản dựng",
+     "info": "Đạo diễn xem lại bản dựng theo từng nhịp (chữ, hiệu ứng tự viết, chuyển cảnh, meme, SFX) cùng số liệu LẶP do "
+             "code đếm (trong video + so với các video gần đây) rồi BỎ / ĐỔI những gì rập khuôn, lấn khoảnh khắc dấu ấn, "
+             "rơi vào khoảng lặng hay sai cảm xúc nhịp. Code chỉ cho bỏ hoặc đổi trong danh mục (kiểu vào chữ, chuyển "
+             "cảnh), không đụng phần của hook / tư liệu của bạn, mỗi loại bỏ tối đa 45%."},
     {"id": "_CREATIVE_RULE", "group": "plan", "module": "creative",
      "title": "Luật sáng tạo + cảm xúc (chung)",
      "used_in": "Hệ thống tự nối vào B3 hook, R4 thiết kế, R5 chữ, FX hiệu ứng, B6 meme, B7 SFX",

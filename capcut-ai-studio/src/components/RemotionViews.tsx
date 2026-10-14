@@ -72,6 +72,135 @@ function layerLabel(L: RSLayer): string {
   return LAYER_TYPE_LABEL[L.type] || L.type
 }
 
+const SOUND_WORLD_LABEL: Record<string, string> = {
+  am_ap: 'Ấm áp',
+  cong_nghe: 'Công nghệ',
+  dien_anh: 'Điện ảnh',
+  vui_nhon: 'Vui nhộn',
+  toi_gian: 'Tối giản'
+}
+
+const BEAT_ROLE_LABEL: Record<string, string> = {
+  hook: 'Hook',
+  mo: 'Mở',
+  dan: 'Dẫn',
+  day_len: 'Dâng lên',
+  cao_trao: 'Cao trào',
+  lang: 'Lắng',
+  xoay: 'Xoay chuyển',
+  chot: 'Chốt',
+  cta: 'Kêu gọi'
+}
+
+const REVIEW_SCORE_LABEL: Record<string, string> = {
+  dung_chu_de: 'Đúng chủ đề',
+  khac_biet: 'Khác biệt',
+  cam_xuc: 'Cảm xúc'
+}
+
+/** Ban chi dao cua dao dien (director.py) + ket qua buoc duyet. */
+function DirectorView({ cd, review }: { cd: DirectorTreatment; review?: DirectorReview | null }) {
+  const am = cd.am_thanh
+  return (
+    <div className="space-y-2.5 rounded-xl border border-violet-300/40 bg-violet-50/40 p-3">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="text-xs font-semibold text-violet-800">Chỉ đạo của đạo diễn</span>
+        <Badge tone="neutral">Cường độ {cd.cuong_do}/5</Badge>
+        {am?.the_gioi && <Badge tone="neutral">Âm thanh: {SOUND_WORLD_LABEL[am.the_gioi] || am.the_gioi}</Badge>}
+        {cd.hook?.muc_do && <Badge tone="neutral">Hook {cd.hook.muc_do}</Badge>}
+      </div>
+      {cd.y_tuong_lon && <p className="text-[13px] font-medium leading-relaxed text-ink-900">{cd.y_tuong_lon}</p>}
+      <div className="space-y-1 text-xs leading-relaxed text-ink-800/70">
+        {cd.chu_de_that && (
+          <div>
+            <b className="text-ink-800/85">Chủ đề thật:</b> {cd.chu_de_that}
+            {cd.dieu_dong_lai ? ` — đọng lại: ${cd.dieu_dong_lai}` : ''}
+          </div>
+        )}
+        {cd.the_gioi_hinh && (
+          <div>
+            <b className="text-ink-800/85">Thế giới hình:</b> {cd.the_gioi_hinh}
+          </div>
+        )}
+        {!!cd.mo_tip?.length && (
+          <div>
+            <b className="text-ink-800/85">Mô-típ:</b> {cd.mo_tip.map((m) => `${m.ten} — ${m.mo_ta}`).join(' · ')}
+          </div>
+        )}
+        {cd.hook?.cach_mo && (
+          <div>
+            <b className="text-ink-800/85">Mở hook:</b> {cd.hook.cach_mo}
+          </div>
+        )}
+        {am && (am.nhac || am.ly_do) && (
+          <div>
+            <b className="text-ink-800/85">Âm thanh:</b> {[am.ly_do, am.nhac].filter(Boolean).join(' · ')}
+            {am.nhac_tat?.loi_noi ? ` · tắt nhạc ${am.nhac_tat.khi === 'truoc' ? 'trước' : 'sau'} “${am.nhac_tat.loi_noi}”` : ''}
+          </div>
+        )}
+      </div>
+      {!!cd.nhip?.length && (
+        <div className="space-y-1">
+          {cd.nhip.map((b, i) => (
+            <div key={i} className="flex gap-2 rounded-lg bg-white/70 px-2.5 py-1.5 text-xs leading-relaxed">
+              <div className="w-20 shrink-0 text-ink-800/50">
+                {b.timeline_tu != null ? fmtTime(b.timeline_tu) : ''}–{b.timeline_den != null ? fmtTime(b.timeline_den) : ''}
+                <div className="mt-0.5 flex gap-0.5" title={`Năng lượng ${b.nang_luong}/5`}>
+                  {[1, 2, 3, 4, 5].map((k) => (
+                    <span key={k} className={`h-1.5 w-2.5 rounded-sm ${k <= b.nang_luong ? 'bg-violet-500' : 'bg-black/10'}`} />
+                  ))}
+                </div>
+              </div>
+              <div className="min-w-0 text-ink-800/70">
+                <b className="text-ink-900">{BEAT_ROLE_LABEL[b.vai_tro] || b.vai_tro}</b>
+                {b.cam_xuc ? ` · ${b.cam_xuc}` : ''}
+                {b.hinh && <div>{b.hinh}</div>}
+                {b.tiet_che && <div className="text-ink-800/45">Tiết chế: {b.tiet_che}</div>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {!!cd.khoanh_khac_dau_an?.length && (
+        <div className="text-xs leading-relaxed text-ink-800/70">
+          <b className="text-ink-800/85">Khoảnh khắc dấu ấn:</b>{' '}
+          {cd.khoanh_khac_dau_an.map((k) => `“${k.loi_noi}” — ${k.y_tuong}`).join(' · ')}
+        </div>
+      )}
+      {!!cd.khoang_lang?.length && (
+        <div className="text-xs leading-relaxed text-ink-800/70">
+          <b className="text-ink-800/85">Khoảng lặng:</b> {cd.khoang_lang.map((k) => `“${k.loi_noi}”`).join(' · ')}
+        </div>
+      )}
+      {!!cd.cam?.length && (
+        <div className="text-xs leading-relaxed text-ink-800/55">
+          <b className="text-ink-800/75">Không dùng:</b> {cd.cam.join(' · ')}
+        </div>
+      )}
+      {review && (review.nhan_xet || review.thay_doi?.length) && (
+        <div className="rounded-lg bg-white/70 px-2.5 py-2 text-xs leading-relaxed text-ink-800/70">
+          <div className="mb-0.5 flex flex-wrap items-center gap-1.5">
+            <b className="text-ink-900">Đạo diễn duyệt bản dựng</b>
+            {Object.entries(review.diem || {}).map(([k, v]) => (
+              <Badge key={k} tone="neutral">
+                {REVIEW_SCORE_LABEL[k] || k} {v}/10
+              </Badge>
+            ))}
+          </div>
+          {review.nhan_xet && <div>{review.nhan_xet}</div>}
+          {!!review.thay_doi?.length && (
+            <ul className="mt-1 list-disc space-y-0.5 pl-4 text-ink-800/55">
+              {review.thay_doi.map((c, i) => (
+                <li key={i}>{c}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function RemotionPlanView({
   plan,
   spec,
@@ -94,6 +223,7 @@ export function RemotionPlanView({
   const tuLieu = (pipe.tu_lieu as UserMediaUsage[] | undefined) || []
   return (
     <div className="space-y-3 text-sm">
+      {plan.chi_dao && <DirectorView cd={plan.chi_dao} review={pipe.dao_dien_duyet as DirectorReview | null | undefined} />}
       {(pipe.story_arc || pipe.tone) && (
         <p className="text-ink-800/75">
           {pipe.story_arc && <span>{String(pipe.story_arc)}</span>}

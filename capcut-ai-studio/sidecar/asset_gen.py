@@ -152,6 +152,10 @@ def _context_text(ctx):
         rows.append("- Boi canh / san pham that trong video nguon: %s" % ctx["boi_canh_nguon"])
     if ctx.get("tone"):
         rows.append("- Giong video: %s" % ctx["tone"])
+    if ctx.get("the_gioi_hinh"):
+        # dao dien (director.py): anh thuoc THE GIOI HINH chung cua video -> moi anh cung chat lieu / anh sang / mau
+        rows.append("- THE GIOI HINH cua video (dao dien chot — anh phai thuoc the gioi nay: chat lieu, anh sang, "
+                    "ket cau, logic mau): %s" % ctx["the_gioi_hinh"])
     bv = ctx.get("thuong_hieu")
     if isinstance(bv, dict) and bv:
         # Brand Guideline cua khach hang (motion_design.asset_contexts) — BAT BUOC theo, uu tien hon phong cach chung

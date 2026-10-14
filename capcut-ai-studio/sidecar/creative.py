@@ -54,5 +54,7 @@ _BUOC = {
 
 
 def luat(buoc):
-    """Khoi luat sang tao + cam xuc noi vao system prompt cua buoc `buoc` (B3 | R4 | R5 | FX | B6 | B7)."""
-    return prompt_store.get_prompt("_CREATIVE_RULE", _CREATIVE_RULE) + _BUOC.get(buoc, "")
+    """Khoi luat sang tao + cam xuc noi vao system prompt cua buoc `buoc` (B3 | R4 | R5 | FX | B6 | B7) + khoi CHI DAO
+    CUA DAO DIEN (director.luat, 2026-10-15: cac buoc thuc hien ban chi dao chung trong cau_chuyen.chi_dao)."""
+    import director
+    return prompt_store.get_prompt("_CREATIVE_RULE", _CREATIVE_RULE) + _BUOC.get(buoc, "") + director.luat(buoc)

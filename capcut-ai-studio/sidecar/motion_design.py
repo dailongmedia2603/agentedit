@@ -545,6 +545,9 @@ def asset_contexts(design, transcript_data=None, story=None, sources=None, user_
                "minh_hoa": str(a.get("illustrates") or a.get("why") or "")[:300],
                "chu_de": str(story.get("story_arc") or "")[:400],
                "tone": str(story.get("tone") or "")[:120],
+               # chi co khi dao dien chay (director.py) -> du an cu giu nguyen khoa cache anh
+               "the_gioi_hinh": str(((story.get("chi_dao") or {}) if isinstance(story.get("chi_dao"), dict) else {})
+                                    .get("the_gioi_hinh") or "")[:400],
                "chu_tren_anh": " / ".join(chu)[:200],
                "boi_canh_nguon": src_desc[:400],
                # chi co khi khung NGANG (canvas.py) -> anh cua video doc giu nguyen khoa cache cu

@@ -1449,11 +1449,16 @@ def _build_spec(plan, log=None):
         # caption hero / hook da chon mau Kho Text -> lop mau (truoc khi gan tieng: tieng cua mau di theo lop)
         MD.text_lib_captions(p, layers, duration, changes)
     motion = bool(scenes or layers)
-    if layers:
-        p["audio"] = list(p.get("audio") or []) + MD.layer_sfx(layers, changes)
-    if p.get("fx"):
-        import fx_flow as FX
-        p["audio"] = list(p.get("audio") or []) + FX.fx_sfx(p, changes)
+    # DAO DIEN (director.py): tieng chu / lop / hieu ung lay theo THE GIOI AM THANH cua video (khong co -> bo kit-* cu)
+    import director
+    import sfx_kit
+    world = director.sound_world(p)
+    with sfx_kit.use_world(world):
+        if layers:
+            p["audio"] = list(p.get("audio") or []) + MD.layer_sfx(layers, changes)
+        if p.get("fx"):
+            import fx_flow as FX
+            p["audio"] = list(p.get("audio") or []) + FX.fx_sfx(p, changes)
     # KHONG con tran so SFX ca video (user 2026-10-01: tran 16 lam moi chu sau giay ~56 mat tieng). Chi con gian
     # cach cho SFX KHONG gan voi chu; tieng cua chu khong bao gio bi bo vi gian cach (MD.is_text_sfx)
     sfx_gap = min(plan_guard.SFX_MIN_GAP, 0.3) if motion else plan_guard.SFX_MIN_GAP
@@ -1491,12 +1496,36 @@ def _build_spec(plan, log=None):
                                    % (a.get("sfx_id"), st))
                     continue
             elif st - last < sfx_gap:
-                changes.append("audio %s: sat SFX truoc (<%.2fs) -> bo" % (a.get("sfx_id"), sfx_gap))
-                continue
+                # tieng HOOK (AI / luat hook chon) uu tien hon tieng chu tu gan dung sat (truoc 2026-10-15 tieng chu o
+                # 0.0s chan mat tieng hook o 0.02s -> hook im / luat hook chen du phong)
+                # tieng cua LUAT HOOK (da do: am thanh dau video chua du ro) thay moi SFX thuong dung sat; tieng hook
+                # cua B7 / AI chi thay tieng tu gan (chu / lop / hieu ung)
+                fb = a.get("_hook_rule") == "fallback"   # du phong = luat hook da do: tieng hook dang co QUA NHO
+                de = [x for x in kept if (a.get("_hook_rule") or MD.is_text_sfx(x) or x.get("_from_layer"))
+                      and not x.get("_tpl") and not x.get("_hook_rule") and (fb or x.get("anchor") != "hook")
+                      and st - providers._f(x.get("start")) < sfx_gap and (x.get("role") or "sfx") != "bgm"
+                      ] if (a.get("anchor") == "hook" or a.get("_hook_rule")) else []
+                if not de:
+                    changes.append("audio %s: sat SFX truoc (<%.2fs) -> bo" % (a.get("sfx_id"), sfx_gap))
+                    continue
+                kept = [x for x in kept if x not in de]
+                changes.append("audio %s (hook) thay tieng chu sat do (%s)" % (
+                    a.get("sfx_id"), ", ".join(str(x.get("sfx_id")) for x in de)))
             last = max(last, st)
         kept.append(a)
     # LUAT (user 2026-10-01): MOI chu hien ra deu co tieng — chu AI chua gan / B7 chua dat -> code tu gan tieng hop chu
-    kept += MD.ensure_text_sfx(layers, p.get("captions"), kept, duration, changes)
+    with sfx_kit.use_world(world):
+        kept += MD.ensure_text_sfx(layers, p.get("captions"), kept, duration, changes)
+    # KHOANG LANG CO CHU DICH cua dao dien: cau do de tron — khong SFX (tru tieng cua hook / hoat canh mau Kho Text)
+    quiet = director.silent_windows(p, map_range)
+    if quiet:
+        bo = [a for a in kept if (a.get("role") or "sfx") != "bgm" and a.get("anchor") != "hook" and not a.get("_tpl")
+              and director.in_windows(providers._f(a.get("start")), quiet)]
+        if bo:
+            kept = [a for a in kept if a not in bo]
+            changes.append("khoang lang cua dao dien (%s): bo %d SFX (%s)" % (
+                ", ".join("%.1f-%.1fs" % w for w in quiet), len(bo),
+                ", ".join("%s@%.1f" % (a.get("sfx_id"), providers._f(a.get("start"))) for a in bo)[:300]))
     kept.sort(key=lambda a: providers._f(a.get("start")))
     p["audio"] = kept
     # muc to giong noi cua CHINH video nay -> SFX / meme can theo no (khong theo muc tuyet doi)
@@ -1600,6 +1629,8 @@ def _build_spec(plan, log=None):
         # NHAC NEN (kho nhac nen): SAU hook toi het video, can theo giong noi, ha khi meme cat vao, fade 2 dau
         import music_lib
         try:
+            # dao dien chon TAT nhac o 1 cau (director.music_stop) -> nhac fade het truoc / sau cau do
+            p["_music_stop"] = director.music_stop(p, map_range)
             spec["audio"] += music_lib.to_spec(p, spec, changes)
         except Exception as ex:
             changes.append("bo qua nhac nen (%s)" % str(ex)[:120])

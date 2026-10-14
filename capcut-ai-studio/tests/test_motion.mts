@@ -109,6 +109,40 @@ const baseBrief = () => ({
   check('thoi luong kep 6..90', PR.clampDuration(2) === 6 && PR.clampDuration(500) === 90 && PR.clampDuration('x') === 20)
   const sq = PR.briefMarkdown({ ...baseBrief(), aspect: '1:1' } as any, [])
   check('khung vuong 1080x1080', sq.includes('1080x1080'))
+  // AM THANH (2026-10-15): co thu vien am thanh -> skill tu thiet ke SFX + nhac (khong con "skip sfx and music")
+  check('khong thu vien am thanh -> nhu cu (bo sfx/nhac)', /skip sfx and music/.test(p) && !/sound\/catalog\.json/.test(p))
+  const ps = PR.runPrompt(baseBrief() as any, { sound: true })
+  check('co thu vien: doc sound/catalog.json, chon 1 the gioi, SFX theo su kien hinh, nhac, mix.py --duck',
+    ps.includes('sound/catalog.json') && /ONE sound world/.test(ps) && ps.includes('draft.mp4.events.json')
+    && ps.includes('--duck') && ps.includes('--audio film/audio/mix.wav') && !/skip sfx and music/.test(ps), ps.slice(-1500))
+  const ss = PR.runPrompt({ ...baseBrief(), voice: { enabled: false } } as any, { sound: true })
+  check('co thu vien + khong loi doc -> phim theo nhac (khong goi voice.py vo)', /music-led/.test(ss) && !ss.includes('--provider saydi')
+    && !/works silent/.test(ss), ss.slice(-900))
+}
+
+// ------------------------------------------------------------------ 2b. thu vien am thanh cho job
+console.log('[2b] thu vien am thanh <job>/sound/')
+{
+  const SD = await import('../electron/services/motion/sound.ts')
+  const root = mkdtempSync(join(tmpdir(), 'motion-sound-'))
+  const sfxDir = join(root, 'sfx'), musicDir = join(root, 'music'), job = join(root, 'job')
+  mkdirSync(sfxDir, { recursive: true }); mkdirSync(musicDir, { recursive: true }); mkdirSync(job, { recursive: true })
+  writeFileSync(join(sfxDir, 'kw-am_ap-pop.wav'), 'x'); writeFileSync(join(sfxDir, 'ding.mp3'), 'x')
+  writeFileSync(join(musicDir, 'm1.mp3'), 'x')
+  const sum = SD.prepareSound(job, {
+    sfx_worlds: { am_ap: { name: 'Ấm áp', character: 'mộc', sounds: [{ family: 'pop', file: join(sfxDir, 'kw-am_ap-pop.wav') },
+      { family: 'ding', file: join(sfxDir, 'mat.wav') }] } },
+    sfx_library: [{ id: 'ding', file: join(sfxDir, 'ding.mp3') }, { id: 'ngoai', file: join(root, 'ngoai.mp3') }],
+    music: [{ id: 'm1', file: join(musicDir, 'm1.mp3') }]
+  }, sfxDir, musicDir)
+  const cat = JSON.parse(readFileSync(join(job, 'sound', 'catalog.json'), 'utf8'))
+  check('dem dung muc dung duoc (file mat / ngoai kho bi bo)', sum?.worlds === 1 && sum?.library === 1 && sum?.music === 1, sum)
+  check('duong dan tuong doi trong job + lien ket doc duoc', cat.sfx_worlds.am_ap.sounds[0].file === 'sound/sfx/kw-am_ap-pop.wav'
+    && cat.music[0].file === 'sound/music/m1.mp3' && existsSync(join(job, cat.music[0].file))
+    && lstatSync(join(job, 'sound', 'sfx')).isSymbolicLink(), cat)
+  check('danh muc rong -> null, khong ghi file', SD.prepareSound(join(root, 'job2'), { sfx_worlds: {}, music: [] }, sfxDir, musicDir) === null
+    && !existsSync(join(root, 'job2', 'sound', 'catalog.json')))
+  check('khong co danh muc -> null', SD.prepareSound(job, null, sfxDir, musicDir) === null)
 }
 
 // ------------------------------------------------------------------ 3. stream-json

@@ -1771,6 +1771,72 @@ CO DINH SaydiVoice; Cai dat API them the SaydiVoice. Luong Edit Video (Remotion,
   Claude + Saydi THAT, in [MOTION] buoc / RESULT); ban dong goi: `selftest-packaged.mjs` [6c] (skill trong goi + render.mjs
   bang Electron-as-Node + Chrome Headless + look.py bang Python nhung).
 
+## 18. DAO DIEN cho Edit Video + THE GIOI AM THANH + am thanh cho Tao video (2026-10-15, `sidecar/director.py`)
+
+User: "ke hoach edit phai co DAO DIEN that su, dua vao chu de that cua TUNG video (phan Gemini da phan tich), khong phai
+chuyen dong / cach edit AI rap khuon". Do 8 ke hoach gan nhat tren may: chu de khac nhau ma video nao cung punch-in
+1.00->1.12-1.18 vao mat o hook, dai sang cheo, 4 goc khung ngam chu L, thanh tien trinh mong, giam bao hoa luc noi dau ->
+am len luc giai phap, light leak, vignette; font barlow_condensed + dancing_script; SFX kit-whoosh / kit-boom. Nguyen nhan:
+moi buoc (B3 / R4 / R5 / FX / B6 / B7) tu doc lai cau chuyen + tu quyet cao trao, khong ai giu Y TUONG CHUNG.
+(Tham khao y tuong tu github.com/Miftahul-Islam-Efaz/Motion-graphics-skill — repo KHONG co LICENSE, "All rights reserved"
+-> chi hoc y, khong chep chu.)
+
+- **DD-chi-dao** (sau B2 + danh gia giong, TRUOC B3; `director.gpt_direct` -> `normalize`): 1 luot Claude doc timeline da
+  chot (loi noi + emphasis, cam xuc Gemini KEM bang chung, khoanh khac), tom tat Gemini, video mau, Brand Guideline, tu lieu,
+  SO TAY video gan day + `chieu_lap_nhieu`, 5 the gioi am thanh, `kha_nang_bo_dung` (font THEO ID danh muc, bo cuc, loai lop,
+  kieu vao, chuyen canh, hieu ung tu viet, anh AI, nhac — de y tuong lam duoc; "khong cat lai"). Ra BAN CHI DAO: chu de that,
+  dieu dong lai, y tuong lon (moc chi tiet that), the gioi hinh, mo tip, cuong do 1-5, nhip cat, mau nhan, giong chu,
+  am thanh {the_gioi, nhac, nhac_tat, mat_do_sfx, mo_tip_am}, hook {cam_xuc, cach_mo, muc_do}, nhip[] (segment lien tiep phu
+  kin timeline: vai tro, cam xuc, nang_luong 1-5, hinh, camera, chuyen canh, am thanh, chu nhan, tiet che), khoanh khac dau
+  an, khoang lang, cam. `normalize` (code): nhip phu kin + gio nguon / timeline, trich loi -> gio nguon cau (bo dau so khop
+  >= 50% tu), khoang lang trung dau an bi bo, cuong do / muc hook / the gioi sai -> suy theo tone. Ban chi dao vao
+  `story["chi_dao"]` -> moi buoc sau (payload `cau_chuyen` + khoa cache) + `plan["chi_dao"]`. Loi -> chay nhu truoc (canh bao).
+- **Luat** `director.luat(buoc)` noi qua `creative.luat` (B3 / R4 / R5 / FX / B6 / B7, ke ca prompt user sua). Code ep: muc
+  hook `hook_rule.muc_do` = YEU CAU EDIT > dao dien > B3 > tone; anh AI nhan `the_gioi_hinh` (asset_gen); B7 chi thay bo
+  tieng the gioi da chon (bo kit-* + the gioi khac); build_spec: tieng chu / lop / hieu ung theo the gioi (`sfx_kit.use_world`),
+  KHOANG LANG bo moi SFX (tru hook / mau Kho Text), `nhac_tat` -> `p["_music_stop"]` -> music_lib fade het tai cau do.
+- **DD-duyet** (sau B7, chay trong luc Codex tao chu / anh): `review_view` = ban dung THEO NHIP (lop / to hop / caption nhan /
+  hieu ung + nhan chieu / chuyen canh / meme / SFX, co id) + `thong_ke_lap` + `chieu_lap_nhieu` + danh muc -> Claude tra bo /
+  doi kieu vao / doi chuyen canh. `apply_review` (code): chi bo / doi trong danh muc, KHONG dung phan tu hook / tu lieu, tran
+  45% moi loai; ghi `_pipeline.dao_dien_duyet` {nhan_xet, diem, thay_doi}.
+- **So tay** `~/.capcut-studio/director_memory.json` (24 video): `remember` sau moi ke hoach (y tuong, mo tip, the gioi, chieu
+  da dung gan nhan bang code `tag_text` — regex tren mo ta FX bo dau, font, chuyen canh). Lan dau GIEO tu projects.json (chi
+  doc) -> do that may user: 6/6 video gan nhat co punch_zoom, light_sweep, vignette, shake, grade_shift. Khong nam trong khoa
+  cache DD (lap lai du an cu van dung lai ban chi dao); du an dang lam khong tinh vao so tay cua chinh no.
+- **The gioi am thanh** (`sfx_kit.WORLDS`, id `kw-<the_gioi>-<ho>`, 5 x 8 ho, numpy tat dinh — seed crc32, WAV 44.1k): am_ap
+  (go / bong bong / marimba), cong_nghe (blip, kinh FM, sweep), dien_anh (tram + duoi vang IR), vui_nhon (bloop, coi truot,
+  xylophone, bonk), toi_gian (rat ngan nho, -4 dB). `ensure_worlds` dang ky vao kho SFX (do lufs_m + peak_time; `kit_v` doi ->
+  tao lai). `plan_guard._world_db` cong chinh muc vao mix_sfx. UI: khung "Chi dao cua dao dien" trong Ke hoach (giao dien day
+  du) — `RemotionViews.DirectorView`.
+- **Prompt** (menu Prompt & quy tac, `own_key` -> sua khong lam B1/B2 chay lai): `_DIRECTOR_SYSTEM`, `_DIRECTOR_REVIEW_SYSTEM`.
+- **Tao video co am thanh**: sidecar `/sound/catalog` (`director.sound_catalog`: 5 the gioi + SFX kho khong giong noi co
+  nhan + nhac nen khong loi da gan nhan) -> Electron `motion/sound.ts prepareSound`: lien ket `<job>/sound/sfx`, `sound/music`
+  (Windows junction) + `sound/catalog.json` duong dan TUONG DOI -> `runPrompt(b, {sound})`: chon 1 the gioi, SFX theo su kien
+  hinh (`draft.mp4.events.json`), toi da 1 bai nhac, `mix.py` (--duck khi co loi doc), render --audio. Khong co sidecar /
+  danh muc rong -> nhu cu (khong am thanh kho).
+- **Sua sau khi chay THAT 3 video (2026-10-15, opus-5-5 high)** — moi muc do tu loi thay tren ban render:
+  - LUAT HOOK khong duoc ep ve chieu kho: hieu ung hook AI tu viet (y tuong dao dien) con yeu -> `hook_rule.amplify_visual`
+    KHUECH DAI chuyen dong (`fx_flow.boost_values`: do lech so voi khung goc x 1.4 / 1.8 / 2.4, giu khung kin, van qua
+    smooth_scale) + DO lai, TRUOC khi nho AI lam lai va truoc du phong kho (truoc day: zoom_punch + flash + shake). Video
+    chay bo: dap chan doc 0.69 -> x1.8 = 1.64 >= 1.10 (muc manh), khong goi AI them.
+  - Am thanh hook: tieng the gioi `toi_gian` -4 dB KHONG ap cho tieng hook; du phong SFX hook lay tieng cua CHINH bo da chon
+    (`kw-<the_gioi>-boom/whoosh`), khong lay 'vine boom' meme; build_spec: tieng LUAT HOOK (`_hook_rule`) thay tieng hook /
+    tieng tu gan qua nho dung sat (truoc day bi luat gian cach 0.3s bo -> hook van im).
+  - `fx_flow.cover_check`: lop phu (front) che mat (alpha TB vung mat >= 0.55) > 0.3s hoac phu duc (>= 0.8) >= 45% khung
+    > 0.4s -> bo (video Zoom: FX ve 'luoi o' xam DUC toan khung, nguoi noi bi che kin 4.5s hook). Luat FX / R4: lop phu
+    khong chua video, 'nguoi noi trong o' = bo cuc card / circle / split.
+  - FX-plan nhan `da_co.lop_hinh` (lop hinh R4) -> khong ve trung mo tip (truoc: dao dien duyet phai bo > 10 lop trung).
+  - Chu anh AI / do hoa anh nhan GIONG CHU cua dao dien (`text_art.director_type_rule`) uu tien hon phan cap mac dinh
+    ("chu sticker dam vien day" cho moi video).
+  - `tag_text` bo cum phu dinh ("khong phai punch-in" tung bi tinh la punch-in -> duyet bo nham hieu ung dung y).
+  - Prompt dao dien v2: muc THAM MY (tiet che != ngheo nan; danh gia hinh nguon — quay man hinh / webcam -> lam giau bang
+    anh AI, bo cuc; khong khoi xam trong rong).
+  - Bo tieng: Gemini NGHE that 40 tieng (labels -> `sfx_kit.HEARD` = summary trong kho); mo go am_ap lam lai (v1 nghe nhu
+    click chuot); toi_gian pop / click day hon (25 ms qua mong).
+- **Kiem**: `HOME=$(mktemp -d) <venv> tests/test_director.py` (chuan hoa, nhan chieu, so tay, duyet, bo tieng, CA LUONG
+  autoplan AI gia: chi dao toi B3..B7, danh muc SFX, khoang lang, tieng theo the gioi, muc hook, so tay, tat nhac, dao dien
+  loi -> nhu cu); `test_info_flow.py` (thu tu co DD-chi-dao); `node tests/test_motion.mts` [2][2b].
+
 ## 12. CodeGraph
 
 CodeGraph `0.9.9` da duoc cai va index tai root workspace:

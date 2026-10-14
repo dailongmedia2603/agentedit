@@ -861,6 +861,15 @@ SFX_REL_MIN_VOL = 0.01
 MEME_REL = 0.0                # tieng meme cat vao: khong to hon giong noi cua video
 
 
+def _world_db(item):
+    """Chinh muc to (dB) cua tieng thuoc bo 'the gioi am thanh' (sfx_kit.WORLDS); tieng khac 0."""
+    try:
+        import sfx_kit
+        return float(sfx_kit.world_gain_db(item.get("sfx_id")))
+    except Exception:
+        return 0.0
+
+
 def sfx_family(item):
     """Xep loai SFX tu ten/nhan trong kho. Khong doan duoc -> 'neutral'."""
     blob = " ".join(str(item.get(k) or "")
@@ -958,17 +967,20 @@ def mix_sfx(plan, changes):
                 lufs = None
             a["_play_lufs"] = lufs
         accent = bool(a.get("_from_layer"))
+        # bo tieng the gioi (dao dien): toi gian nho hon, dien anh day hon mot chut — TRU tieng cua HOOK (phai nghe ro,
+        # do that 2026-10-15: toi_gian -4 dB lam SFX hook duoi nguong -> luat hook chen tieng du phong)
+        wdb = 0.0 if a.get("anchor") == "hook" else _world_db(a)
         if voice is not None and lufs is not None:
             rel = SFX_ACCENT_REL if accent else SFX_REL.get(fam, SFX_REL["neutral"])
-            muc = min((SFX_MIX.get(fam) or SFX_MIX["neutral"])["lufs"], voice + rel)
+            muc = min((SFX_MIX.get(fam) or SFX_MIX["neutral"])["lufs"], voice + rel) + wdb
             if accent:
-                muc = min(muc, voice + SFX_REL.get(fam, SFX_REL["neutral"]))
+                muc = min(muc, voice + SFX_REL.get(fam, SFX_REL["neutral"]) + wdb)
             vol, vmin = 10 ** ((muc - float(lufs)) / 20.0), SFX_REL_MIN_VOL
             ly_do = ["%s%s %.1f LUFS -> muc %.1f (giong video %.1f)" % (fam, ", khi chu/hinh hien" if accent else "",
                                                                         float(lufs), muc, voice)]
         else:
             lufs = a.get("_lufs") if lufs is None else lufs
-            vol, vmin = sfx_base_volume(fam, lufs), SFX_VOL_MIN
+            vol, vmin = sfx_base_volume(fam, lufs) * 10 ** (wdb / 20.0), SFX_VOL_MIN
             ly_do = [fam if lufs is None else "%s, do duoc %.1f LUFS" % (fam, float(lufs))]
         dang_noi = any(x <= st <= y for x, y in noi)
         if dang_noi:
@@ -992,7 +1004,7 @@ def mix_sfx(plan, changes):
         vol = max(vmin, min(SFX_VOL_MAX, vol))
         if voice is not None and lufs is not None:
             # KIEM LAI: muc to THAT khi phat (Remotion khong khuech dai qua 1.0) khong vuot tran theo giong noi
-            tran = voice + (SFX_ACCENT_REL if accent else SFX_REL.get(fam, SFX_REL["neutral"]))
+            tran = voice + (SFX_ACCENT_REL if accent else SFX_REL.get(fam, SFX_REL["neutral"])) + min(0.0, wdb)
             if hook_len and st < hook_len + EPS:
                 tran += 20 * math.log10(SFX_HOOK_BOOST)
             that = float(lufs) + 20 * math.log10(max(1e-4, min(1.0, vol)))

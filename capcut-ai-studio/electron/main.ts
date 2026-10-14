@@ -364,6 +364,9 @@ app.whenReady().then(async () => {
     let code = 1
     try {
       const brief = JSON.parse(fs.readFileSync(process.env.STUDIO_MOTION_TEST, 'utf-8'))
+      // sidecar: thu vien am thanh cho video (/sound/catalog — motion/sound.ts); loi -> video khong am thanh kho
+      const { startSidecar } = await import('./services/sidecar')
+      log('sidecar:', JSON.stringify(await startSidecar().catch((e) => ({ ok: false, error: String(e) }))))
       startMotion({ recover: false })
       const job = await createMotionJob(brief, { kind: 'single' })
       log('job', job.id, job.dir)

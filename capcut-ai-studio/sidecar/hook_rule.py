@@ -44,6 +44,8 @@ CATALOG_STRENGTH = {"zoom_punch": 1.2, "shake": 1.4, "flash": 1.5, "rgb_split": 
 CATALOG_SUSTAIN = {"shake", "pulse", "ken_burns", "vignette", "film_grain", "pan_left", "pan_right", "letterbox", "bw",
                    "light_leak"}
 HARSH_TYPES = {"shake", "flash", "rgb_split", "fisheye"}
+# khuech dai chuyen dong hieu ung hook AI tu viet (fx_flow.boost_values) truoc khi dung du phong kho
+AMPLIFY_STEPS = (1.4, 1.8, 2.4)
 
 LUAT_HOOK = """
 
@@ -121,6 +123,12 @@ def muc_do(plan, story=None):
     lv = _level_of(rtxt)
     if lv:
         return lv, "theo yêu cầu edit: %s" % rtxt.strip()[:140]
+    # DAO DIEN (director.py, 2026-10-15): ban chi dao chot muc hook theo cuong do + cam xuc ca video -> uu tien hon B3
+    cd = st.get("chi_dao") if isinstance(st.get("chi_dao"), dict) else (
+        plan.get("chi_dao") if isinstance(plan.get("chi_dao"), dict) else {})
+    dm = str(((cd.get("hook") or {}) if isinstance(cd.get("hook"), dict) else {}).get("muc_do") or "").strip()
+    if dm in LEVELS:
+        return dm, "đạo diễn chọn (cường độ %s/5): %s" % (cd.get("cuong_do"), str((cd.get("hook") or {}).get("cam_xuc") or "")[:140])
     hk = plan.get("hook") if isinstance(plan.get("hook"), dict) else {}
     att = hk.get("attention") if isinstance(hk.get("attention"), dict) else {}
     m = str(att.get("muc_do") or "").strip().lower()
@@ -541,9 +549,17 @@ def fallback_sfx(moment, sfx_catalog, level="vua"):
             if any(k in str(x.get("use_when") or "").lower() for k in ("mở đầu", "hook", "gây chú ý", "bất ngờ", "sốc")):
                 s += 2
         return s
-    pool = sorted([x for x in sfx_catalog or [] if isinstance(x, dict) and not x.get("has_speech") and x.get("id")],
-                  key=score, reverse=True)
-    if pool and score(pool[0]) > 0:
+    pool = [x for x in sfx_catalog or [] if isinstance(x, dict) and not x.get("has_speech") and x.get("id")]
+    # DAO DIEN da chon the gioi am thanh (danh muc chi con bo do + kho) -> du phong lay tieng cua CHINH bo do (boom /
+    # whoosh), khong lay tieng meme (vd 'vine boom' trong video chuyen nghiep tiet che — do that 2026-10-15)
+    world = next((x["id"][3:].rsplit("-", 1)[0] for x in pool if str(x["id"]).startswith("kw-")), None)
+    want = (("kw-%s-whoosh" % world, "kw-%s-riser" % world) if soft else ("kw-%s-boom" % world, "kw-%s-whoosh" % world)
+            ) if world else ()
+    sid = next((w for w in want if any(x["id"] == w for x in pool)), None)
+    pool = sorted(pool, key=score, reverse=True)
+    if sid:
+        pass
+    elif pool and score(pool[0]) > 0:
         sid = pool[0]["id"]
     else:
         import sfx_kit
@@ -715,7 +731,7 @@ def ensure(plan, spec, build, step, sfx_catalog=None, transcript_data=None, stor
         return plan, spec, None, [msg]
     notes = ["hook %s — %s" % (head, "; ".join(res["yeu"]["visual"] + res["yeu"]["sound"]
                                                 + ["thiếu %s" % k for k in res["thieu"]]))]
-    say("Luật hook: %s -> nhờ AI làm lại (AI tự chọn theo nội dung câu hook + mức độ)" % notes[0], "warn")
+    say("Luật hook: %s -> tăng cường hiệu ứng đang có, chưa đủ thì nhờ AI làm lại (theo nội dung câu hook + mức độ)" % notes[0], "warn")
     moment = hook_moment(plan, transcript_data)
     if moment is None:
         return plan, spec, None, notes + ["khong xac dinh duoc khoanh khac hook"]
@@ -806,14 +822,54 @@ def ensure(plan, spec, build, step, sfx_catalog=None, transcript_data=None, stor
             tag = "AI chon"
         if not got:
             return False
+        if use_fallback:
+            # tieng hook AI chon van QUA NHO (vd click 25 ms cua bo toi gian) -> thay bang tieng du phong o cung luc (giu
+            # lai thi luat gian cach SFX bo tieng du phong vi dung sat -> hook van im)
+            t0 = providers._f(got[0].get("src_time"))
+            plan["audio"] = [a for a in plan.get("audio") or [] if not (
+                isinstance(a, dict) and (a.get("anchor") == "hook" or a.get("_hook_rule"))
+                and abs(providers._f(a.get("src_time"), -9) - t0) < 0.35)]
         # dat DAU danh sach: resolve_plan_sfx cat bot khi qua so SFX toi da -> SFX hook khong bi cat
         plan["audio"] = got + list(plan.get("audio") or [])
         engine.resolve_plan_sfx(plan)
         notes.append("am thanh hook (%s): %s — %s" % (tag, got[0]["sfx_id"], got[0].get("why", "")[:120]))
         return True
 
+    def amplify_visual():
+        """TRUOC du phong (2026-10-15, dao dien): hieu ung hook AI tu viet (theo y tuong cua video) con YEU -> tang
+        params.intensity theo AMPLIFY_STEPS, dung + DO lai; dat thi giu y tuong cua video thay vi chen zoom_punch /
+        flash / shake trong kho. Khong dat -> tra cuong do cu, de du phong lam."""
+        hk = [e for e in plan.get("fx") or [] if isinstance(e, dict) and e.get("anchor") == "hook" and e.get("code")
+              and e.get("kind") == "transform"]
+        if not hk:
+            return None
+        base = [e.get("_boost") for e in hk]
+        for amp in AMPLIFY_STEPS:
+            for e in hk:
+                e["_boost"] = amp
+            sp, rep = build(plan)
+            if not sp:
+                continue
+            rr = check(sp, level, plan)
+            if "visual" not in _problems(rr):
+                notes.append("hieu ung hook cua AI (y tuong rieng cua video) duoc khuech dai chuyen dong x%.1f thay vi "
+                             "dung hieu ung kho: %s" % (amp, so_do(rr["do"])))
+                return sp, rep, rr
+        for e, b in zip(hk, base):
+            if b is None:
+                e.pop("_boost", None)
+            else:
+                e["_boost"] = b
+        return None
+
     for use_fallback in (False, True):
         changed = False
+        if "visual" in _problems(res):
+            # luot 1: tang cuong do hieu ung hook DANG CO (y tuong cua dao dien / FX-plan) truoc khi nho AI lam lai;
+            # luot 2: tang hieu ung AI vua viet lai truoc khi dung du phong
+            amp = amplify_visual()
+            if amp:
+                spec, report, res = amp
         for k in sorted(_problems(res), reverse=True):          # visual truoc: SFX chon trung nhip hinh moi
             try:
                 changed |= add_visual(use_fallback, res) if k == "visual" else add_sound(use_fallback, res)

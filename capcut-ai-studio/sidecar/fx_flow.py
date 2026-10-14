@@ -544,6 +544,62 @@ def build_effects(plan_res, moments, faces, palette, step, changes, log=None, em
 # ---------------------------------------------------------------------------
 # DUNG (build_spec): ve khung cho tung hieu ung
 # ---------------------------------------------------------------------------
+COVER_FACE_ALPHA, COVER_FACE_SEC = 0.55, 0.3     # mat bi phu duc trung binh >= 55% qua 0.3s -> che mat
+COVER_FULL_ALPHA, COVER_FULL_FRAC, COVER_FULL_SEC = 0.8, 0.45, 0.4   # >= 45% khung phu duc (>= 0.8) qua 0.4s -> che khung
+_COVER_CACHE = {}
+
+
+def cover_check(path, face, W, H):
+    """KIEM DO CHE PHU cua lop phu tu viet (layer front) — do that 2026-10-15: FX ve 'luoi o Zoom' bang lop xam DUC toan
+    khung -> nguoi noi bi che kin trong hook va 2 doan 9s. Raster cac khung (hook_rule._raster), do: mat nguoi (vung mat
+    px) bi phu duc trung binh >= COVER_FACE_ALPHA lien tuc > COVER_FACE_SEC, hoac >= COVER_FULL_FRAC khung phu duc lien
+    tuc > COVER_FULL_SEC (loe sang ngan khi chuyen canh van duoc). Tra ly do (chuoi) neu vi pham, None neu dat / khong do
+    duoc (khong raster duoc -> khong chan)."""
+    key = (path, json.dumps(face, sort_keys=True), W, H)
+    if key in _COVER_CACHE:
+        return _COVER_CACHE[key]
+    res = None
+    try:
+        with open(path, encoding="utf-8") as f:
+            d = json.load(f)
+        frames, idx, fps = d["frames"], d["idx"], float(d.get("fps") or 30)
+        import numpy as np
+        import hook_rule
+        n = len(idx)
+        rw = 216
+        rh = max(64, int(round(rw * float(H) / float(W))))
+        step = max(1, int(round(fps / 10.0)))                 # ~10 mau / giay
+        dt = step / fps
+        run_face = run_full = 0.0
+        worst_face = worst_full = 0.0
+        for i in range(0, n, step):
+            j = idx[i]
+            fr = frames[j] if 0 <= j < len(frames) else ""
+            a = hook_rule._raster(fr, rw, rh) if fr and "<" in fr else None
+            if a is None:
+                run_face = run_full = 0.0
+                continue
+            al = a[..., 3]
+            full = float((al >= COVER_FULL_ALPHA).mean())
+            fa = 0.0
+            if face:
+                x0 = int(max(0, (face["x"] - face["w"] / 2) / W * rw)); x1 = int(min(rw, (face["x"] + face["w"] / 2) / W * rw))
+                y0 = int(max(0, (face["y"] - face["h"] / 2) / H * rh)); y1 = int(min(rh, (face["y"] + face["h"] / 2) / H * rh))
+                if x1 > x0 and y1 > y0:
+                    fa = float(al[y0:y1, x0:x1].mean())
+            run_face = run_face + dt if fa >= COVER_FACE_ALPHA else 0.0
+            run_full = run_full + dt if full >= COVER_FULL_FRAC else 0.0
+            worst_face, worst_full = max(worst_face, run_face), max(worst_full, run_full)
+        if worst_face > COVER_FACE_SEC:
+            res = "che mat nguoi noi %.1fs" % worst_face
+        elif worst_full > COVER_FULL_SEC:
+            res = "phu duc >= %d%% khung %.1fs" % (int(COVER_FULL_FRAC * 100), worst_full)
+    except Exception:
+        res = None
+    _COVER_CACHE[key] = res
+    return res
+
+
 def _face_px(spec, t, W, H):
     """Tam + kich thuoc mat nguoi (px khung hinh) luc t — theo bo cuc + jump-cut zoom (clip_map)."""
     import motion_design as MD
@@ -613,6 +669,45 @@ def _avoid_in_spec(spec, st, en, W, H):
 
 
 ZOOM_MAX_STEP = 0.03        # scale doi toi da moi khung (30fps) — GIU KHOP remotion_plan.ZOOM_MAX_STEP
+
+
+_NEUTRAL = {"scale": 1.0, "x": 0.0, "y": 0.0, "rotate": 0.0, "blur": 0.0, "brightness": 1.0, "contrast": 1.0,
+            "saturate": 1.0, "hueRotate": 0.0}
+_BOOST_CAP = {"scale": (0.6, 1.6), "rotate": (-25.0, 25.0), "blur": (0.0, 30.0), "brightness": (0.3, 2.2),
+              "contrast": (0.4, 2.2), "saturate": (0.0, 3.0)}
+
+
+def boost_values(values, gain):
+    """KHUECH DAI chuyen dong khung da tinh (luat hook, 2026-10-15): do lech so voi khung goc x gain cho moi kenh
+    (scale, x, y, xoay, nhoe, sang...). Dung khi hieu ung hook AI tu viet (theo y tuong cua dao dien) con YEU -> manh len
+    ma van giu dung hinh dang chuyen dong, thay vi chen zoom_punch / flash / shake trong kho. Doc lap voi code AI (code
+    co the tu kep params.intensity). Tren / duoi gioi han an toan; zoom muot (smooth_scale) van ap sau do."""
+    try:
+        g = float(gain or 1.0)
+    except (TypeError, ValueError):
+        return values
+    if abs(g - 1.0) < 1e-6 or not isinstance(values, dict):
+        return values
+    out = dict(values)
+    for k, arr in values.items():
+        if k not in _NEUTRAL or not isinstance(arr, list):
+            continue
+        base = _NEUTRAL[k]
+        lo, hi = _BOOST_CAP.get(k, (-1e9, 1e9))
+        out[k] = [round(min(hi, max(lo, base + (float(v) - base) * g)), 4) for v in arr]
+    # dich x / y lon hon phan phong to thi lo mep khung -> phong them cho vua (giu khung luon kin)
+    if isinstance(out.get("scale"), list) and (isinstance(out.get("x"), list) or isinstance(out.get("y"), list)):
+        n = len(out["scale"])
+        xs = out.get("x") if isinstance(out.get("x"), list) else [0.0] * n
+        ys = out.get("y") if isinstance(out.get("y"), list) else [0.0] * n
+        sc = []
+        for i, s0 in enumerate(out["scale"]):
+            x = abs(float(xs[min(i, len(xs) - 1)])) if xs else 0.0
+            y = abs(float(ys[min(i, len(ys) - 1)])) if ys else 0.0
+            need = 1.0 + 2.0 * max(x / 1080.0, y / 1920.0)
+            sc.append(round(min(1.6, max(float(s0), need)), 4))
+        out["scale"] = sc
+    return out
 
 
 def smooth_scale(values, fps=30):
@@ -714,12 +809,20 @@ def fx_to_spec(p, spec, changes):
                 os.makedirs(FX_CACHE, exist_ok=True)
                 with open(job["out"], "w", encoding="utf-8") as fh:
                     json.dump({"n": r.get("n"), "values": r.get("values") or {}}, fh)
-            vals, n_fix = smooth_scale(r.get("values") or {}, fps)
+            vals = boost_values(r.get("values") or {}, e.get("_boost"))
+            if e.get("_boost"):
+                changes.append("%s: luat hook — khuech dai chuyen dong x%.1f (giu y tuong cua hieu ung)" % (e["id"], float(e["_boost"])))
+            vals, n_fix = smooth_scale(vals, fps)
             if n_fix:
                 changes.append("%s: zoom muot — gioi han toc do doi scale (%d khung)" % (e["id"], n_fix))
             spec.setdefault("fxTransforms", []).append({"id": e["id"], "start": round(st, 3), "end": round(st + job["duration"], 3),
                                                          "n": r.get("n"), "values": vals})
         else:
+            if (e.get("layer") or "front") != "behind":
+                bad = cover_check(job["out"], job.get("face"), W, H)
+                if bad:
+                    changes.append("%s: %s -> bo hieu ung (lop phu khong duoc che nguoi noi / ca khung)" % (e["id"], bad))
+                    continue
             spec.setdefault("fx", []).append({"id": e["id"], "start": round(st, 3), "end": round(st + job["duration"], 3),
                                                "layer": e.get("layer") or "front", "file": _brand_frames(job["out"], brand_hex)})
     n = len(spec.get("fx") or []) + len(spec.get("fxTransforms") or [])

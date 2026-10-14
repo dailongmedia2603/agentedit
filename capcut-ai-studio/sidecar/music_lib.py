@@ -701,6 +701,11 @@ def plan_rows(p, spec, changes):
     if dur - t0 < MIN_MUSIC_SEC:
         changes.append("nhac nen: phan sau hook chi %.1fs -> khong dat nhac" % (dur - t0))
         return []
+    stop = p.get("_music_stop")
+    if isinstance(stop, (int, float)) and t0 + MIN_MUSIC_SEC <= float(stop) < dur - 0.3:
+        # DAO DIEN tat nhac o 1 cau (director.music_stop): nhac fade het tai day, phan con lai khong nhac
+        changes.append("nhac nen: dao dien tat nhac luc %.1fs (con %.1fs cuoi khong nhac)" % (float(stop), dur - float(stop)))
+        dur = float(stop)
     tlen = float(t.get("duration") or 0) or None
     if tlen is None:
         tlen = measure(t["file"]).get("duration")

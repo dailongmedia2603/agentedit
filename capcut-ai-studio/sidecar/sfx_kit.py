@@ -8,7 +8,9 @@ chu va do hoa bay vao, thu editor dung dac dac trong video nhu mau1.mp4. Tong ho
 sfx_library.json voi id co dinh "kit-*" -> dung duoc o CA hai luong (B7 chon, lop do hoa goi).
 """
 import os
+import threading
 import wave
+import zlib
 import numpy as np
 
 import engine
@@ -145,10 +147,411 @@ FAMILY = {"whoosh": "kit-whoosh", "swoosh": "kit-swoosh", "pop": "kit-pop", "cli
           "ding": "kit-ding", "typing": "kit-typing"}
 
 
-def family_file(name):
-    sid = FAMILY.get(str(name or "").strip().lower())
+# ---------------------------------------------------------------------------
+# THE GIOI AM THANH (dao dien chon 1 cho ca video — director.SOUND_WORLDS, user 2026-10-15)
+# Truoc day MOI video dung chung 10 tieng kit-* (do tren 8 ke hoach: kit-whoosh / kit-boom / kit-pop lap lai o moi
+# video) -> nghe "rap khuon". Nay 5 bo tieng co CHAT RIENG; tieng chu / lop / hieu ung / du phong hook lay theo bo dao
+# dien chon. Id "kw-<the_gioi>-<ho>", WAV 44.1k mono, tong hop bang numpy (khong ban quyen, khong can mang).
+# ---------------------------------------------------------------------------
+WORLDS = {
+    "am_ap": ("Ấm áp", -1.5),          # (ten, chinh muc to so voi bo chuan, dB — mix_sfx cong vao muc theo giong noi)
+    "cong_nghe": ("Công nghệ", 0.0),
+    "dien_anh": ("Điện ảnh", 0.5),
+    "vui_nhon": ("Vui nhộn", 0.0),
+    "toi_gian": ("Tối giản", -4.0),
+}
+WORLD_FAMILIES = ("whoosh", "swoosh", "pop", "click", "boom", "riser", "ding", "typing")
+WORLD_VERSION = 4       # 4: toi_gian pop / click day hon; 2: mo go am_ap (Gemini nghe ban 1 thanh 'click chuot'); 3: summary = Gemini nghe that
+_FAM_INFO = {   # ten tieng Viet + tag (sfx_family cua plan_guard doc tag de can muc to: whoosh / ui / impact / riser)
+    "whoosh": ("Whoosh lướt", ["whoosh", "transition"], "Chữ / hình / ảnh bay vào, đổi bố cục, chuyển cảnh"),
+    "swoosh": ("Swoosh ngắn", ["swoosh", "transition"], "Chữ trượt vào nhanh, lật thẻ, đổi ý nhỏ"),
+    "pop": ("Pop bật ra", ["pop", "ui"], "Icon / huy hiệu / chữ nhỏ bật ra"),
+    "click": ("Click", ["click", "ui"], "Bấm, đánh dấu, hiện từng mục"),
+    "boom": ("Impact", ["boom", "impact"], "Chữ nhấn lớn đập vào, câu chốt, con số"),
+    "riser": ("Riser dồn", ["riser", "build"], "Dồn căng trước tiết lộ / cao trào"),
+    "ding": ("Chuông sáng", ["ding", "bell"], "Tiết lộ con số / đáp án / điểm tích cực"),
+    "typing": ("Gõ chữ", ["typing", "type"], "Chữ hiện kiểu gõ / sáng dần"),
+}
+# Gemini NGHE that tung tieng (2026-10-15, agy gemini-3.8-flash-high) -> summary trong kho (B7 chon theo nhan nay)
+HEARD = {
+    "kw-am_ap-whoosh": "Tiếng gió rít whoosh trầm ấm lướt qua mượt mà, có độ vang êm.",
+    "kw-am_ap-swoosh": "Tiếng vút gió swoosh ngắn, nhanh và dứt khoát.",
+    "kw-am_ap-pop": "Tiếng bốp nổ bong bóng rất nhẹ, thanh thoát và êm tai.",
+    "kw-am_ap-boom": "Tiếng dội sub-bass trầm sâu, đục và ngân vang đầy sức nặng.",
+    "kw-am_ap-riser": "Tiếng chuông ngân synth nhẹ nhàng vuốt dần lên cao tạo cảm giác ấm áp và kỳ vọng",
+    "kw-am_ap-ding": "Tiếng gõ nốt chuông mộc trong trẻo, ngân vang ngắn êm tai",
+    "kw-am_ap-typing": "Chuỗi âm thanh gõ bàn phím cơ êm tai, dồn dập nhẹ nhàng",
+    "kw-cong_nghe-whoosh": "Tiếng whoosh vút gió mang âm sắc điện tử công nghệ, dứt khoát",
+    "kw-cong_nghe-swoosh": "Tiếng vút gió điện tử cực ngắn, sắc gọn như thao tác vuốt chuyển nhanh trên màn hình",
+    "kw-cong_nghe-pop": "Tiếng bong bóng nổ bụp nhẹ, tròn âm, giòn giã và dứt khoát.",
+    "kw-cong_nghe-click": "Tiếng click chuột máy tính siêu ngắn, đanh gọn và dứt khoát.",
+    "kw-cong_nghe-boom": "Tiếng nổ bass trầm uy lực, rền vang và có độ ngân sâu đậm chất điện ảnh.",
+    "kw-cong_nghe-riser": "Tiếng synth riser điện tử quét tần số tăng dần, tạo cảm giác hồi hộp và dồn nén trước cao trào.",
+    "kw-cong_nghe-ding": "Tiếng chuông ding kim loại trong trẻo, ngân vang sáng sủa và rõ nét.",
+    "kw-cong_nghe-typing": "Tiếng gõ phím máy tính cơ lách cách liên tục và dứt nhanh",
+    "kw-dien_anh-whoosh": "Tiếng gió vút điện ảnh trầm sâu kéo dài và có đuôi vang",
+    "kw-dien_anh-swoosh": "Tiếng vụt gió nhanh, sắc nét và dứt khoát",
+    "kw-dien_anh-pop": "Tiếng pop bật nảy ngắn, đanh gọn như tiếng búng hoặc bong bóng nổ",
+    "kw-dien_anh-click": "Tiếng click cơ khí gọn gàng, sắc sảo như bật công tắc hoặc chụp ảnh",
+    "kw-dien_anh-boom": "Tiếng boom trầm điện ảnh dội mạnh uy lực và ngân rền kéo dài.",
+    "kw-dien_anh-riser": "Âm thanh riser điện ảnh dồn dập tăng dần cao độ và độ căng thẳng rồi ngắt đột ngột ở đỉnh điểm.",
+    "kw-dien_anh-ding": "Tiếng chuông ding kim loại ngân vang trong trẻo, sáng rõ và kéo dài.",
+    "kw-dien_anh-typing": "Tiếng gõ bàn phím cơ lách cách liên tục, giòn giã và dồn dập trong thời gian ngắn.",
+    "kw-vui_nhon-whoosh": "Tiếng vút gió nhanh với âm sắc trượt hoạt hình vui nhộn và dí dỏm.",
+    "kw-vui_nhon-swoosh": "Tiếng gió rít vút qua cực nhanh và dứt khoát",
+    "kw-vui_nhon-pop": "Tiếng bật 'pop' như bong bóng nổ nhẹ nhàng, vui tai",
+    "kw-vui_nhon-click": "Tiếng click chuột cơ học cực ngắn, đanh gọn",
+    "kw-vui_nhon-boom": "Tiếng nổ 'bùm' âm trầm phong cách hoạt hình đập mạnh dứt khoát",
+    "kw-vui_nhon-riser": "Tiếng còi trượt kéo tông vút lên cao kiểu hoạt hình hài hước",
+    "kw-vui_nhon-ding": "Tiếng chuông ting kim loại cao, trong trẻo và ngân vang ngắn",
+    "kw-vui_nhon-typing": "Tiếng gõ phím cơ lách cách liên tục, nhanh và dồn dập",
+    "kw-toi_gian-whoosh": "Tiếng gió vút whoosh lướt qua nhanh, êm ái và sạch gọn",
+    "kw-toi_gian-swoosh": "Tiếng xoẹt gió swoosh cực ngắn, thanh thoát và dứt khoát",
+    "kw-toi_gian-pop": "Tiếng pop nảy bong bóng cực ngắn, giòn và nhỏ nhẹ",
+    "kw-toi_gian-click": "Tiếng click chuột hoặc công tắc cơ học cực ngắn, đanh gọn và dứt khoát",
+    "kw-toi_gian-boom": "Tiếng bass boom trầm gọn gàng, dứt khoát tạo độ rung nhẹ hiện đại",
+    "kw-toi_gian-riser": "Tiếng âm thanh điện tử quét dồn dần lên cao tạo cảm giác hồi hộp chờ đợi",
+    "kw-toi_gian-ding": "Tiếng chuông ding điện tử trong trẻo, tươi sáng và ngân vang nhẹ",
+    "kw-toi_gian-typing": "Tiếng gõ phím cơ lách cách liên hồi ngắn gọn và rõ ràng",
+}
+HEARD["kw-am_ap-click"] = "Tiếng click bấm nút trầm ấm, gọn gàng và dứt khoát như tiếng công tắc êm (mõ gỗ mềm)."
+_WORLD_TL = threading.local()
+
+
+def world_id(world, fam):
+    return "kw-%s-%s" % (world, fam)
+
+
+def world_of(sfx_id):
+    """'kw-am_ap-pop' -> 'am_ap' (khong phai tieng the gioi -> None)."""
+    s = str(sfx_id or "")
+    if not s.startswith("kw-"):
+        return None
+    for w in WORLDS:
+        if s.startswith("kw-%s-" % w):
+            return w
+    return None
+
+
+def world_gain_db(sfx_id):
+    w = world_of(sfx_id)
+    return WORLDS[w][1] if w else 0.0
+
+
+class use_world:
+    """with sfx_kit.use_world("am_ap"): family_file(...) tra tieng cua bo do (theo luong — sidecar chay nhieu luong)."""
+
+    def __init__(self, world):
+        self.world = world if world in WORLDS else None
+
+    def __enter__(self):
+        self.prev = getattr(_WORLD_TL, "world", None)
+        _WORLD_TL.world = self.world
+        return self
+
+    def __exit__(self, *a):
+        _WORLD_TL.world = self.prev
+        return False
+
+
+def current_world():
+    return getattr(_WORLD_TL, "world", None)
+
+
+def _t(n):
+    return np.arange(n) / SR
+
+
+def _tone(freqs_hz, n):
+    """Song sin theo duong tan so (mang n gia tri hoac so)."""
+    f = np.broadcast_to(np.asarray(freqs_hz, dtype=float), (n,))
+    return np.sin(2 * np.pi * np.cumsum(f) / SR)
+
+
+def _exp_sweep(f0, f1, n, curve=1.0):
+    x = np.linspace(0, 1, n) ** curve
+    return f0 * (f1 / f0) ** x
+
+
+def _decay(n, tau):
+    return np.exp(-_t(n) / max(1e-4, tau))
+
+
+def _lowpass(x, fc):
+    """Loc thong thap 1 cuc (lam mem tieng)."""
+    a = 1 - np.exp(-2 * np.pi * fc / SR)
+    y = np.empty_like(x)
+    acc = 0.0
+    for i, v in enumerate(x):
+        acc += a * (v - acc)
+        y[i] = acc
+    return y
+
+
+def _reverb(x, seconds=1.2, wet=0.25, seed=3, damp=3500):
+    """Duoi vang: tich chap voi nhieu tat dan (IR tong hop) — 'khong gian' cho bo dien anh."""
+    rng = np.random.default_rng(seed)
+    n = int(SR * seconds)
+    ir = rng.standard_normal(n) * np.exp(-_t(n) / (seconds / 5.0))
+    ir = _lowpass(ir, damp)
+    ir[0] = 0
+    m = len(x) + n - 1
+    size = 1 << (m - 1).bit_length()
+    y = np.fft.irfft(np.fft.rfft(x, size) * np.fft.rfft(ir, size), size)[:m]
+    y = y / (np.max(np.abs(y)) or 1.0) * np.max(np.abs(x))
+    out = np.zeros(m)
+    out[:len(x)] += x
+    out += wet * y
+    return out
+
+
+def _fade_tail(x, ms=12):
+    k = min(len(x), int(SR * ms / 1000))
+    if k > 1:
+        x[-k:] *= np.linspace(1, 0, k)
+    return x
+
+
+def _clicks(rng, n, gap, fn):
+    x = np.zeros(n)
+    pos = int(SR * 0.01)
+    while pos < n - int(SR * 0.04):
+        c = fn(rng)
+        m = min(len(c), n - pos)
+        x[pos:pos + m] += c[:m]
+        pos += int(SR * rng.uniform(*gap))
+    return x
+
+
+def synth_world(world, fam, seed=11):
+    """1 tieng cua 1 the gioi. Moi bo giu MOT chat: am_ap (go / bong bong / marimba, mem), cong_nghe (blip so, kinh,
+    sweep sang), dien_anh (tram, day, co khong gian vang), vui_nhon (bloop, coi truot, xylophone, bonk lo xo), toi_gian
+    (rat ngan, nho, tinh)."""
+    rng = np.random.default_rng(seed + zlib.crc32(("%s/%s" % (world, fam)).encode()) % 997)  # on dinh moi may
+    nz = rng.standard_normal
+    if world == "am_ap":
+        if fam == "pop":                      # bong bong / go tron: sin truot xuong + hai bac 2 nhe
+            n = int(SR * 0.16)
+            f = 330 + 260 * _decay(n, 0.02)
+            x = (_tone(f, n) + 0.25 * _tone(2 * f, n)) * _decay(n, 0.045)
+            x[:200] += _lowpass(nz(200), 2500) * 0.3
+        elif fam == "click":                  # mo go (wood block): 2 mode cong huong tat nhanh + tieng go (v2: v1 nghe nhu click chuot)
+            n = int(SR * 0.16)
+            x = (_tone(950, n) * _decay(n, 0.045) + 0.55 * _tone(2390, n) * _decay(n, 0.018)
+                 + 0.25 * _tone(520, n) * _decay(n, 0.06))
+            x[:180] += _lowpass(nz(180), 3000) * 0.5
+            x[:40] *= np.linspace(0.3, 1, 40)
+        elif fam == "whoosh":                 # gio am, thap
+            n = int(SR * 0.6)
+            x = _lowpass(_bandpass_sweep(nz(n), 180, 1100, 0.7), 2400) * _env(n, 0.55, 0.45)
+        elif fam == "swoosh":                 # vai luot
+            n = int(SR * 0.32)
+            x = _lowpass(_bandpass_sweep(nz(n), 600, 2600, 0.9), 4000) * _env(n, 0.4, 0.6)
+        elif fam == "boom":                   # thud mem, khong meo
+            n = int(SR * 0.7)
+            x = _tone(45 + 30 * _decay(n, 0.05), n) * _decay(n, 0.28) + _lowpass(nz(n), 300) * _decay(n, 0.04) * 0.6
+        elif fam == "riser":                  # phong len nhe nhang
+            n = int(SR * 1.2)
+            ramp = np.linspace(0, 1, n) ** 1.6
+            x = (_lowpass(_bandpass_sweep(nz(n), 200, 1500, 0.8), 3000) * 0.7
+                 + 0.35 * _tone(_exp_sweep(196, 392, n), n)) * ramp
+        elif fam == "ding":                   # marimba (hai bac 1 : 4)
+            n = int(SR * 0.8)
+            x = _tone(659, n) * _decay(n, 0.22) + 0.35 * _tone(659 * 3.93, n) * _decay(n, 0.05)
+            x[:80] *= np.linspace(0, 1, 80)
+        else:                                 # typing: go but chi / go nhe, thua
+            n = int(SR * 0.75)
+            x = _clicks(rng, n, (0.08, 0.14), lambda r: _bandpass_sweep(
+                r.standard_normal(1100), 2200, 1800, 2.0) * _decay(1100, 0.004) * r.uniform(0.5, 0.9))
+    elif world == "cong_nghe":
+        if fam == "pop":                      # pluck kinh (FM)
+            n = int(SR * 0.14)
+            idx = 3.0 * _decay(n, 0.02)
+            x = np.sin(2 * np.pi * 1400 * _t(n) + idx * np.sin(2 * np.pi * 1974 * _t(n))) * _decay(n, 0.04)
+        elif fam == "click":                  # blip so vuong
+            n = int(SR * 0.03)
+            x = np.sign(_tone(3200, n)) * 0.5 * _decay(n, 0.006) + nz(n) * _decay(n, 0.0015) * 0.3
+        elif fam == "whoosh":                 # sweep sang + vet tone dien tu
+            n = int(SR * 0.45)
+            x = (_bandpass_sweep(nz(n), 800, 6000, 1.3) + 0.25 * _tone(_exp_sweep(400, 1600, n), n)) * _env(n, 0.6, 0.4)
+        elif fam == "swoosh":
+            n = int(SR * 0.22)
+            x = _bandpass_sweep(nz(n), 2000, 9000, 1.6) * _env(n, 0.45, 0.55)
+        elif fam == "boom":                   # sub drop + click so + nen bit nhe
+            n = int(SR * 0.8)
+            x = _tone(_exp_sweep(95, 34, n, 0.6), n) * _decay(n, 0.35)
+            x[:300] += np.sign(nz(300)) * _decay(300, 0.002) * 0.6
+            x = np.round(x * 48) / 48
+        elif fam == "riser":                  # saw sweep + nhieu sang
+            n = int(SR * 1.4)
+            f = _exp_sweep(110, 880, n)
+            saw = sum(_tone(k * f, n) / k for k in range(1, 7))
+            x = (0.45 * saw + _bandpass_sweep(nz(n), 500, 8000, 1.0)) * np.linspace(0, 1, n) ** 2.0
+        elif fam == "ding":                   # chuong thuy tinh (bac khong dieu hoa)
+            n = int(SR * 1.0)
+            x = sum(a * _tone(1046 * r, n) * _decay(n, d) for r, a, d in ((1, 1, 0.45), (2.76, 0.5, 0.2), (5.4, 0.25, 0.09)))
+            x[:60] *= np.linspace(0, 1, 60)
+        else:                                 # ban phim co
+            n = int(SR * 0.7)
+            x = _clicks(rng, n, (0.05, 0.09), lambda r: (r.standard_normal(1300) * _decay(1300, 0.0025)
+                                                         + 0.5 * _tone(r.uniform(2400, 3800), 1300) * _decay(1300, 0.005)))
+    elif world == "dien_anh":
+        if fam == "boom":                     # impact tram co duoi vang
+            n = int(SR * 0.9)
+            body = _tone(30 + 28 * _decay(n, 0.09), n) * _decay(n, 0.5)
+            hit = _lowpass(nz(n), 900) * _decay(n, 0.05)
+            x = _reverb(np.tanh((body + hit) * 1.6), seconds=1.8, wet=0.35, damp=1800)
+        elif fam == "whoosh":                 # whoosh nang, sau
+            n = int(SR * 0.8)
+            x = _reverb(_bandpass_sweep(nz(n), 120, 900, 0.8) * _env(n, 0.7, 0.3)
+                        + 0.2 * _tone(_exp_sweep(260, 120, n), n) * _env(n, 0.7, 0.3), seconds=1.0, wet=0.3)
+        elif fam == "swoosh":
+            n = int(SR * 0.4)
+            x = _reverb(_bandpass_sweep(nz(n), 400, 3000, 1.0) * _env(n, 0.5, 0.5), seconds=0.8, wet=0.25)
+        elif fam == "riser":                  # don dai, cat dot (cho cu dap ngay sau)
+            n = int(SR * 2.0)
+            f = _exp_sweep(110, 440, n)
+            x = (_bandpass_sweep(nz(n), 150, 5000, 0.9) + 0.3 * _tone(f, n) + 0.3 * _tone(f * 1.006, n)) \
+                * np.linspace(0, 1, n) ** 2.4
+        elif fam == "ding":                   # chuong tram, ngan vang dai
+            n = int(SR * 1.6)
+            x = sum(a * _tone(392 * r, n) * _decay(n, d) for r, a, d in
+                    ((0.5, 0.5, 0.9), (1, 1, 0.7), (2.0, 0.45, 0.4), (2.4, 0.3, 0.3), (3.0, 0.2, 0.2)))
+            x[:120] *= np.linspace(0, 1, 120)
+            x = _reverb(x, seconds=1.4, wet=0.3)
+        elif fam == "pop":                    # thump dam
+            n = int(SR * 0.22)
+            x = _tone(_exp_sweep(180, 60, n, 0.5), n) * _decay(n, 0.06) + nz(n) * _decay(n, 0.003) * 0.4
+        elif fam == "click":                  # tick nang
+            n = int(SR * 0.12)
+            x = _bandpass_sweep(nz(n), 1300, 1100, 2.0) * _decay(n, 0.006) + 0.6 * _tone(400, n) * _decay(n, 0.03)
+            x = _reverb(x, seconds=0.6, wet=0.2)
+        else:                                 # may danh chu co
+            n = int(SR * 0.8)
+            x = _clicks(rng, n, (0.09, 0.15), lambda r: (_bandpass_sweep(r.standard_normal(2200), 1500, 1300, 1.5)
+                                                         * _decay(2200, 0.005) + 0.5 * _tone(170, 2200) * _decay(2200, 0.015)))
+    elif world == "vui_nhon":
+        if fam == "pop":                      # bloop di len
+            n = int(SR * 0.13)
+            x = _tone(_exp_sweep(300, 900, n, 0.7), n) * _env(n, 0.08, 0.6)
+        elif fam == "click":                  # tick do choi
+            n = int(SR * 0.05)
+            x = _tone(2400, n) * _decay(n, 0.005) + 0.6 * _tone(1200, n) * _decay(n, 0.012)
+        elif fam == "whoosh":                 # coi truot co rung
+            n = int(SR * 0.42)
+            f = _exp_sweep(500, 1500, n) * (1 + 0.03 * np.sin(2 * np.pi * 9 * _t(n)))
+            x = _tone(f, n) * _env(n, 0.3, 0.5) * 0.7 + _bandpass_sweep(nz(n), 900, 3000, 1.2) * _env(n, 0.5, 0.5) * 0.4
+        elif fam == "swoosh":
+            n = int(SR * 0.18)
+            x = _tone(_exp_sweep(900, 1800, n), n) * _env(n, 0.2, 0.6)
+        elif fam == "boom":                   # bonk + lo xo
+            n = int(SR * 0.55)
+            f = 160 * (1 + 0.25 * np.sin(2 * np.pi * 22 * _t(n)) * _decay(n, 0.15))
+            x = _tone(f, n) * _decay(n, 0.18) + _lowpass(nz(n), 600) * _decay(n, 0.02) * 0.7
+        elif fam == "riser":                  # coi truot len
+            n = int(SR * 1.0)
+            f = _exp_sweep(300, 1400, n, 1.2) * (1 + 0.02 * np.sin(2 * np.pi * 7 * _t(n)))
+            x = _tone(f, n) * np.linspace(0.3, 1, n) * _env(n, 0.1, 0.05)
+        elif fam == "ding":                   # xylophone 2 not "ting-ding"
+            n = int(SR * 0.7)
+            a = _tone(1046, n) * _decay(n, 0.12) + 0.3 * _tone(1046 * 3.9, n) * _decay(n, 0.03)
+            k = int(SR * 0.07)
+            b = np.zeros(n)
+            m = n - k
+            b[k:] = _tone(1568, m) * _decay(m, 0.16) + 0.3 * _tone(1568 * 3.9, m) * _decay(m, 0.03)
+            x = a + b
+        else:                                 # bong bong go chu
+            n = int(SR * 0.7)
+            x = _clicks(rng, n, (0.06, 0.1), lambda r: _tone(_exp_sweep(r.uniform(500, 700), r.uniform(900, 1300),
+                                                                         1500), 1500) * _env(1500, 0.1, 0.6) * 0.8)
+    else:   # toi_gian (v4: pop / click co them than tieng ngan — ban 25 ms qua mong, mo het am luong van -13 dB so voi giong)
+        if fam == "pop":
+            n = int(SR * 0.12)
+            x = _tone(_exp_sweep(460, 300, n), n) * _decay(n, 0.035)
+        elif fam == "click":
+            n = int(SR * 0.07)
+            x = (_bandpass_sweep(nz(n), 3000, 2800, 2.0) * _decay(n, 0.002) + 0.6 * _tone(1900, n) * _decay(n, 0.012)
+                 + 0.35 * _tone(950, n) * _decay(n, 0.02))
+        elif fam == "whoosh":
+            n = int(SR * 0.45)
+            x = _bandpass_sweep(nz(n), 500, 2500, 0.6) * _env(n, 0.5, 0.5) * 0.7
+        elif fam == "swoosh":
+            n = int(SR * 0.2)
+            x = _bandpass_sweep(nz(n), 1500, 5000, 0.9) * _env(n, 0.4, 0.6) * 0.7
+        elif fam == "boom":
+            n = int(SR * 0.5)
+            x = _tone(_exp_sweep(60, 44, n), n) * _decay(n, 0.2)
+        elif fam == "riser":
+            n = int(SR * 1.0)
+            x = _lowpass(_bandpass_sweep(nz(n), 300, 2500, 0.7), 3500) * np.linspace(0, 1, n) ** 1.8
+        elif fam == "ding":
+            n = int(SR * 0.7)
+            x = (_tone(880, n) + 0.2 * _tone(1760, n)) * _decay(n, 0.25)
+            x[:80] *= np.linspace(0, 1, 80)
+        else:
+            n = int(SR * 0.6)
+            x = _clicks(rng, n, (0.07, 0.12), lambda r: r.standard_normal(500) * _decay(500, 0.0015) * 0.6)
+    return _norm(_fade_tail(np.asarray(x, dtype=float)))
+
+
+def ensure_worlds(worlds=None):
+    """Tao (neu thieu / phien ban cu) + dang ky 5 bo tieng vao kho SFX (do to + moc cu dam do bang may). Tra so muc moi."""
+    os.makedirs(engine.SFX_DIR, exist_ok=True)
+    lib = engine._load_lib()
+    items = lib.get("sfx", [])
+    have = {e.get("id"): e for e in items}
+    changed = 0
+    for w in (worlds or WORLDS):
+        wname = WORLDS[w][0]
+        for fam in WORLD_FAMILIES:
+            sid = world_id(w, fam)
+            path = os.path.join(engine.SFX_DIR, sid + ".wav")
+            old = have.get(sid)
+            if os.path.isfile(path) and old and old.get("kit_v") == WORLD_VERSION:
+                continue
+            _write_wav(path, synth_world(w, fam))
+            name, tags, use_when = _FAM_INFO[fam]
+            e = {"id": sid, "name": "%s · %s" % (name, wname), "file": path, "source": "tong_hop",
+                 "emotion": "neutral", "use_when": "%s — bộ âm thanh '%s'" % (use_when, wname),
+                 "tags": tags + ["the gioi %s" % w], "sound_type": tags[0], "world": w, "kit_v": WORLD_VERSION,
+                 "summary": HEARD.get(sid) or "Tiếng tổng hợp bộ '%s' (%s)." % (wname, name)}
+            try:
+                e["lufs_m"] = engine.measure_loudness(path)
+                e.update({k: v for k, v in engine.sfx_audio_facts(path).items() if k in ("duration", "peak_time", "onset")})
+            except Exception:
+                pass
+            if old:
+                old.clear()
+                old.update(e)
+            else:
+                items.append(e)
+                have[sid] = e
+            changed += 1
+    if changed:
+        lib["sfx"] = items
+        engine._save_lib(lib)
+    return changed
+
+
+def family_file(name, world=None):
+    """Ho tieng -> (id, duong dan). Co the gioi (tham so hoac `use_world` dang bat) -> tieng cua bo do; khong thi kit-*."""
+    fam = str(name or "").strip().lower()
+    sid = FAMILY.get(fam)
     if not sid:
         return None, None
+    w = world if world in WORLDS else current_world()
+    if w:
+        wf = {"impact": "boom", "punch": "boom"}.get(fam, fam)
+        if wf in WORLD_FAMILIES:
+            wid = world_id(w, wf)
+            path = os.path.join(engine.SFX_DIR, wid + ".wav")
+            if not os.path.isfile(path):
+                try:
+                    ensure_worlds([w])
+                except Exception:
+                    pass
+            if os.path.isfile(path):
+                return wid, path
     path = os.path.join(engine.SFX_DIR, sid + ".wav")
     if not os.path.isfile(path):
         ensure_kit()
