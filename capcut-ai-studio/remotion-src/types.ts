@@ -237,6 +237,12 @@ export interface RSLayer {
   tplDir?: string
   texts?: Record<string, string>
   tplBox?: [number, number, number, number]
+  /** bo cuc chu that TINH SAN (sidecar tpl_layout.py): o -> {co, dich px khung mau} — khong de chu, can doi theo mau */
+  tplLayout?: Record<string, { scale: number; dx: number; dy: number }>
+  /** giu khung nghi cua mau `dur` giay tu `at` (gio mau) — chu hien du lau theo cum loi noi */
+  tplHold?: { at: number; dur: number }
+  /** do dai goc cua mau (giay, chua tinh giu) */
+  tplDur?: number
 }
 
 export type CaptionRole = 'hero' | 'support' | 'micro'

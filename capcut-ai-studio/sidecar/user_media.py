@@ -593,7 +593,7 @@ def audit(design, items):
 def _norm(s):
     s = unicodedata.normalize("NFD", str(s or "").lower())
     s = "".join(c for c in s if unicodedata.category(c) != "Mn").replace("đ", "d")
-    return " ".join(re.sub(r"[^a-z0-9]+", " ", s).split())
+    return " ".join(re.sub(r"[\W_]+", " ", s).split())      # chu cai moi ngon ngu
 
 
 # tu dem / tu chi vi tri trong GHI CHU (khong phai noi dung) — cat cum tai day

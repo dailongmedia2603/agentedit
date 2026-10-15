@@ -1866,6 +1866,56 @@ moi buoc (B3 / R4 / R5 / FX / B6 / B7) tu doc lai cau chuyen + tu quyet cao trao
   autoplan AI gia: chi dao toi B3..B7, danh muc SFX, khoang lang, tieng theo the gioi, muc hook, so tay, tat nhac, dao dien
   loi -> nhu cu); `test_info_flow.py` (thu tu co DD-chi-dao); `node tests/test_motion.mts` [2][2b].
 
+## 19. NGON NGU CHU = NGON NGU LOI NOI cua video nguon (2026-10-15, `sidecar/ngon_ngu.py`)
+
+- User: "video nguon noi tieng gi thi chu hien thi, chu anh AI, mau Kho Text, phu de phai theo ngon ngu do". Truoc: R5 gui
+  `"language": "vi"` co dinh + prompt R4 / R5 / chu anh AI / huy hieu / dao dien ghi "tieng Viet co dau" -> video tieng
+  Anh bi dich phu de / chu sang tieng Viet (karaoke lech voi giong).
+- Ngon ngu = `brief.language` (Gemini, schema "vi|en|..."; `ngon_ngu.ma` nhan 'en' / 'en-US' / 'English' / 'tiếng Anh';
+  thieu -> sources[].language -> doan theo transcript). autoplan (server.py sau B1): KHAC tieng Viet -> `story["ngon_ngu"]
+  = {ma, ten}` (moi buoc sau B1 + khoa cache doi theo); tieng Viet -> story / prompt / khoa Y NHU TRUOC (ket qua da luu
+  dung lai). Nhat ky B1 ghi "Ngôn ngữ lời nói: ...".
+- `ngon_ngu.luat(story, buoc)` NOI BANG CODE vao system prompt (ke ca prompt user da sua): B3 hook (caption), DD dao dien
+  (trich loi_noi / chu_nhan nguyen van), R4 thiet ke (lop chu, badge, CTA, illustrates; prompt anh AI van tieng Anh), R5
+  (phu de bam tung tu, khong dich; hero / CTA), TXT-lib (o chu = chu cua cum), chu anh AI + huy hieu anh AI ("image"). R5
+  payload `language` = ma that. Ghi chu cho nguoi dung (why / ly_do / nhan_xet) van tieng Viet.
+- OCR kiem chu anh AI / huy hieu: `ngon_ngu.ocr_langs` (Vision: en-US, ja-JP, zh-Hans...; tieng Viet van vi-VT) truyen qua
+  `slice_sheet(..., langs)`. So khop chu (`text_art.norm`, `speech_align.norm_tokens`, `speech_cut._norm`,
+  `user_media._norm`) giu chu cai MOI ngon ngu (truoc chi a-z -> chu Nga / Nhat ra rong); tieng Viet / Anh ket qua y nhu cu.
+  Whisper nhan ma qua `ngon_ngu.ma` (truoc cat 2 ky tu dau: "mixed" -> "mi").
+- Han che: CJK / Thai khong co khoang trang -> karaoke / can gio tung tu thanh ca cum; font trong danh muc Remotion chu yeu
+  Latin + tieng Viet (chu Trung / Nhat / Nga... di font du phong cua trinh duyet); OCR Windows (PP-OCR) chi chac chu Latin
+  (doc sai -> cum do dung chu code).
+- **Kiem**: `HOME=$(mktemp -d) <venv> tests/test_ngon_ngu.py` (nhan ma, tieng Viet khong doi, luat vao 5 buoc AI + 2 prompt
+  anh, R5 language, so khop chu Nga / Nhat).
+
+## 20. MAU KHO TEXT: BO CUC CHU THAT KHONG DE CHU + GIU THEO LOI NOI (2026-10-15, `sidecar/tpl_layout.py`)
+
+- User (anh du an Yen Phan): chu thay vao mau de len nhau ("C" de "Ai", "Y" che "WHC" -> "VHC"), luc cao luc thap,
+  tat qua nhanh, trung phan khac; dung mau Kho Text thi KHONG duoc tao chu anh AI cho cum do.
+- Nguyen nhan (do 40 lan dung mau that trong cac du an): `TextTemplate.computeFit` neo moi o vao MEP CU cua chu mau
+  (chu ngan -> roi rac / dao thu tu) + chi kiem khe bang KHUNG CHU NHAT (khung "L" ~ khung "C" nhung hinh khac han);
+  mau dai ~2.4s tat truoc khi nguoi noi het cum; `ae_trs_matte` Python noi suy sai (khong port duong cong AE).
+- Moi: `tpl_layout.layout(row, spec, texts)` tinh BO CUC CUOI CUNG mot lan (luc TXT-lib chon mau, luu
+  `plan.text_lib.items[k].layout` {v, slots {scale, dx, dy}, ink, texts}) -> lop spec `tplLayout` -> `TextTemplate`
+  prop `layout` (`applyLayout`, bo qua computeFit; plan cu khong co -> computeFit nhu truoc):
+  1. co chu tung o nhu cu (+ o cung dong chia be ngang); 2. CAY NEO (cay khung nho nhat theo khoang cach, uu tien chong
+  len nhau / cung hang): moi khoi neo vao khoi SAT no trong mau, giu quan he (sau / truoc / duoi / tren / can mep) +
+  `_keep_order` giu thu tu MOI cap; 3. ve NET CHU THAT (PIL, font + vien + dam + nghieng + xoay + matte AE port 1:1)
+  thanh mat na 0.5px, do TUNG CHU CAI bi che: <= 6% (`G_TOL`), mau co y cho chu cham nhau thi giu muc cua mau nhung <= 12%
+  (`G_CAP`); kiem o khung day du nhat + giua doan hien cua tung o (chu dang mo dan < 60% khong tinh); vi pham -> dich o
+  nho (ca dong) + thu nho toi thieu; hop / hinh vector cung group voi 1 o di theo o do (`adjDeco`), khong thuoc o nao =
+  vat can. Khong go duoc -> `check_choice` loai mau ("chu that DE LEN NHAU") -> AI chon mau khac / chu anh AI.
+  Do khop mo hinh vs renderer that: trung vi 1.0, p10 0.975 (121 o).
+- GIU THEO LOI NOI: `_tpl_layer(want_end=cuoi cum loi noi)` -> `tplHold {at: t_star, dur}` (toi da `TPL_HOLD_MAX` 6s):
+  renderer giu khung nghi roi moi chay hoat canh ra (`holdTime`); tieng ra cua mau lui theo (`premix(hold)`, spec audio
+  mau khong cat 4s). `tpl_set_end` (separate_tpl_overlaps rut ngan) giam khung giu truoc khi cat.
+- Khong tao chu anh AI cho cum TRUNG CHU voi cum da dung mau + hien cung luc (`text_tpl.dup_of_template`, server buoc
+  TXT-art) — luc dung cum do bi bo nen anh tao ra la phi.
+- `TPL_VERSION` 2 (TXT-lib chay lai), `SPEC_MEDIA_VERSION` 12 (du an cu mo lai tu dung lai spec: plan cu khong co layout
+  thi `layer_info` tu tinh bo cuc + tplHold -> ca video da lam cung duoc sua khi mo lai).
+- **Kiem**: `HOME=$(mktemp -d) <venv> tests/test_tpl_layout.py`; bo 40 ca that + render doi chieu: scratch (khong vao repo).
+
 ## 12. CodeGraph
 
 CodeGraph `0.9.9` da duoc cai va index tai root workspace:

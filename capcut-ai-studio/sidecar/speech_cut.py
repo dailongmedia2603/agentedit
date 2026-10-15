@@ -1200,7 +1200,7 @@ _FILL = _STOP | {"no", "u", "um", "oi", "ay", "ha", "ne"}   # chu dem hay chen g
 def _norm(s):
     s = unicodedata.normalize("NFD", (s or "").lower())
     s = "".join(c for c in s if unicodedata.category(c) != "Mn").replace("đ", "d")
-    return re.findall(r"[a-z0-9]+", s)
+    return re.findall(r"[^\W_]+", s)          # chu cai moi ngon ngu (tieng Viet / Anh y nhu truoc)
 
 
 def _layer_text(L):

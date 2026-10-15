@@ -23,6 +23,7 @@ import tempfile
 import time
 from concurrent.futures import ThreadPoolExecutor
 
+import ngon_ngu
 import prompt_store
 import text_art
 
@@ -164,6 +165,7 @@ def sheet_prompt(group, style, story, has_ref, out, brand=None, attempt=1):
     import brand_guide
     import canvas
     extra = (text_art.director_type_rule(story) + brand_guide.rule_text(brand, "text_art") + canvas.note_for(story, "text_art")
+             + ngon_ngu.luat(story, "image")
              + (_RETRY_NOTE if attempt > 1 else ""))
     if not extra:
         return txt
@@ -238,11 +240,11 @@ def _vision_ocr():
         return False
 
 
-def read_text(crop, want):
+def read_text(crop, want, langs=None):
     """OCR chu trong phan tu -> (chu doc duoc, do khop) hoac (None, None) khi may khong co OCR.
     OCR 1 dong (Windows) doc CA huy hieu tron ra rac (do that: 'El', '0', '@' cho BƠI / THI ĐUA / LỚP 2) -> quet them
     cac DAI NGANG (cao 20-38% phan tu, ca be ngang va bo 8% mep) lay dai khop nhat."""
-    ocr = text_art._ocr(crop)
+    ocr = text_art._ocr(crop, langs=langs)
     sim = contains(ocr, want) if ocr else 0.0
     if (ocr is None and _vision_ocr()) or sim >= OCR_MIN or _vision_ocr():
         return ocr, (sim if ocr is not None else None)
@@ -253,7 +255,7 @@ def read_text(crop, want):
         step = max(4, int(H * 0.06))
         for y in range(0, H - h + 1, step):
             for x0, x1 in ((0, W), (int(W * 0.08), int(W * 0.92))):
-                t = text_art._ocr(crop[y:y + h, x0:x1])
+                t = text_art._ocr(crop[y:y + h, x0:x1], langs=langs)
                 if not t:
                     continue
                 sc = contains(t, want)
@@ -266,8 +268,9 @@ def read_text(crop, want):
     return best
 
 
-def slice_sheet(path, group):
-    """Anh 1 nhom -> ({key: {...}}, [(key, ly_do)]). Moi hang = 1 phan tu; phai tach dung so hang + doc ra dung chu."""
+def slice_sheet(path, group, langs=None):
+    """Anh 1 nhom -> ({key: {...}}, [(key, ly_do)]). Moi hang = 1 phan tu; phai tach dung so hang + doc ra dung chu.
+    langs: ngon ngu OCR (None = tieng Viet)."""
     import numpy as np
     img = text_art._rgba(path)
     if img is None:
@@ -305,7 +308,7 @@ def slice_sheet(path, group):
         crop = img[y0:y1 + 1, x0:x1 + 1].copy()
         crop[..., 3] = np.where(mine[y0:y1 + 1, x0:x1 + 1], crop[..., 3], 0)
         want = _words(it["label"], it["value"])
-        ocr, sim = read_text(crop, want)
+        ocr, sim = read_text(crop, want, langs=langs)
         if sim is not None and sim < OCR_MIN:
             bad.append((it["key"], "phan tu %d doc ra %r, can %r" % (i + 1, (ocr or "")[:40], want)))
             continue
@@ -328,6 +331,7 @@ def make_graphic_art(items, style=None, story=None, log=None, emit=None, workers
     if not items:
         return {"items": got, "failed": failed}
     groups = _groups(items)
+    ocr_langs = ngon_ngu.ocr_langs(ngon_ngu.cua_story(story))
 
     def run(group, ref, attempt=1):
         try:
@@ -336,7 +340,7 @@ def make_graphic_art(items, style=None, story=None, log=None, emit=None, workers
             return None, {}, [(it["key"], "tao anh loi: %s" % str(ex)[:120]) for it in group]
         if not p:
             return None, {}, [(it["key"], "Codex khong tao duoc anh") for it in group]
-        ok, bad = slice_sheet(p, group)
+        ok, bad = slice_sheet(p, group, langs=ocr_langs)
         return p, ok, bad
 
     first, ok, bad = run(groups[0], None)

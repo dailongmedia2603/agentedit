@@ -33,6 +33,7 @@ import threading
 import time
 import unicodedata
 
+import ngon_ngu
 import prompt_store
 import providers
 
@@ -558,7 +559,8 @@ def gpt_direct(segments, transcript_data, emotion_map_data, key_moments_data, st
     if log:
         log("DD: %s dao dien doc toan bo noi dung + phan tich Gemini -> ban chi dao..." % providers.plan_ai_name())
     text = providers.plan_chat([
-        {"role": "system", "content": _p("_DIRECTOR_SYSTEM") + (canvas_note or "") + (ref_pack.rule("DD") if ref_imgs else "")},
+        {"role": "system", "content": _p("_DIRECTOR_SYSTEM") + (canvas_note or "") + (ref_pack.rule("DD") if ref_imgs else "")
+         + ngon_ngu.luat(story, "DD")},
         {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
     ], json_mode=True, max_tokens=8000, temperature=0.7, req_timeout=300, max_attempts=2, step_label="DD-chi-dao",
         images=ref_imgs or None)

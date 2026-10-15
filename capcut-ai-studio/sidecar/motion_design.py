@@ -20,6 +20,7 @@ import json
 import canvas as CV
 import plan_guard
 import creative
+import ngon_ngu
 import prompt_store
 import providers
 import remotion_plan as RP
@@ -289,7 +290,7 @@ def gpt_rm_design(segments, transcript_data, emotion_map_data, key_moments_data,
                   + "\n\n# TAI LIEU NGON NGU DUNG (chi dung dung cac truong nay)\n" + dsl_doc()
                   + "\n\n# THUAT NGU EDIT (ap dung dung cho)\n" + glossary_doc()
                   + "\n\n# DANH MUC REMOTION (transition / effect / grade):\n" + RP._catalog_block()
-                  + _NEW_FLOW_NOTE + creative.luat("R4") + CV.note("design"))
+                  + _NEW_FLOW_NOTE + creative.luat("R4") + CV.note("design") + ngon_ngu.luat(story, "R4"))
     if user_media:
         import user_media as UM
         payload["tu_lieu_nguoi_dung"] = UM.planner_view(user_media)
@@ -1190,9 +1191,15 @@ def layers_to_spec(p, duration, scenes, assets_by_id, faces, changes, kit=None):
 # ---------------------------------------------------------------------------
 # MAU KHO TEXT — text_tpl.py chon + kiem (buoc TXT-lib); o day thay cum chu bang lop "tpl"
 # ---------------------------------------------------------------------------
-def _tpl_layer(it, info, start, cx, cy, duration, track, lid):
+TPL_HOLD_MAX = 6.0      # giu khung nghi cua mau toi da 6s (chu dai hon cum loi noi thi thoi)
+
+
+def _tpl_layer(it, info, start, cx, cy, duration, track, lid, want_end=None):
     """Lop spec 'tpl': (x, y) = tam khoi chu cua mau tren khung; w / h = khoi chu (phan khung) — protect_face / phu de
-    ne theo khoi nay. Mau chay dung do dai cua no (hoat canh + tieng da khop nhau trong mau)."""
+    ne theo khoi nay. Mau chay dung do dai cua no (hoat canh + tieng da khop nhau trong mau); cum loi noi DAI hon mau
+    (want_end) -> GIU khung nghi cua mau (tplHold) toi luc do roi moi chay hoat canh ra (truoc: mau tat sau ~2.4s du
+    nguoi noi chua noi xong cum — do that: "WHC community" tat dung luc bat dau noi). tplLayout = bo cuc chu that
+    (khong de chu) tinh san o sidecar."""
     W, H = CV.size()
     spec = info["spec"]
     k = min(W, H) / 1080.0 * 1080.0 / float(spec.get("width") or 1080)
@@ -1200,10 +1207,18 @@ def _tpl_layer(it, info, start, cx, cy, duration, track, lid):
     w, h = (x1 - x0) * k / W, (y1 - y0) * k / H
     cx = RP._clamp(cx, 0.02 + w / 2, 0.98 - w / 2) if w < 0.96 else 0.5
     cy = RP._clamp(cy, FACE_SAFE[0] + h / 2, FACE_SAFE[1] - h / 2) if h < FACE_SAFE[1] - FACE_SAFE[0] else 0.45
-    L = {"id": lid, "type": "tpl", "start": round(start, 3), "end": round(min(duration, start + info["duration"]), 3),
+    tdur = info["duration"]
+    hold = 0.0
+    if want_end is not None and info.get("t_star") is not None:
+        hold = max(0.0, min(TPL_HOLD_MAX, min(duration, float(want_end)) - (start + tdur)))
+    L = {"id": lid, "type": "tpl", "start": round(start, 3), "end": round(min(duration, start + tdur + hold), 3),
          "track": track, "x": round(cx, 4), "y": round(cy, 4), "w": round(w, 4), "h": round(h, 4), "scale": 1.0,
          "tpl": spec, "tplDir": info["dir"], "texts": dict(it["texts"]), "tplBox": info["box"], "tplId": it["template"],
-         "tplKey": it.get("_key")}
+         "tplKey": it.get("_key"), "tplDur": tdur}
+    if info.get("layout"):
+        L["tplLayout"] = info["layout"]
+    if hold >= 0.1:
+        L["tplHold"] = {"at": round(float(info["t_star"]), 3), "dur": round(hold, 3)}
     if info.get("audio"):
         L["_tpl_audio"], L["_tpl_name"] = info["audio"], info["name"]
     return L
@@ -1242,7 +1257,8 @@ def text_lib_layers(p, out, duration, changes):
         else:
             cx, cy = 0.5, float(mem[0].get("y") or 0.3)
         st = min(L["start"] for L in mem)
-        add.append(_tpl_layer(it, info, st, cx, cy, duration, max(L.get("track", 20) for L in mem), "tpl_%s" % key[:8]))
+        add.append(_tpl_layer(it, info, st, cx, cy, duration, max(L.get("track", 20) for L in mem), "tpl_%s" % key[:8],
+                              want_end=max(L["end"] for L in mem)))
         drop |= {id(L) for L in mem + back}
         changes.append("cum '%s' -> mau Kho Text %s (%s)" % (" / ".join(it.get("tiers") or [])[:60], it["template"],
                                                             ", ".join("%s='%s'" % kv for kv in it["texts"].items())))
@@ -1267,7 +1283,8 @@ def text_lib_captions(p, layers, duration, changes):
             keep.append(c)
             continue
         y = (RP.POS_Y.get(c.get("position") or "upper", RP.POS_Y["upper"]) + 1) / 2
-        layers.append(_tpl_layer(it, info, float(c["start"]), 0.5, y, duration, 40, "tpl_cap%d" % len(layers)))
+        layers.append(_tpl_layer(it, info, float(c["start"]), 0.5, y, duration, 40, "tpl_cap%d" % len(layers),
+                                 want_end=float(c.get("end") or c["start"])))
         changes.append("caption hero '%s' -> mau Kho Text %s" % ((c.get("text") or "")[:30], it["template"]))
     p["captions"] = keep
 
@@ -2355,7 +2372,7 @@ def separate_tpl_overlaps(spec, changes):
             if min(ub[2], tb[2]) - max(ub[0], tb[0]) <= 0 or min(ub[3], tb[3]) - max(ub[1], tb[1]) <= 0:
                 continue
             if st - T["start"] >= 0.3:
-                T["end"] = round(st + 0.05, 3)
+                tpl_set_end(spec, T, st + 0.05)
                 changes.append("%s: %s vao de len -> mau tat luc %.2fs (moi luc mot khoi chu)" % (T["id"], name, T["end"]))
             elif T["start"] - st >= 0.3:
                 for L in mem:
@@ -2955,6 +2972,50 @@ def _reveal_words(p, it, asr):
     return ws or None
 
 
+def _tpl_audio_hold(L):
+    """Tieng mau tron lai voi khung nghi duoc giu (tieng ra cua mau lui theo)."""
+    import text_lib
+    import text_tpl
+    row = text_lib.get_template(L.get("tplId"))
+    if not row or not L.get("tpl"):
+        return None
+    try:
+        return text_tpl.premix(row, L["tpl"], hold=L.get("tplHold"))
+    except Exception:
+        return None
+
+
+def tpl_set_end(spec, T, new_end, changes=None):
+    """Rut ngan lop mau Kho Text toi new_end: con du cho hoat canh ra -> giam khung giu (hoat canh ra van chay het, tieng
+    tron lai cho khop); khong du -> cat (nhu truoc). Tieng cua lop trong spec doi theo."""
+    new_end = round(max(float(T["start"]) + 0.1, float(new_end)), 3)
+    if new_end >= float(T["end"]) - 1e-3:
+        return
+    hold = T.get("tplHold")
+    tdur = float(T.get("tplDur") or 0)
+    if hold:
+        left = new_end - float(T["start"]) - tdur
+        if left >= 0.1:
+            T["tplHold"] = {"at": hold["at"], "dur": round(left, 3)}
+        else:
+            T.pop("tplHold", None)
+            new_end = round(min(new_end, float(T["start"]) + tdur), 3) if left > -1e-3 else new_end
+        path = _tpl_audio_hold(T) if T.get("tplHold") else None
+        if not T.get("tplHold"):
+            import text_lib
+            import text_tpl
+            row = text_lib.get_template(T.get("tplId"))
+            try:
+                path = text_tpl.premix(row, T["tpl"]) if row else None
+            except Exception:
+                path = None
+        if path:
+            for a in spec.get("audio") or []:
+                if a.get("layer") == T["id"]:
+                    a["path"] = path
+    T["end"] = new_end
+
+
 def layer_sfx(layers, changes):
     """Goi y "sfx" cua lop -> muc audio (gio timeline) dung bo tieng motion tu tong hop."""
     import engine
@@ -2963,6 +3024,8 @@ def layer_sfx(layers, changes):
     out = []
     for L in layers:
         tpl_audio, tpl_name = L.pop("_tpl_audio", None), L.pop("_tpl_name", None)
+        if tpl_audio and L.get("tplHold"):
+            tpl_audio = _tpl_audio_hold(L) or tpl_audio
         if tpl_audio:
             # mau Kho Text: tieng da tron san dung nhip hoat canh -> 1 muc, can theo giong noi nhu tieng khi chu hien
             out.append({"sfx_id": "tpl:%s" % L.get("tplId"), "file": tpl_audio, "start": L["start"], "purpose": "reveal",

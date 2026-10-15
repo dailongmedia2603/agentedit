@@ -25,6 +25,7 @@ from debug_log import log_step_call, log_step_response, log_step_note
 import cli_providers
 import gemini_media
 import creative
+import ngon_ngu
 import prompt_store
 import run_log
 import step_cache
@@ -1996,7 +1997,8 @@ def gpt_hook(segments, transcript_data, emotion_map_data, key_moments_data, stor
         log("B3/7: %s chon doan hook 3-5s dat len dau..." % plan_ai_name())
     import hook_rule
     text = plan_chat([
-        {"role": "system", "content": _p("_HOOK_SYSTEM") + hook_rule.luat("B3") + creative.luat("B3")},
+        {"role": "system", "content": _p("_HOOK_SYSTEM") + hook_rule.luat("B3") + creative.luat("B3")
+         + ngon_ngu.luat(story, "B3")},
         {"role": "user", "content": user},
     ], json_mode=True, max_tokens=2000, temperature=0.5, req_timeout=90,
         max_attempts=2, step_label="B3-hook")

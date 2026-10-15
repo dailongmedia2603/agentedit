@@ -25,13 +25,14 @@ import itertools
 import subprocess
 import unicodedata
 
+import ngon_ngu
 import prompt_store
 import text_lib
 
 HOME = os.path.expanduser("~")
 CACHE_DIR = os.path.join(HOME, ".capcut-studio", "cache", "texttpl")
 
-TPL_VERSION = 1
+TPL_VERSION = 2         # 2 = kiem bo cuc that (tpl_layout: khong de chu) khi chon mau (2026-10-15)
 MAX_USES = 2            # moi mau toi da 2 lan / video (lap lai nhieu thi nham chan) — KHOP _TEXT_LIB_SYSTEM
 MIN_FIT = 0.6           # o chu phai thu nho duoi 60% de vua -> chu qua nho, bo mau nay cho cum do
 GROW_MAX = 1.12         # KHOP TextTemplate.FIT_GROW_MAX
@@ -595,8 +596,9 @@ def _spoken_pos(spoken, part, start=0):
     return i if i >= 0 else None
 
 
-def check_choice(row, spec, lk, texts, geo=None):
-    """Loi (list chu) cua mot lua chon AI; [] = dat. Kem fit (co chu tung o)."""
+def check_choice(row, spec, lk, texts, geo=None, out=None):
+    """Loi (list chu) cua mot lua chon AI; [] = dat. Kem fit (co chu tung o). out (dict): nhan "layout" = bo cuc cuoi
+    cung cua chu that (tpl_layout.layout: co + dich tung o, khong de chu, can doi theo mau)."""
     errs = []
     geo = geo or geometry(row, spec)
     slot_ids = [s["id"] for s in spec.get("slots") or []]
@@ -635,6 +637,21 @@ def check_choice(row, spec, lk, texts, geo=None):
     if small:
         errs.append("chu qua dai so voi o: %s phai thu con %s (< %d%%) — chon o / mau khac hoac chia chu lai" % (
             ", ".join(small), ", ".join("%d%%" % (v * 100) for v in small.values()), MIN_FIT * 100))
+    if not errs:
+        # BO CUC THAT (2026-10-15): net chu that cac o khong de len nhau / len hop (do tung chu cai), can doi theo mau.
+        # Khong go duoc de (dich + thu nho trong gioi han) -> mau nay khong hop cum nay
+        lay = layout_for(row, spec, texts, geo=geo)
+        if lay is not None:
+            if not lay["ok"]:
+                errs.append("chu that DE LEN NHAU trong mau (%s) — khong xep lai duoc, chon mau khac hoac chia chu khac" % (
+                    "; ".join("o %s bi %s che %d%% mot chu cai" % (a, b if b else "hinh", v * 100)
+                              for a, b, v in lay["overlap"][:3])))
+            tiny = {k: v["scale"] for k, v in lay["slots"].items() if v["scale"] < MIN_FIT}
+            if tiny and not small:
+                errs.append("chu phai thu qua nho de khong de nhau: %s con %s (< %d%%)" % (
+                    ", ".join(tiny), ", ".join("%d%%" % (v * 100) for v in tiny.values()), MIN_FIT * 100))
+            if out is not None and not errs:
+                out["layout"] = lay
     return errs, fit
 
 
@@ -692,6 +709,64 @@ def contexts(lockups, layers, captions, hook_info, transcript_data):
     return out
 
 
+def _window(lk, layers, captions, hk):
+    """(source_id, gio nguon dau, cuoi) cua mot cum chu (lockups_from meta=True) — None khi khong ro."""
+    sid, a, b = None, None, None
+    for s in lk.get("src") or []:
+        if s["kind"] == "layers":
+            for i in s["idx"]:
+                L = layers[i] if 0 <= i < len(layers) else {}
+                try:
+                    st, en = float(L.get("src_start")), float(L.get("src_end"))
+                except (TypeError, ValueError):
+                    continue
+                sid = sid or L.get("source_id")
+                a, b = min(a if a is not None else st, st), max(b if b is not None else en, en)
+        elif s["kind"] == "caption" and 0 <= s["idx"] < len(captions):
+            c = captions[s["idx"]]
+            try:
+                a, b = float(c.get("src_start")), float(c.get("src_end"))
+            except (TypeError, ValueError):
+                pass
+            sid = c.get("source_id") or sid
+        elif s["kind"] == "hook" and hk:
+            try:
+                a, b = float(hk.get("src_start")), float(hk.get("src_end"))
+            except (TypeError, ValueError):
+                pass
+            sid = hk.get("source_id")
+    return (sid, a, b) if a is not None and b is not None else None
+
+
+def dup_of_template(lk_meta, items, layers, captions, hook_info):
+    """Cum chu KHONG dung mau nhung CHU nam tron trong mot cum DA dung mau Kho Text va hien CUNG LUC (cung video, gio
+    nguon chong nhau) -> {key: id mau}. Luc dung, chu thuong / chu hero trung chu voi mau hien cung luc bi bo
+    (separate_tpl_overlaps / dodge_subtitles) -> KHONG tao chu anh AI cho cum nay (do that: 'KHÔNG CHẢY MÁU' vua thanh
+    mau vua bi gui Codex ve anh, anh tao xong khong dung)."""
+    hk = hook_info or {}
+    by_key = {lk["key"]: lk for lk in lk_meta}
+    tpls = []
+    for k, it in (items or {}).items():
+        lk = by_key.get(k)
+        w = _window(lk, layers, captions, hk) if lk else None
+        tpls.append((nz("".join((it.get("texts") or {}).values())), w, it.get("template")))
+    out = {}
+    for lk in lk_meta:
+        if lk["key"] in (items or {}):
+            continue
+        txt = nz("".join(t["text"] for t in lk["tiers"]))
+        if not txt:
+            continue
+        w = _window(lk, layers, captions, hk)
+        for t_txt, tw, tid in tpls:
+            if txt not in t_txt or not w or not tw or w[0] != tw[0]:
+                continue
+            if min(w[2], tw[2]) - max(w[1], tw[1]) > 0.05:
+                out[lk["key"]] = tid
+                break
+    return out
+
+
 def catalog(rows=None):
     out = []
     for t in rows if rows is not None else usable():
@@ -737,11 +812,11 @@ def catalog_fp(rows):
 # ---------------------------------------------------------------------------
 # 4. BUOC AI "TXT-lib": de xuat -> code kiem -> sai thi AI sua 1 luot -> van sai thi cum do di chu anh AI
 # ---------------------------------------------------------------------------
-def _ask(payload, note=None, log=None):
+def _ask(payload, note=None, log=None, story=None):
     import providers
     text = providers.plan_chat([
         {"role": "system", "content": _p("_TEXT_LIB_SYSTEM")
-         + (("\n\n" + note) if note else "")},
+         + (("\n\n" + note) if note else "") + ngon_ngu.luat(story, "TXT-lib")},
         {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
     ], json_mode=True, max_tokens=8000, temperature=0.3, req_timeout=300, max_attempts=2, step_label="TXT-lib")
     return providers._safe_json(text) or {}
@@ -759,7 +834,7 @@ def choose(ctxs, rows, story=None, style=None, hook=None, log=None, emit=None):
     payload = {"video": video, "kho_text": cat, "cum_chu": ctxs}
     if log:
         log("TXT-lib: AI xet %d cum chu voi %d mau trong Kho Text..." % (len(ctxs), len(cat)))
-    res = _ask(payload, log=log)
+    res = _ask(payload, log=log, story=story)
     by_key = {c["key"]: c for c in ctxs}
     items, skip, retry = {}, [], []
     uses = {}
@@ -776,11 +851,11 @@ def choose(ctxs, rows, story=None, style=None, hook=None, log=None, emit=None):
                 errs = ["mau '%s' khong co trong kho" % tid]
             elif uses.get(tid, 0) >= MAX_USES:
                 errs = ["mau %s da dung du %d lan" % (tid, MAX_USES)]
-            fit = {}
+            fit, meta = {}, {}
             if not errs:
                 spec = load_spec(t)
                 lkx = {"tiers": [{"text": x["text"], "role": x["vai"]} for x in lk["cac_tang"]], "dang_noi": lk["dang_noi"]}
-                errs, fit = check_choice(t, spec, lkx, r.get("o_chu") or {})
+                errs, fit = check_choice(t, spec, lkx, r.get("o_chu") or {}, out=meta)
             if errs:
                 if final:
                     skip.append({"key": k, "ly_do": "mau %s khong dat: %s" % (tid, "; ".join(errs))})
@@ -792,6 +867,11 @@ def choose(ctxs, rows, story=None, style=None, hook=None, log=None, emit=None):
                                                     for s, v in (r.get("o_chu") or {}).items()},
                         "ly_do": str(r.get("ly_do") or "")[:300], "fit": fit,
                         "tiers": [x["text"] for x in lk["cac_tang"]]}
+            lay = meta.get("layout")
+            if lay:
+                # bo cuc cuoi cung (khong de chu) luu vao plan -> build_spec / renderer dung lai, khong tinh lai
+                items[k]["layout"] = {"v": lay["v"], "slots": lay["slots"], "ink": lay["ink"],
+                                      "texts": lay.get("texts") or items[k]["texts"]}
 
     judge(res.get("chon") or [], final=False)
     for r in res.get("khong_dung") or []:
@@ -804,7 +884,7 @@ def choose(ctxs, rows, story=None, style=None, hook=None, log=None, emit=None):
                 "khac hop hon, hoac dua cum vao khong_dung. Chi tra ve cac cum nay. Mau da dung (so lan): %s"
                 % json.dumps(uses, ensure_ascii=False))
         res2 = _ask({"video": video, "kho_text": cat, "cum_chu": [by_key[x["key"]] for x in retry],
-                     "lua_chon_bi_loai": retry}, note=note, log=log)
+                     "lua_chon_bi_loai": retry}, note=note, log=log, story=story)
         judge(res2.get("chon") or [], final=True)
         done = set(items) | {s["key"] for s in skip}
         for r in res2.get("khong_dung") or []:
@@ -835,9 +915,10 @@ def brand_blocks(brand):
 # ---------------------------------------------------------------------------
 # 5. DUNG: thong tin lop "tpl" + tieng tron san
 # ---------------------------------------------------------------------------
-def premix(row, spec):
+def premix(row, spec, hold=None):
     """Tron moi clip am thanh cua mau (gio, cat, khuech dai, fade) thanh 1 file WAV dinh -1 dBFS — giu dung ti le to
-    nho trong mau; build_spec can ca file theo giong noi (plan_guard.mix_sfx). Khong co tieng -> None."""
+    nho trong mau; build_spec can ca file theo giong noi (plan_guard.mix_sfx). Khong co tieng -> None.
+    hold {at, dur}: mau GIU khung nghi `dur` giay tu `at` -> clip bat dau tu `at` tro di lui `dur` (KHOP TextTemplate)."""
     import winsupport
     dirp = os.path.dirname(_spec_path(row))
     clips = []
@@ -848,6 +929,8 @@ def premix(row, spec):
             ss, dur, st = ss - st, dur + st, 0.0
         if dur <= 0.02 or not os.path.isfile(path):
             continue
+        if hold and float(hold.get("dur") or 0) > 0 and st >= float(hold.get("at") or 0):
+            st += float(hold["dur"])
         clips.append((path, st, dur, ss, float(a.get("volume") or 1), float(a.get("fadeIn") or 0), float(a.get("fadeOut") or 0)))
     if not clips:
         return None
@@ -893,10 +976,39 @@ def premix(row, spec):
     return out
 
 
-def ink_box(row, spec, texts, fit=None, geo=None):
+def layout_for(row, spec, texts, item_layout=None, geo=None):
+    """Bo cuc chu that (tpl_layout) — dung lai ban da luu trong plan neu cung phien ban + cung chu; loi -> None (renderer
+    tu computeFit nhu cu)."""
+    import tpl_layout
+    if isinstance(item_layout, dict) and item_layout.get("v") == tpl_layout.LAYOUT_VERSION \
+            and item_layout.get("texts") == texts and isinstance(item_layout.get("slots"), dict):
+        return item_layout
+    try:
+        lay = tpl_layout.layout(row, spec, texts, geo)
+    except Exception:
+        return None
+    lay["texts"] = dict(texts)
+    return lay
+
+
+def ink_box(row, spec, texts, fit=None, geo=None, lay=None):
     """Khoi NET chu that cua MOT lan dung mau (chu that + co chu fit) o khung day du nhat, + le glow — luat ne mat /
-    phu de / dat vi tri dung khoi nay (chu that ngan hon chu mau thi khoi nho hon)."""
+    phu de / dat vi tri dung khoi nay (chu that ngan hon chu mau thi khoi nho hon). Co bo cuc (lay) -> khoi net chu
+    O VI TRI CUOI CUNG (sau khi xep lai / go de)."""
     geo = geo or geometry(row, spec)
+    if lay and lay.get("ink"):
+        u = lay["ink"]
+        hs = [b[3] - b[1] for b in geo["boxes"].values()] or [0]
+        pad = PAD * max([h for h in hs if h <= 1.67 * min(hs)] or hs)
+        shapes = []
+        _hits(spec, geo["t_star"], shapes)
+        if shapes:
+            # hinh bam chu (hop / gach) nam ngoai net chu -> gom vao (vi tri theo co, khong theo dich — xap xi)
+            fit2 = {k: v["scale"] for k, v in lay["slots"].items()}
+            sb = [b for b in (_shape_box(spec, geo["dir"], x, texts, fit2) for x in shapes) if b]
+            if sb:
+                u = _union([u] + sb)
+        return [u[0] - pad, u[1] - pad, u[2] + pad, u[3] + pad]
     samples = {s["id"]: s.get("sample") or "" for s in spec.get("slots") or []}
     fit = fit or fit_scales(row, spec, texts, geo)
     shapes = []
@@ -924,9 +1036,12 @@ def layer_info(item):
         audio = premix(row, spec)
     except Exception:
         audio = None
+    texts = item.get("texts") or {}
+    lay = layout_for(row, spec, texts, item.get("layout"), geo=geo)
     try:
-        box = ink_box(row, spec, item.get("texts") or {}, geo=geo)
+        box = ink_box(row, spec, texts, geo=geo, lay=lay)
     except Exception:
         box = geo["box"]
     return {"spec": spec, "dir": geo["dir"], "box": [round(v, 1) for v in (box or [0, 0, spec["width"], spec["height"]])],
-            "duration": float(spec.get("duration") or 2), "audio": audio, "name": row.get("name") or row["id"]}
+            "duration": float(spec.get("duration") or 2), "audio": audio, "name": row.get("name") or row["id"],
+            "layout": {k: v for k, v in lay["slots"].items()} if lay else None, "t_star": geo["t_star"], "row": row}

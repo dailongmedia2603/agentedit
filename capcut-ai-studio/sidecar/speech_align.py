@@ -55,7 +55,7 @@ def _base(s):
 
 def norm_tokens(text):
     out = []
-    for t in re.sub(r"[^a-z0-9 ]", " ", _base(text)).split():
+    for t in re.sub(r"[\W_]+", " ", _base(text)).split():     # chu cai moi ngon ngu (tieng Viet / Anh y nhu truoc)
         out.append(_SYN.get(t, t))
     return out
 
@@ -103,7 +103,8 @@ def asr_words(path, language=None, log=None):
     model = _load_model(log)
     if log:
         log("Whisper nghe lai loi noi de lay moc gio tung chu: %s" % os.path.basename(path))
-    lang = (language or "").strip().lower()[:2] or None
+    import ngon_ngu
+    lang = ngon_ngu.ma(language)      # 'en' / 'English' / 'en-US' -> 'en'; khong ro -> Whisper tu nhan
     segs, _info = model.transcribe(path, language=lang, word_timestamps=True, vad_filter=True,
                                    beam_size=5, condition_on_previous_text=False)
     words = []

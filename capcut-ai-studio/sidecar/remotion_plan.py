@@ -23,6 +23,7 @@ import subprocess
 import config
 import plan_guard
 import creative
+import ngon_ngu
 import prompt_store
 import providers
 import speech_align
@@ -425,7 +426,7 @@ def gpt_rm_captions(segments, transcript_data, emotion_map_data, faces_regions, 
         }
         row.update(providers._nhip_cua_segment(seg))
         seg_context.append(row)
-    payload = {"cau_chuyen": story or {}, "hook": hook, "segments": seg_context, "language": "vi"}
+    payload = {"cau_chuyen": story or {}, "hook": hook, "segments": seg_context, "language": ngon_ngu.cua_story(story)}
     ref = providers.phong_cach_cho_buoc(reference_analysis, "captions")
     if ref:
         payload["phong_cach_mau"] = ref
@@ -440,7 +441,7 @@ def gpt_rm_captions(segments, transcript_data, emotion_map_data, faces_regions, 
     import canvas
     sys_prompt = (_p("_RM_CAPTION_SYSTEM") + (_RM_CAPTION_MOTION_NOTE if motion else "")
                   + "\n\n# DANH MUC REMOTION (chi dung id trong nay):\n" + _catalog_block() + creative.luat("R5")
-                  + canvas.note("captions") + karaoke_note())
+                  + canvas.note("captions") + karaoke_note() + ngon_ngu.luat(story, "R5"))
     import brand_guide
     if brand_guide.view(brand, "captions"):
         # Brand Guideline: font + mau thuong hieu cho phu de / chu hero theo loi noi (code ep lai o build_spec)
@@ -1183,6 +1184,9 @@ def _audio_to_spec(p, duration):
         src_st = providers._f(a.get("src_start"), 0.0)
         if role == "bgm":
             src_en = src_st + (duration - st)
+        elif a.get("_tpl"):
+            # tieng mau Kho Text: ca file (mau giu khung nghi -> tieng ra lui sau 4s van phai nghe)
+            src_en = src_st + min(dur - src_st, duration - st)
         else:
             src_en = src_st + min(dur - src_st, SFX_MAX_LEN, duration - st)
         row = {"id": "aud%d" % i, "path": path, "start": round(st, 3),
@@ -1220,7 +1224,8 @@ def _overlays_to_spec(p, duration):
 
 # 2 = video HDR -> ban SDR + lop tach nguoi khop khung; 3 = cat an toan theo tieng noi + lop chu
 # khop loi (2026-09-26). UI dung lai spec cu hon tu plan khi mo du an.
-SPEC_MEDIA_VERSION = 11    # 4 = quy tac chu 2026-09-27; 5 = phu de cach chu noi bat + chu khong tu xuong dong;
+SPEC_MEDIA_VERSION = 12    # 12 = mau Kho Text: bo cuc chu that khong de chu (tplLayout) + giu theo loi noi (tplHold)
+                           # 4 = quy tac chu 2026-09-27; 5 = phu de cach chu noi bat + chu khong tu xuong dong;
                            # 6 = chu khop loi theo cau phu de + SFX hook khong roi khoi hook;
                            # 7 = tach nguoi tung khung (tach chu the + loc vung nguoi + trung vi 3 khung)
                            # 8 = zoom muot (zoomFrom/zoomDur), luat cung khoang lang + kiem lai diem cat,

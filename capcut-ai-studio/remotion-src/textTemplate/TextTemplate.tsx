@@ -110,7 +110,8 @@ function drawFrames(n: FramesNode, t: number, dst: CanvasRenderingContext2D, k: 
   if (!im) return
   const [x, y, w, h] = n.seq.rect
   const s = k.W / k.spec.width
-  dst.drawImage(im, x * s, y * s, w * s, h * s)
+  const d = k.adjDeco?.get(n)
+  dst.drawImage(im, x * s + (d?.ox ?? 0), y * s + (d?.oy ?? 0), w * s, h * s)
 }
 
 class Pool {
@@ -145,6 +146,8 @@ interface Ctx {
   pools?: Map<string, Pool>
   /** chu THAT thay chu mau: co chu (scale) + dich (px trong khung cua group chua node) cho tung node — computeFit */
   adj?: Map<TextNode, { scale: number; ox: number; oy: number }>
+  /** hinh vector / chuoi khung cung group voi DUNG 1 o chu: dich theo o do (bo cuc tinh san `layout`) */
+  adjDeco?: Map<TemplateNode, { ox: number; oy: number }>
 }
 
 /** chieu cao dong / em cua font (metric hhea/typo ma trinh duyet dung) */
@@ -610,9 +613,10 @@ function drawVector(n: VectorNode, t: number, dst: CanvasRenderingContext2D, k: 
   const x = ccVal(kf.x, local, n.transform.x)
   const y = ccVal(kf.y, local, n.transform.y)
   const rot = ccVal(kf.rotation, local, n.transform.rotation)
+  const d = k.adjDeco?.get(n)
   dst.save()
   dst.globalAlpha = Math.min(1, alpha)
-  dst.translate(k.W / 2 + (x * k.W) / 2, k.H / 2 - (y * k.H) / 2)
+  dst.translate(k.W / 2 + (x * k.W) / 2 + (d?.ox ?? 0), k.H / 2 - (y * k.H) / 2 + (d?.oy ?? 0))
   if (rot) dst.rotate((rot * Math.PI) / 180)
   dst.scale(scale * u, scale * u)
   const P = n.points.map(([px, py]) => [px, -py] as [number, number])
@@ -1389,6 +1393,60 @@ export function computeFit(k: Ctx): Map<TextNode, { scale: number; ox: number; o
   return adj
 }
 
+/** BO CUC TINH SAN (sidecar tpl_layout.py, 2026-10-15): moi o {scale, dx, dy} — dx, dy = px KHUNG MAU dich tam o so voi
+ *  chu mau. Doi sang dich trong khung group cua TUNG node (nghich dao phan tuyen tinh cua ma tran, nhu buoc 4 computeFit).
+ *  Hinh vector / chuoi khung cung group voi DUNG 1 o chu dich theo o do (hop chua chu "MỚI" di cung chu). */
+export function applyLayout(k: Ctx, layout: Record<string, { scale: number; dx: number; dy: number }>) {
+  const adj = new Map<TextNode, { scale: number; ox: number; oy: number }>()
+  const deco = new Map<TemplateNode, { ox: number; oy: number }>()
+  const fps = k.spec.fps || 30
+  const nF = Math.max(1, Math.round(k.spec.duration * fps))
+  const frames = Array.from({ length: nF }, (_, f) => hitsAt(k, f / fps))
+  const slotsAt = frames.map((hs) => new Set(hs.map((h) => h.n.slot)))
+  const most = Math.max(...slotsAt.map((s) => s.size))
+  const tStar = middleOfLongestRun(slotsAt.map((s) => s.size === most), fps) ?? 0
+  const star = hitsAt(k, tStar)
+  const hitOf = (n: TextNode): Hit | undefined => {
+    const h = star.find((x) => x.n === n)
+    if (h) return h
+    const tt = middleOfLongestRun(slotsAt.map((s) => s.has(n.slot)), fps)
+    return tt === null ? undefined : hitsAt(k, tt).find((x) => x.n === n) || hitsAt(k, tt).find((x) => x.n.slot === n.slot)
+  }
+  const local = (M: DOMMatrix | undefined, dx: number, dy: number) => {
+    if (!M || (!dx && !dy)) return { ox: 0, oy: 0 }
+    const p = new DOMMatrix([M.a, M.b, M.c, M.d, 0, 0]).inverse().transformPoint(new DOMPoint(dx, dy))
+    return { ox: p.x, oy: p.y }
+  }
+  const walk = (g: GroupNode) => {
+    const texts = g.children.filter((c) => c.type === 'text') as TextNode[]
+    const slots = new Set(texts.map((t) => t.slot))
+    let M: DOMMatrix | undefined
+    for (const n of texts) {
+      const L = layout[n.slot]
+      if (!L) continue
+      const h = hitOf(n)
+      M = M || h?.M
+      const o = local(h?.M, L.dx, L.dy)
+      if (L.scale !== 1 || o.ox || o.oy) adj.set(n, { scale: L.scale, ...o })
+    }
+    if (slots.size === 1) {
+      const L = layout[[...slots][0]]
+      if (L && (L.dx || L.dy))
+        for (const c of g.children) if (c.type === 'vector' || c.type === 'frames') deco.set(c, local(M, L.dx, L.dy))
+    }
+    g.children.forEach((c) => c.type === 'group' && walk(c))
+  }
+  walk(k.spec.root)
+  return { adj, deco }
+}
+
+/** Giu khung NGHI cua mau them `hold.dur` giay tu `hold.at` (gio mau): chu hien du lau theo loi noi roi moi chay hoat
+ *  canh ra. Gio lop -> gio mau. */
+export function holdTime(t: number, hold?: { at: number; dur: number }) {
+  if (!hold || !(hold.dur > 0)) return t
+  return t < hold.at ? t : t < hold.at + hold.dur ? hold.at : t - hold.dur
+}
+
 /** hoan vi co dinh cua n ky tu: order[i] = luot ra san cua ky tu i (LCG hat giong theo n — giong tinh than AnimScript.lua) */
 function shuffleOrder(n: number): number[] {
   const a = Array.from({ length: n }, (_, i) => i)
@@ -1454,7 +1512,7 @@ function composite(dst: CanvasRenderingContext2D, src: HTMLCanvasElement, g: Gro
   dst.restore()
 }
 
-export const TextTemplate: React.FC<TextTemplateProps & { tune?: Partial<TextTune> }> = ({ spec, assetBase, texts, background, tune, fit, muted, fileUrl }) => {
+export const TextTemplate: React.FC<TextTemplateProps & { tune?: Partial<TextTune> }> = ({ spec, assetBase, texts, background, tune, fit, muted, fileUrl, layout, hold }) => {
   const frame = useCurrentFrame()
   const { fps } = useVideoConfig()
   const { ready, images } = useAssets(spec, assetBase, fileUrl)
@@ -1463,28 +1521,34 @@ export const TextTemplate: React.FC<TextTemplateProps & { tune?: Partial<TextTun
   const H = spec.height
   const k = useMemo<Ctx>(() => {
     const kk: Ctx = { spec, texts: texts || {}, images, tune: { ...DEFAULT_TUNE, ...(tune || {}) }, pool: new Pool(W, H), W, H, matteCache: new Map() }
-    // chu that thay chu mau: do + xep lai bo cuc SAU khi font da nap (do bang font that)
-    if (fit && ready && texts && Object.keys(texts).length) kk.adj = computeFit(kk)
+    // chu that thay chu mau: bo cuc TINH SAN (sidecar: khong de chu, can doi) -> ap dung; khong co (plan cu / xem mau)
+    // -> do + xep lai bo cuc SAU khi font da nap (do bang font that)
+    if (layout && ready && Object.keys(layout).length) {
+      const r = applyLayout(kk, layout)
+      kk.adj = r.adj
+      kk.adjDeco = r.deco
+    } else if (fit && ready && texts && Object.keys(texts).length) kk.adj = computeFit(kk)
     return kk
-  }, [spec, texts, images, tune, W, H, fit, ready])
+  }, [spec, texts, images, tune, W, H, fit, ready, layout])
   useLayoutEffect(() => {
     const cv = canvasRef.current
     if (!cv || !ready) return
     const ctx = cv.getContext('2d')!
     ctx.clearRect(0, 0, W, H)
-    const t = frame / fps
+    const t = holdTime(frame / fps, hold)
     const out = drawGroup({ ...spec.root, start: 0 }, t, k)
     if (out) {
       composite(ctx, out, spec.root, k, t)
       k.pool.put(out)
     }
-  }, [frame, fps, ready, k, spec, W, H])
+  }, [frame, fps, ready, k, spec, W, H, hold])
 
   return (
     <AbsoluteFill style={{ background: background || 'transparent' }}>
       <canvas ref={canvasRef} width={W} height={H} style={{ width: '100%', height: '100%' }} />
       {!muted && spec.audio.map((a, i) => (
-        <Sequence key={i} from={Math.round(a.start * fps)} durationInFrames={Math.max(1, Math.round(a.duration * fps))} layout="none">
+        // giu khung nghi (hold): tieng bat dau tu luc giu tro di lui theo (KHOP text_tpl.premix)
+        <Sequence key={i} from={Math.round((a.start + (hold && hold.dur > 0 && a.start >= hold.at ? hold.dur : 0)) * fps)} durationInFrames={Math.max(1, Math.round(a.duration * fps))} layout="none">
           <Html5Audio
             src={fileUrl ? fileUrl(a.file) : joinUrl(assetBase, a.file)}
             trimBefore={Math.round(a.sourceStart * fps)}

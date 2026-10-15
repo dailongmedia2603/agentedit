@@ -56,6 +56,7 @@ import step_cache
 import prompt_store
 import run_log
 import speech_align
+import ngon_ngu
 
 app = Flask(__name__)
 
@@ -1468,6 +1469,13 @@ def _remotion_autoplan(b):
                 len(_bo), " | ".join("%.1fs \"%s\"" % (c["start"], c["text"][:60]) for c in _bo[:20])),
                 step="B1-select", level="warn", output=_bo)
         story = providers.ngu_canh_cau_chuyen(selection, edit_request)
+        _nn = ngon_ngu.story_view(brief)
+        if _nn:
+            # video nguon KHONG noi tieng Viet: moi chu hien tren video (hook, thiet ke, phu de, Kho Text, chu anh AI,
+            # huy hieu) viet theo ngon ngu loi noi + khoa cache doi theo. Tieng Viet: story y nhu truoc
+            story["ngon_ngu"] = _nn
+            run_log.emit("note", "Ngôn ngữ lời nói: %s — chữ, phụ đề, chữ ảnh AI viết theo ngôn ngữ này" % _nn["ten"],
+                         step="B1-select")
         if canvas.story_view():
             # video NGANG: moi buoc sau B1 (timeline, hook, thiet ke, chu, hieu ung, anh, meme, SFX) biet khung + khoa
             # cache doi theo. Video doc: story y nhu truoc (ket qua da luu van dung lai)
@@ -1751,8 +1759,17 @@ def _remotion_autoplan(b):
         # KHO TEXT TRUOC (user 2026-10-04): cum nao co mau chu lam san HOP boi canh -> dung mau (chi thay chu), KHONG tao
         # chu anh AI; con lai moi tao chu anh AI. Kho trong / Brand Guideline ep font-mau -> buoc nay khong chay.
         tpl_res = _text_lib_step(lk_meta, design, captions, hook_info, transcript_data, story, style_phien, brand, _step)
+        import text_tpl
+        _tpl_items = (tpl_res or {}).get("items") or {}
+        # cum TRUNG CHU voi cum da dung mau + hien cung luc -> luc dung bi bo -> khong tao chu anh AI cho no
+        _dup = text_tpl.dup_of_template(lk_meta, _tpl_items, design.get("layers") or [], captions.get("captions", []),
+                                        hook_info) if _tpl_items else {}
+        if _dup:
+            run_log.emit("note", "Chữ ảnh AI: bỏ %d cụm trùng chữ với mẫu Kho Text đang hiện cùng lúc (%s) — không tạo ảnh" % (
+                len(_dup), ", ".join("'%s'" % " / ".join(t["text"] for t in lk["tiers"]) for lk in lk_meta
+                                     if lk["key"] in _dup)[:200]), step="TXT-art")
         lockups = [{"key": lk["key"], "tiers": lk["tiers"]} for lk in lk_meta
-                   if lk["key"] not in ((tpl_res or {}).get("items") or {})]
+                   if lk["key"] not in _tpl_items and lk["key"] not in _dup]
         # VIDEO MAU: moi cum chu anh AI nhan ANH CHU THAT cua dung kieu chu (lop R4 ghi "kieu_chu"; cum khong ghi /
         # caption hero / hook -> kieu chu NHAN chinh). Khong co anh tham chieu -> lockups y nhu cu (khoa cache cu)
         art_styles = None

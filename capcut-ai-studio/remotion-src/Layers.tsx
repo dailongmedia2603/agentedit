@@ -840,7 +840,7 @@ const TplLayer: React.FC<{ L: RSLayer; base?: string }> = ({ L, base }) => {
         opacity: L.opacity ?? 1
       }}
     >
-      <TextTemplate spec={spec} assetBase="" fileUrl={fileUrl} texts={L.texts} fit muted />
+      <TextTemplate spec={spec} assetBase="" fileUrl={fileUrl} texts={L.texts} fit muted layout={L.tplLayout} hold={L.tplHold} />
     </div>
   )
 }

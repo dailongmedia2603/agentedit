@@ -25,6 +25,7 @@ import time
 import unicodedata
 from concurrent.futures import ThreadPoolExecutor
 
+import ngon_ngu
 import prompt_store
 
 ART_DIR = os.path.join(os.path.expanduser("~"), ".capcut-studio", "cache", "textart")
@@ -80,10 +81,11 @@ Chi tra loi dung duong dan do."""
 # 1. TONG HOP CAC CUM CHU NOI BAT
 # ---------------------------------------------------------------------------
 def norm(s):
-    """So khop chu (bo dau, thuong, chi chu so) — dung cho OCR va khop tang luc dung."""
+    """So khop chu (bo dau, thuong, chi chu so) — dung cho OCR va khop tang luc dung. Chu cai MOI ngon ngu (video nguon
+    khong noi tieng Viet, ngon_ngu.py) — tieng Viet / Anh ra y nhu truoc."""
     s = unicodedata.normalize("NFD", str(s or "").lower())
     s = "".join(c for c in s if unicodedata.category(c) != "Mn").replace("đ", "d")
-    return " ".join(re.findall(r"[a-z0-9]+", s))
+    return " ".join(re.findall(r"[^\W_]+", s))
 
 
 def _vis(sp, L):
@@ -245,7 +247,7 @@ def sheet_prompt(lockups, style, story, has_ref, out, brand=None, style_ref=Fals
     import brand_guide
     import canvas
     extra = (_ROW_GAP_RULE + (_STYLE_REF_NOTE if style_ref else director_type_rule(story))
-             + brand_guide.rule_text(brand, "text_art") + canvas.note_for(story, "text_art"))
+             + brand_guide.rule_text(brand, "text_art") + canvas.note_for(story, "text_art") + ngon_ngu.luat(story, "image"))
     return txt.replace("\nTao xong:", "\n" + extra + "\nTao xong:", 1) if "\nTao xong:" in txt else txt + "\n" + extra
 
 
@@ -449,10 +451,10 @@ def _save_png(arr, path):
     return os.path.isfile(path)
 
 
-def _ocr(arr, want_words=False):
+def _ocr(arr, want_words=False, langs=None):
     """OCR tieng Viet (Vision vi-VT) cua mot manh RGBA (dat len nen xam toi). want_words=True: tra them khoang x
     (0..1) cua TUNG TU (Vision boundingBoxForRange) — chinh xac ca voi chu in dam hep co bong 3D (khong con khe
-    trong giua hai tu de do bang mat na)."""
+    trong giua hai tu de do bang mat na). langs: ngon ngu Vision khac (ngon_ngu.ocr_langs — video khong noi tieng Viet)."""
     import numpy as np
     try:
         if os.environ.get("STUDIO_VISION") == "onnx":
@@ -474,7 +476,7 @@ def _ocr(arr, want_words=False):
         _save_png(comp, tmp)
         req = Vision.VNRecognizeTextRequest.alloc().init()
         req.setRecognitionLevel_(0)
-        req.setRecognitionLanguages_(["vi-VT"])
+        req.setRecognitionLanguages_(list(langs or ["vi-VT"]))
         req.setUsesLanguageCorrection_(False)
         hd = Vision.VNImageRequestHandler.alloc().initWithURL_options_(NSURL.fileURLWithPath_(tmp), None)
         hd.performRequests_error_([req], None)
@@ -510,8 +512,9 @@ def _sim(a, b):
     return difflib.SequenceMatcher(None, a, b).ratio()
 
 
-def slice_sheet(path, lockups):
-    """Tam chu -> {key: {"tiers": [...]}} cho cum cat + kiem DAT; tra them danh sach cum loi (ly do)."""
+def slice_sheet(path, lockups, langs=None):
+    """Tam chu -> {key: {"tiers": [...]}} cho cum cat + kiem DAT; tra them danh sach cum loi (ly do).
+    langs: ngon ngu OCR kiem chinh ta (None = tieng Viet)."""
     import numpy as np
     img = _rgba(path)
     if img is None:
@@ -548,7 +551,7 @@ def slice_sheet(path, lockups):
         crop = img[y0:y1 + 1, x0:x1 + 1].copy()
         # chi giu pixel THUOC hang nay: manh duoi chu / dau cua hang ben canh lot vao khung cat -> trong suot
         crop[..., 3] = np.where(mine[y0:y1 + 1, x0:x1 + 1], crop[..., 3], 0)
-        text_ocr, ocr_words = _ocr(crop, want_words=True)
+        text_ocr, ocr_words = _ocr(crop, want_words=True, langs=langs)
         sim = _sim(text_ocr, t["text"]) if text_ocr else None
         if text_ocr and sim < OCR_MIN:
             bad.append((lk["key"], "hang %d doc ra %r, can %r" % (i + 1, text_ocr[:40], t["text"])))
@@ -632,6 +635,7 @@ def _make_text_art(lockups, style=None, story=None, log=None, emit=None, workers
         return {"items": items, "failed": failed}
     lockups = [{k: v for k, v in lk.items() if k != "kieu_chu"} for lk in lockups]
     sheets = _pack(lockups)
+    ocr_langs = ngon_ngu.ocr_langs(ngon_ngu.cua_story(story))
 
     def run(sheet, ref):
         try:
@@ -644,7 +648,7 @@ def _make_text_art(lockups, style=None, story=None, log=None, emit=None, workers
             return None, {}, [(lk["key"], "tao anh loi: %s" % str(ex)[:120]) for lk in sheet]
         if not p:
             return None, {}, [(lk["key"], "Codex khong tao duoc anh") for lk in sheet]
-        ok, bad = slice_sheet(p, sheet)
+        ok, bad = slice_sheet(p, sheet, langs=ocr_langs)
         return p, ok, bad
 
     ref = None

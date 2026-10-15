@@ -412,4 +412,8 @@ export type TextTemplateProps = {
   muted?: boolean
   /** duong dan tuong doi trong thu muc mau -> URL (video chinh: may chu media cua app) */
   fileUrl?: (rel: string) => string
+  /** bo cuc TINH SAN cua chu that (sidecar tpl_layout.py): o -> {co, dich px khung mau}. Co thi bo qua computeFit */
+  layout?: Record<string, { scale: number; dx: number; dy: number }>
+  /** giu khung nghi cua mau `dur` giay tu `at` (gio mau) — chu hien du lau theo loi noi */
+  hold?: { at: number; dur: number }
 }
