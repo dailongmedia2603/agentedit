@@ -446,13 +446,20 @@ def gpt_rm_captions(segments, transcript_data, emotion_map_data, faces_regions, 
         # Brand Guideline: font + mau thuong hieu cho phu de / chu hero theo loi noi (code ep lai o build_spec)
         payload["brand_guideline"] = brand_guide.view(brand, "captions")
         sys_prompt += brand_guide.rule_text(brand, "captions")
+    # ANH THAT PHU DE video mau (ref_pack) — chi khi video mau co kieu phu de rieng
+    import ref_pack
+    ref_imgs = ref_pack.step_images("R5")
+    if ref_imgs:
+        payload["anh_tham_chieu"] = ref_pack.step_view("R5")
+        sys_prompt += ref_pack.rule("R5")
     if log:
-        log("R5: %s viet caption Remotion..." % providers.plan_ai_name())
+        log("R5: %s viet caption Remotion%s..." % (providers.plan_ai_name(),
+                                                   " (xem %d anh phu de video mau)" % len(ref_imgs) if ref_imgs else ""))
     text = providers.plan_chat([
         {"role": "system", "content": sys_prompt},
         {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
-    ], json_mode=True, max_tokens=14000, temperature=0.5, req_timeout=120, max_attempts=2,
-        step_label="R5-captions")
+    ], json_mode=True, max_tokens=14000, temperature=0.5, req_timeout=180 if ref_imgs else 120, max_attempts=2,
+        step_label="R5-captions", images=ref_imgs or None)
     res = providers._safe_json(text)
     if not isinstance(res, dict):
         res = {}

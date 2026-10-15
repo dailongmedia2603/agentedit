@@ -224,6 +224,15 @@ PROMPTS = [
              "mốc đắt của video mẫu (hook, chỗ cắt cảnh, cuối video). Gemini xem để bóc BỘ PHONG CÁCH (style_kit): màu, font theo vai, cách dùng "
              "phụ đề, các bố cục A-roll/B-roll, hệ thống chữ nhiều tầng, chuyển động, camera, SFX và 'recipes' — công "
              "thức lớp mẫu viết đúng ngôn ngữ dựng. Bước R4 chép cấu trúc recipe, thay nội dung."},
+    {"id": "_RM_REF_PACK_PROMPT", "group": "remotion", "module": "ref_pack", "own_key": True,
+     "title": "Video mẫu · Bộ ảnh tham chiếu (lượt 3)",
+     "used_in": "Video Remotion — bước 'Video mẫu', lượt 3 (sau bộ phong cách); dự án cũ chưa có ảnh: tự chạy khi lập plan",
+     "info": "Gemini xem lại các dải khung dày + bộ phong cách rồi chỉ ra: các KIỂU CHỮ khác nhau thật sự (cùng font / màu "
+             "/ viền / hiệu ứng = 1 kiểu — video dùng 1 kiểu chữ xuyên suốt thì chỉ 1 ảnh), các HIỆU ỨNG / chuyển động / bố "
+             "cục đặc trưng và vài khung tổng thể, kèm giây + vùng. Hệ thống cắt ẢNH THẬT từ video gốc (OCR tìm đúng hộp "
+             "chữ, ảnh chuyển động 8 khung), gộp kiểu chữ trùng, lưu cùng bản phân tích. Khi lập kế hoạch mỗi bước chỉ nhận "
+             "đúng ảnh nó cần: Đạo diễn — tổng thể; R4 — kiểu chữ + cách chữ vào; R5 — phụ đề; FX — hiệu ứng; chữ ảnh AI — "
+             "đúng kiểu chữ của cụm đó."},
     {"id": "_TEXT_ART_PROMPT", "group": "remotion", "module": "text_art",
      "template": ["hang", "out"],
      "title": "Chữ ảnh AI (tấm chữ)",

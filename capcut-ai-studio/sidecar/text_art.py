@@ -223,7 +223,14 @@ _ROW_GAP_RULE = """# LUAT CAT NGANG (bat buoc, kiem bang code)
   mu, moc) cua hang duoi. Thu nho chu neu can de du khoang trong — KHONG de hai hang sat / chong nhau."""
 
 
-def sheet_prompt(lockups, style, story, has_ref, out, brand=None):
+_STYLE_REF_NOTE = """
+# ANH MAU CHU TU VIDEO MAU (anh dinh kem DAU TIEN) — UU TIEN CAO NHAT
+Day la ANH THAT cat tu video mau nguoi dung chon. Hang CHINH (va PHU neu anh co tang phu) phai CHEP DUNG kieu chu trong
+anh: dang chu / font (rong-hep, co chan hay khong, do dam), hoa / thuong, mau chu, vien (do day, mau), bong, glow, chat
+lieu, do nghieng. CHI doi NOI DUNG chu theo danh sach hang. Khong them hieu ung anh khong co. Nen van TRONG SUOT."""
+
+
+def sheet_prompt(lockups, style, story, has_ref, out, brand=None, style_ref=False):
     rows, n = [], 0
     for i, lk in enumerate(lockups):
         for t in lk["tiers"]:
@@ -237,18 +244,22 @@ def sheet_prompt(lockups, style, story, has_ref, out, brand=None):
     # luat cat ngang + Brand Guideline NOI THEM bang code (prompt tren sua duoc trong menu — ban da sua van phai co)
     import brand_guide
     import canvas
-    extra = (_ROW_GAP_RULE + director_type_rule(story) + brand_guide.rule_text(brand, "text_art")
-             + canvas.note_for(story, "text_art"))
+    extra = (_ROW_GAP_RULE + (_STYLE_REF_NOTE if style_ref else director_type_rule(story))
+             + brand_guide.rule_text(brand, "text_art") + canvas.note_for(story, "text_art"))
     return txt.replace("\nTao xong:", "\n" + extra + "\nTao xong:", 1) if "\nTao xong:" in txt else txt + "\n" + extra
 
 
-def gen_sheet(lockups, style, story, ref=None, log=None, timeout=480, brand=None):
-    """Tao 1 tam chu. Cache theo noi dung prompt + anh mau. Tra duong dan PNG hoac None."""
+def gen_sheet(lockups, style, story, ref=None, log=None, timeout=480, brand=None, style_ref=None):
+    """Tao 1 tam chu. Cache theo noi dung prompt + anh mau. Tra duong dan PNG hoac None.
+    style_ref (2026-10-15): ANH THAT kieu chu cua video mau (ref_pack) -> gui kem DAU TIEN, prompt bat chep dung."""
     import asset_gen
     import cli_providers
     os.makedirs(ART_DIR, exist_ok=True)
-    probe = sheet_prompt(lockups, style, story, bool(ref), "{out}", brand=brand)
+    style_ref = style_ref if style_ref and os.path.isfile(style_ref) else None
+    probe = sheet_prompt(lockups, style, story, bool(ref), "{out}", brand=brand, style_ref=bool(style_ref))
     refh = hashlib.sha1(open(ref, "rb").read()).hexdigest()[:10] if ref and os.path.isfile(ref) else ""
+    if style_ref:
+        refh += "|s" + hashlib.sha1(open(style_ref, "rb").read()).hexdigest()[:10]
     k = hashlib.sha1((probe + "|" + refh + "|v%d" % ART_VERSION).encode("utf-8")).hexdigest()[:20]
     out = os.path.join(ART_DIR, "sheet_%s.png" % k)
     if os.path.isfile(out):
@@ -261,10 +272,13 @@ def gen_sheet(lockups, style, story, ref=None, log=None, timeout=480, brand=None
     target = os.path.join(work, "anh.png")
     argv = [path, "exec", "--skip-git-repo-check", "--ignore-user-config", "--enable", "image_generation",
             "--sandbox", "workspace-write", "--color", "never", "-C", work, "-m", model, "-"]
+    if style_ref:
+        argv += ["-i", style_ref]        # anh chu THAT cua video mau — dau tien
     if ref and os.path.isfile(ref):
         argv += ["-i", ref]              # anh mau phong cach — dat SAU "-" (xem cli_providers._codex_chat)
-    text = sheet_prompt(lockups, style, story, bool(ref), target, brand=brand)
-    asset_gen.log_step_call("text-art", "cli:codex", model, "", text, params={"cum": len(lockups), "mau": bool(ref)})
+    text = sheet_prompt(lockups, style, story, bool(ref), target, brand=brand, style_ref=bool(style_ref))
+    asset_gen.log_step_call("text-art", "cli:codex", model, "", text, params={"cum": len(lockups), "mau": bool(ref),
+                                                                          "anh_chu_video_mau": bool(style_ref)})
     t0 = time.time()
     src, rc, tail = asset_gen._run_codex(argv, text, work, target, timeout)
     if not src:
@@ -589,17 +603,43 @@ def _pack(lockups, max_rows=MAX_ROWS, per=PER_SHEET):
     return out
 
 
-def make_text_art(lockups, style=None, story=None, log=None, emit=None, workers=3, brand=None):
-    """Tao + cat chu anh cho moi cum. Tra {"items": {key: {...}}, "failed": [{key, text, ly_do}]}."""
+def make_text_art(lockups, style=None, story=None, log=None, emit=None, workers=3, brand=None, style_refs=None):
+    """Tao + cat chu anh cho moi cum. Tra {"items": {key: {...}}, "failed": [{key, text, ly_do}]}.
+    style_refs (2026-10-15, video mau): {kieu_chu_id: anh chu that}; cum co "kieu_chu" -> nhom theo kieu, moi nhom 1 luot
+    rieng (tam dau cua nhom lam mau cho tam sau CUNG kieu) + anh chu that cua kieu do."""
+    if style_refs:
+        groups = {}
+        for lk in lockups or []:
+            groups.setdefault(lk.get("kieu_chu") if lk.get("kieu_chu") in style_refs else None, []).append(lk)
+        if len(groups) > 1 or None not in groups:
+            res = {"items": {}, "failed": [], "ref": None}
+            for sid, lks in groups.items():
+                r = _make_text_art(lks, style=style, story=story, log=log, emit=emit, workers=workers, brand=brand,
+                                   _style_ref=style_refs.get(sid) if sid else None)
+                for it in (r.get("items") or {}).values():
+                    if sid and isinstance(it, dict):
+                        it["kieu_chu"] = sid          # build_spec: lop ghi kieu_chu lay dung anh kieu do
+                res["items"].update(r.get("items") or {})
+                res["failed"] += r.get("failed") or []
+                res["ref"] = res["ref"] or r.get("ref")
+            return res
+    return _make_text_art(lockups, style=style, story=story, log=log, emit=emit, workers=workers, brand=brand)
+
+
+def _make_text_art(lockups, style=None, story=None, log=None, emit=None, workers=3, brand=None, _style_ref=None):
     items, failed = {}, []
     if not lockups:
         return {"items": items, "failed": failed}
+    lockups = [{k: v for k, v in lk.items() if k != "kieu_chu"} for lk in lockups]
     sheets = _pack(lockups)
 
     def run(sheet, ref):
         try:
             # khong co Brand Guideline -> goi y nhu truoc (khong them tham so)
-            p = gen_sheet(sheet, style, story, ref=ref, log=log, **({"brand": brand} if brand else {}))
+            kw = {"brand": brand} if brand else {}
+            if _style_ref:
+                kw["style_ref"] = _style_ref
+            p = gen_sheet(sheet, style, story, ref=ref, log=log, **kw)
         except Exception as ex:
             return None, {}, [(lk["key"], "tao anh loi: %s" % str(ex)[:120]) for lk in sheet]
         if not p:

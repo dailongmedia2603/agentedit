@@ -774,6 +774,9 @@ def ensure(plan, spec, build, step, sfx_catalog=None, transcript_data=None, stor
                       "vd": vd, "muc": level, "hr": HOOK_RULE_VERSION, "v": fx_flow.FX_VERSION}
             if brand_guide.view(brand, "fx"):
                 k_hook["brand"] = brand_guide.view(brand, "fx")     # chi khi co -> khoa cache cu giu nguyen
+            import ref_pack
+            if ref_pack.step_images("FX-plan"):
+                k_hook["pack"] = ref_pack.step_fp()                 # FX-plan xem anh hieu ung video mau
             res_p = step("Hook-FX-plan", k_hook,
                          lambda: fx_flow.gpt_fx_plan(hm, story=story, style=fx_ctx.get("style"),
                                                      sources=fx_ctx.get("sources"), hook=fx_ctx.get("hook"),

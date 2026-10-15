@@ -321,6 +321,10 @@ def sanitize_plan(res, moments, changes):
                 "params": {"colors": cols, "intensity": round(max(0.1, min(1.0, f(e.get("intensity"), 0.7))), 2)}}
         if e.get("anchor") == "hook":
             item["anchor"] = "hook"
+        import ref_pack
+        pk = ref_pack.current()
+        if pk and e.get("theo_mau") in {x["id"] for x in pk.get("hieu_ung") or []}:
+            item["theo_mau"] = e["theo_mau"]      # tai hien hieu ung video mau -> FX-code xem dung anh do
         if e.get("sfx") in ("whoosh", "swoosh", "pop", "click", "ding", "boom", "riser", "typing"):
             item["sfx"] = e["sfx"]
         if kind == "transform":
@@ -370,13 +374,19 @@ def gpt_fx_plan(moments, story=None, style=None, sources=None, existing=None, lo
     if brand_guide.view(brand, "fx"):
         payload["brand_guideline"] = brand_guide.view(brand, "fx")
         note = ((note + "\n") if note else "") + brand_guide.rule_text(brand, "fx")
+    import ref_pack
+    ref_imgs = ref_pack.step_images("FX-plan")
+    if ref_imgs:
+        payload["anh_tham_chieu"] = ref_pack.step_view("FX-plan")
     if log:
-        log("FX-plan: %s de xuat hieu ung tu boi canh %d khoanh khac..." % (providers.plan_ai_name(), len(moments)))
+        log("FX-plan: %s de xuat hieu ung tu boi canh %d khoanh khac%s..." % (
+            providers.plan_ai_name(), len(moments), " (xem %d anh hieu ung video mau)" % len(ref_imgs) if ref_imgs else ""))
     text = providers.plan_chat([
         {"role": "system", "content": _p("_FX_PLAN_SYSTEM") + hook_rule.luat("FX") + creative.luat("FX")
-         + CV.note("fx") + (("\n\n" + note) if note else "")},
+         + CV.note("fx") + ref_pack.rule("FX-plan") * bool(ref_imgs) + (("\n\n" + note) if note else "")},
         {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
-    ], json_mode=True, max_tokens=12000, temperature=0.5, req_timeout=300, max_attempts=2, step_label=step_label)
+    ], json_mode=True, max_tokens=12000, temperature=0.5, req_timeout=300, max_attempts=2, step_label=step_label,
+        images=ref_imgs or None)
     return providers._safe_json(text)
 
 
@@ -393,6 +403,8 @@ def gpt_fx_code(effects, fix=None, log=None, brand=None, cands=None):
         rows = []
         for e in part:
             r = {k: e.get(k) for k in ("id", "kind", "layer", "context", "goal", "why_fit", "visual", "sync", "params")}
+            if e.get("theo_mau"):
+                r["theo_mau"] = e["theo_mau"]
             r["do_dai_giay"] = round(e["src_end"] - e["src_start"], 2)
             if fix and e["id"] in fix:
                 r["code_truoc"] = fix[e["id"]].get("code")
@@ -411,11 +423,16 @@ def gpt_fx_code(effects, fix=None, log=None, brand=None, cands=None):
         system = _p("_FX_CODE_SYSTEM") + brand_guide.rule_text(brand, "fx") + CV.note("fx")
         if part_cands:
             system += "\n\n" + fx_lib._p("_FX_REUSE_NOTE")
+        # CHI anh hieu ung goc cua cac hieu ung TRONG LO NAY co "theo_mau" (ref_pack)
+        import ref_pack
+        ref_imgs = ref_pack.step_images("FX-code", [e.get("theo_mau") for e in part if e.get("theo_mau")])
+        if ref_imgs:
+            system += ref_pack.rule("FX-code")
         text = providers.plan_chat([
             {"role": "system", "content": system},
             {"role": "user", "content": json.dumps(user, ensure_ascii=False)},
         ], json_mode=True, max_tokens=16000, temperature=0.3, req_timeout=300, max_attempts=2,
-            step_label="FX-fix" if fix else "FX-code")
+            step_label="FX-fix" if fix else "FX-code", images=ref_imgs or None)
         res = providers._safe_json(text)
         got = [x for x in (res or {}).get("effects") or [] if isinstance(x, dict)]
         for j, x in enumerate(got):
@@ -469,6 +486,9 @@ def build_effects(plan_res, moments, faces, palette, step, changes, log=None, em
     import brand_guide
     bv = brand_guide.view(brand, "fx")
     k_code = {"fx": effects, "v": FX_VERSION}
+    if any(e.get("theo_mau") for e in effects):
+        import ref_pack
+        k_code["pack"] = ref_pack.step_fp()      # anh hieu ung goc doi -> code lai (chi khi co hieu ung theo mau)
     if bv:
         k_code["brand"] = bv          # chi them khi co Brand Guideline -> du an khong co giu khoa cache cu
     cands = _lib_candidates(effects, project, changes, faces)

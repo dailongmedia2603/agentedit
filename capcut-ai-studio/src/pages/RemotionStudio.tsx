@@ -1351,7 +1351,7 @@ export default function RemotionStudioPage({
             badge={<Badge tone="neutral">{referenceAnalysis.format || 'tham khảo'}</Badge>}
           >
             <ReferenceAnalysisView analysis={referenceAnalysis} />
-            <RemotionReferenceExtra analysis={referenceAnalysis} catalog={catalog} />
+            <RemotionReferenceExtra analysis={referenceAnalysis} catalog={catalog} mediaBase={mediaBase} />
           </Collapsible>
         )}
         {fullUi && plan && (

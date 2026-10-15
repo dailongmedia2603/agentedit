@@ -193,7 +193,26 @@ def _claude_env():
     for k in list(env):
         if k.upper() in CLAUDE_KEY_ENV:
             env.pop(k, None)
+    # ke hoach video dai (FX-plan ~155 khoanh khac) viet JSON rat dai — mac dinh cua Claude Code co the cat giua cau tra
+    # loi (do that 2026-10-15: FX-plan cut o ky tu ~10956). Nguoi dung tu dat thi giu.
+    env.setdefault("CLAUDE_CODE_MAX_OUTPUT_TOKENS", "32000")
     return env
+
+
+def _json_cut(text):
+    """Cau tra loi JSON bi CAT giua chung (mo ngoac nhieu hon dong, khong parse duoc)."""
+    t = (text or "").strip()
+    if t.startswith("```"):
+        t = t.strip("`")
+        t = t[4:] if t.lower().startswith("json") else t
+    t = t.strip()
+    if not t.startswith(("{", "[")):
+        return False
+    try:
+        json.loads(t)
+        return False
+    except ValueError:
+        return t.count("{") + t.count("[") > t.count("}") + t.count("]")
 
 
 def _claude_oauth_saved():
@@ -644,6 +663,22 @@ def _split_messages(messages):
 _JSON_NUDGE = ("\n\nQUAN TRONG: tra ve DUY NHAT mot JSON object hop le. "
                "Khong bao ```json```, khong loi dan, khong giai thich, "
                "khong goi bat ky cong cu nao.")
+_JSON_NUDGE_IMG = ("\n\nQUAN TRONG: tra ve DUY NHAT mot JSON object hop le. "
+                   "Khong bao ```json```, khong loi dan, khong giai thich. "
+                   "Cong cu DUY NHAT duoc dung la Read de mo cac ANH THAM CHIEU duoc liet ke (bat buoc xem het truoc "
+                   "khi tra loi); khong goi cong cu nao khac.")
+CLAUDE_REF_DIR = "anh_tham_chieu"
+
+
+def _ref_block(imgs):
+    """Doan dau user prompt: danh sach anh tham chieu (duong dan tuong doi trong thu muc lam viec) + nhan."""
+    rows = ["# ANH THAM CHIEU — BAT BUOC XEM TRUOC KHI TRA LOI",
+            "Dung cong cu Read mo LAN LUOT TUNG anh duoi day (duong dan tuong doi). Day la ANH THAT cat tu video mau: "
+            "chep dung nhung gi THAY (font, do day net, mau, vien, bong, glow, vi tri, co, bo cuc, cach chuyen dong qua "
+            "cac khung) — anh uu tien hon mo ta chu khi hai ben khac nhau."]
+    for i, x in enumerate(imgs):
+        rows.append("- %s/%s%s" % (CLAUDE_REF_DIR, x["name"], (" — " + x["label"]) if x.get("label") else ""))
+    return "\n".join(rows) + "\n\n"
 
 
 def cli_chat(name, model, messages, json_mode=False, req_timeout=300, step_label="cli", images=None,
@@ -674,9 +709,15 @@ def cli_chat(name, model, messages, json_mode=False, req_timeout=300, step_label
     if json_mode:
         system = (system + _JSON_NUDGE) if system else _JSON_NUDGE.strip()
 
-    images = [p for p in (images or []) if p and os.path.isfile(p)]
-    if images and name != "gpt":
+    # images: [duong dan] hoac [{"path", "label"}] (label = anh nay la gi — Claude doc kem khi mo anh)
+    ref_imgs = [dict(path=x, label="") if isinstance(x, str) else dict(x) for x in (images or [])]
+    ref_imgs = [x for x in ref_imgs if x.get("path") and os.path.isfile(x["path"])]
+    images = [x["path"] for x in ref_imgs]
+    if images and name == "gemini":
         raise CliError("%s khong nhan anh dinh kem o che do headless." % spec["label"])
+    if images and name == "claude" and json_mode:
+        # luat JSON thuong cam goi cong cu; co anh tham chieu -> CHI duoc dung Read de xem anh
+        system = system.replace(_JSON_NUDGE.strip(), _JSON_NUDGE_IMG.strip())
     if name == "gpt":
         eff = effort_for(model, effort)
     elif name == "claude":
@@ -688,6 +729,9 @@ def cli_chat(name, model, messages, json_mode=False, req_timeout=300, step_label
                       % (spec["bin"], model, effort))
     if eff:
         req_timeout = min(MAX_CLI_TIMEOUT, int(req_timeout * EFFORT_TIMEOUT_FACTOR.get(eff, 1.0)))
+    if images and name == "claude":
+        # mo tung anh + doi chieu ton them thoi gian (do that: R4 video 5.6 phut + 8 anh qua 1200s) -> + 15% / anh
+        req_timeout = min(MAX_CLI_TIMEOUT, int(req_timeout * (1.0 + 0.15 * len(images))))
     params = {}
     if images:
         params["images"] = [os.path.basename(p) for p in images]
@@ -696,7 +740,13 @@ def cli_chat(name, model, messages, json_mode=False, req_timeout=300, step_label
     log_step_call(step_label, "cli:%s" % spec["bin"], model, system, user, params=params or None)
 
     if name == "claude":
-        text = _claude_chat(path, model, system, user, req_timeout, step_label, effort=eff)
+        text = _claude_chat(path, model, system, user, req_timeout, step_label, effort=eff, images=ref_imgs)
+        if json_mode and _json_cut(text):
+            # JSON bi cat giua chung -> goi lai 1 lan, nhac viet GON (truoc day buoc bi bo ca -> video mat hieu ung)
+            log_step_note(step_label, "claude-cli: JSON bi cat (%d ky tu) -> goi lai, yeu cau viet gon hon" % len(text or ""))
+            text = _claude_chat(path, model, system, "CAU TRA LOI TRUOC BI CAT GIUA CHUNG. Viet GON hon (moi mo ta toi da "
+                                "2-3 cau, bo truong khong bat buoc) va tra DU JSON.\n\n" + user,
+                                req_timeout, step_label, effort=eff, images=[dict(x) for x in ref_imgs])
     elif name == "gemini":
         prompt = ("%s\n\n---\n\n%s" % (system, user)) if system else user
         text = _agy_call(path, agy_model(model), prompt, [], req_timeout, step_label)
@@ -812,24 +862,38 @@ def _raise_cli(name, step_label, model, rc, so, se):
         % (SPEC[name]["label"], rc, step_label, model, blob[:600] or "(khong co thong bao)"))
 
 
-def _claude_chat(path, model, system, user, req_timeout, step_label, effort=""):
+def _claude_chat(path, model, system, user, req_timeout, step_label, effort="", images=None):
+    """images (2026-10-15): [{"path", "label"}] anh tham chieu (video mau) -> chep vao <workdir>/anh_tham_chieu/, bat
+    DUY NHAT cong cu Read (chi doc duoc thu muc lam viec tam) + du luot de mo tung anh roi tra JSON. Da thu that CLI
+    2.1.283: sonnet-5 mo anh (2 luot) doc dung chu / mau / vien. Model khong mo anh nao (num_turns = 1) -> goi lai 1 lan."""
+    imgs = list(images or [])
     argv = [
         path, "-p",
         "--output-format", "json",
         "--model", model,
-        "--max-turns", "1",
+        "--max-turns", str(min(16, len(imgs) + 3)) if imgs else "1",
         # Chay nhu 1 lan goi LLM thuan: khong nap CLAUDE.md, khong MCP, khong skill, khong cong cu
-        # (co cong cu thi model co the goi Read/Bash roi het luot ma chua tra JSON).
+        # (co cong cu thi model co the goi Read/Bash roi het luot ma chua tra JSON). Co anh -> CHI Read.
         "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}',
         "--setting-sources", "",
         "--disable-slash-commands",
-        "--tools", "",
+        "--tools", "Read" if imgs else "",
         # Khong ghi phien vao ~/.claude/projects -> lich su Claude Code cua user khong bi lan
         "--no-session-persistence",
     ]
+    if imgs:
+        argv += ["--allowedTools", "Read"]
     if effort:
         argv += ["--effort", effort]
     workdir = tempfile.mkdtemp(prefix="autocapcut-cli-")
+    if imgs:
+        rd = os.path.join(workdir, CLAUDE_REF_DIR)
+        os.makedirs(rd, exist_ok=True)
+        for i, x in enumerate(imgs):
+            nm = "%02d_%s" % (i + 1, re.sub(r"[^A-Za-z0-9._-]+", "_", os.path.basename(x["path"]))[-60:])
+            shutil.copyfile(x["path"], os.path.join(rd, nm))
+            x["name"] = nm
+        user = _ref_block(imgs) + user
     if system:
         if IS_WIN:
             # Windows: ca dong lenh <= 32767 ky tu; system R4 ~30K -> qua file (WinError 206 neu de tham so)
@@ -840,16 +904,27 @@ def _claude_chat(path, model, system, user, req_timeout, step_label, effort=""):
         else:
             argv += ["--system-prompt", system]
 
-    rc, so, se = _run(argv, stdin_text=user, timeout=req_timeout, cwd=workdir, env=_claude_env())
-    data = _first_json(so)
+    for lan in (1, 2):
+        rc, so, se = _run(argv, stdin_text=user, timeout=req_timeout, cwd=workdir, env=_claude_env())
+        data = _first_json(so)
+        if not (isinstance(data, dict) and data.get("type") == "result"):
+            break
+        turns = int(data.get("num_turns") or 0)
+        if imgs and turns < 2 and lan == 1 and not data.get("is_error"):
+            # khong mo anh nao -> ket qua chi dua tren mo ta chu: goi lai 1 lan, nhac ro
+            log_step_note(step_label, "claude-cli: model KHONG mo anh tham chieu nao (num_turns=%s) -> goi lai" % turns)
+            user = "BAN CHUA MO ANH. Hay dung Read mo tung anh tham chieu truoc, roi moi tra JSON.\n\n" + user
+            continue
+        break
 
     if isinstance(data, dict) and data.get("type") == "result":
         if data.get("is_error"):
             _raise_cli("claude", step_label, model, rc,
                        str(data.get("result") or ""), se)
         usage = data.get("usage") or {}
-        log_step_note(step_label, "claude-cli: %sms, out %s token"
-                      % (data.get("duration_ms"), usage.get("output_tokens")))
+        log_step_note(step_label, "claude-cli: %sms, out %s token%s"
+                      % (data.get("duration_ms"), usage.get("output_tokens"),
+                         (", %d anh tham chieu, %s luot" % (len(imgs), data.get("num_turns"))) if imgs else ""))
         return data.get("result") or ""
 
     if rc != 0:

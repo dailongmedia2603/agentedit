@@ -318,6 +318,18 @@ def analyze_reference(video, log=None, keep_dir=None):
         res["_style_kit_error"] = str(e).split("\n")[0][:300]
         if log:
             log("Luot 2 (bo phong cach) loi: %s — R4 chi dung phan tich luot 1 cua video mau" % res["_style_kit_error"])
+    # Luot 3 (2026-10-15): BO ANH THAM CHIEU (ref_pack) — anh that tung kieu chu / hieu ung cho Claude + chu anh AI
+    if res.get("style_kit"):
+        try:
+            import analysis_library
+            import ref_pack
+            fp = analysis_library.fingerprint(path)
+            if fp:
+                res["ref_pack"] = ref_pack.build(work_path, duration, cuts, res["style_kit"], res, fp, log=log)
+        except Exception as e:  # noqa: BLE001
+            res["_ref_pack_error"] = str(e).split("\n")[0][:300]
+            if log:
+                log("Luot 3 (anh tham chieu) loi: %s — cac buoc chi doc mo ta chu" % res["_ref_pack_error"])
     try:
         log_step_note("RM-reference", "Phan tich xong: video %.1f MB, %d cho cat, %d dai khung"
                       % (res["_media"]["video_mb"], len(cuts), res["_media"]["strips"]))

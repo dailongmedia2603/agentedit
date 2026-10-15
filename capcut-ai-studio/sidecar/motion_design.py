@@ -300,16 +300,24 @@ def gpt_rm_design(segments, transcript_data, emotion_map_data, key_moments_data,
         # thi prompt + payload y nhu truoc (cache cu dung lai)
         payload["brand_guideline"] = brand_guide.view(brand, "plan")
         sys_prompt += brand_guide.rule_text(brand, "plan")
+    # ANH THAT cua video mau (ref_pack, 2026-10-15): kieu chu + anh chu dang vao + tong the -> Claude xem va chep dung
+    import ref_pack
+    ref_imgs = ref_pack.step_images("R4")
+    if ref_imgs:
+        payload["anh_tham_chieu"] = ref_pack.step_view("R4")
+        sys_prompt += ref_pack.rule("R4")
     if log:
-        log("R4: %s thiet ke bo cuc + lop do hoa (%s)..." % (
-            providers.plan_ai_name(), "theo bo phong cach video mau" if kit else "khong video mau: tu thiet ke theo noi dung"))
+        log("R4: %s thiet ke bo cuc + lop do hoa (%s%s)..." % (
+            providers.plan_ai_name(), "theo bo phong cach video mau" if kit else "khong video mau: tu thiet ke theo noi dung",
+            ", xem %d anh that cua video mau" % len(ref_imgs) if ref_imgs else ""))
     text = providers.plan_chat([
         {"role": "system", "content": sys_prompt},
         {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
     ], json_mode=True, max_tokens=24000, temperature=0.5, req_timeout=300, max_attempts=2,
-        step_label="R4-design")
+        step_label="R4-design", images=ref_imgs or None)
     res = _as_design(providers._safe_json(text))
     thieu = audit_design(res, kit, payload["tong_do_dai_giay"], has_hook=bool(hook), user_media=user_media)
+    thieu += ref_pack.audit_usage(res, payload["tong_do_dai_giay"])      # tan suat kieu chu video mau
     if thieu and (res.get("scenes") or res.get("layers")):
         # 1 vong tu sua: code dem chi tieu -> GPT bo sung (giu phan da tot)
         if log:
@@ -323,9 +331,10 @@ def gpt_rm_design(segments, transcript_data, emotion_map_data, key_moments_data,
             {"role": "system", "content": sys_prompt},
             {"role": "user", "content": json.dumps(fix_user, ensure_ascii=False)},
         ], json_mode=True, max_tokens=24000, temperature=0.4, req_timeout=300, max_attempts=2,
-            step_label="R4-design-fix")
+            step_label="R4-design-fix", images=ref_imgs or None)
         res2 = _as_design(providers._safe_json(text2))
         thieu2 = audit_design(res2, kit, payload["tong_do_dai_giay"], has_hook=bool(hook), user_media=user_media)
+        thieu2 += ref_pack.audit_usage(res2, payload["tong_do_dai_giay"])
         if (res2.get("scenes") or res2.get("layers")) and len(thieu2) <= len(thieu):
             res, thieu = res2, thieu2
     # hieu ung KHONG lay tu kho mau — buoc FX tu thiet ke + viet code theo boi canh (luat hook o prompt FX)
@@ -1110,7 +1119,7 @@ def layers_to_spec(p, duration, scenes, assets_by_id, faces, changes, kit=None):
                 changes.append("layer%d: chi co emoji, khong con chu -> bo" % i)
                 continue
             if art_lookup:
-                _attach_art(L, art_lookup, changes, "layer%d" % i)
+                _attach_art(L, art_lookup, changes, "layer%d" % i, kieu_chu=L0.get("kieu_chu"))
             if L0.get("reveal") == "dim_to_bright":
                 L["reveal"] = "dim_to_bright"
                 L["words"] = _reveal_words(p, it, asr)
@@ -1274,17 +1283,33 @@ def art_index(p):
     cua to hop nhieu lop cung group). {} neu khong co."""
     import text_art
     items = ((p.get("text_art") or {}).get("items") or {}) if isinstance(p.get("text_art"), dict) else {}
-    out = {}
+    out = _ArtLookup()
     for v in items.values():
         tiers = [t for t in (v or {}).get("tiers") or [] if isinstance(t, dict) and t.get("file") and os.path.isfile(t["file"])]
         if not tiers or len(tiers) != len((v or {}).get("tiers") or []):
             continue
         for t in tiers:
-            out.setdefault(text_art.norm(t["text"]), t)
+            k = text_art.norm(t["text"])
+            out.setdefault(k, t)
+            if (v or {}).get("kieu_chu"):
+                out.by_style.setdefault((k, v["kieu_chu"]), t)
     return out
 
 
-def _attach_art(L, lookup, changes, label, W=None):
+class _ArtLookup(dict):
+    """{chu chuan hoa: tang anh} + by_style {(chu, kieu chu video mau): tang} — CUNG mot chu co the co 2 anh 2 kieu
+    (vd 'FPIES' kieu chu lon va trong cum '1-6 TIENG / FPIES' kieu cat dan, do that 2026-10-15): lop ghi kieu_chu lay
+    dung anh cua kieu do, khong lay anh dau tien gap."""
+
+    def __init__(self):
+        super().__init__()
+        self.by_style = {}
+
+    def pick(self, key, kieu_chu=None):
+        return (self.by_style.get((key, kieu_chu)) if kieu_chu else None) or self.get(key)
+
+
+def _attach_art(L, lookup, changes, label, W=None, kieu_chu=None):
     """Lop chu -> cac tang ANH (theo dung thu tu dong hien tai + co chu da qua quy tac chu). Dong nao khong co
     anh -> giu CA lop la chu code (khong tron chu anh voi chu code trong mot lop)."""
     import text_art
@@ -1297,7 +1322,7 @@ def _attach_art(L, lookup, changes, label, W=None):
     for ln, t in zip(lines, texts):
         if not t:
             continue
-        tier = lookup[text_art.norm(t)]
+        tier = lookup.pick(text_art.norm(t), kieu_chu) if hasattr(lookup, "pick") else lookup[text_art.norm(t)]
         size = max(float(sp.get("size") or L.get("size") or 80) for sp in ln)
         # CO CHU: khop BE NGANG phan chu dac voi be ngang chu thiet ke (dau mu / bong 3D lam chieu cao anh
         # khong on dinh — tinh theo chieu cao thi chu nho han thiet ke ~40%); chieu cao chi de chan lech qua

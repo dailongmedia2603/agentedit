@@ -1833,6 +1833,35 @@ moi buoc (B3 / R4 / R5 / FX / B6 / B7) tu doc lai cau chuyen + tu quyet cao trao
     anh AI, bo cuc; khong khoi xam trong rong).
   - Bo tieng: Gemini NGHE that 40 tieng (labels -> `sfx_kit.HEARD` = summary trong kho); mo go am_ap lam lai (v1 nghe nhu
     click chuot); toi_gian pop / click day hon (25 ms qua mong).
+- **ANH THAT CUA VIDEO MAU cho Claude + chu anh AI** (`sidecar/ref_pack.py`, user 2026-10-15: "truyen dung anh cho
+  dung phan, chi phan can thiet — video mau 1 kieu chu thi chi 1 anh"):
+  - Luot 3 phan tich video mau (`_RM_REF_PACK_PROMPT`, Gemini xem lai dai khung day + style_kit): KIEU CHU khac nhau that
+    su (vai, mo ta, font gan nhat, chu doc duoc, giay, vung, doan dang vao), HIEU UNG / bo cuc / chuyen canh dac trung (doan
+    giay), khung TONG THE. Code: trich khung GOC o dung giay, OCR Vision (vi + en) tim hop chu khop chu doc duoc (khop 1
+    phan -> mo ra ca vung goi y; khong khop -> thu +-0.12/0.3s; khong chu -> vung goi y, `xac_minh` false) -> cat chat
+    (`chu_<id>.jpg`), anh dang vao 8 khung (`chu_<id>_vao.jpg`), anh hieu ung 8 khung (`hu_<id>.jpg`), `tong_the.jpg`.
+    LOC TRUNG: cung font gan nhat + cung loai (phu de / khong) + histogram mau cosine >= 0.93 -> gop (alias). Luu
+    `~/.capcut-studio/library/ref_pack/<van tay file video mau>/pack.json`; phan tich luu `ref_pack`. Phan tich cu: route
+    video mau (dung lai thu vien) + autoplan tu `ensure` (1 luot Gemini, ghi lai thu vien; lan sau doc dia).
+  - Moi buoc CHI nhan anh cua no (`ref_pack.use(pack)` theo luong trong autoplan, `step_images`): DD — tong the (+ bo
+    phong cach video mau trong payload, luat UU TIEN video mau: font / mau / kieu chu / chieu cua video mau duoc dung ke
+    ca khi nam trong danh sach rap khuon / so tay); R4 (+ vong tu sua) — moi kieu chu 1 anh tinh + 1 anh dang vao + tong
+    the, lop chu ghi `"kieu_chu": "<id>"`; R5 — chi anh phu de; FX-plan — anh hieu ung, hieu ung tai hien ghi
+    `"theo_mau"` (id phai co trong bo anh); FX-code — CHI anh cua `theo_mau` trong lo; chu anh AI (Codex `-i`) — cum
+    nhom theo `kieu_chu` (lop R4; cum khong ghi / caption hero / hook -> kieu chu nhan chinh), moi nhom 1 anh chu that
+    (`_STYLE_REF_NOTE`). Khoa cache cac buoc co anh them van tay bo anh (`ref_pack.fingerprint`) — khong video mau thi
+    khoa + prompt y nhu cu. Duyet: phan tu co kieu_chu / theo_mau khong bi coi la rap khuon, khong doi kieu vao.
+  - Claude xem anh: gói đăng ký — `_claude_chat` chep anh vao `<workdir>/anh_tham_chieu/`, `--tools Read --allowedTools
+    Read --max-turns n+3`, prompt liet ke anh + nhan; `num_turns` < 2 (khong mo anh) -> goi lai 1 lan (da thu that CLI
+    2.1.283 sonnet-5: mo anh 2 luot, doc dung chu / mau / vien); API key — content block base64 (`_image_blocks`).
+  - UI: khung "Anh that cua video mau" trong phan tich video mau (giao dien day du, may chu media).
+  - Do that video mau OpusClip 48.6s: Gemini chi 5 kieu chu -> gop con 4 (READY TO POST cung kieu I THINK), ca 4 OCR xac
+    minh: phu de tung tu ('the easiest way'), chu lon cao hep SAU dau ('I THINK', anh vao thay hien dan 0.2-0.6s), the
+    chu hop den ('AI VIDEO EDITING, ONE PROMPT'), chu cat dan giay ('ONE'); 5 hieu ung (camera, chia doi, do hoa, cat
+    dan giay ON->ONE, chuyen canh).
+- **Kiem**: `HOME=$(mktemp -d) <venv> tests/test_ref_pack.py` (dung bo anh + OCR + gop trung, anh tung buoc, ensure,
+  Claude CLI / API xem anh, CA LUONG autoplan: buoc nao nhan anh nao, chu anh AI theo kieu chu cua cum, khong video mau
+  -> khong anh).
 - **Kiem**: `HOME=$(mktemp -d) <venv> tests/test_director.py` (chuan hoa, nhan chieu, so tay, duyet, bo tieng, CA LUONG
   autoplan AI gia: chi dao toi B3..B7, danh muc SFX, khoang lang, tieng theo the gioi, muc hook, so tay, tat nhac, dao dien
   loi -> nhu cu); `test_info_flow.py` (thu tu co DD-chi-dao); `node tests/test_motion.mts` [2][2b].

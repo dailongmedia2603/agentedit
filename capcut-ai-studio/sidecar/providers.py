@@ -291,7 +291,7 @@ def plan_ai_name():
 
 
 def _chat(name, messages, json_mode=False, max_tokens=4096, temperature=0.6,
-          req_timeout=60, max_attempts=4, step_label="openai"):
+          req_timeout=60, max_attempts=4, step_label="openai", images=None):
     """Diem vao DUY NHAT cho GPT/Claude — tu chon duong di theo auth_mode.
 
     - auth_mode="subscription" -> chay CLI chinh chu da dang nhap (goi Max / ChatGPT Plus)
@@ -311,21 +311,44 @@ def _chat(name, messages, json_mode=False, max_tokens=4096, temperature=0.6,
             req_timeout=_cli_timeout(req_timeout),
             step_label=step_label,
             effort=config.sub_effort(name),
+            images=images or None,
         )
     base = (cfg.get("base_url") or "").rstrip("/")
     if name == "claude" and _is_native_claude(base):
         return _anthropic_chat(
             base, cfg.get("api_key") or "", cfg.get("model") or "", messages, json_mode=json_mode,
             max_tokens=max_tokens, temperature=temperature, req_timeout=req_timeout,
-            max_attempts=max_attempts, step_label=step_label)
+            max_attempts=max_attempts, step_label=step_label, images=images)
+    if images:
+        log_step_note(step_label, "duong %s qua proxy OpenAI-compat: bo %d anh tham chieu (chi gui mo ta chu)"
+                      % (name, len(images)))
     return _openai_chat(
         base, cfg.get("api_key") or "", cfg.get("model") or "",
         messages, json_mode=json_mode, max_tokens=max_tokens, temperature=temperature,
         req_timeout=req_timeout, max_attempts=max_attempts, step_label=step_label)
 
 
+def _image_blocks(images):
+    """Anh tham chieu -> content block Anthropic (base64) + dong nhan. Anh qua 4.5 MB -> bo."""
+    import base64
+    out = []
+    for x in images or []:
+        it = {"path": x, "label": ""} if isinstance(x, str) else dict(x)
+        pth = it.get("path")
+        if not pth or not os.path.isfile(pth) or os.path.getsize(pth) > 4500000:
+            continue
+        ext = os.path.splitext(pth)[1].lower()
+        mt = {".png": "image/png", ".webp": "image/webp", ".gif": "image/gif"}.get(ext, "image/jpeg")
+        with open(pth, "rb") as f:
+            data = base64.b64encode(f.read()).decode("ascii")
+        out.append({"type": "text", "text": "ANH THAM CHIEU %s%s" % (os.path.basename(pth),
+                                                                   (" — " + it["label"]) if it.get("label") else "")})
+        out.append({"type": "image", "source": {"type": "base64", "media_type": mt, "data": data}})
+    return out
+
+
 def _anthropic_chat(base, key, model, messages, json_mode=False, max_tokens=4096, temperature=0.6,
-                    req_timeout=60, max_attempts=4, step_label="anthropic"):
+                    req_timeout=60, max_attempts=4, step_label="anthropic", images=None):
     """Claude bang API key goc (api.anthropic.com/v1/messages).
 
     Khac OpenAI: system nam rieng, bat buoc max_tokens, khong co response_format (json_mode ->
@@ -343,8 +366,10 @@ def _anthropic_chat(base, key, model, messages, json_mode=False, max_tokens=4096
     net_tries = tries = 0
     last = None
     while tries < max_attempts:
+        blocks = _image_blocks(images)
+        content = (blocks + [{"type": "text", "text": user}]) if blocks else user
         body = {"model": model, "max_tokens": budget, "system": system,
-                "messages": [{"role": "user", "content": user}]}
+                "messages": [{"role": "user", "content": content}]}
         if use_temp and temperature is not None:
             body["temperature"] = temperature
         log_step_call(step_label, "anthropic", model, system, user,

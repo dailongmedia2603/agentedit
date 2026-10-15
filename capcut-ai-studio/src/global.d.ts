@@ -1269,6 +1269,8 @@ declare global {
   /** Phan tich video mau bang Gemini (ban cu: GPT qua Codex CLI) — schema chung + phan do bang may */
   interface RemotionReferenceAnalysis extends ReferenceAnalysis {
     remotion_hints?: RemotionHints
+    /** anh THAT tung kieu chu / hieu ung / tong the (luot 3) — cac buoc Claude + chu anh AI xem */
+    ref_pack?: RefPack | null
     evidence?: { time?: number; observation?: string }[]
     _source?: string
     _measured?: {
@@ -1283,6 +1285,14 @@ declare global {
     _frames?: { frames: number; sheets: number }
     /** Gemini: dung luong video mau da gui + so dai khung day (luot 2) */
     _media?: { video_mb: number; strips: number }
+  }
+  /** Bo anh tham chieu video mau (sidecar ref_pack.py) */
+  interface RefPack {
+    fp: string
+    dir?: string
+    kieu_chu?: { id: string; vai: string; mo_ta: string; font?: string | null; anh: string; anh_vao?: string | null; xac_minh?: boolean; alias?: string[] }[]
+    hieu_ung?: { id: string; loai: string; mo_ta: string; anh: string }[]
+    tong_the?: string | null
   }
   /** Plan THO cua luong Remotion (gio than video) — build_spec tu dung cau truc */
   interface RemotionPlan {

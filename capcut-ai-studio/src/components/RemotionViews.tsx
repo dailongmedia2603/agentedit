@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Player } from '@remotion/player'
 import { Badge } from '@/components/ui/primitives'
-import { AutoEdit } from '../../remotion-src/AutoEdit'
+import { AutoEdit, mediaSrc } from '../../remotion-src/AutoEdit'
 import type { RenderSpec, RSLayer } from '../../remotion-src/types'
 import { fmtTime } from '@/lib/utils'
 
@@ -421,19 +421,70 @@ export function RemotionPlanView({
   )
 }
 
+const REF_VAI_LABEL: Record<string, string> = {
+  phu_de: 'Phụ đề',
+  chu_nhan: 'Chữ nhấn',
+  the_chu: 'Thẻ chữ',
+  chu_do_hoa: 'Chữ đồ hoạ',
+  tieu_de: 'Tiêu đề',
+  cta: 'Kêu gọi'
+}
+
+/** Bo anh THAT cua video mau (ref_pack): moi kieu chu / hieu ung 1 anh — cac buoc lap ke hoach xem dung anh nay. */
+function RefPackView({ pack, mediaBase }: { pack: RefPack; mediaBase?: string }) {
+  if (!pack.dir || !mediaBase) return null
+  const src = (f: string) => mediaSrc(mediaBase, `${pack.dir}/${f}`)
+  return (
+    <div className="space-y-2 rounded-xl border border-black/6 bg-ink-50 p-3">
+      <div className="font-medium text-ink-900">
+        Ảnh thật của video mẫu — {pack.kieu_chu?.length || 0} kiểu chữ, {pack.hieu_ung?.length || 0} hiệu ứng (AI xem khi lập
+        kế hoạch, mỗi bước chỉ nhận phần của mình)
+      </div>
+      {!!pack.kieu_chu?.length && (
+        <div className="flex flex-wrap gap-2">
+          {pack.kieu_chu.map((s) => (
+            <div key={s.id} className="w-56 rounded-lg bg-white p-1.5 ring-1 ring-black/5">
+              <img src={src(s.anh)} className="h-20 w-full rounded object-contain" />
+              <div className="mt-1 text-[11px] leading-snug text-ink-800/70">
+                <b className="text-ink-900">{REF_VAI_LABEL[s.vai] || s.vai}</b>
+                {s.font ? ` · ${s.font}` : ''}
+                {s.alias?.length ? ` · gộp ${s.alias.length} cụm cùng kiểu` : ''}
+                <div className="line-clamp-2">{s.mo_ta}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {!!pack.hieu_ung?.length && (
+        <div className="flex flex-wrap gap-2">
+          {pack.hieu_ung.map((e) => (
+            <div key={e.id} className="w-72 rounded-lg bg-white p-1.5 ring-1 ring-black/5">
+              <img src={src(e.anh)} className="w-full rounded" />
+              <div className="mt-1 line-clamp-2 text-[11px] leading-snug text-ink-800/70">{e.mo_ta}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 /** Phan rieng cua ban GPT: so do bang may + goi y Remotion. */
 export function RemotionReferenceExtra({
   analysis,
-  catalog
+  catalog,
+  mediaBase
 }: {
   analysis: RemotionReferenceAnalysis
   catalog: RemotionCatalog | null
+  mediaBase?: string
 }) {
   const m = analysis._measured
   const h = analysis.remotion_hints
-  if (!m && !h) return null
+  if (!m && !h && !analysis.ref_pack) return null
   return (
     <div className="mt-3 space-y-2 text-xs">
+      {analysis.ref_pack && <RefPackView pack={analysis.ref_pack} mediaBase={mediaBase} />}
       {m && (
         <div className="flex flex-wrap gap-1.5">
           <Badge tone="neutral">đo bằng máy</Badge>

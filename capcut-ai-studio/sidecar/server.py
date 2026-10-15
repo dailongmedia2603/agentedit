@@ -1263,6 +1263,12 @@ def remotion_reference_route():
             except Exception as ex:
                 logger.warning("Luu thu vien phan tich loi: %s", ex)
         analysis["reference_video"] = normalized
+        # ban phan tich cu (truoc 2026-10-15) chua co bo anh tham chieu -> dung bo anh ngay (1 luot Gemini, luu lai)
+        try:
+            import ref_pack
+            ref_pack.ensure(analysis, log=logger.info)
+        except Exception as ex:
+            logger.warning("Bo anh tham chieu video mau loi: %s", ex)
         return jsonify({"ok": True, "analysis": analysis})
     except Exception as e:
         return err(e)
@@ -1293,7 +1299,24 @@ def remotion_autoplan_route():
     # KHUNG VIDEO (user 2026-10-04): "portrait" doc 9:16 (mac dinh, y nhu truoc) | "landscape" ngang 16:9 — dat cho CA
     # luot lap ke hoach: moi buoc AI ve hinh + moi phep do bo cuc / khoi chu theo dung khung nay (canvas.py)
     with canvas.use(*canvas.dims(b.get("orientation"))):
-        return _remotion_autoplan(b)
+        # BO ANH THAM CHIEU video mau (ref_pack, 2026-10-15): anh THAT tung kieu chu / hieu ung / tong the -> cac buoc
+        # Claude (DD, R4, R5, FX) tu lay dung anh cua buoc minh qua ref_pack.use; phan tich cu chua co -> dung ngay
+        import ref_pack
+        pack = None
+        ra = b.get("reference_analysis")
+        if isinstance(ra, dict) and ra:
+            try:
+                pack = ref_pack.ensure(ra, log=logger.info)
+            except Exception as ex:
+                logger.warning("Bo anh tham chieu video mau loi: %s — cac buoc chi doc mo ta chu", ex)
+            if pack:
+                run_log.emit("note", "Ảnh thật của video mẫu: %d kiểu chữ (%s), %d hiệu ứng%s — mỗi bước chỉ nhận ảnh phần "
+                             "của mình" % (len(pack.get("kieu_chu") or []), ", ".join(
+                                 "%s: %s" % (s_["id"], s_["vai"]) for s_ in pack.get("kieu_chu") or []),
+                                 len(pack.get("hieu_ung") or []), ", có ảnh tổng thể" if pack.get("tong_the") else ""),
+                             step="R4-design", output=pack)
+        with ref_pack.use(pack):
+            return _remotion_autoplan(b)
 
 
 def _text_lib_step(lk_meta, design, captions, hook_info, transcript_data, story, style, brand, step):
@@ -1540,10 +1563,13 @@ def _remotion_autoplan(b):
         except Exception as ex:
             logger.warning("Tao bo tieng the gioi loi: %s", ex)
         _um_dd = [{k: it.get(k) for k in ("name", "use", "placement", "note")} for it in um_items] if um_items else None
+        import ref_pack
         dd_key = {"segs": segs_b2, "tr": transcript_data, "emo": emotion_map_data, "km": key_moments_data,
                   "story": story, "src": director._video_view(brief), "ref": director._ref_view(reference_analysis),
                   "brand": brand_guide.view(brand, "plan") if brand else None, "um": _um_dd,
                   "p": director.prompt_fp(), "v": director.DIRECTOR_VERSION}
+        if ref_pack.current():
+            dd_key["pack"] = ref_pack.step_fp()     # chi khi co anh tham chieu -> khoa cu giu nguyen
         # so tay cac video gan day KHONG nam trong khoa (doi moi lan lam video khac) -> lap ke hoach lai du an nay
         # van dung lai ban chi dao da luu
         _mem = director.recent(project=_proj)
@@ -1616,6 +1642,8 @@ def _remotion_autoplan(b):
         if um_items:
             # chi them khi CO tu lieu -> du an khong tu lieu giu nguyen khoa cache cu
             r4_key["um"] = user_media.key_view(um_items)
+        if ref_pack.step_images("R4"):
+            r4_key["pack"] = ref_pack.step_fp()
         if brand:
             # chi them khi CO Brand Guideline -> du an khong co giu nguyen khoa cache cu
             r4_key["brand"] = brand_guide.view(brand, "plan")
@@ -1705,6 +1733,8 @@ def _remotion_autoplan(b):
         }
         if brand_guide.view(brand, "captions"):
             r5_key["brand"] = brand_guide.view(brand, "captions")
+        if ref_pack.step_images("R5"):
+            r5_key["pack"] = ref_pack.step_fp()
         captions = _step("R5-captions", r5_key, lambda: remotion_plan.gpt_rm_captions(
             segments=segs_b2, transcript_data=transcript_data, emotion_map_data=emotion_map_data,
             faces_regions=faces_regions, key_moments_data=key_moments_data,
@@ -1723,6 +1753,36 @@ def _remotion_autoplan(b):
         tpl_res = _text_lib_step(lk_meta, design, captions, hook_info, transcript_data, story, style_phien, brand, _step)
         lockups = [{"key": lk["key"], "tiers": lk["tiers"]} for lk in lk_meta
                    if lk["key"] not in ((tpl_res or {}).get("items") or {})]
+        # VIDEO MAU: moi cum chu anh AI nhan ANH CHU THAT cua dung kieu chu (lop R4 ghi "kieu_chu"; cum khong ghi /
+        # caption hero / hook -> kieu chu NHAN chinh). Khong co anh tham chieu -> lockups y nhu cu (khoa cache cu)
+        art_styles = None
+        _pk = ref_pack.current()
+        if _pk and _pk.get("kieu_chu"):
+            # kieu_chu cua lop R4 -> id CHUAN (id da bi gop -> id giu lai): chu anh AI + build_spec khop dung kieu
+            for L_ in design.get("layers") or []:
+                if isinstance(L_, dict) and L_.get("kieu_chu"):
+                    st_ = ref_pack.resolve_style(_pk, L_["kieu_chu"])
+                    if st_:
+                        L_["kieu_chu"] = st_["id"]
+                    else:
+                        L_.pop("kieu_chu", None)
+        if _pk and _pk.get("kieu_chu") and lockups:
+            _main = ref_pack.main_style(_pk)
+            _lays = design.get("layers") or []
+            _by_key = {lk["key"]: lk for lk in lk_meta}
+            art_styles = {}
+            for lk in lockups:
+                sid = None
+                for src_ in _by_key.get(lk["key"], {}).get("src") or []:
+                    if src_.get("kind") == "layers":
+                        for i_ in src_.get("idx") or []:
+                            if 0 <= i_ < len(_lays) and isinstance(_lays[i_], dict) and _lays[i_].get("kieu_chu"):
+                                st_ = ref_pack.resolve_style(_pk, _lays[i_]["kieu_chu"])
+                                sid = sid or (st_ or {}).get("id")
+                st_ = ref_pack.resolve_style(_pk, sid) if sid else _main
+                if st_:
+                    lk["kieu_chu"] = st_["id"]
+                    art_styles[st_["id"]] = os.path.join(ref_pack.pack_dir(_pk["fp"]), st_["anh"])
         if lockups:
             run_log.emit("note", "Chữ ảnh AI: %d cụm chữ nổi bật (không gồm phụ đề karaoke) -> tạo ảnh chữ theo "
                          "phong cách video, cắt từng tầng + vị trí từng từ" % len(lockups), step="TXT-art",
@@ -1730,10 +1790,16 @@ def _remotion_autoplan(b):
             art_key = {"lk": lockups, "style": style_phien, "story": story, "v": text_art.ART_VERSION}
             if brand_guide.view(brand, "text_art"):
                 art_key["brand"] = brand_guide.view(brand, "text_art")
+            if art_styles:
+                art_key["pack"] = ref_pack.step_fp()
+                run_log.emit("note", "Chữ ảnh AI theo ẢNH CHỮ THẬT của video mẫu: %s" % ", ".join(
+                    "%s → %d cụm" % (k_, sum(1 for lk in lockups if lk.get("kieu_chu") == k_)) for k_ in art_styles),
+                    step="TXT-art")
             art_future = _nen_nhan(lambda: _step(
                 "TXT-art", art_key,
                 lambda: text_art.make_text_art(lockups, style=style_phien, story=story, log=logger.info,
-                                               emit=lambda m: run_log.emit("note", m, step="TXT-art"), brand=brand),
+                                               emit=lambda m: run_log.emit("note", m, step="TXT-art"), brand=brand,
+                                               **({"style_refs": art_styles} if art_styles else {})),
                 True))
         # DO HOA CO CHU BANG ANH AI (huy hieu...): AI tao CA phan tu (hinh + trang tri + icon + chu), khong chi chu —
         # chay nen song song (Codex) nhu chu anh AI
@@ -1771,6 +1837,8 @@ def _remotion_autoplan(b):
                    "lop": layer_texts, "v": fx_flow.FX_VERSION}
         if lop_hinh:
             fxp_key["hinh"] = lop_hinh
+        if ref_pack.step_images("FX-plan"):
+            fxp_key["pack"] = ref_pack.step_fp()
         if brand_guide.view(brand, "fx"):
             fxp_key["brand"] = brand_guide.view(brand, "fx")
         fx_plan = _step("FX-plan", fxp_key,

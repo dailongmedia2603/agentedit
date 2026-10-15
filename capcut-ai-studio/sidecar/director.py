@@ -36,7 +36,7 @@ import unicodedata
 import prompt_store
 import providers
 
-DIRECTOR_VERSION = 2      # 2: tham my + danh gia hinh nguon (2026-10-15)
+DIRECTOR_VERSION = 3      # 2: tham my + danh gia hinh nguon; 3: uu tien video mau + anh tham chieu (2026-10-15)
 MEMORY_PATH = os.path.join(os.path.expanduser("~"), ".capcut-studio", "director_memory.json")
 MEMORY_MAX = 24          # so video nho
 MEMORY_RECENT = 6        # so video gan nhat dua cho dao dien
@@ -317,6 +317,14 @@ meme, am thanh) phai theo.
 10. CAM: liet ke cu the nhung gi KHONG duoc dung trong video nay: chieu rap khuon (xem duoi), chieu da lap o
    so_tay_gan_day, va thu sai voi chu de / tone (vd video cam on thay co: khong glitch, khong rung).
 
+# CO VIDEO MAU (video_mau) — NGUOI DUNG DA CHON PHONG CACH NAY
+- video_mau.bo_phong_cach (font, mau, he chu, cong thuc lop, camera, chuyen canh, bo cuc) + anh tham chieu la PHONG CACH
+  BAT BUOC: font / mau / kieu chu / cach edit cua video mau DUOC DUNG ca khi trung "chieu AI rap khuon" hay so tay
+  (khong cam, khong doi sang font / mau / kieu chu khac). Ban chi dao Y TUONG, mo tip, duong cong cam xuc, dau an,
+  khoang lang, nhip — SONG TRONG phong cach do (y tuong mac vao he chu + bo cuc + chieu cua video mau).
+- "cam" chi ghi thu sai voi chu de / tone hoac lam hong phong cach video mau; khong cam thu video mau dang dung.
+- the_gioi_hinh, mau_nhan, chu: mo ta THEO video mau (co the them chi tiet rieng cua noi dung, khong doi he).
+
 # THAM MY — KHAC BIET VAN PHAI DEP (do that 2026-10-15: ban chi dao 'luoi o Zoom' cuong do 2 ra cac khoi xam trong
   rong tren nen den -> dung y tuong nhung nhat, kem hap dan hon ban cu)
 - Tiet che KHONG phai ngheo nan: khung nao cung phai DEP khi dung mot minh — co chat lieu, anh sang, chieu sau, mau co
@@ -391,6 +399,8 @@ gi lam video thanh "AI rap khuon", lam loang cam xuc, hoac sai chu de. It ma dun
 5. Phan tu chung chung, khong phuc vu y tuong lon / mo tip / cam xuc nhip -> bo.
 6. KHOANH KHAC DAU AN phai con du luc: neu bi phan tu khac lan at -> bo phan tu lan at.
 Khong bo de tro thanh video trong: moi nhip nang_luong >= 3 van can diem nhan. Khong them phan tu moi.
+Phan tu co "kieu_chu" / "theo_mau" = dang TAI HIEN video mau nguoi dung chon -> KHONG coi la rap khuon, khong doi kieu vao
+cua no (chi bo khi roi vao khoang lang hoac lan at dau an).
 
 # SCHEMA (CHI JSON, tieng Viet co dau)
 {
@@ -473,6 +483,14 @@ def _ref_view(reference_analysis):
     keys = ("summary", "format", "style_fingerprint", "pacing", "structure", "attention_system", "audio",
             "editing_language", "transfer_rules", "style_patterns")
     v = {k: reference_analysis[k] for k in keys if reference_analysis.get(k) not in (None, "", [], {})}
+    kit = reference_analysis.get("style_kit") if isinstance(reference_analysis.get("style_kit"), dict) else {}
+    if kit:
+        # BO PHONG CACH chi tiet (font, mau, he chu, cong thuc, camera...) — dao dien phai song TRONG phong cach nay
+        bk = {k: kit[k] for k in ("palette", "fonts", "subtitle", "text_system", "motion", "camera", "transitions",
+                                  "layouts", "broll_style", "pacing") if kit.get(k) not in (None, "", [], {})}
+        if kit.get("recipes"):
+            bk["recipes"] = [{"name": r.get("name"), "when": r.get("when")} for r in kit["recipes"] if isinstance(r, dict)]
+        v["bo_phong_cach"] = bk
     return v or None
 
 
@@ -523,8 +541,12 @@ def gpt_direct(segments, transcript_data, emotion_map_data, key_moments_data, st
         "kha_nang_bo_dung": capabilities(),
     }
     ref = _ref_view(reference_analysis)
+    import ref_pack
+    ref_imgs = ref_pack.step_images("DD")
     if ref:
         payload["video_mau"] = ref
+        if ref_imgs:
+            payload["video_mau"]["anh_tham_chieu"] = ref_pack.step_view("DD")
     if brand_view:
         payload["thuong_hieu"] = brand_view
     if user_media:
@@ -536,9 +558,10 @@ def gpt_direct(segments, transcript_data, emotion_map_data, key_moments_data, st
     if log:
         log("DD: %s dao dien doc toan bo noi dung + phan tich Gemini -> ban chi dao..." % providers.plan_ai_name())
     text = providers.plan_chat([
-        {"role": "system", "content": _p("_DIRECTOR_SYSTEM") + (canvas_note or "")},
+        {"role": "system", "content": _p("_DIRECTOR_SYSTEM") + (canvas_note or "") + (ref_pack.rule("DD") if ref_imgs else "")},
         {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
-    ], json_mode=True, max_tokens=8000, temperature=0.7, req_timeout=300, max_attempts=2, step_label="DD-chi-dao")
+    ], json_mode=True, max_tokens=8000, temperature=0.7, req_timeout=300, max_attempts=2, step_label="DD-chi-dao",
+        images=ref_imgs or None)
     return providers._safe_json(text)
 
 
@@ -732,14 +755,17 @@ danh sach cam. Ban la MOT BO PHAN cua ekip — thuc hien dung y dao dien, khong 
   y_tuong cua dao dien, cho no du khong gian (khong chen phan tu khac lan at).
 - khoang_lang (gio nguon): KHONG dat hieu ung / chu bat ra / SFX / meme trong khoang nay — de cau noi do tro.
 - cam[]: tuyet doi khong dung. Chieu rap khuon (punch-in vao mat, dai sang cheo, 4 goc khung ngam, thanh tien trinh
-  mong, light leak, tia lap lanh...) chi khi chinh chi_dao goi ten no la y tuong rieng.
+  mong, light leak, tia lap lanh...) chi khi chinh chi_dao goi ten no la y tuong rieng — HOAC video mau (style_kit /
+  phong_cach_mau / anh tham chieu) dang dung chieu do: phong cach video mau nguoi dung chon luon duoc tai hien.
 - Yeu cau edit cua nguoi dung + luat cung cua he thong (luat hook, chu ro net, khong che mat, thu tu noi dung) van
   dung tren chi dao. Khong co cau_chuyen.chi_dao -> bo qua khoi nay."""
 
 _BUOC = {
     "B3": "\n- Rieng buoc HOOK: chon doan hook danh dung chi_dao.hook.cam_xuc; ghi hook.attention theo chi_dao.hook "
           "(cach_mo, muc_do) — y tuong hinh / tieng cua hook la CACH MO dao dien da chot, khong mac dinh punch-in.",
-    "R4": "\n- Rieng buoc THIET KE: 'concept' + 'style' (mau, font, mood, image_style) RUT tu y_tuong_lon / the_gioi_hinh / "
+    "R4": "\n- Rieng buoc THIET KE: CO style_kit (video mau) thi font / mau / he chu / cong thuc / kieu chu theo VIDEO MAU "
+          "(ke ca anh tham chieu) — chi dao chi quyet y tuong, mo tip, nhip, dau an TRONG phong cach do. Khong co video "
+          "mau: 'concept' + 'style' (mau, font, mood, image_style) RUT tu y_tuong_lon / the_gioi_hinh / "
           "mau_nhan / chu cua chi dao (font chon theo giong chu cua video NAY, khong mac dinh cap the thao nghieng + viet "
           "tay); mo_tip phai xuat hien thanh lop hinh / bo cuc o dung cac nhip dao dien noi; anh AI (image_style + prompt) "
           "thuoc the gioi hinh; mat do lop + bo cuc theo nang_luong tung nhip; chuyen canh theo chuyen_canh_vao cua nhip "
@@ -853,7 +879,8 @@ def review_view(cd, design, captions, fx_list, transitions, inserts, audio, segm
             put(L.get("source_id"), _f(L.get("src_start"), None), {
                 "id": lid, "loai": L.get("type"), "chu": _layer_text(L) or None,
                 "kieu_vao": (L.get("enter") or {}).get("preset") if isinstance(L.get("enter"), dict) else None,
-                "sfx": L.get("sfx"), "gio_nguon": L.get("src_start"), "hook": L.get("anchor") == "hook" or None})
+                "sfx": L.get("sfx"), "gio_nguon": L.get("src_start"), "hook": L.get("anchor") == "hook" or None,
+                "kieu_chu": L.get("kieu_chu") or None})
     for g, ls in groups.items():
         gid = "group:%s" % g
         index[gid] = ("layer", [L.get("id") for L in ls], any(L.get("anchor") == "hook" for L in ls))
@@ -861,7 +888,8 @@ def review_view(cd, design, captions, fx_list, transitions, inserts, audio, segm
         put(L0.get("source_id"), _f(L0.get("src_start"), None), {
             "id": gid, "loai": "to_hop", "chu": " / ".join(filter(None, (_layer_text(L) for L in ls)))[:120] or None,
             "kieu_vao": sorted({(L.get("enter") or {}).get("preset") for L in ls if isinstance(L.get("enter"), dict)} - {None}),
-            "gio_nguon": L0.get("src_start"), "hook": index[gid][2] or None})
+            "gio_nguon": L0.get("src_start"), "hook": index[gid][2] or None,
+            "kieu_chu": next((L.get("kieu_chu") for L in ls if L.get("kieu_chu")), None)})
     for n, c in enumerate((captions or {}).get("captions") or []):
         if not isinstance(c, dict) or str(c.get("role") or "") not in ("hero", "micro"):
             continue
@@ -880,7 +908,8 @@ def review_view(cd, design, captions, fx_list, transitions, inserts, audio, segm
         put(e.get("source_id"), _f(e.get("src_start"), None), {
             "id": fid, "loai": "hieu_ung_" + str(e.get("kind") or ""), "mo_ta": str(e.get("visual") or "")[:260],
             "muc_tieu": str(e.get("goal") or "")[:160], "nhan_chieu": [DEVICE_LABEL.get(t, t) for t in tags] or None,
-            "gio_nguon": e.get("src_start"), "hook": e.get("anchor") == "hook" or None})
+            "gio_nguon": e.get("src_start"), "hook": e.get("anchor") == "hook" or None,
+            "theo_mau": e.get("theo_mau") or None})
     tr_cnt = {}
     for t in transitions or []:
         idx = t.get("segment_index") if isinstance(t, dict) else None
@@ -1003,7 +1032,7 @@ def apply_review(res, index, design, captions, fx_list, visual, inserts, audio):
         hit = 0
         for lid in ref[1]:
             L = by_id.get(lid)
-            if L is None:
+            if L is None or L.get("kieu_chu"):     # dang tai hien kieu chu video mau -> giu kieu vao cua mau
                 continue
             if pre in ("letters_blur", "words_blur", "typewriter", "words_pop", "letters_drop", "words_rise",
                        "letters_fade", "write_on") and L.get("type") != "text":
