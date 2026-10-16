@@ -14,8 +14,10 @@
   phan tu sai, video van dung duoc.
 """
 import os
+import re
 import copy
 import json
+import math
 
 import canvas as CV
 import plan_guard
@@ -1162,6 +1164,7 @@ def layers_to_spec(p, duration, scenes, assets_by_id, faces, changes, kit=None):
     if p.get("text_lib"):
         # cum chu da chon MAU KHO TEXT -> 1 lop "tpl" thay cac lop chu (+ nen chu) cua cum (ne mat: protect_face)
         out = text_lib_layers(p, out, duration, changes)
+    ring_targets(out, p.get("layers") or [], changes)
     for L in out:
         L.pop("_i", None)
     dims = {}
@@ -1186,6 +1189,105 @@ def layers_to_spec(p, duration, scenes, assets_by_id, faces, changes, kit=None):
             continue
         kept.append(L)
     return kept
+
+
+# ---------------------------------------------------------------------------
+# VONG KHOANH CHU — chon tu can khoanh; renderer (RingTarget) do khung that + ve bau duc vua khit
+# ---------------------------------------------------------------------------
+_QUOTE_RE = re.compile(r"[\'\"\u2018\u2019\u201c\u201d\u00ab\u00bb]([^\'\"\u2018\u2019\u201c\u201d\u00ab\u00bb]{1,40})[\'\"\u2018\u2019\u201c\u201d\u00ab\u00bb]")
+
+
+def _words_of(L):
+    """[(chu goc, cx, cy)] cac tu cua lop chu, tam UOC LUONG (phan khung) — chi de chon tu gan vong nhat."""
+    spans = [sp for sp in L.get("spans") or [] if isinstance(sp, dict)]
+    lines, cur = [], []
+    for sp in spans:
+        if sp.get("newline") and cur:
+            lines.append(cur)
+            cur = []
+        cur.append(sp)
+    if cur:
+        lines.append(cur)
+    try:
+        x0, y0, x1, y1 = _bbox(L)
+    except Exception:
+        return []
+    out, hs = [], [max(float(sp.get("size") or L.get("size") or 80) for sp in ln) for ln in lines]
+    tot_h = sum(hs) or 1.0
+    y = y0
+    for ln, h in zip(lines, hs):
+        cy = y + (y1 - y0) * (h / tot_h) / 2
+        y += (y1 - y0) * h / tot_h
+        items = []
+        for sp in ln:
+            sz = float(sp.get("size") or L.get("size") or 80)
+            k = _font_k(sp.get("font") or L.get("font"))
+            for w in str(sp.get("text") or "").split():
+                items.append((w, CV.fw(len(w) * sz * k), CV.fw(sz * k)))
+        lw = sum(w for _t, w, _g in items) + sum(g for _t, _w, g in items[1:])
+        x = (x0 + x1) / 2 - lw / 2
+        for j, (t, w, g) in enumerate(items):
+            if j:
+                x += g
+            out.append((t, x + w / 2, cy))
+            x += w
+    return out
+
+
+def ring_targets(out, plan_layers, changes):
+    """Lop 'ring' (vong do AI dat bang toa do uoc luong) dang khoanh mot CHU -> L["target"] = {layer, text}: renderer do
+    khung that cua dung cum tu do va ve bau duc vua khit (do that 2026-10-16: vong quanh 'others' nho hon chu, cat qua
+    'o' / 's'). Cum tu lay theo: 'target_text' cua R4 > tu trong ngoac kep cua 'why' khop chu dang hien > tu GAN tam vong
+    nhat (vong nam trong / sat khoi chu). Vong khong khoanh chu nao (quanh mat, vat...) -> giu nguyen."""
+    import text_art
+    texts = [L for L in out if L.get("type") == "text" and L.get("spans")]
+    for R in out:
+        if R.get("type") != "ring":
+            continue
+        L0 = plan_layers[R["_i"]] if isinstance(R.get("_i"), int) and R["_i"] < len(plan_layers) else {}
+        cands = [T for T in texts if T["start"] < R["end"] and T["end"] > R["start"]]
+        if not cands:
+            continue
+        cands.sort(key=lambda T: (T.get("group") != R.get("group"), abs(T["start"] - R["start"])))
+        quotes = [str(L0.get("target_text") or "").strip()] if L0.get("target_text") else []
+        quotes += [q.strip() for q in _QUOTE_RE.findall(str(L0.get("why") or ""))]
+        hit = None
+        for q in [q for q in quotes if q]:
+            want = text_art.norm(q).split()
+            if not want:
+                continue
+            for T in cands:
+                ws = [w for sp in T["spans"] for w in str(sp.get("text") or "").split()]
+                nw = [text_art.norm(w).replace(" ", "") for w in ws]
+                for i in range(0, len(nw) - len(want) + 1):
+                    if nw[i:i + len(want)] == want:
+                        hit = (T, " ".join(ws[i:i + len(want)]))
+                        break
+                if hit:
+                    break
+            if hit:
+                break
+        if not hit:
+            # theo hinh: tam vong nam trong khoi chu (no them ban kinh vong) -> tu gan tam nhat
+            rx, ry = float(R.get("x") or 0.5), float(R.get("y") or 0.5)
+            rad = float(R.get("w") or 0.2) / 2
+            best = None
+            for T in cands:
+                try:
+                    x0, y0, x1, y1 = _bbox(T)
+                except Exception:
+                    continue
+                if not (x0 - rad <= rx <= x1 + rad and y0 - CV.fh(1080 * rad) <= ry <= y1 + CV.fh(1080 * rad)):
+                    continue
+                for t, cx, cy in _words_of(T):
+                    d = math.hypot(cx - rx, (cy - ry) * CV.size()[1] / CV.size()[0])
+                    if best is None or d < best[0]:
+                        best = (d, T, t)
+            if best and best[0] <= rad * 1.6:
+                hit = (best[1], best[2])
+        if hit:
+            R["target"] = {"layer": hit[0]["id"], "text": hit[1]}
+            changes.append("%s: vong khoanh chu '%s' (lop %s) -> renderer do khung that cua chu" % (R["id"], hit[1], hit[0]["id"]))
 
 
 # ---------------------------------------------------------------------------

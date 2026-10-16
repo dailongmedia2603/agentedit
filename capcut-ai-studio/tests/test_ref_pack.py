@@ -231,10 +231,10 @@ TRA = {
     "FX-plan": {"effects": [
         {"id": "fx1", "kind": "overlay", "layer": "front", "source_id": "source_1", "src_start": 3.0, "src_end": 4.2,
          "theo_mau": "hu2", "context": "dang ke chuyen tin quang cao", "goal": "nguoi xem thay mui ten chi vao",
-         "why_fit": "tai hien mui ten giay cua video mau", "visual": "mui ten giay kraft truot vao tu phai"},
+         "y_nghia": "lam ro y dang noi luc do (du lieu test)", "why_fit": "tai hien mui ten giay cua video mau", "visual": "mui ten giay kraft truot vao tu phai"},
         {"id": "fx2", "kind": "overlay", "layer": "front", "source_id": "source_1", "src_start": 9.0, "src_end": 10.0,
          "theo_mau": "khong_co", "context": "canh bao dung lam nhu toi", "goal": "nhan manh loi khuyen",
-         "why_fit": "vong tron nho nhan manh chu dung", "visual": "vong tron mong quanh chu"}]},
+         "y_nghia": "lam ro y dang noi luc do (du lieu test)", "why_fit": "vong tron nho nhan manh chu dung", "visual": "vong tron mong quanh chu"}]},
     "FX-code": {"effects": [
         {"id": "fx1", "fit_check": {"ok": True}, "code": "function render(ctx){ return h('svg', {width: ctx.W, height: ctx.H}, h('rect', {x: 10, y: 10, width: 100 * env(ctx.t, ctx.d), height: 20, fill: '#ffffff'})) }"},
         {"id": "fx2", "fit_check": {"ok": True}, "code": "function render(ctx){ return h('svg', {width: ctx.W, height: ctx.H}, h('circle', {cx: 100, cy: 100, r: 30 * env(ctx.t, ctx.d) + 1, fill: 'none', stroke: '#fff'})) }"}]},

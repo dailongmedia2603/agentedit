@@ -231,6 +231,8 @@ export interface RSLayer {
   replacesSubtitle?: boolean
   /** Nam SAU nguoi noi (giua nen video va nguoi) — can clip.subject */
   behind?: boolean
+  /** Lop 'ring' khoanh CHU: id lop chu + cum tu duoc khoanh (so khop khong phan biet hoa / dau cau) — renderer do khung that */
+  target?: { layer: string; text: string }
   /** Lop 'tpl' (mau chu KHO TEXT): spec cua mau + thu muc file (font / anh) + chu THAT tung o.
    *  (x, y) = tam khoi chu cua mau tren khung; tplBox = khoi chu tren khung goc cua mau (px) */
   tpl?: TextTemplateSpec

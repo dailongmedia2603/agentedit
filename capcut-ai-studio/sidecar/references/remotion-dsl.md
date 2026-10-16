@@ -88,7 +88,8 @@ Trường chung:
   `box: {"color": "rgba(35,26,24,.85)", "radius": 0.02, "padX": 0.03, "padY": 0.012, "blur": 8}` (hộp nền sau chữ),
   `reveal: "dim_to_bright"` (chữ hiện mờ rồi SÁNG DẦN từng từ theo lời nói — thẻ trích dẫn / prompt).
 - `box` (w, h, `fill` / `fillGradient`, `radius`, `border`, `shadow`) · `circle` (w, fill) · `ring` (w, `strokeColor`,
-  `strokeWidth`; enter `draw` = vòng tự vẽ) · `line` / `arrow` (`points`: [[x,y],[x,y]], `curve` -0.6..0.6,
+  `strokeWidth`; enter `draw` = vòng tự vẽ; khoanh MỘT TỪ trong lớp chữ -> `target_text` = đúng từ / cụm đó như trong
+  lớp chữ: hệ thống đo khung chữ thật và vẽ bầu dục vừa khít, x / y / w chỉ là dự phòng) · `line` / `arrow` (`points`: [[x,y],[x,y]], `curve` -0.6..0.6,
   `strokeColor`, `strokeWidth`; enter `draw`) · `image` (`asset`, w, h?, `fit`, `mask`: none|round|circle,
   `radius`, `border`, `shadow`; loop `kenburns`) ·
   `badge` (huy hiệu / tem có chữ: w, `label`, `value`, `active`; hệ thống nhờ AI TẠO ẢNH cả phần tử — hình, chất liệu,

@@ -1875,6 +1875,7 @@ def _remotion_autoplan(b):
             step=lambda n, pl, fn: _step(n, pl, fn, optional=True), changes=fx_changes, log=logger.info,
             emit=lambda m, lvl, out: run_log.emit("note", m, step="FX-code", level=lvl, output=out), brand=brand,
             project=b.get("project"))
+        fx_list = fx_flow.drop_dup_motifs(fx_list, design.get("layers") or [], fx_changes)
         for c in fx_changes:
             logger.info("FX: %s", c)
             run_log.emit("note", "FX: %s" % c, step="FX-code", level="warn")

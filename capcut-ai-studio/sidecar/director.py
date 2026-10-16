@@ -37,7 +37,8 @@ import ngon_ngu
 import prompt_store
 import providers
 
-DIRECTOR_VERSION = 3      # 2: tham my + danh gia hinh nguon; 3: uu tien video mau + anh tham chieu (2026-10-15)
+DIRECTOR_VERSION = 4      # 2: tham my + danh gia hinh nguon; 3: uu tien video mau + anh tham chieu (2026-10-15)
+                          # 4: PHAN TICH NOI DUNG bat buoc + toan bo loi noi goc + luat Y NGHIA moi phan tu (2026-10-16)
 MEMORY_PATH = os.path.join(os.path.expanduser("~"), ".capcut-studio", "director_memory.json")
 MEMORY_MAX = 24          # so video nho
 MEMORY_RECENT = 6        # so video gan nhat dua cho dao dien
@@ -275,7 +276,10 @@ THAY mot dieu cu the. Ban chi dao cua ban la quyet dinh CHUNG ma moi bo phan sau
 meme, am thanh) phai theo.
 
 # DU LIEU DAU VAO
-- video: tom tat Gemini (da XEM + NGHE video that), nguoi / boi canh / san pham / chu tren man hinh, giong noi.
+- tong_quan: tom tat + tone + ngon ngu CA BO video (Gemini da XEM + NGHE video that).
+- toan_bo_loi_noi: NGUYEN VAN toan bo loi noi cua video goc (ca phan da cat) kem moc gio — doc HET de hieu nguoi noi
+  dang lap luan / ke chuyen gi, tu dau den cuoi; noi dung giu lai trong timeline la phan da chot.
+- video: tom tat Gemini tung video, nguoi / boi canh / san pham / chu tren man hinh, giong noi.
 - cau_chuyen: story_arc, tone, nhip_truyen, edit_request (muc dich, phong cach, khan gia, do dai) — yeu cau cua
   nguoi dung la uu tien so 1.
 - timeline[]: TUNG doan da chot theo thu tu: segment_index, gio timeline, loi noi (cau + emphasis / punchline),
@@ -290,6 +294,11 @@ meme, am thanh) phai theo.
   (khong ten font ngoai), khong doi diem cat / thu tu doan (da chot), khong tao nhac moi.
 
 # CACH NGHI (lam theo thu tu, viet ket qua vao JSON)
+0. HIEU NOI DUNG TRUOC (bat buoc, ghi vao "phan_tich" — moi quyet dinh sau phai dua tren phan nay): doc toan_bo_loi_noi
+   + timeline nhu mot nguoi bien tap doc kich ban. Nguoi noi la ai, dang noi voi ai, de lam gi (thong_diep_chinh)?
+   Lap luan / mach ke di qua nhung Y nao, theo thu tu (moi y gan voi doan segment)? Tu khoa, hinh anh, an du, con so,
+   ten rieng nao mang Y NGHIA (va y nghia do la gi trong video nay)? Cam xuc that cua nguoi noi o tung phan? Nguoi xem
+   can HIEU va CAM duoc dieu gi? Khong hieu ro mot cau / mot tu -> ghi vao "chua_ro" thay vi doan bua.
 1. CHU DE THAT: video nay THUC SU noi ve dieu gi (khong phai tom tat lai) — cai gi dang duoc dat cuoc voi nguoi xem?
    Nguoi xem nen roi video voi DIEU GI trong dau / trong long (dieu_dong_lai)?
 2. Y TUONG LON: mot y tuong hinh-tieng CHI video nay moi co, moc tu CHI TIET THAT trong video (mot vat, mot cu chi,
@@ -326,6 +335,16 @@ meme, am thanh) phai theo.
 - "cam" chi ghi thu sai voi chu de / tone hoac lam hong phong cach video mau; khong cam thu video mau dang dung.
 - the_gioi_hinh, mau_nhan, chu: mo ta THEO video mau (co the them chi tiet rieng cua noi dung, khong doi he).
 
+# Y NGHIA CUA MOI PHAN TU (luat cung — do that 2026-10-16: vong ve vo tri cat ngang mat, mot y 'vong khep' lap 3 lan)
+- Moi hinh / chu nhan / hieu ung ban de xuat phai co Y NGHIA ro trong video nay, thuoc 1 trong 3 loai: (a) lam mot Y
+  dang noi DE HIEU hon (minh hoa, an du thanh hinh, so lieu, vat that); (b) KHUECH DAI cam xuc THAT cua nguoi noi luc
+  do; (c) DAN MAT toi tu / vat / chi tiet quan trong nhat cua cau. Khong noi duoc no phuc vu y nao trong phan_tich ->
+  khong de xuat. Trang tri cho dep, cho "co hieu ung" = khong.
+- Khoanh / gach chan / mui ten chi danh cho tu / vat LA LOI cua cau (khong khoanh tu phu), toi da MOT lan cho mot y; ban
+  sao hook va doan goc cung mot cau la CUNG mot y.
+- Moi y tuong hinh phai thuc hien DUOC dep va dung cho tren khung: chu nho nam o dau, nguoi noi o dau (bo cuc card /
+  circle thu nguoi vao khung) — y tuong ve net / vong de len mat nguoi noi = sai.
+
 # THAM MY — KHAC BIET VAN PHAI DEP (do that 2026-10-15: ban chi dao 'luoi o Zoom' cuong do 2 ra cac khoi xam trong
   rong tren nen den -> dung y tuong nhung nhat, kem hap dan hon ban cu)
 - Tiet che KHONG phai ngheo nan: khung nao cung phai DEP khi dung mot minh — co chat lieu, anh sang, chieu sau, mau co
@@ -347,6 +366,13 @@ Thay vao do: tim chieu tu CHINH the gioi cua video (vat, chat lieu, cu chi, am t
 
 # SCHEMA DAU RA (CHI JSON; moi truong chu viet TIENG VIET CO DAU, cu the, khong chung chung)
 {
+  "phan_tich": {"nguoi_noi": "<ai, vai tro, quan he voi nguoi xem>", "khan_gia": "<noi voi ai>",
+                "thong_diep_chinh": "<1-2 cau>", "muc_dich": "<video nay muon nguoi xem lam / nghi / cam gi>",
+                "mach_y": [{"tu_segment": 0, "den_segment": 2, "y": "<y cua doan nay trong mach chung>"}],
+                "tu_khoa": [{"tu": "<trich nguyen van>", "segment": 3, "y_nghia": "<vi sao tu nay quan trong / an du gi>"}],
+                "cam_xuc_chu_dao": "<cam xuc that cua nguoi noi + cach no doi qua video>",
+                "nguoi_xem_can_hieu": "<dieu nguoi xem phai hieu / cam duoc khi xem xong>",
+                "chua_ro": ["<cau / tu chua chac nghia (neu co)>"]},
   "chu_de_that": "<1-2 cau>",
   "dieu_dong_lai": "<nguoi xem roi video voi suy nghi / cam xuc gi>",
   "y_tuong_lon": "<y tuong hinh-tieng rieng cua video, moc tu chi tiet that nao>",
@@ -362,7 +388,8 @@ Thay vao do: tim chieu tu CHINH the gioi cua video (vat, chat lieu, cu chi, am t
   "hook": {"cam_xuc": "...", "cach_mo": "<cu the cho video nay>", "muc_do": "nhe|vua|manh"},
   "nhip": [{"tu_segment": 0, "den_segment": 1, "vai_tro": "hook|mo|dan|day_len|cao_trao|lang|xoay|chot|cta",
             "cam_xuc": "<nguoi xem cam thay gi>", "nang_luong": 3,
-            "hinh": "<y tuong hinh cu the bam loi noi cua nhip>", "camera": "<giu / day cham / doi khung...>",
+            "hinh": "<y tuong hinh cu the bam loi noi cua nhip>", "y_nghia": "<hinh do lam ro / khuech dai Y nao (mach_y / tu_khoa)>",
+            "camera": "<giu / day cham / doi khung...>",
             "chuyen_canh_vao": "<cat thang / cach chuyen + vi sao>", "am_thanh": "<tieng / nhac / lang>",
             "chu_nhan": ["<tu / cum trich tu loi noi>"], "tiet_che": "<khong lam gi o nhip nay>"}],
   "khoanh_khac_dau_an": [{"segment": 3, "loi_noi": "<trich nguyen van>", "y_tuong": "<hinh + tieng + chu>",
@@ -397,7 +424,10 @@ gi lam video thanh "AI rap khuon", lam loang cam xuc, hoac sai chu de. It ma dun
 4. LAP: cung mot chieu / cung kieu vao / cung tieng / cung chuyen canh lap nhieu -> giu lan dat nhat, bo hoac DOI cac
    lan con lai (doi kieu vao chu, doi chuyen canh trong danh_muc) de video co bien hoa. Chieu trong chieu_lap_nhieu ma
    khong phai y tuong rieng cua video -> bo.
-5. Phan tu chung chung, khong phuc vu y tuong lon / mo tip / cam xuc nhip -> bo.
+5. Phan tu chung chung, khong phuc vu y tuong lon / mo tip / cam xuc nhip, hoac KHONG noi duoc no lam ro / khuech dai Y
+   nao trong chi_dao.phan_tich -> bo.
+5b. TRUNG Y: hai phan tu cung the hien MOT y o cung khoanh khac (vd lop vong + hieu ung vong cung khoanh mot tu, mui ten +
+   hieu ung chi cung mot vat) -> giu cai ro nhat, bo cai con lai.
 6. KHOANH KHAC DAU AN phai con du luc: neu bi phan tu khac lan at -> bo phan tu lan at.
 Khong bo de tro thanh video trong: moi nhip nang_luong >= 3 van can diem nhan. Khong them phan tu moi.
 Phan tu co "kieu_chu" / "theo_mau" = dang TAI HIEN video mau nguoi dung chon -> KHONG coi la rap khuon, khong doi kieu vao
@@ -478,6 +508,41 @@ def _video_view(brief):
     return out
 
 
+FULL_SPEECH_MAX = 9000     # ky tu toi da cua toan bo loi noi goc dua dao dien (video dai -> rut moc gio thua hon)
+
+
+def _overview(brief):
+    """Tong quan CA BO video (Gemini): tom tat, tone, ngon ngu."""
+    b = brief if isinstance(brief, dict) else {}
+    out = {k: b.get(k) for k in ("summary", "tone", "language") if b.get(k)}
+    return out or None
+
+
+def _full_speech(brief):
+    """NGUYEN VAN toan bo loi noi cua tung video goc (ca phan da cat) kem moc gio ~10s — dao dien hieu ca mach noi dung,
+    khong chi cac doan giu lai. Qua dai -> cat bot moc gio, roi cat duoi (giu dau + cuoi)."""
+    out = []
+    for s in (brief or {}).get("sources") or []:
+        if not isinstance(s, dict):
+            continue
+        parts, last = [], -99.0
+        for t in s.get("transcript") or []:
+            if not isinstance(t, dict) or not str(t.get("text") or "").strip():
+                continue
+            st = _f(t.get("start"))
+            if st - last >= 10:
+                parts.append("[%d:%02d]" % (int(st) // 60, int(st) % 60))
+                last = st
+            parts.append(str(t["text"]).strip())
+        txt = " ".join(parts)
+        if len(txt) > FULL_SPEECH_MAX:
+            half = FULL_SPEECH_MAX // 2
+            txt = txt[:half] + " … [luoc giua] … " + txt[-half:]
+        if txt:
+            out.append({"id": s.get("id"), "loi_noi": txt})
+    return out or None
+
+
 def _ref_view(reference_analysis):
     if not isinstance(reference_analysis, dict) or not reference_analysis:
         return None
@@ -534,6 +599,8 @@ def gpt_direct(segments, transcript_data, emotion_map_data, key_moments_data, st
                canvas_note=None, log=None):
     """DD-chi-dao: 1 luot AI -> ban chi dao (chua chuan hoa)."""
     payload = {
+        "tong_quan": _overview(brief),
+        "toan_bo_loi_noi": _full_speech(brief),
         "video": _video_view(brief),
         "cau_chuyen": story or {},
         "timeline": _timeline_rows(segments, transcript_data, emotion_map_data, key_moments_data),
@@ -615,6 +682,29 @@ def _guess_intensity(story):
     return {"nhe": 2, "manh": 4}.get(lv, 3)
 
 
+def _analysis(pa, n):
+    """Phan tich noi dung cua dao dien (thong diep, mach y, tu khoa...) -> ban gon, hop le. Thieu -> {}."""
+    pa = pa if isinstance(pa, dict) else {}
+    out = {k: _txt(pa.get(k), 400) for k in ("nguoi_noi", "khan_gia", "thong_diep_chinh", "muc_dich", "cam_xuc_chu_dao",
+                                            "nguoi_xem_can_hieu") if _txt(pa.get(k))}
+    my = []
+    for m in pa.get("mach_y") or []:
+        if isinstance(m, dict) and _txt(m.get("y")):
+            a = _int(m.get("tu_segment"), 0, max(0, n - 1), None)
+            z = _int(m.get("den_segment"), 0, max(0, n - 1), a)
+            my.append({"tu_segment": a, "den_segment": z, "y": _txt(m.get("y"), 300)})
+    if my:
+        out["mach_y"] = my[:16]
+    tk = [{"tu": _txt(t.get("tu"), 60), "segment": _int(t.get("segment"), 0, max(0, n - 1), None),
+           "y_nghia": _txt(t.get("y_nghia"), 240)} for t in pa.get("tu_khoa") or [] if isinstance(t, dict) and _txt(t.get("tu"))]
+    if tk:
+        out["tu_khoa"] = tk[:10]
+    cr = [_txt(x, 160) for x in pa.get("chua_ro") or [] if _txt(x)]
+    if cr:
+        out["chua_ro"] = cr[:6]
+    return out
+
+
 def normalize(raw, segments, transcript_data, story=None):
     """Ban chi dao AI -> ban CHUAN (nhip phu kin timeline, gio nguon + timeline cho moi nhip / dau an / khoang lang,
     cuong do / muc hook / the gioi am thanh hop le). raw hong -> None."""
@@ -626,6 +716,7 @@ def normalize(raw, segments, transcript_data, story=None):
                                             "the_loai", "ly_do_cuong_do", "nhip_cat", "mau_nhan", "chu")}
     if not cd["y_tuong_lon"] and not cd["chu_de_that"]:
         return None
+    cd["phan_tich"] = _analysis(raw.get("phan_tich"), n)
     cd["cuong_do"] = _int(raw.get("cuong_do"), 1, 5, _guess_intensity(story))
     cd["mo_tip"] = [{"ten": _txt(m.get("ten"), 80), "mo_ta": _txt(m.get("mo_ta"), 400)}
                     for m in raw.get("mo_tip") or [] if isinstance(m, dict) and (m.get("ten") or m.get("mo_ta"))][:3]
@@ -698,7 +789,8 @@ def normalize(raw, segments, transcript_data, story=None):
             "vai_tro": role if role in ROLES else "dan",
             "cam_xuc": _txt(b.get("cam_xuc"), 200),
             "nang_luong": _int(b.get("nang_luong"), 1, 5, cd["cuong_do"]),
-            "hinh": _txt(b.get("hinh"), 500), "camera": _txt(b.get("camera"), 200),
+            "hinh": _txt(b.get("hinh"), 500), "y_nghia": _txt(b.get("y_nghia"), 300),
+            "camera": _txt(b.get("camera"), 200),
             "chuyen_canh_vao": _txt(b.get("chuyen_canh_vao"), 200), "am_thanh": _txt(b.get("am_thanh"), 200),
             "chu_nhan": [_txt(x, 60) for x in b.get("chu_nhan") or [] if _txt(x)][:4],
             "tiet_che": _txt(b.get("tiet_che"), 200),
@@ -759,6 +851,10 @@ danh sach cam. Ban la MOT BO PHAN cua ekip — thuc hien dung y dao dien, khong 
 - cam[]: tuyet doi khong dung. Chieu rap khuon (punch-in vao mat, dai sang cheo, 4 goc khung ngam, thanh tien trinh
   mong, light leak, tia lap lanh...) chi khi chinh chi_dao goi ten no la y tuong rieng — HOAC video mau (style_kit /
   phong_cach_mau / anh tham chieu) dang dung chieu do: phong cach video mau nguoi dung chon luon duoc tai hien.
+- Y NGHIA (luat cung): chi_dao.phan_tich la cach dao dien HIEU video (thong diep, mach y theo segment, tu khoa + y
+  nghia). Moi phan tu ban dat (hinh, chu nhan, hieu ung, chuyen canh, tieng) phai lam ro / khuech dai DUNG Y dang noi luc
+  do theo phan_tich, hoac dan mat toi tu khoa cua cau. Khong chi ra duoc y nao -> khong dat. MOT y chi the hien MOT lan
+  (khong vua lop vong vua hieu ung vong cho cung mot tu; ban sao hook va doan goc la cung mot y).
 - Yeu cau edit cua nguoi dung + luat cung cua he thong (luat hook, chu ro net, khong che mat, thu tu noi dung) van
   dung tren chi dao. Khong co cau_chuyen.chi_dao -> bo qua khoi nay."""
 
@@ -773,7 +869,9 @@ _BUOC = {
           "thuoc the gioi hinh; mat do lop + bo cuc theo nang_luong tung nhip; chuyen canh theo chuyen_canh_vao cua nhip "
           "(nhieu cho la cat thang — chuyen canh chi khi doi y / doi cam xuc); kieu vao chu DA DANG theo cam xuc nhip "
           "(khong de mot kieu vao chiem phan lon video). Y tuong can nguoi noi nam TRONG mot o / khung / man hinh -> dung "
-          "scene card / circle / split (A-roll trong khung) + lop vien / nhan quanh no; KHONG phu lop duc len A-roll.",
+          "scene card / circle / split (A-roll trong khung) + lop vien / nhan quanh no; KHONG phu lop duc len A-roll. "
+          "Lop 'ring' / 'line' / 'arrow' nham vao MOT TU trong lop chu: ghi \"target_text\" = dung tu / cum do (nguyen van "
+          "nhu trong lop chu) — he thong do khung that cua chu va ve vua khit; khong khoanh tu phu, moi y mot lan.",
     "R5": "\n- Rieng buoc CHU: chu nhan / hero dung chu_nhan cua tung nhip (trich loi noi) + giong chu cua chi dao; nhip "
           "nang_luong thap: it chu nhan, chu nho, vao em; khong chu nhan trong khoang_lang.",
     "FX": "\n- Rieng buoc HIEU UNG: uu tien hieu ung hien thuc hoa khoanh_khac_dau_an + mo_tip (moi mo tip lap lai co bien "
@@ -783,7 +881,9 @@ _BUOC = {
           "ve lai cung thu do — chi bo sung phan lop tinh khong lam duoc (chuyen dong, bien doi, tac dong khung). "
           "Lop phu KHONG chua duoc video: khong ve nen DUC / giao dien phu kin che nguoi noi (y tuong 'nguoi noi nam trong "
           "o / khung' la viec cua BO CUC o buoc thiet ke — card / circle / split; hieu ung chi ve vien, chi tiet TRONG SUOT "
-          "quanh do). He thong do: che mat > 0.3s hoac phu duc > 45% khung > 0.4s -> hieu ung bi bo.",
+          "quanh do). He thong do: che mat > 0.3s, NET VE CHAY QUA MAT > 0.25s hoac phu duc > 45% khung > 0.4s -> hieu ung "
+          "bi bo. Hieu ung cho BAN SAO HOOK chon khoanh khac 'h<n>' (bo cuc / chu / mat cua chinh ban sao hook). Vong / "
+          "gach / mui ten nham vao MOT TU la viec cua lop R4 (do khung chu that) — FX khong ve lai thu do (he thong bo).",
     "B6": "\n- Rieng buoc MEME: chi chen khi hop cam_xuc + nang_luong cua nhip (cuong_do <= 2: gan nhu khong chen); khong "
           "chen trong khoang_lang hay de len khoanh khac dau an.",
     "B7": "\n- Rieng buoc SFX: theo chi_dao.am_thanh (the gioi am thanh, mat_do_sfx, mo_tip_am, nhac) + am_thanh cua tung "
@@ -882,7 +982,8 @@ def review_view(cd, design, captions, fx_list, transitions, inserts, audio, segm
                 "id": lid, "loai": L.get("type"), "chu": _layer_text(L) or None,
                 "kieu_vao": (L.get("enter") or {}).get("preset") if isinstance(L.get("enter"), dict) else None,
                 "sfx": L.get("sfx"), "gio_nguon": L.get("src_start"), "hook": L.get("anchor") == "hook" or None,
-                "kieu_chu": L.get("kieu_chu") or None})
+                "kieu_chu": L.get("kieu_chu") or None,
+                "y_nghia": str(L.get("why") or "")[:200] or None})
     for g, ls in groups.items():
         gid = "group:%s" % g
         index[gid] = ("layer", [L.get("id") for L in ls], any(L.get("anchor") == "hook" for L in ls))
@@ -909,7 +1010,8 @@ def review_view(cd, design, captions, fx_list, transitions, inserts, audio, segm
         index[fid] = ("fx", [e.get("id")], e.get("anchor") == "hook")
         put(e.get("source_id"), _f(e.get("src_start"), None), {
             "id": fid, "loai": "hieu_ung_" + str(e.get("kind") or ""), "mo_ta": str(e.get("visual") or "")[:260],
-            "muc_tieu": str(e.get("goal") or "")[:160], "nhan_chieu": [DEVICE_LABEL.get(t, t) for t in tags] or None,
+            "muc_tieu": str(e.get("goal") or "")[:160], "y_nghia": str(e.get("y_nghia") or "")[:200] or None,
+            "nhan_chieu": [DEVICE_LABEL.get(t, t) for t in tags] or None,
             "gio_nguon": e.get("src_start"), "hook": e.get("anchor") == "hook" or None,
             "theo_mau": e.get("theo_mau") or None})
     tr_cnt = {}

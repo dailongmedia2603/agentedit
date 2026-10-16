@@ -245,11 +245,11 @@ TRA_LOI = {
     "FX-plan": {"effects": [
         {"id": "fx1", "kind": "overlay", "layer": "front", "source_id": "source_1", "src_start": 3.0, "src_end": 4.5,
          "context": "nguoi noi ke vi tin mot loi quang cao", "goal": "nhan manh su ngay tho luc tin quang cao",
-         "why_fit": "dai sang cheo quet qua cau de nhan manh",
+         "y_nghia": "lam ro y dang noi luc do (du lieu test)", "why_fit": "dai sang cheo quet qua cau de nhan manh",
          "visual": "Một dải sáng chéo 25 độ quét ngang khung"},
         {"id": "fx2", "kind": "overlay", "layer": "front", "source_id": "source_1", "anchor": "hook", "src_start": 0.1,
          "src_end": 1.6, "context": "hook: toi mat ba ty trong mot dem", "goal": "nguoi xem soc lang truoc con so",
-         "why_fit": "dau do dap xuong so 3 ty nhu bien ban",
+         "y_nghia": "lam ro y dang noi luc do (du lieu test)", "why_fit": "dau do dap xuong so 3 ty nhu bien ban",
          "visual": "con dau do tron dap xuong giua khung, muc loang"}]},
     "FX-code": {"effects": [
         {"id": "fx1", "fit_check": {"ok": True}, "code": "function render(ctx){ return h('svg', {width: ctx.W, height: ctx.H}, h('rect', {x: 0, y: 0, width: ctx.W * env(ctx.t, ctx.d), height: 40, fill: '#ffffff'})) }"},

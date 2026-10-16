@@ -409,6 +409,7 @@ const TextLayer: React.FC<{ L: RSLayer; local: number; W: number; base?: string 
   const allWords = spans.flatMap((s) => s.text.split(/\s+/).filter(Boolean))
   const wtimes = L.reveal === 'dim_to_bright' ? wordTimesFor(L, allWords.length, local) : []
   let wordIdx = 0
+  let gw = 0 // chi so tu toan lop — vong khoanh chu (RingTarget) tim tu qua data-tw
 
   const lines: React.ReactNode[][] = [[]]
   const lineSize: number[] = [0] // co chu lon nhat moi dong -> khoang cach giua cac span cung dong
@@ -427,6 +428,7 @@ const TextLayer: React.FC<{ L: RSLayer; local: number; W: number; base?: string 
         parts.push(<span key={`s${si}-${wi}`}> </span>)
         return
       }
+      const tw = `${L.id}#${gw++}`
       let wordOpacity = 1
       if (L.reveal === 'dim_to_bright') {
         const t0 = wtimes[wordIdx] ?? 0
@@ -444,7 +446,7 @@ const TextLayer: React.FC<{ L: RSLayer; local: number; W: number; base?: string 
           )
         })
         parts.push(
-          <span key={`w${si}-${wi}`} style={{ display: 'inline-block', whiteSpace: 'nowrap', opacity: wordOpacity }}>
+          <span key={`w${si}-${wi}`} data-tw={tw} style={{ display: 'inline-block', whiteSpace: 'nowrap', opacity: wordOpacity }}>
             {chars}
           </span>
         )
@@ -452,13 +454,13 @@ const TextLayer: React.FC<{ L: RSLayer; local: number; W: number; base?: string 
         const p = clamp01((local - unitIdx * stagger) / unitDur)
         unitIdx++
         parts.push(
-          <span key={`w${si}-${wi}`} style={{ display: 'inline-block', opacity: wordOpacity, ...unitFx(unit, p) }}>
+          <span key={`w${si}-${wi}`} data-tw={tw} style={{ display: 'inline-block', opacity: wordOpacity, ...unitFx(unit, p) }}>
             {w}
           </span>
         )
       } else {
         parts.push(
-          <span key={`w${si}-${wi}`} style={{ opacity: wordOpacity, transition: 'none' }}>
+          <span key={`w${si}-${wi}`} data-tw={tw} style={{ opacity: wordOpacity, transition: 'none' }}>
             {w}
           </span>
         )
@@ -783,6 +785,7 @@ const Layer: React.FC<{ L: RSLayer; t: number; base?: string }> = ({ L, t, base 
   if (L.loop && L.loop.preset !== 'kenburns') fx = combine(fx, loopFx(L.loop, local, L.id))
 
   if (L.type === 'line' || L.type === 'arrow') return <PathLayer L={L} fx={fx} W={W} H={H} />
+  if (L.type === 'ring' && L.target) return <RingTarget L={L} fx={fx} opacity={k.opacity * fx.opacity} W={W} H={H} />
   if (L.type === 'speedlines') return <SpeedLines L={L} local={local} W={W} H={H} opacity={k.opacity * fx.opacity} />
 
   const anchor = L.anchor || 'center'
@@ -806,6 +809,70 @@ const Layer: React.FC<{ L: RSLayer; t: number; base?: string }> = ({ L, t, base 
   return (
     <div style={style}>
       {L.type === 'text' ? <TextLayer L={L} local={local} W={W} base={base} /> : <ShapeLayer L={L} fx={fx} W={W} H={H} local={local} base={base} />}
+    </div>
+  )
+}
+
+/** VONG KHOANH CHU (2026-10-16): vong do AI dat bang toa do uoc luong thuong lech / cat qua chu (do that: vong quanh
+ *  'others' nho hon chu, cat qua 'o' va 's'). Sidecar ghi `target` = lop chu + chi so tu; o day DO KHUNG THAT cua cac tu do
+ *  (data-tw, font that, sau moi hieu ung) va ve hinh BAU DUC vua khit + le. Khong tim thay tu (chu da thanh anh / mau Kho
+ *  Text) -> ve vong o vi tri cu nhu truoc. */
+const RingTarget: React.FC<{ L: RSLayer; fx: FxState; opacity: number; W: number; H: number }> = ({ L, fx, opacity, W, H }) => {
+  const ref = React.useRef<HTMLDivElement | null>(null)
+  const [box, setBox] = React.useState<{ x: number; y: number; w: number; h: number } | null>(null)
+  const tg = L.target!
+  React.useLayoutEffect(() => {
+    const el = ref.current
+    const root = el?.closest('[data-autoedit-root]') as HTMLElement | null
+    if (!el || !root) return
+    const rr = root.getBoundingClientRect()
+    const k = rr.width / W || 1
+    let l = Infinity
+    let t = Infinity
+    let r = -Infinity
+    let b = -Infinity
+    // cac tu cua lop chu theo thu tu -> tim DAY tu khop cum can khoanh
+    const norm = (s: string) => s.normalize('NFC').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '')
+    const all = Array.from(root.querySelectorAll(`[data-tw^="${tg.layer}#"]`)) as HTMLElement[]
+    const ws = all.map((w) => norm(w.textContent || ''))
+    const want = tg.text.split(/\s+/).map(norm).filter(Boolean)
+    let at = -1
+    for (let i = 0; want.length && i + want.length <= ws.length && at < 0; i++) if (want.every((x, j) => ws[i + j] === x)) at = i
+    for (const w of at < 0 ? [] : all.slice(at, at + want.length)) {
+      const q = w.getBoundingClientRect()
+      if (!q.width || !q.height) continue
+      l = Math.min(l, q.left)
+      t = Math.min(t, q.top)
+      r = Math.max(r, q.right)
+      b = Math.max(b, q.bottom)
+    }
+    const nb = isFinite(l) ? { x: (l - rr.left) / k, y: (t - rr.top) / k, w: (r - l) / k, h: (b - t) / k } : null
+    const same = (a: typeof nb, c: typeof nb) => (!a && !c) || (!!a && !!c && Math.abs(a.x - c.x) + Math.abs(a.y - c.y) + Math.abs(a.w - c.w) + Math.abs(a.h - c.h) < 0.5)
+    if (!same(nb, box)) setBox(nb)
+  })
+  const sw = (L.strokeWidth ?? 6) * pxScale(W, H)
+  if (!box) {
+    // chua do / khong tim thay tu: vong tron o vi tri AI dat (nhu truoc)
+    const w = (L.w ?? 0.3) * W
+    const rr0 = w / 2 - sw
+    return (
+      <div ref={ref} style={{ position: 'absolute', left: L.x * W - w / 2, top: L.y * H - w / 2, opacity }}>
+        <svg width={w} height={w} style={{ overflow: 'visible', transform: 'rotate(-90deg)' }}>
+          <circle cx={w / 2} cy={w / 2} r={rr0} fill="none" stroke={L.strokeColor || '#FFFFFF'} strokeWidth={sw} pathLength={1} strokeDasharray={1} strokeDashoffset={1 - fx.draw} strokeLinecap="round" />
+        </svg>
+      </div>
+    )
+  }
+  // le quanh chu: ngang 14% be ngang cum + 0.22 chieu cao, doc 0.30 chieu cao (bau duc khong cham net chu)
+  const rx = box.w / 2 + 0.14 * box.w * 0.5 + 0.22 * box.h + sw
+  const ry = box.h / 2 + 0.3 * box.h + sw
+  const cx = box.x + box.w / 2
+  const cy = box.y + box.h / 2
+  return (
+    <div ref={ref} style={{ position: 'absolute', left: cx - rx - sw, top: cy - ry - sw, opacity }}>
+      <svg width={2 * (rx + sw)} height={2 * (ry + sw)} style={{ overflow: 'visible' }}>
+        <ellipse cx={rx + sw} cy={ry + sw} rx={rx} ry={ry} fill="none" stroke={L.strokeColor || '#FFFFFF'} strokeWidth={sw} pathLength={1} strokeDasharray={1} strokeDashoffset={1 - fx.draw} strokeLinecap="round" transform={`rotate(-8 ${rx + sw} ${ry + sw})`} />
+      </svg>
     </div>
   )
 }

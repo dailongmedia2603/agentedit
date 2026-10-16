@@ -64,7 +64,7 @@ print("\n[2] FX-plan: chi giu hieu ung CO boi canh + muc tieu + ly do + mo ta, n
 moments = [{"id": "m1", "source_id": "source_1", "src_start": 0.0, "src_end": 5.8},
            {"id": "m2", "source_id": "source_1", "src_start": 8.0, "src_end": 13.9}]
 full = {"context": "co ay dang chat van 'lay cai gi cam ket' voi giong buc xuc", "goal": "nguoi xem cam nhan cu soc",
-        "why_fit": "vet toa tu mat nhan manh cam xuc buc xuc dung luc chat van", "visual": "12 vet hong mo toa tu tam mat, bung ra roi tat"}
+        "y_nghia": "lam ro y dang noi luc do (du lieu test)", "why_fit": "vet toa tu mat nhan manh cam xuc buc xuc dung luc chat van", "visual": "12 vet hong mo toa tu tam mat, bung ra roi tat"}
 ch = []
 out = fx_flow.sanitize_plan({"effects": [
     dict(full, id="a", kind="overlay", layer="behind", source_id="source_1", src_start=1.0, src_end=2.2, colors=["#FF6FA3"], sfx="boom"),

@@ -564,7 +564,7 @@ export const AutoEdit: React.FC<AutoEditProps> = ({ spec }) => {
   const drawSubject =
     hasSubject && (hasBehind || (spec.scenes || []).some((s) => !!s.popout) || (spec.fx || []).some((f) => f.layer === 'behind'))
   return (
-    <AbsoluteFill style={{ background: '#000', overflow: 'hidden' }}>
+    <AbsoluteFill data-autoedit-root style={{ background: '#000', overflow: 'hidden' }}>
       <VideoLayer spec={spec} />
       {spec.overlays.map((o) => (
         <Sequence key={o.id} from={toFrame(o.start, fps)} durationInFrames={Math.max(1, toFrame(o.end - o.start, fps))} premountFor={Math.round(fps)}>

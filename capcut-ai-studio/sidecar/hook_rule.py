@@ -674,8 +674,13 @@ def fallback_effect(moment, level="vua", need=None):
 
 
 def hook_moments_fx(moments, moment):
-    """Khoanh khac FX-plan cua hook (la_hook) — hoac khoanh khac dau tien neu video khong co hook."""
-    hk = [dict(m) for m in moments or [] if m.get("la_hook")]
+    """Khoanh khac FX-plan cua hook (la_hook) — hoac khoanh khac dau tien neu video khong co hook. Co BAN SAO hook ->
+    CHI khoanh khac cua ban sao (h<n>: bo cuc / chu / mat cua ban sao — doan goc trong than video bo cuc khac)."""
+    if (moment or {}).get("anchor") == "hook":
+        hh = [dict(m) for m in moments or [] if m.get("anchor") == "hook"]
+        if hh:
+            return hh
+    hk = [dict(m) for m in moments or [] if m.get("la_hook") and m.get("anchor") != "hook"]
     if hk or not moments:
         return hk
     first = dict(sorted(moments, key=lambda m: m.get("timeline_start", 0))[0])
@@ -789,6 +794,7 @@ def ensure(plan, spec, build, step, sfx_catalog=None, transcript_data=None, stor
             ch = []
             got = fx_flow.build_effects(res_p, hm, fx_ctx.get("faces"), fx_ctx.get("palette"), step=step, changes=ch,
                                         log=log, brand=brand, project=fx_ctx.get("project"))[:2]
+            got = fx_flow.drop_dup_motifs(got, plan.get("layers") or [], ch)
             for c in ch:
                 notes.append("FX hook: %s" % c)
             if got:

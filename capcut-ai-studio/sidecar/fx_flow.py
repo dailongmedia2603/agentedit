@@ -15,6 +15,7 @@ ve san tung khung. Remotion chi hien khung da ve -> xem truoc = render.
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 
@@ -26,7 +27,7 @@ import providers
 HERE = os.path.dirname(os.path.abspath(__file__))
 RUNTIME = os.path.join(HERE, "fx_runtime.mjs")
 FX_CACHE = os.path.join(os.path.expanduser("~"), ".capcut-studio", "cache", "fx")
-FX_VERSION = 1
+FX_VERSION = 2              # 2 = khoanh khac hook rieng + kiem net ve qua mat (2026-10-16)
 MAX_FX = 12
 MIN_FX_SEC, MAX_FX_SEC = 0.3, 6.0
 CODE_BATCH = 4
@@ -52,8 +53,12 @@ DUNG khoanh khac do trong video. Tha KHONG co hieu ung con hon hieu ung sai ngu 
 - khoanh_khac[]: TUNG doan cua video theo thu tu: id, source_id, src_start/src_end (gio NGUON), beat/purpose,
   loi_noi (cau dang noi, gio nguon), cam_xuc, su_kien (khoanh khac dat: hook/climax/twist/reveal... + mo ta),
   bo_cuc (layout dang dung luc do: full / split / card ...), chu_tren_man_hinh (lop chu dang hien + "vung"
-  [x0, y0, x1, y1] phan khung — hieu ung KHONG ve de len vung nay tru khi CO Y), mat_nguoi (vi tri mat 0..1),
-  la_hook (doan duoc sao chep len dau video).
+  [x0, y0, x1, y1] phan khung — hieu ung KHONG ve de len vung nay tru khi CO Y), mat_nguoi (vi tri mat 0..1 — bo cuc
+  card / circle / split thi chi co ghi chu: vi tri that do luc chay = ctx.face), khung_nguoi_noi, lop_hinh_dang_co (lop
+  hinh buoc thiet ke da ve o khoanh khac nay), la_hook.
+  Khoanh khac "h<n>" (anchor hook) = BAN SAO HOOK o DAU video: bo cuc / chu / vi tri nguoi noi CUA CHINH ban sao do
+  (thuong khac han doan goc "m<n>" cung loi noi). Hieu ung cho ban sao hook PHAI chon khoanh khac h<n> va thiet ke theo
+  boi canh cua no.
 - mo_ta_nguon: boi canh / san pham / nguoi trong video nguon (Gemini xem video).
 - da_co: cac hieu ung / lop do hoa khac da dat (de khong chong cheo).
 
@@ -63,12 +68,17 @@ DUNG khoanh khac do trong video. Tha KHONG co hieu ung con hon hieu ung sai ngu 
 2. MUC TIEU ("goal"): nguoi xem can CAM THAY / CHU Y dieu gi ngay luc do (nhan manh cau chot, tao to mo, cam
    giac soc / bat ngo, dan mat toi san pham, the hien cam xuc cua nguoi noi, chuyen y, minh hoa mot y an du...).
    Khong tim duoc muc tieu ro -> KHONG dat hieu ung o khoanh khac do.
+2b. Y NGHIA ("y_nghia", bat buoc): hieu ung nay lam ro / khuech dai Y NAO dang noi (trich loi noi + doi chieu
+   cau_chuyen.chi_dao.phan_tich: mach_y / tu_khoa), hoac dan mat toi tu / vat nao. Khong ghi duoc y cu the -> KHONG dat.
 3. VI SAO HOP ("why_fit"): giai thich hieu ung nay phuc vu muc tieu tren NHU THE NAO, nhac CU THE toi loi noi /
    cam xuc / hinh anh cua chinh khoanh khac do. Cau chung chung ("tang tinh hap dan") = KHONG dat.
 4. THIET KE ("visual"): mo ta hinh anh chi tiet de viet code: hinh khoi (vet, hat, vong, anh sang, khung,
    hinh vector minh hoa...), mau (theo phong_cach / tone), vi tri so voi MAT NGUOI va khung (khong che mat —
    tru khi hieu ung CO Y bao quanh mat va trong suot), chuyen dong theo thoi gian (vao / dinh / ra), cuong do,
    dong bo voi tu / nhip nao ("sync").
+4b. VI TRI: mo ta vi tri THEO QUAN HE (quanh mat, canh khoi chu X, goc trong cua khung, trong khung A-roll...) — KHONG
+   chep toa do so cua khoanh khac khac; code se tinh tu ctx.face / ctx.avoid luc chay. Net / vong / vet KHONG di qua mat
+   nguoi noi (he thong do: net chay qua loi mat > 0.25s -> bo).
 5. Doi chieu lai: co hop TONE + phong cach khong? Co tranh voi chu dang hien khong (chu to dang hien -> hieu ung
    phai nhe / nam sau / hoac bo)? Co lap lai y het hieu ung khac khong (moi hieu ung phai RIENG cho khoanh khac
    cua no)? Khong dat -> bo.
@@ -86,6 +96,8 @@ DUNG khoanh khac do trong video. Tha KHONG co hieu ung con hon hieu ung sai ngu 
 - Mat do: toi da ~1 hieu ung / 5 giay, hieu ung manh cach nhau >= 3 giay, tong <= 12. Video nhe nhang / tam
   su -> it va tinh te; nang dong / hai / drama -> co the nhieu hon nhung van phai dung ngu canh.
 - Khong can dung het — chi dat o khoanh khac that su can.
+- MOT Y MOT LAN: lop_hinh_dang_co / da_co.lop_hinh da ve vong / mui ten / gach cho y do -> KHONG ve lai (he thong bo).
+  Khoanh / gach mot TU trong chu la viec cua lop R4 (do khung chu that), khong lam bang hieu ung.
 
 # SCHEMA DAU RA (CHI JSON)
 {
@@ -94,6 +106,7 @@ DUNG khoanh khac do trong video. Tha KHONG co hieu ung con hon hieu ung sai ngu 
      "source_id": "source_1", "src_start": 12.3, "src_end": 13.6, "anchor": null,
      "context": "<boi canh: dang noi gi (trich), cam xuc, tren man hinh co gi>",
      "goal": "<nguoi xem can cam thay / chu y gi>",
+     "y_nghia": "<lam ro / khuech dai Y nao: trich loi noi + y trong chi_dao.phan_tich>",
      "why_fit": "<vi sao hieu ung nay phuc vu dung muc tieu trong boi canh nay>",
      "visual": "<mo ta hinh anh chi tiet: hinh khoi, mau, vi tri so voi mat / khung, chuyen dong vao-dinh-ra, cuong do>",
      "sync": "<bam vao tu / nhip nao>", "colors": ["#..."], "intensity": 0.6, "sfx": null}
@@ -126,6 +139,9 @@ sai cam xuc, che mat nguoi, tranh voi chu dang hien, khong phuc vu muc tieu) -> 
   intensity: 0..1}, palette = mau cua phong cach (co the rong), seed = id hieu ung.
 - KHONG ve de len ctx.avoid (vung chu) va mat nguoi, TRU KHI mo ta CO Y lam vay (vd gach cheo dung cum chu do):
   tinh vi tri tu ctx.avoid / ctx.face luc chay (vd dat hieu ung vao goc trong, ne cac khung chu), khong co dinh toa do.
+  KHONG chep so toa do (vd "y 0.605", "x 0.96") tu mo ta vao code lam vi tri chinh: so trong mo ta la uoc luong luc
+  lap ke hoach, vi tri THAT la ctx.avoid / ctx.face. Khong co ctx.avoid / ctx.face phu hop -> ve o cho trong an toan
+  (goc khung, mep) hoac tra null; KHONG BAO GIO de net / vong / vet chay qua loi mat (60% giua khung ctx.face).
 - HAM PURE THEO THOI GIAN: cung ctx.t phai ra cung ket qua. CAM Math.random, Date, timer, bien luu trang thai
   giua cac lan goi. Ngau nhien -> random(seed) (0..1, tat dinh), noise(x, y) (-1..1, muot).
 - API co san (goi truc tiep): h(the, thuoc_tinh, ...con), interpolate(v, [vao], [ra], {easing, extrapolate:
@@ -205,20 +221,32 @@ def run_runtime(mode, effects, timeout=180):
 # ---------------------------------------------------------------------------
 # BOI CANH TUNG KHOANH KHAC
 # ---------------------------------------------------------------------------
+def _is_hook(x):
+    return isinstance(x, dict) and x.get("anchor") == "hook"
+
+
 def fx_moments(segments, transcript_data, emotion_map_data, key_moments_data, design=None, captions=None,
                faces=None, hook=None, user_media=None):
     """Moi segment timeline = 1 khoanh khac voi DU boi canh cua no (loi noi, cam xuc, su kien, bo cuc, chu tren
-    man hinh, mat nguoi, co la hook khong) — FX-plan chon hieu ung TU boi canh nay."""
-    import motion_design as MD
+    man hinh, mat nguoi, co la hook khong) — FX-plan chon hieu ung TU boi canh nay.
+
+    BAN SAO HOOK la khoanh khac RIENG (id "h<n>", anchor hook) voi bo cuc / chu / mat cua CHINH ban sao (2026-10-16, do
+    that video Yen Phan: hieu ung hook duoc thiet ke theo boi canh than video — chu o y 0.62-0.74, video toan khung —
+    trong khi ban sao hook dat chu o tren va thu video vao the o duoi -> vong ve cat ngang mat nguoi noi)."""
     f = providers._f
     scenes = [s for s in (design or {}).get("scenes") or [] if isinstance(s, dict)]
     layers = [L for L in (design or {}).get("layers") or [] if isinstance(L, dict)]
-    out = []
-    for i, seg in enumerate(segments or []):
-        sid = seg.get("source_id", "")
-        st, en = f(seg.get("start")), f(seg.get("end"))
-        row = {"id": "m%d" % (i + 1), "source_id": sid, "src_start": round(st, 2), "src_end": round(en, 2),
-               "timeline_start": round(f(seg.get("target_start")), 2)}
+    caps = [c for c in captions or [] if isinstance(c, dict)]
+    hk = hook if isinstance(hook, dict) and hook.get("src_start") is not None else None
+
+    def row_for(rid, sid, st, en, seg, in_hook):
+        row = {"id": rid, "source_id": sid, "src_start": round(st, 2), "src_end": round(en, 2)}
+        if in_hook:
+            row["anchor"] = "hook"
+            row["vi_tri"] = "BAN SAO HOOK o DAU video (0-%.1fs) — bo cuc / chu rieng, khac doan goc trong than video" % (
+                max(0.5, f(hk.get("src_end")) - f(hk.get("src_start"))))
+        else:
+            row["timeline_start"] = round(f(seg.get("target_start")), 2)
         for k in ("beat", "purpose"):
             if seg.get(k):
                 row[k] = seg[k]
@@ -229,12 +257,19 @@ def fx_moments(segments, transcript_data, emotion_map_data, key_moments_data, de
         row["su_kien"] = [{k: m.get(k) for k in ("type", "description", "start", "end") if m.get(k) is not None}
                           for m in (key_moments_data or {}).get(sid, []) or []
                           if providers._overlap(f(m.get("start")), f(m.get("end")), st, en)]
-        lays = sorted({s.get("layout") for s in scenes if s.get("source_id") in (None, sid)
-                       and providers._overlap(f(s.get("src_start")), f(s.get("src_end")), st, en)} - {None})
+        # chi lay bo cuc / lop / chu CUA DUNG phan (hook hoac than video) — hai phan trung gio nguon
+        mine = (lambda x: _is_hook(x)) if in_hook else (lambda x: not _is_hook(x))
+        sc_here = [s for s in scenes if mine(s) and s.get("source_id") in (None, sid)
+                   and providers._overlap(f(s.get("src_start")), f(s.get("src_end")), st, en)]
+        lays = sorted({s.get("layout") for s in sc_here} - {None})
         row["bo_cuc"] = lays or ["full"]
+        aroll = [{"layout": s.get("layout"), "card_y": s.get("card_y")} for s in sc_here
+                 if s.get("layout") in ("card", "circle", "split") and s.get("card_y") is not None]
+        if aroll:
+            row["khung_nguoi_noi"] = aroll
         chu = []
         for L in layers:
-            if not (L.get("source_id") in (None, sid) and L.get("type") in ("text", "counter", "badge")
+            if not (mine(L) and L.get("source_id") in (None, sid) and L.get("type") in ("text", "counter", "badge")
                     and providers._overlap(f(L.get("src_start")), f(L.get("src_end"), 0), st, en)):
                 continue
             try:
@@ -243,35 +278,124 @@ def fx_moments(segments, transcript_data, emotion_map_data, key_moments_data, de
                 chu.append({"text": MD._raw_text(L)[:60], "vung": [round(max(0.0, v), 3) for v in b]})
             except Exception:
                 chu.append({"text": MD._raw_text(L)[:60]})
-        chu += [{"text": str(c.get("text") or "")[:60]} for c in captions or [] if isinstance(c, dict) and c.get("role") == "hero"
+        chu += [{"text": str(c.get("text") or "")[:60]} for c in caps if c.get("role") == "hero" and mine(c)
                 and c.get("source_id") in (None, sid) and providers._overlap(f(c.get("src_start")), f(c.get("src_end"), 0), st, en)]
+        if in_hook and hk.get("caption") and not any(_is_hook(L) for L in layers):
+            chu.append({"text": str(hk["caption"])[:60]})
         if chu:
             row["chu_tren_man_hinh"] = chu
+        hinh = [{k: L.get(k) for k in ("type", "why") if L.get(k)} for L in layers
+                if mine(L) and L.get("type") not in ("text", "counter", "badge") and L.get("source_id") in (None, sid)
+                and providers._overlap(f(L.get("src_start")), f(L.get("src_end"), 0), st, en)]
+        if hinh:
+            row["lop_hinh_dang_co"] = hinh[:6]
         if user_media:
-            # tu lieu cua nguoi dung dang hien (anh / video san pham...) -> hieu ung khong ve de len / lam roi mat
             tl = []
             ids = {it["id"]: it for it in user_media}
             for L in layers:
                 if L.get("asset") in ids and L.get("type") in ("image", "video") and L.get("source_id") in (None, sid) \
-                        and providers._overlap(f(L.get("src_start")), f(L.get("src_end"), 0), st, en):
+                        and mine(L) and providers._overlap(f(L.get("src_start")), f(L.get("src_end"), 0), st, en):
                     w_ = f(L.get("w"), 0.6)
                     tl.append({"id": L["asset"], "noi_dung": ids[L["asset"]]["name"], "cach": "lop noi",
                                "vung_gan_dung": [round(f(L.get("x"), 0.5) - w_ / 2, 3), round(f(L.get("y"), 0.5), 3), round(w_, 3)]})
-            for s_ in scenes:
+            for s_ in sc_here:
                 ref = s_.get("panel") if isinstance(s_.get("panel"), dict) else {}
-                if ref.get("asset") in ids and s_.get("source_id") in (None, sid) and providers._overlap(
-                        f(s_.get("src_start")), f(s_.get("src_end")), st, en):
+                if ref.get("asset") in ids:
                     tl.append({"id": ref["asset"], "noi_dung": ids[ref["asset"]]["name"], "cach": s_.get("layout")})
             if tl:
                 row["tu_lieu_dang_hien"] = tl
         fc = (faces or {}).get(sid)
-        if fc:
+        if fc and row["bo_cuc"] == ["full"]:
             row["mat_nguoi"] = {k: round(float(fc[k]), 3) for k in ("cx", "cy", "w", "h") if fc.get(k) is not None}
-        if hook and hook.get("source_id") in (None, sid) and providers._overlap(
-                f(hook.get("src_start")), f(hook.get("src_end")), st, en):
+        elif fc:
+            # mat o khung NGUON khong con dung khi A-roll thu vao the / khung tron / nua khung -> chi bao do luc chay
+            row["mat_nguoi"] = "bo cuc %s: nguoi noi nam TRONG khung A-roll, KHONG o toa do nguon — vi tri that = ctx.face " \
+                               "luc chay (code bat buoc dung ctx.face, khong dat toa do co dinh)" % "/".join(row["bo_cuc"])
+        if in_hook or (hk and hk.get("source_id") in (None, sid) and providers._overlap(
+                f(hk.get("src_start")), f(hk.get("src_end")), st, en)):
             row["la_hook"] = True
-        out.append(row)
+        return row
+
+    out = []
+    import motion_design as MD
+    for i, seg in enumerate(segments or []):
+        sid = seg.get("source_id", "")
+        st, en = f(seg.get("start")), f(seg.get("end"))
+        out.append(row_for("m%d" % (i + 1), sid, st, en, seg, False))
+    if hk:
+        sid_h = hk.get("source_id") or (segments[0].get("source_id") if segments else "")
+        a, b = f(hk.get("src_start")), f(hk.get("src_end"))
+        n = 0
+        for seg in segments or []:
+            if seg.get("source_id", "") != sid_h:
+                continue
+            st, en = max(a, f(seg.get("start"))), min(b, f(seg.get("end")))
+            if en - st > 0.05:
+                n += 1
+                out.append(row_for("h%d" % n, sid_h, st, en, seg, True))
     return out
+
+
+# Y HINH trung giua hieu ung tu viet va lop hinh R4 (cung khoanh khac): vong / mui ten / gach
+_MOTIF = {
+    "ring": r"\bvong\b|khoanh|om (lay|quanh)|\bloop\b|circle|ellipse|bau duc|hat dau|vong khep",
+    "arrow": r"mui ten|\barrow",
+    "line": r"gach chan|gach duoi|underline|net gach|duong ke duoi",
+}
+
+
+def drop_dup_motifs(fx_list, layers, changes):
+    """MOT Y CHI MOT LAN (2026-10-16, do that video Yen Phan: y 'vong khep quanh others' xuat hien 3 lan cung luc — vong R4
+    o hook, vong hieu ung tu viet o hook, vong R4 o than video): hieu ung LOP PHU ve lai DUNG loai hinh ma lop thiet ke R4
+    da ve trong CUNG khoanh khac (cung phan hook / than, gio nguon chong nhau) -> bo hieu ung (lop R4 dat theo chu that,
+    con hieu ung ve toa do doan). Tra danh sach con lai."""
+    import director
+    f = providers._f
+    keep = []
+    for e in fx_list or []:
+        if e.get("kind") != "overlay":
+            keep.append(e)
+            continue
+        txt = director._plain(" ".join(str(e.get(k) or "") for k in ("visual", "goal", "why_fit")))
+        txt = director._NEG_RE.sub(" ", txt)
+        hook = e.get("anchor") == "hook"
+        dup = None
+        for typ, rx in _MOTIF.items():
+            if not re.search(rx, txt):
+                continue
+            for L in layers or []:
+                if not isinstance(L, dict) or L.get("type") != typ or (L.get("anchor") == "hook") != hook:
+                    continue
+                if L.get("source_id") not in (None, e.get("source_id")):
+                    continue
+                if providers._overlap(f(L.get("src_start")), f(L.get("src_end"), f(L.get("src_start")) + 1),
+                                      f(e.get("src_start")), f(e.get("src_end"))):
+                    dup = (typ, L.get("id"))
+                    break
+            if dup:
+                break
+        if dup:
+            changes.append("%s: ve lai '%s' trung y voi lop %s cua buoc thiet ke cung khoanh khac -> bo (mot y mot lan)" % (
+                e.get("id"), dup[0], dup[1]))
+            continue
+        keep.append(e)
+    return keep
+
+
+def moment_anchor(e, moments):
+    """Neo cua hieu ung theo KHOANH KHAC no chon: khoanh khac hook (h<n>) -> 'hook'. AI ghi anchor hook nhung chon
+    khoanh khac than video -> doi sang khoanh khac hook trung gio (boi canh ve dung ban sao hook)."""
+    mid = str(e.get("moment") or "")
+    by = {m["id"]: m for m in moments or []}
+    m = by.get(mid)
+    if m and m.get("anchor") == "hook":
+        return "hook", mid
+    if e.get("anchor") == "hook":
+        f = providers._f
+        h = next((x for x in moments or [] if x.get("anchor") == "hook" and x.get("source_id") == e.get("source_id")
+                  and providers._overlap(x["src_start"], x["src_end"], f(e.get("src_start")), f(e.get("src_end")))), None)
+        return "hook", (h["id"] if h else mid)
+    return "body", mid
 
 
 # ---------------------------------------------------------------------------
@@ -293,7 +417,7 @@ def sanitize_plan(res, moments, changes):
         fid = "".join(ch for ch in str(e.get("id") or "fx%d" % (i + 1)) if ch.isalnum() or ch in "_-")[:24] or "fx%d" % (i + 1)
         if any(x["id"] == fid for x in out):
             fid = "%s_%d" % (fid, i)
-        miss = [k for k in ("context", "goal", "why_fit", "visual") if len(_txt(e.get(k))) < 12]
+        miss = [k for k in ("context", "goal", "why_fit", "visual", "y_nghia") if len(_txt(e.get(k))) < 12]
         if miss:
             changes.append("%s: thieu %s (hieu ung phai co boi canh + muc tieu + ly do) -> bo" % (fid, ", ".join(miss)))
             continue
@@ -308,7 +432,7 @@ def sanitize_plan(res, moments, changes):
         if not any(providers._overlap(a, b, x, y) for x, y in by_src.get(sid, [])):
             changes.append("%s: gio %.2f-%.2f khong nam trong khoanh khac nao con tren timeline -> bo" % (fid, a, b))
             continue
-        anc = "hook" if e.get("anchor") == "hook" else "body"
+        anc, mid = moment_anchor(dict(e, source_id=sid, src_start=a, src_end=b), moments)
         # ban sao hook o DAU video va doan goc trong than video trung GIO NGUON nhung khac cho tren timeline
         if kind == "transform" and any(providers._overlap(a, b, x, y) and z == anc for x, y, z in last_tr):
             changes.append("%s: chong len mot transform khac -> bo" % fid)
@@ -316,11 +440,13 @@ def sanitize_plan(res, moments, changes):
         cols = [c for c in (e.get("colors") or []) if isinstance(c, str) and c.strip().startswith(("#", "rgb", "hsl"))][:4]
         item = {"id": fid, "kind": kind, "layer": "behind" if (kind == "overlay" and e.get("layer") == "behind") else "front",
                 "source_id": sid, "src_start": round(a, 3), "src_end": round(b, 3),
-                "moment": _txt(e.get("moment"), 12), "context": _txt(e.get("context")), "goal": _txt(e.get("goal")),
+                "moment": _txt(mid, 12), "context": _txt(e.get("context")), "goal": _txt(e.get("goal")),
                 "why_fit": _txt(e.get("why_fit")), "visual": _txt(e.get("visual"), 1200), "sync": _txt(e.get("sync"), 200),
                 "params": {"colors": cols, "intensity": round(max(0.1, min(1.0, f(e.get("intensity"), 0.7))), 2)}}
-        if e.get("anchor") == "hook":
+        if anc == "hook":
             item["anchor"] = "hook"
+        if len(_txt(e.get("y_nghia"))) >= 12:
+            item["y_nghia"] = _txt(e.get("y_nghia"), 300)
         import ref_pack
         pk = ref_pack.current()
         if pk and e.get("theo_mau") in {x["id"] for x in pk.get("hieu_ung") or []}:
@@ -340,9 +466,12 @@ def _avoid_from_moments(e, moments, W=None, H=None):
     """Vung chu (px) trong khoanh khac cua hieu ung — de luot kiem chay voi ctx.avoid giong luc dung."""
     W, H = W or CV.size()[0], H or CV.size()[1]
     out = []
+    hook = e.get("anchor") == "hook"
     for m in moments or []:
         if m.get("source_id") != e.get("source_id") or not providers._overlap(m["src_start"], m["src_end"], e["src_start"], e["src_end"]):
             continue
+        if (m.get("anchor") == "hook") != hook:
+            continue                      # ban sao hook va doan goc trung gio nguon nhung khac bo cuc / chu
         for c in m.get("chu_tren_man_hinh") or []:
             v = c.get("vung") if isinstance(c, dict) else None
             if v:
@@ -566,6 +695,11 @@ def build_effects(plan_res, moments, faces, palette, step, changes, log=None, em
 # ---------------------------------------------------------------------------
 COVER_FACE_ALPHA, COVER_FACE_SEC = 0.55, 0.3     # mat bi phu duc trung binh >= 55% qua 0.3s -> che mat
 COVER_FULL_ALPHA, COVER_FULL_FRAC, COVER_FULL_SEC = 0.8, 0.45, 0.4   # >= 45% khung phu duc (>= 0.8) qua 0.4s -> che khung
+# NET VE CAT QUA MAT (2026-10-16, do that video Yen Phan: vong 'hat dau' 3.5px chay ngang mat trong hook — phu trung binh
+# chi ~3% nen luat 55% khong bat): LOI mat (60% giua khung mat) co net >= 0.3 alpha chiem 1.5% - 55% qua 0.25s -> vi pham.
+# Tren 55% = lop PHU DEU (loe sang / phu mau toan khung) — luat che mat / phu khung o tren lo, khong phai net ve (do lai
+# 26 du an: 2 loe sang 0.3s bi bat nham khi khong co tran). Hieu ung CO Y bao quanh mat (vong ngoai mat) van duoc.
+COVER_LINE_ALPHA, COVER_LINE_FRAC, COVER_LINE_MAX, COVER_LINE_SEC, COVER_CORE = 0.3, 0.015, 0.55, 0.25, 0.6
 _COVER_CACHE = {}
 
 
@@ -586,32 +720,41 @@ def cover_check(path, face, W, H):
         import numpy as np
         import hook_rule
         n = len(idx)
-        rw = 216
+        rw = 432                                              # du net de thay vet ve 3-4px (khung 1080)
         rh = max(64, int(round(rw * float(H) / float(W))))
         step = max(1, int(round(fps / 10.0)))                 # ~10 mau / giay
         dt = step / fps
-        run_face = run_full = 0.0
-        worst_face = worst_full = 0.0
+        run_face = run_full = run_line = 0.0
+        worst_face = worst_full = worst_line = 0.0
         for i in range(0, n, step):
             j = idx[i]
             fr = frames[j] if 0 <= j < len(frames) else ""
             a = hook_rule._raster(fr, rw, rh) if fr and "<" in fr else None
             if a is None:
-                run_face = run_full = 0.0
+                run_face = run_full = run_line = 0.0
                 continue
             al = a[..., 3]
             full = float((al >= COVER_FULL_ALPHA).mean())
-            fa = 0.0
+            fa = fl = 0.0
             if face:
                 x0 = int(max(0, (face["x"] - face["w"] / 2) / W * rw)); x1 = int(min(rw, (face["x"] + face["w"] / 2) / W * rw))
                 y0 = int(max(0, (face["y"] - face["h"] / 2) / H * rh)); y1 = int(min(rh, (face["y"] + face["h"] / 2) / H * rh))
                 if x1 > x0 and y1 > y0:
                     fa = float(al[y0:y1, x0:x1].mean())
+                cw_, ch_ = face["w"] * COVER_CORE / 2, face["h"] * COVER_CORE / 2
+                cx0 = int(max(0, (face["x"] - cw_) / W * rw)); cx1 = int(min(rw, (face["x"] + cw_) / W * rw))
+                cy0 = int(max(0, (face["y"] - ch_) / H * rh)); cy1 = int(min(rh, (face["y"] + ch_) / H * rh))
+                if cx1 > cx0 and cy1 > cy0:
+                    fl = float((al[cy0:cy1, cx0:cx1] >= COVER_LINE_ALPHA).mean())
             run_face = run_face + dt if fa >= COVER_FACE_ALPHA else 0.0
             run_full = run_full + dt if full >= COVER_FULL_FRAC else 0.0
+            run_line = run_line + dt if COVER_LINE_FRAC <= fl <= COVER_LINE_MAX else 0.0
             worst_face, worst_full = max(worst_face, run_face), max(worst_full, run_full)
+            worst_line = max(worst_line, run_line)
         if worst_face > COVER_FACE_SEC:
             res = "che mat nguoi noi %.1fs" % worst_face
+        elif worst_line > COVER_LINE_SEC:
+            res = "net ve chay qua mat nguoi noi %.1fs" % worst_line
         elif worst_full > COVER_FULL_SEC:
             res = "phu duc >= %d%% khung %.1fs" % (int(COVER_FULL_FRAC * 100), worst_full)
     except Exception:

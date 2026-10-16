@@ -1916,6 +1916,38 @@ moi buoc (B3 / R4 / R5 / FX / B6 / B7) tu doc lai cau chuyen + tu quyet cao trao
   thi `layer_info` tu tinh bo cuc + tplHold -> ca video da lam cung duoc sua khi mo lai).
 - **Kiem**: `HOME=$(mktemp -d) <venv> tests/test_tpl_layout.py`; bo 40 ca that + render doi chieu: scratch (khong vao repo).
 
+## 21. HIEU UNG CO Y NGHIA + DUNG CHO; DAO DIEN HIEU NOI DUNG (2026-10-16)
+
+- User (anh video Yen Phan): "hieu ung duong vien khong hop ly va vo tri". Khong phai Kho hieu ung (hieu ung kho co
+  truong `lib`): (1) `hook2` (luat hook goi FX tu viet lai) duoc thiet ke theo boi canh THAN video (chu y 0.62-0.74, video
+  toan khung) nhung dat vao BAN SAO HOOK (chu o tren, video thu vao the o duoi) -> vong 3.5px cat ngang mat; cover_check
+  chi bat phu DUC; (2) lop R4 `ring` dat bang toa do doan, nho hon chu 'others,' -> cat qua chu; (3) mot y 'vong khep'
+  ve 3 lan (vong R4 hook + vong FX hook + vong R4 than).
+- `fx_flow.fx_moments`: ban sao hook = khoanh khac RIENG `h<n>` (anchor hook) voi bo cuc / chu / lop hinh CUA ban sao;
+  than video `m<n>` khong lan lop hook; bo cuc card / circle / split -> `mat_nguoi` la ghi chu "dung ctx.face" (toa do
+  nguon sai). `moment_anchor` (sanitize): chon h<n> -> anchor hook; anchor hook + m<n> -> doi sang h<n>.
+  `_avoid_from_moments` chi lay chu cung phan. `hook_rule.hook_moments_fx` co ban sao -> chi h<n>.
+- `cover_check` them NET VE QUA MAT: loi mat (60% giua) co net >= 0.3 alpha phu 1.5%-55% qua 0.25s -> bo (raster 432px;
+  > 55% = lop phu deu / loe sang, de luat che mat cu lo). Do lai 26 du an cu: chi bo them 1 hieu ung that su de len mat.
+  Vong bao NGOAI mat van giu. `FX_VERSION` 2.
+- `fx_flow.drop_dup_motifs` (FX-plan + Hook-FX): hieu ung lop phu ve lai vong / mui ten / gach ma lop R4 cung loai da ve
+  o CUNG khoanh khac (cung phan, gio nguon chong) -> bo.
+- VONG KHOANH CHU: `MD.ring_targets` -> `L.target {layer, text}` (target_text cua R4 > tu trong ngoac kep cua why > tu
+  gan tam vong); renderer `RingTarget` (Layers.tsx) tim cac tu `data-tw` cua lop chu (TextLayer gan cho moi tu), DO
+  KHUNG THAT (getBoundingClientRect / ti le goc `data-autoedit-root`) -> bau duc vua khit, ve dan (draw). Khong tim thay
+  (chu anh AI / mau Kho Text) -> vong cu. R4 DSL: `target_text`.
+- DAO DIEN (`DIRECTOR_VERSION` 4): dau vao them `tong_quan` (summary / tone / ngon ngu) + `toan_bo_loi_noi` (NGUYEN VAN
+  ca video goc, moc gio ~10s, <= 9000 ky tu); buoc 0 HIEU NOI DUNG bat buoc -> `phan_tich` {nguoi_noi, khan_gia,
+  thong_diep_chinh, muc_dich, mach_y theo segment, tu_khoa + y_nghia, cam_xuc_chu_dao, nguoi_xem_can_hieu, chua_ro};
+  nhip co `y_nghia`; muc "Y NGHIA CUA MOI PHAN TU" (minh hoa y / khuech dai cam xuc that / dan mat toi tu khoa; khoanh /
+  gach chi tu loi, 1 lan / y; khong ve len mat). LUAT_CHUNG noi vao moi buoc: moi phan tu phai chi ra y trong phan_tich,
+  mot y mot lan. Duyet: bo phan tu khong noi duoc y nghia + TRUNG Y; payload duyet co y_nghia / why.
+- FX-plan: bat buoc `y_nghia` (thieu -> bo); vi tri mo ta theo QUAN HE, khong chep toa do; FX-code: khong dung so toa do
+  trong mo ta lam vi tri, net khong qua loi mat.
+- Do that (dung lai plan cu, khong lap lai): hook2 bi bo "net ve chay qua mat nguoi noi 0.7s"; 2 vong khoanh dung
+  'others,' (hook + than) — anh doi chieu scratch.
+- **Kiem**: `HOME=$(mktemp -d) <venv> tests/test_fx_meaning.py`.
+
 ## 12. CodeGraph
 
 CodeGraph `0.9.9` da duoc cai va index tai root workspace:

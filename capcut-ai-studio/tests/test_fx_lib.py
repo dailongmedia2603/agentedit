@@ -53,7 +53,7 @@ BROKEN = "function render(ctx){ return h('svg', {}, ctx.nope.x) }"
 def fx(fid, code, kind="overlay", a=1.0, b=2.5, visual="", goal="", **kw):
     return dict({"id": fid, "kind": kind, "layer": "front", "source_id": "source_1", "src_start": a, "src_end": b,
                  "code": code, "params": {"colors": ["#ffcc00"], "intensity": 0.8}, "visual": visual, "goal": goal,
-                 "sync": "", "context": "dang noi ve kem chong nang ABC (rieng tu)", "why_fit": "trich loi rieng tu"}, **kw)
+                 "sync": "", "context": "dang noi ve kem chong nang ABC (rieng tu)", "y_nghia": "lam ro y dang noi luc do (du lieu test)", "why_fit": "trich loi rieng tu"}, **kw)
 
 
 exe, _env = fx_flow.node_bin()
@@ -130,7 +130,7 @@ def step(name, payload, fn):
 moments = [{"id": "m1", "source_id": "source_1", "src_start": 0, "src_end": 10}]
 plan_res = {"effects": [{"id": "fx1", "moment": "m1", "kind": "overlay", "source_id": "source_1", "src_start": 1, "src_end": 2.4,
                          "context": "nguoi noi tiet lo ket qua sau 7 ngay", "goal": "nhan manh khoanh khac bat ngo cua ket qua",
-                         "why_fit": "tia sang toa ra dung luc noi 'that su' lam ket qua noi bat",
+                         "y_nghia": "lam ro y dang noi luc do (du lieu test)", "why_fit": "tia sang toa ra dung luc noi 'that su' lam ket qua noi bat",
                          "visual": "nhung tia sang mau vang toa quanh khuon mat nguoi noi, hien dan roi tat",
                          "colors": ["#00ffcc"], "intensity": 0.6}]}
 faces = {"source_1": {"cx": 0.5, "cy": 0.4, "w": 0.3, "h": 0.2}}
