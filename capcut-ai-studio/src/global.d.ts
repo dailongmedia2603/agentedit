@@ -1347,6 +1347,34 @@ declare global {
     khoanh_khac_dau_an?: { segment: number; loi_noi?: string; y_tuong?: string; vi_sao?: string }[]
     khoang_lang?: { segment: number; loi_noi?: string; vi_sao?: string }[]
     cam?: string[]
+    /** BANG QUYET DINH theo tung doan (dao dien v5, 2026-10-17) */
+    quyet_dinh?: DirectorDecision[]
+    hook_qd?: DirectorDecision
+    ho_so_nhip?: { ten?: string; dung_im_toi_da?: number; zoom_max?: number; rung_loe?: boolean; tai_toi_da?: number }
+  }
+  interface DirectorDecision {
+    segment?: number
+    y_do: string
+    ten?: string
+    muc_dich?: string
+    nang_luong: number
+    neo?: { tu?: string; tin_hieu_hinh?: string; src_start?: number }
+    tieu_diem?: string
+    khung?: string
+    nen?: string
+    giao_viec?: Record<string, string>
+    ly_do?: string
+    timeline_tu?: number
+    timeline_den?: number
+  }
+  /** Giam sat dao dien tren ban dung (plan._pipeline.giam_sat) */
+  interface DirectorWatch {
+    tom_tat?: string
+    tuong_quan?: number | null
+    diem_nhan_yeu?: { qd: number; y_do: string; nang_luong: number }[]
+    dung_im?: [number, number][]
+    viec_thieu?: { qd: number | string; bo_phan: string; y_do: string; viec?: string }[]
+    sua?: string[]
   }
   /** Ket qua buoc dao dien duyet ban dung (plan._pipeline.dao_dien_duyet) */
   interface DirectorReview {

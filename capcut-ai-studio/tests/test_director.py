@@ -287,15 +287,19 @@ with server.app.test_client() as c:
 d = r.get_json() or {}
 check("autoplan chay xong", r.status_code == 200 and d.get("ok"), d.get("error"))
 seq = [x for x in THU_TU if x != "R4-design-fix"]
-check("DD-chi-dao ngay sau B2, DD-duyet ngay sau B7", seq.index("DD-chi-dao") == seq.index("B2-timeline") + 1
-      and seq.index("B3-hook") == seq.index("DD-chi-dao") + 1 and seq.index("DD-duyet") == seq.index("B7-audio") + 1, seq)
 dd = NHAN.get("DD-chi-dao", {})
+check("B3 ngay sau B2, DD-chi-dao ngay sau B3 (dao dien biet hook that), DD-duyet ngay sau B7",
+      seq.index("B3-hook") == seq.index("B2-timeline") + 1 and seq.index("DD-chi-dao") == seq.index("B3-hook") + 1
+      and seq.index("R4-design") == seq.index("DD-chi-dao") + 1 and seq.index("DD-duyet") == seq.index("B7-audio") + 1, seq)
+check("dao dien nhan hook da chon + rang buoc (muc hook / ho so nhip) + tu vung y do",
+      (dd.get("hook") or {}).get("src_start") == 0.0 and (dd.get("rang_buoc") or {}).get("ho_so_nhip_theo_cuong_do")
+      and any(x.get("id") == "BUNG_NO" for x in dd.get("tu_vung_y_do") or []), {k: dd.get(k) for k in ("hook", "rang_buoc")})
 check("dao dien nhan timeline (loi noi + cam xuc kem bang chung + khoanh khac) + tom tat Gemini + the gioi am thanh",
       dd.get("timeline") and dd["timeline"][0]["loi_noi"] and dd["timeline"][0]["cam_xuc"][0].get("bang_chung")
       and dd["timeline"][0].get("khoanh_khac") and dd.get("video") and len(dd.get("the_gioi_am_thanh") or []) == 5, dd)
 check("du an dau tien: so tay chua co video nao", not dd.get("so_tay_gan_day") or all(
     v.get("chu_de") != "Cái giá của một lần tin quảng cáo" for v in dd.get("so_tay_gan_day")), dd.get("so_tay_gan_day"))
-for lab in ("B3-hook", "R4-design", "R5-captions", "FX-plan", "B6-inserts", "B7-audio"):
+for lab in ("R4-design", "R5-captions", "FX-plan", "B6-inserts", "B7-audio"):
     p = NHAN.get(lab, {})
     cau = p.get("cau_chuyen") or {}
     check("%s nhan ban chi dao + luat dao dien" % lab,

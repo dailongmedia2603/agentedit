@@ -71,6 +71,25 @@ export function clipZoomAt(clip: RSClip, t: number): number {
   return clip.zoomFrom + (k1 - clip.zoomFrom) * easeInOutCubic(p)
 }
 
+/** Lenh "nen" dang hieu luc tai t (vao 0.25s / ra 0.35s) — null neu khong co. */
+export function bgFocusAt(list: RenderSpec['bgFocus'], t: number): { dim: number; blur: number; desat: number } | null {
+  let best: { dim: number; blur: number; desat: number } | null = null
+  for (const w of list || []) {
+    if (t < w.start || t > w.end) continue
+    const k = envelope(t, w.start, w.end, 0.25, 0.35)
+    const v = { dim: (w.dim || 0) * k, blur: (w.blur || 0) * k, desat: (w.desat || 0) * k }
+    if (!best || v.dim + v.desat + v.blur / 20 > best.dim + best.desat + best.blur / 20) best = v
+  }
+  return best
+}
+
+function hexAlpha(c: string, a: number): string {
+  const m = /^#?([0-9a-f]{6})$/i.exec((c || '').trim())
+  if (!m) return c
+  const n = parseInt(m[1], 16)
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${clamp01(a).toFixed(3)})`
+}
+
 // SVG filter tach kenh mau (dung cho glitch / rgb_split). id rieng cho tung lop.
 const RgbSplitDefs: React.FC<{ id: string; amount: number }> = ({ id, amount }) => (
   <svg width={0} height={0} style={{ position: 'absolute' }} aria-hidden>
@@ -210,28 +229,34 @@ const ClipLayer: React.FC<{ clip: RSClip; prev: RSClip | null; base?: string; cw
     transform: `translate(${clip.x * 50}%, ${clip.y * 50}%) scale(${clipZoomAt(clip, t)})`
   }
   const pos = clip.fit === 'blur' ? undefined : facePosition(clip, cw, ch, fy)
+  // DONG BANG HINH (lenh dao dien): trong khoang nay ve 1 ban COPY tat tieng dung o khung dau khoang de len video that —
+  // video that (co tieng) van chay ben duoi -> tieng khong dut, het khoang hinh nhay toi dung giay
+  const fz = (clip.freezes || []).find((w) => t >= w.start - 1e-3 && t < w.end) || null
   if (subject && clip.subject) {
     // Ban "chi co nguoi": cung khung/vi tri/chuyen canh voi clip goc, bat dau dung giay nguon cua file tach nen
     const sub = clip.subject
     const srcAtShow = clip.srcStart - inHalf * clip.speed
     const offF = Math.max(0, Math.round(((sub.srcStart - srcAtShow) / clip.speed) * fps))
     const durF = Math.max(1, Math.round(((sub.srcEnd - Math.max(sub.srcStart, srcAtShow)) / clip.speed) * fps))
+    const subVideo = (
+      <OffthreadVideo
+        src={mediaSrc(base, sub.path)}
+        trimBefore={Math.max(0, toFrame(srcAtShow - sub.srcStart, fps))}
+        playbackRate={clip.speed}
+        muted
+        transparent
+        pauseWhenBuffering
+        acceptableTimeShiftInSeconds={SUBJECT_SYNC_SEC}
+        // clip nen mo (khac chieu khung, vd video doc tren khung ngang) ve video kieu contain -> ban tach nguoi cung vay
+        style={{ width: '100%', height: '100%', objectFit: clip.fit === 'blur' ? 'contain' : 'cover', objectPosition: pos }}
+      />
+    )
     return (
       <AbsoluteFill style={layerCss(st, filterId)}>
         {filterId && <RgbSplitDefs id={filterId} amount={st.rgbSplit} />}
         <AbsoluteFill style={inner}>
           <Sequence from={offF} durationInFrames={durF} layout="none">
-            <OffthreadVideo
-              src={mediaSrc(base, sub.path)}
-              trimBefore={Math.max(0, toFrame(srcAtShow - sub.srcStart, fps))}
-              playbackRate={clip.speed}
-              muted
-              transparent
-              pauseWhenBuffering
-              acceptableTimeShiftInSeconds={SUBJECT_SYNC_SEC}
-              // clip nen mo (khac chieu khung, vd video doc tren khung ngang) ve video kieu contain -> ban tach nguoi cung vay
-              style={{ width: '100%', height: '100%', objectFit: clip.fit === 'blur' ? 'contain' : 'cover', objectPosition: pos }}
-            />
+            {fz ? <Freeze frame={Math.max(0, toFrame(fz.start - showStart, fps) - offF)}>{subVideo}</Freeze> : subVideo}
           </Sequence>
         </AbsoluteFill>
       </AbsoluteFill>
@@ -247,7 +272,18 @@ const ClipLayer: React.FC<{ clip: RSClip; prev: RSClip | null; base?: string; cw
   }
   const video = (vp: Record<string, unknown>, style: React.CSSProperties) => {
     const el = <OffthreadVideo {...videoProps} {...vp} style={style} />
-    return clip.freeze ? <Freeze frame={0}>{el}</Freeze> : el
+    const live = clip.freeze ? <Freeze frame={0}>{el}</Freeze> : el
+    if (!fz || clip.freeze) return live
+    return (
+      <>
+        {live}
+        <AbsoluteFill>
+          <Freeze frame={toFrame(fz.start - showStart, fps)}>
+            <OffthreadVideo {...videoProps} muted style={style} />
+          </Freeze>
+        </AbsoluteFill>
+      </>
+    )
   }
 
   return (
@@ -386,6 +422,21 @@ const VideoLayer: React.FC<{ spec: RenderSpec; subject?: boolean }> = ({ spec, s
   // pop-out: mat ngay duoi mep tren the (5% canvas) -> nua tren dau troi ra ngoai the
   const faceY = A.ext > 1 ? (A.ext + 0.05 * H) / (A.height + A.ext) : 0.42
   const filters = subject && tintOn ? ['url(#subject-tint)', grade] : [grade]
+  // LENH DAO DIEN "nen": diu NEN video (ban goc) — nguoi noi ve lai tu ban tach nguoi (khong diu) nen van net
+  const bf = bgFocusAt(spec.bgFocus, t)
+  if (!subject && bf) {
+    if (bf.dim > 0.005) filters.push(`brightness(${(1 - bf.dim).toFixed(3)})`)
+    if (bf.blur > 0.05) filters.push(`blur(${bf.blur.toFixed(2)}px)`)
+    if (bf.desat > 0.005) filters.push(`saturate(${(1 - bf.desat).toFixed(3)})`)
+  }
+  // VIEN quanh nguoi noi (mo dinh danh / dong bang): drop-shadow 4 huong tren ban tach nguoi (nen trong suot)
+  const sfx = subject ? (spec.subjectFx || []).find((w) => t >= w.start && t <= w.end) : undefined
+  if (sfx) {
+    const k = envelope(t, sfx.start, sfx.end, 0.12, 0.25)
+    const c = hexAlpha(sfx.stroke.color, k)
+    const w = Math.max(1, sfx.stroke.width)
+    filters.push(`drop-shadow(${w}px 0 0 ${c}) drop-shadow(-${w}px 0 0 ${c}) drop-shadow(0 ${w}px 0 ${c}) drop-shadow(0 -${w}px 0 ${c})`)
+  }
   if (cam.grayscale > 0.01) filters.push(`grayscale(${cam.grayscale.toFixed(3)})`)
   if (cam.blur > 0.05) filters.push(`blur(${cam.blur.toFixed(2)}px)`)
   if (cam.rgbSplit > 0.3) filters.push('url(#rgb-camera)')
@@ -562,18 +613,24 @@ export const AutoEdit: React.FC<AutoEditProps> = ({ spec }) => {
   const hasBehind = behind.length > 0 && hasSubject
   const front = hasBehind ? layers.filter((L) => !L.behind) : layers
   const drawSubject =
-    hasSubject && (hasBehind || (spec.scenes || []).some((s) => !!s.popout) || (spec.fx || []).some((f) => f.layer === 'behind'))
+    hasSubject &&
+    (hasBehind ||
+      (spec.scenes || []).some((s) => !!s.popout) ||
+      (spec.fx || []).some((f) => f.layer === 'behind') ||
+      (spec.bgFocus || []).some((w) => !w.noSubject) ||
+      (spec.subjectFx || []).length > 0)
   return (
     <AbsoluteFill data-autoedit-root style={{ background: '#000', overflow: 'hidden' }}>
       <VideoLayer spec={spec} />
+      {hasBehind && <LayersLayer layers={behind} base={spec.mediaBase} maxTrack={100} />}
+      {hasSubject && <FxLayer fx={spec.fx} layer="behind" base={spec.mediaBase} />}
+      {drawSubject && <VideoLayer spec={spec} subject />}
+      {/* meme DE LEN nam tren ca ban tach nguoi (truoc day ban tach nguoi ve sau -> che meme trung nguoi noi) */}
       {spec.overlays.map((o) => (
         <Sequence key={o.id} from={toFrame(o.start, fps)} durationInFrames={Math.max(1, toFrame(o.end - o.start, fps))} premountFor={Math.round(fps)}>
           <OverlayClip o={o} base={spec.mediaBase} />
         </Sequence>
       ))}
-      {hasBehind && <LayersLayer layers={behind} base={spec.mediaBase} maxTrack={100} />}
-      {hasSubject && <FxLayer fx={spec.fx} layer="behind" base={spec.mediaBase} />}
-      {drawSubject && <VideoLayer spec={spec} subject />}
       <FxLayer fx={hasSubject ? spec.fx : (spec.fx || []).map((f) => ({ ...f, layer: 'front' as const }))} layer="front" base={spec.mediaBase} />
       <LayersLayer layers={front} base={spec.mediaBase} maxTrack={100} />
       <FxOverlays spec={spec} />

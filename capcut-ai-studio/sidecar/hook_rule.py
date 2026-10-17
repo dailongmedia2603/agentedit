@@ -113,16 +113,26 @@ def _level_of(txt):
     return "manh" if s > n else ("nhe" if n > s else None)
 
 
+def request_level(story):
+    """(muc, ly_do) neu YEU CAU EDIT cua nguoi dung noi ro tinh chat (vui / bat trend / nhanh -> manh; nhe nhang -> nhe),
+    nguoc lai None. Dua cho DAO DIEN TRUOC khi chi dao (2026-10-17: truoc day chi ep sau khi dung -> dao dien thiet ke hook
+    em, luat hook khuech dai x2.4 trai y dao dien)."""
+    st = story or {}
+    req = st.get("edit_request") if isinstance(st.get("edit_request"), dict) else {}
+    rtxt = " ".join(str(req.get(k) or "") for k in ("style", "purpose", "phong_cach", "muc_dich"))
+    lv = _level_of(rtxt)
+    return (lv, "theo yêu cầu edit: %s" % rtxt.strip()[:140]) if lv else None
+
+
 def muc_do(plan, story=None):
     """(muc, ly_do). Uu tien: YEU CAU EDIT cua nguoi dung (phong cach / muc dich: "vui, bat trend, nhanh" -> manh;
     "nhe nhang" -> nhe) > B3 ghi hook.attention.muc_do > doan theo tone + phong cach. (Do that 2026-09-28: user ghi
     "nhanh, vui, bat trends" ma B3 chon "vua" -> hook qua hien.)"""
     st = story or {}
     req = st.get("edit_request") if isinstance(st.get("edit_request"), dict) else {}
-    rtxt = " ".join(str(req.get(k) or "") for k in ("style", "purpose", "phong_cach", "muc_dich"))
-    lv = _level_of(rtxt)
-    if lv:
-        return lv, "theo yêu cầu edit: %s" % rtxt.strip()[:140]
+    rl = request_level(st)
+    if rl:
+        return rl
     # DAO DIEN (director.py, 2026-10-15): ban chi dao chot muc hook theo cuong do + cam xuc ca video -> uu tien hon B3
     cd = st.get("chi_dao") if isinstance(st.get("chi_dao"), dict) else (
         plan.get("chi_dao") if isinstance(plan.get("chi_dao"), dict) else {})
@@ -643,7 +653,27 @@ def clean_effects(res, moment, level=None):
     return out
 
 
-def fallback_effect(moment, level="vua", need=None):
+_SWAP = ("zoom_punch", "flash", "shake", "zoom_out_reveal", "rgb_split", "blur_focus", "pulse", "focus")   # khong fisheye: meo mat nguoi noi
+
+
+def fallback_effect(moment, level="vua", need=None, banned=None):
+    """banned: loai hieu ung kho dao dien da cam (director.banned_catalog) -> thay bang loai manh gan nhat con lai."""
+    out = _fallback_effect(moment, level, need)
+    if not banned:
+        return out
+    used = {e["type"] for e in out if e["type"] not in banned}
+    for e in out:
+        if e["type"] in banned:
+            alt = next((t for t in _SWAP if t not in banned and t not in used
+                        and CATALOG_STRENGTH.get(t, 0) >= 0.6 * CATALOG_STRENGTH.get(e["type"], 1)), None)
+            if alt:
+                used.add(alt)
+                e["why"] += " — '%s' bi dao dien cam -> '%s'" % (e["type"], alt)
+                e["type"] = alt
+    return out
+
+
+def _fallback_effect(moment, level="vua", need=None):
     """Du phong khi AI khong dat, THEO MUC: du nhip toan khung + du nguong (`need`, co tinh hieu ung manh nhat than
     video). nhe -> keo mat vao chu the (focus, em, 1 nhip); vua -> dap camera o dau + giua hook; manh -> dap camera +
     loe sang o dau, rung o 1/3, dap lai o 2/3 hook."""
@@ -758,7 +788,9 @@ def ensure(plan, spec, build, step, sfx_catalog=None, transcript_data=None, stor
         if use_fallback:
             if gat:
                 drop_hook(lambda e: e.get("id") in harsh or e.get("type") in harsh)
-            plan["scene_effects"] = list(plan.get("scene_effects") or []) + fallback_effect(moment, level, r["do"].get("can"))
+            import director
+            plan["scene_effects"] = list(plan.get("scene_effects") or []) + fallback_effect(
+                moment, level, r["do"].get("can"), banned=director.banned_catalog(plan.get("chi_dao")))
             notes.append("hieu ung hinh hook: du phong muc %s (AI khong dat)" % level)
             return True
         vd = van_de_visual(r)

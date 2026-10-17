@@ -1011,6 +1011,7 @@ def _clips_to_spec(p, W, H, changes):
     srcs = {sv.get("id"): sv for sv in p.get("source_videos") or []}
     trs = _by_id("transitions")
     clips = []
+    done_fz = set()
     segs = p.get("segments") or []
     for i, s in enumerate(segs):
         kind = s.get("kind") or "body"
@@ -1050,7 +1051,25 @@ def _clips_to_spec(p, W, H, changes):
             "_srcDur": (info.get("duration") or providers._f(
                 (srcs.get(s.get("source_id")) or {}).get("duration"), 0) or None),
             "_tr": s.get("rm_transition"),
+            "_zoomSlow": s.get("zoom_ramp") == "slow",
         })
+        if kind != "insert" and s.get("source_id"):
+            clips[-1]["sourceId"] = s.get("source_id")     # giam sat dao dien quy gio nguon -> timeline tren ban dung cuoi
+        # DONG BANG (dao dien, khung 'dong_bang'): hinh dung o giay nguon fz.src trong fz.dur giay, TIENG VAN CHAY (doan bi
+        # tighten_pauses chia nho -> chi manh chua dung giay do moi dong bang)
+        fz = s.get("freeze") if isinstance(s.get("freeze"), dict) and kind != "insert" else None
+        if fz:
+            fsrc = providers._f(fz.get("src"), providers._f(s.get("start")))
+            s0 = providers._f(s.get("start"))
+            key = (kind, round(fsrc, 2))
+            # manh CHUA giay dong bang, hoac manh DAU cua doan khi mep dau bi doi sau (cat hoi tho, hook keo ve ranh gioi
+            # cau) <= 0.6s; moi lenh chi 1 lan (doan bi chia nho -> cac manh deu mang freeze)
+            if key not in done_fz and (s0 - 0.01 <= fsrc < providers._f(s.get("end")) or 0 <= s0 - fsrc <= 0.6):
+                a = ts + max(0.0, fsrc - s0) / sp
+                b = min(a + providers._f(fz.get("dur"), 0.8), ts + span - 0.15)
+                if b - a >= 0.3:
+                    clips[-1]["freezes"] = [{"start": round(a, 3), "end": round(b, 3)}]
+                    done_fz.add(key)
     # chuyen canh (sau khi biet chat lieu hai ben)
     for i, c in enumerate(clips):
         tr = c.pop("_tr", None)
@@ -1089,6 +1108,8 @@ def _clips_to_spec(p, W, H, changes):
     for c in clips:
         c.pop("_srcEnd", None)
         c.pop("_srcDur", None)
+        if not c.get("_zoomSlow"):
+            c.pop("_zoomSlow", None)
     _meme_volume(p, clips, changes)
     _smooth_zoom(clips, changes)
     return clips
@@ -1116,11 +1137,17 @@ def clip_zoom_at(clip, t):
 
 
 def _smooth_zoom(clips, changes=None):
-    """Gan zoomFrom / zoomDur cho clip co muc zoom KHAC clip lien truoc (tru meme cat vao: noi dung khac han)."""
+    """Gan zoomFrom / zoomDur cho clip co muc zoom KHAC clip lien truoc (tru meme cat vao: noi dung khac han).
+    Clip `_zoomSlow` (khung 'day_cham' cua dao dien): zoom KEO SUOT clip (day vao tu tu), clip dau video tu 1.0."""
     n = 0
+    if clips and clips[0].pop("_zoomSlow", False) and float(clips[0].get("scale") or 1.0) > 1.005:
+        clips[0]["zoomFrom"] = 1.0
+        clips[0]["zoomDur"] = round(max(0.05, float(clips[0]["end"]) - float(clips[0]["start"])), 3)
+        n += 1
     for prev, c in zip(clips, clips[1:]):
         c.pop("zoomFrom", None)
         c.pop("zoomDur", None)
+        slow = c.pop("_zoomSlow", False)
         if prev.get("kind") == "insert" or c.get("kind") == "insert":
             continue
         k0 = float(prev.get("scale") or 1.0)
@@ -1136,6 +1163,8 @@ def _smooth_zoom(clips, changes=None):
             c["scale"] = round(k0 + d, 3)
             need = span
         dur = min(span, max(need, min(ZOOM_RAMP_MAX, ZOOM_RAMP_MIN + ZOOM_RAMP_PER * abs(d))))
+        if slow:
+            dur = span                                  # day cham: keo suot doan
         c["zoomFrom"] = round(k0, 3)
         c["zoomDur"] = round(max(0.05, dur), 3)
         n += 1
@@ -1547,6 +1576,14 @@ def _build_spec(plan, log=None):
     except Exception as ex:
         p["_voice_lufs"] = None
         changes.append("khong do duoc muc to giong noi (%s) -> SFX theo muc tuyet doi" % str(ex)[:120])
+    # NANG LUONG tung doan (bang quyet dinh / nhip cua dao dien) -> tieng chu / tieng phu o doan nang luong thap nho xuong
+    # muc "vi mo" cua ho so nhip (tai lieu: am thanh dan nhip vi mo), diem nhan giu muc cu
+    try:
+        import director_guard
+        p["_energy"] = director_guard.energy_windows(p, map_range)
+    except Exception as ex:
+        p["_energy"] = []
+        changes.append("bo qua muc tieng theo nang luong (%s)" % str(ex)[:120])
     plan_guard.mix_sfx(p, changes)
 
     theme = p.get("caption_theme") if isinstance(p.get("caption_theme"), dict) else {}
@@ -1586,13 +1623,57 @@ def _build_spec(plan, log=None):
             FX.fx_to_spec(p, spec, changes)
         except Exception as ex:
             changes.append("bo qua hieu ung tu viet (%s)" % str(ex)[:160])
+    if p.get("bg_focus") or p.get("subject_fx"):
+        # LENH DAO DIEN "nen" (diu nen video, nguoi noi van net nho ban tach nguoi) + vien quanh nguoi (dong bang / mo dinh
+        # danh): gio nguon -> timeline; khoang lang cua dao dien khong diu nen
+        import director_guard
+        quiet0 = director.silent_windows(p, map_range)
+        for key, rows in (("bgFocus", p.get("bg_focus") or []), ("subjectFx", p.get("subject_fx") or [])):
+            out = []
+            for w in rows:
+                if not isinstance(w, dict) or w.get("src_start") is None:
+                    continue
+                hit = map_range(p, w.get("source_id"), float(w["src_start"]), float(w["src_end"]),
+                                "hook" if w.get("anchor") == "hook" else "body")
+                if not hit or hit[1] - hit[0] < 0.4:
+                    continue
+                if key == "bgFocus" and sum(max(0.0, min(hit[1], w1) - max(hit[0], w0)) for w0, w1 in quiet0) \
+                        > 0.5 * (hit[1] - hit[0]):
+                    continue        # phan lon nam trong khoang lang co chu dich -> khong diu nen
+                if key == "bgFocus":
+                    v = director_guard.BG_FOCUS.get(w.get("kieu"))
+                    if v:
+                        out.append(dict(v, start=round(hit[0], 3), end=round(hit[1], 3), kieu=w.get("kieu"), qd=w.get("qd")))
+                else:
+                    out.append({"start": round(hit[0], 3), "end": round(hit[1], 3), "qd": w.get("qd"),
+                                "stroke": {"color": w.get("color") or "#FFD54A", "width": director_guard.STROKE_PX}})
+            if out:
+                spec[key] = out
+                changes.append("lenh dao dien: %s %s" % (key, ", ".join("%.1f-%.1fs" % (o["start"], o["end"]) for o in out)))
+        # FX tu toi / nhoe CA khung trung khoang nen diu -> nguoi noi toi theo (do that 2026-10-17: lenh 'nen video toi 30%'
+        # FX lam bang transform brightness) -> bo phan lam toi / nhoe / giam mau cua transform, nen diu (nguoi van net) lo
+        for e in spec.get("fxTransforms") or []:
+            hit = [w for w in spec.get("bgFocus") or [] if not w.get("noSubject")
+                   and providers._f(e.get("start")) < w["end"] and providers._f(e.get("end")) > w["start"]]
+            vals = e.get("values") if isinstance(e.get("values"), dict) else {}
+            if not hit or not vals:
+                continue
+            fixed = []
+            for k, neutral, worse in (("brightness", 1.0, lambda v: v < 1.0), ("saturate", 1.0, lambda v: v < 1.0),
+                                      ("blur", 0.0, lambda v: v > 0.0)):
+                if any(worse(float(v)) for v in vals.get(k) or []):
+                    vals[k] = [neutral if worse(float(v)) else v for v in vals[k]]
+                    fixed.append(k)
+            if fixed:
+                changes.append("fx %s: bo %s ca khung (trung nen diu cua dao dien — nguoi noi giu net)" % (
+                    e.get("id"), "/".join(fixed)))
     # MAT NGUOI NOI khong bi che (user 2026-10-03): chu / chu anh hook / anh / huy hieu — tuyet doi o hook. Chay sau
     # khi moi lop da co (caption hero -> chu anh, hieu ung tu viet), truoc tach nguoi + do tuong phan (tinh tren vi tri moi)
     try:
         MD.protect_face(spec, changes)
     except Exception as ex:
         changes.append("bo qua bao ve mat nguoi noi (%s)" % str(ex)[:120])
-    if motion or spec.get("fx") or spec.get("layers"):
+    if motion or spec.get("fx") or spec.get("layers") or spec.get("bgFocus") or spec.get("subjectFx"):
         MD.attach_subject_mattes(spec, changes, log=log)
         # chu de len nhau -> lop tach ro; chu phai ro tren NEN THAT (do do sang khung video / anh)
         MD.separate_group_overlaps(spec, kit, changes)
@@ -1628,6 +1709,18 @@ def _build_spec(plan, log=None):
             MD.protect_face(spec, changes)     # kiem lai sau khi phu de doi cho (phu de o hook)
         except Exception as ex:
             changes.append("bo qua kiem lai mat nguoi noi (%s)" % str(ex)[:120])
+    # LOP KHUNG NOI DUNG cua lenh dao dien (so sanh / anh) tat truoc khi bo cuc the / chia doi het <= 0.8s -> giu toi het bo
+    # cuc (do that 2026-10-17: lop so sanh bi luat 'to hop sau hien thi to hop truoc tat' cat o 14.98, bo cuc the toi 15.42
+    # -> 0.4s trang trong). Chay SAU moi buoc xep chu; lop nay la khung noi dung cua bo cuc, khong phai to hop chu.
+    for L in spec.get("layers") or []:
+        if L.get("qd") is None or L.get("type") not in ("compare", "image"):
+            continue
+        sc = next((x for x in spec.get("scenes") or [] if x["start"] - 0.05 <= L["start"] < x["end"]
+                   and x.get("layout") not in (None, "full")), None)
+        if sc and 0 < sc["end"] - L["end"] <= 0.8:
+            changes.append("%s: het truoc bo cuc %s %.2fs -> giu toi het bo cuc (khong de khung trong)" % (
+                L["id"], sc["layout"], sc["end"] - L["end"]))
+            L["end"] = round(sc["end"], 3)
     # lop mau Kho Text bi bo (protect_face) -> bo tieng cua no + bao build_spec dung lai voi cum do la chu thuong
     tpl_ids = {L["id"] for L in spec.get("layers") or [] if L.get("type") == "tpl"}
     tpl_lost = sorted({L.get("tplKey") for L in layers if L.get("type") == "tpl" and L["id"] not in tpl_ids
@@ -1641,8 +1734,10 @@ def _build_spec(plan, log=None):
         # NHAC NEN (kho nhac nen): SAU hook toi het video, can theo giong noi, ha khi meme cat vao, fade 2 dau
         import music_lib
         try:
-            # dao dien chon TAT nhac o 1 cau (director.music_stop) -> nhac fade het truoc / sau cau do
+            # dao dien chon TAT nhac o 1 cau (director.music_stop) -> nhac fade het truoc / sau cau do; lenh v5: cat dut /
+            # lang dan + BAT LAI o cau dao dien chon (director.music_mutes)
             p["_music_stop"] = director.music_stop(p, map_range)
+            p["_music_mutes"] = director.music_mutes(p, map_range)
             spec["audio"] += music_lib.to_spec(p, spec, changes)
         except Exception as ex:
             changes.append("bo qua nhac nen (%s)" % str(ex)[:120])

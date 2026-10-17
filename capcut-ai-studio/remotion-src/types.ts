@@ -38,6 +38,11 @@ export interface RSClip {
   srcH?: number
   /** Dong bang 1 khung (freeze frame) suot clip */
   freeze?: boolean
+  /** DONG BANG HINH trong cac khoang (gio timeline) — tieng VAN CHAY, het khoang hinh nhay toi dung giay (lenh dao dien
+   *  khung 'dong_bang': bien nguoi noi thanh "poster" ~0.8s) */
+  freezes?: { start: number; end: number }[]
+  /** source_id cua doan (giam sat dao dien quy gio nguon -> timeline) — renderer khong dung */
+  sourceId?: string
   /** Video CHI CO NGUOI (nen trong suot, WebM VP9 alpha) cho doan [srcStart, srcEnd] gio nguon —
    *  ve de len lop chu `behind` de chu nam SAU nguoi. */
   subject?: { path: string; srcStart: number; srcEnd: number }
@@ -160,7 +165,7 @@ export interface RSLayer {
   start: number
   end: number
   track: number
-  type: 'text' | 'box' | 'circle' | 'ring' | 'line' | 'arrow' | 'image' | 'emoji' | 'badge' | 'counter' | 'progress' | 'speedlines' | 'video' | 'tpl'
+  type: 'text' | 'box' | 'circle' | 'ring' | 'line' | 'arrow' | 'image' | 'emoji' | 'badge' | 'counter' | 'progress' | 'speedlines' | 'video' | 'tpl' | 'compare'
   /** Lop dung TU LIEU cua nguoi dung (id): anh / video hien len video (sidecar user_media.py) */
   um?: string
   /** Lop 'video': giay bat dau trong file tu lieu */
@@ -245,6 +250,8 @@ export interface RSLayer {
   tplHold?: { at: number; dur: number }
   /** do dai goc cua mau (giay, chua tinh giu) */
   tplDur?: number
+  /** Lop 'compare' (so sanh TRUOC / SAU): 2 anh (duong dan file) + nhan; wipe = thanh gat lo dan b, split = chia doi */
+  compare?: { a: string; b: string; labels?: [string, string]; mode?: 'wipe' | 'split'; color?: string }
 }
 
 export type CaptionRole = 'hero' | 'support' | 'micro'
@@ -358,6 +365,11 @@ export interface RenderSpec {
   fxTransforms?: RSFxTransform[]
   /** Font TAI LEN (Brand Guideline, sidecar font_lib) — file tren may, nap bang FontFace truoc khung dau */
   fonts?: RSCustomFont[]
+  /** LENH DAO DIEN "nen": diu NEN video (toi / nhoe / giam mau) trong khoang — nguoi noi (ban tach nguoi) van net de chu
+   *  lon / lop phu thanh tieu diem. noSubject = khong co ban tach nguoi -> diu nhe ca khung */
+  bgFocus?: { start: number; end: number; dim: number; blur: number; desat: number; noSubject?: boolean }[]
+  /** Vien sang quanh NGUOI NOI (ban tach nguoi) trong khoang — "poster" mo dinh danh / dong bang */
+  subjectFx?: { start: number; end: number; stroke: { color: string; width: number } }[]
   /** Electron chen vao luc chay: goc URL cua may chu media cuc bo. */
   mediaBase?: string
 }

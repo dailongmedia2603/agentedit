@@ -1961,6 +1961,71 @@ moi buoc (B3 / R4 / R5 / FX / B6 / B7) tu doc lai cau chuyen + tu quyet cao trao
   'others,' (hook + than) — anh doi chieu scratch.
 - **Kiem**: `HOME=$(mktemp -d) <venv> tests/test_fx_meaning.py`.
 
+## 22. DAO DIEN v5: BANG QUYET DINH THEO DOAN + GIAM SAT BAN DUNG (2026-10-17, `sidecar/director_guard.py`)
+
+User gui 2 tai lieu `Dao-dien-ai/` (Multi-Pass Director: 4 dinh luat, 15 pattern, style pack, schema EDL, baseline rhythm) +
+"dao dien AI chua sau, chua hieu qua; xem buoc thua / mau thuan". Do that 9 ke hoach gan nhat (78 nhip): nhip CAO TRAO
+(nang luong 5) chi 0.36 phan tu hinh / giay < nhip nang luong 2 (0.56); video bong da: nhip 'VAOOOO!' 0 phan tu; buoc duyet
+tu cham 8/7/7 moi video va chi biet BO. Nguyen nhan: dao dien viet van xuoi, 6 bo phan tu dien giai, khong ai kiem lenh.
+Lay tu tai lieu: 4 dinh luat + y do (chuc nang, KHONG cong thuc hinh) + baseline + validator code; KHONG lay font / mau cua
+"style pack" (phong cach chi tu video mau / Brand / phien — 11j), KHONG de AI tu cong "diem tai" (code do tren spec).
+
+- **Thu tu**: B1 -> B2 -> **B3 hook -> DD-chi-dao** (truoc la DD -> B3: dao dien ve hook = doan dau, B3 chon ban sao giay 36
+  -> cach mo khong ap vao hook that; khoang lang trung cau hook). `hook_rule.request_level(story)` (muc hook theo YEU CAU EDIT)
+  dua dao dien TRUOC (truoc chi ep sau khi dung -> khuech dai x2.4 trai y dao dien); normalize ep hook.muc_do + nang luong
+  `hook_qd` >= muc (nhe 3 / vua 4 / manh 5); khoang lang trung cau hook -> bo.
+- **Bang quyet dinh** (`director._DIRECTOR_SYSTEM` muc 11, `quyet_dinh[]` moi doan + `hook_qd`): y_do (17 id `director.Y_DO`:
+  MO_DINH_DANH, MO_BE_LAI, MO_KET_QUA, MO_CAU_HOI, NHAN_TU_KHOA, TIENG_LONG, CHOT_TIEU_CUC, BUNG_NO, MINH_HOA_Y, DAN_MAT,
+  TRUOC_SAU, SO_LIEU, PHAN_UNG_HAI, DOI_KHONG_KHI, CTA_KHEP, NHIP_NEN, KHOANG_LANG), muc_dich (lam_ro / khuech_dai / giu_nhip /
+  lang), nang_luong, neo {tu, tin_hieu_hinh} -> code tim GIO TUNG CHU (Whisper asr_words, khong co -> cau Gemini), tieu_diem,
+  khung (rong / trung / can / day_cham / giu / nha / dong_bang), nen (giu / lam_toi / lam_mo / giam_mau), giao_viec {R4, R5,
+  FX, B6, B7}. `normalize` (4 dinh luat bang code, ghi `_sua`): doan AI bo trong -> NHIP_NEN / KHOANG_LANG theo nhip; CHONG
+  NHON (cung y do 2 doan lien -> ha doan yeu); HA NHIET (sau NL5 doan sau <= 3, y do nang -> nhip nen); NGAN SACH (NL <= 2
+  toi da 2 bo phan); diem nhan NL >= 4 phai >= 2 bo phan (thieu -> giao B7). Y nghia them loai (d) GIU NHIP.
+- **Ho so nhip** (`HO_SO_NHIP` theo cuong do + `profile_for` chinh theo the loai): cat_toi_thieu, dung_im_toi_da, zoom_max,
+  day_cham, chuyen_dong, rung_loe, tai_toi_da, tieng_vi_mo_db -> `chi_dao.ho_so_nhip`.
+- **Moi bo phan nhan ban GON** (`director.story_for(story, chi_dao, buoc)` / `view_for`): phan chung + `viec_cua_ban` (lenh
+  giao cho chinh no, kem qd + neo + gio nguon) + `duong_nang_luong`. Luat (`LUAT_CHUNG`): thuc hien MOI lenh, ghi `"qd"` len
+  phan tu (R4 lop / scene, R5 caption, FX hieu ung — `sanitize_plan` giu qd, B6 meme, B7 SFX). DSL them `qd` + lop `compare`.
+- **Giam sat** (`director_guard`): `deliveries` (qd, khong co qd -> nam trong doan; FX theo khoanh khac m<n+1>) / `missing`
+  (NL >= 3). R4: `r4_audit` noi vao VONG TU SUA cua R4 (`R4-design-fix`). FX: luot `FX-bo-sung` (gpt_fx_plan dung cac
+  khoanh khac thieu + `fx_note`). B7: `sfx_supplement` code dat tieng bo the gioi (ho theo y do, tru peak_time; riser som 0.9s).
+  Duyet (DD-duyet): nhip kem quyet dinh + `da_lam`; phan tu qd cua quyet dinh NL >= 4 KHONG bi bo (`index["_bao_ve"]`); ghi
+  `thieu`. Sau build_spec + luat hook: `measure` (nhip hinh = hook_rule.measure + doi bo cuc / chu nhan / zoom / dong bang /
+  meme / nen; tuong quan nang luong dao dien <-> mat do that, diem nhan yeu, dung im > dung_im_toi_da ngoai khoang lang, qua
+  tai > tai_toi_da+1 phan tu chuyen dong) -> `relieve_overload` bo lop PHU (khong qd / hook / tu lieu / mau) -> dung lai ->
+  `_pipeline.giam_sat` (UI: khung "Giam sat ban dung" trong Chi dao cua dao dien + bang quyet dinh).
+- **Lop dung nen** (`apply_framing`, luc ghep plan): scale tung doan theo khung (trung = 1+0.45*(zoom_max-1), can = zoom_max,
+  day_cham = +day_cham keo SUOT doan `zoom_ramp: slow` -> `_smooth_zoom` zoomDur = ca clip), doan khong ghi -> theo y do + LUAN
+  PHIEN (khong doi truoc cat_toi_thieu), sau NL5 'can' -> 'nha', CHONG DUNG IM (khong nhip hinh nao qua dung_im_toi_da ->
+  day / lui cham; khoang lang x1.5); hook theo `hook_qd.khung`. B2 van chia doan, scale cua B2 bi thay khi co chi dao.
+- **Renderer (giai doan 5)**: `clip.freezes` (dong bang: ban copy tat tieng dung hinh de len video that -> tieng KHONG dut;
+  ban tach nguoi cung dong bang), `spec.bgFocus` (lenh nen: diu chi ban goc, nguoi ve lai tu ban tach nguoi nen van net;
+  khong tach duoc -> diu nhe ca khung `noSubject`), `spec.subjectFx` (vien drop-shadow 4 huong quanh nguoi, mau = ma hex trong
+  mau_nhan), lop `compare` (TRUOC / SAU: wipe / split + nhan). `attach_subject_mattes` tach nguoi cho cac khoang nay.
+- **Am thanh**: `plan_guard.mix_sfx` + `_energy` (director_guard.energy_windows): tieng chu / tieng phu o doan NL 1 / 2 / 3 =
+  tieng_vi_mo_db x 1 / 0.75 / 0.35 (hook + diem nhan giu muc cu). Nhac: `nhac_tat.kieu` cat (0.06s) / mo_dan (1.6s) +
+  `bat_lai` -> `director.music_mutes` -> `music_lib._envelope(mutes)` (truoc chi tat 1 lan fade 2s, khong bao gio bat lai).
+  `director.library_sfx_ok`: tieng meme trong kho (vine / rizz / bruh...) chi khi the gioi vui_nhon hoac co PHAN_UNG_HAI + cuong
+  do >= 4 (do that: 'rizz' trong hook video 'dien anh tiet che').
+- **Video dai** (`needs_split`: > 28 doan hoac > 90s): luot 1 ban chi dao tong (khong quyet_dinh), luot 2 `DD-canh` theo cum
+  ~22s / <= 8 doan (`_DIRECTOR_SCENE_SYSTEM`, sua duoc trong menu Prompt), cum loi -> doan dung nhip nen.
+- **Prompt sua de cua user** (`~/.capcut-studio/prompt_overrides.json`, ban sao `.bak-20261017-dao-dien`): _TIMELINE_SYSTEM =
+  mac dinh moi + dong "speedup" cua user (bo "scale 1.0-1.3 xen ke"); _HOOK_SYSTEM = mac dinh + "~3 - 5 giay" cua user;
+  _AUDIO_SYSTEM, _RM_VISUAL_SYSTEM ve mac dinh (ban cu con "2-3 SFX", emoji_pop, "dao thu tu").
+- **Sua sau review + chay THAT** (du an 'Mot nguoi phu nu ngoi' 37s, opus-5 high): giam sat quy gio tren CLIP spec
+  (`spec_range`, clip co `sourceId`; plan autoplan chi co than video), qua tai xet ca video tru hook, tieng hook code them
+  kep trong hook, dong bang chiu mep doan doi <= 0.6s, du an cu (khong quyet_dinh) khong doi muc tieng; tran MAX_SFX
+  (`engine.resolve_plan_sfx`) KHONG cat tieng co qd (truoc: cat mat tieng doan 12-13); duyet bo duoc phan tu SAI cua quyet
+  dinh manh mien con >= 1 phan tu cung loai, tieng CUOI bi bo -> DOI sang tieng bo the gioi (`_doi_tieng`, 'rizz' -> boom);
+  du phong hook tranh chieu dao dien cam (`director.banned_catalog` -> `hook_rule.fallback_effect(banned=)`, khong fisheye);
+  `fix_static` (doan dung im con lai -> day cham, dung lai); FX transform lam toi / nhoe / giam mau CA khung trung `bgFocus` ->
+  bo phan do (nguoi toi theo); lop so sanh / anh co qd het truoc bo cuc the / chia doi <= 0.8s -> giu toi het bo cuc (chay sau
+  separate_group_overlaps); compare split khong de o den; meme de len ve TREN ban tach nguoi. Ket qua: tuong quan nang luong
+  +0.68 (9 video cu ~0, co video -0.63), 2 nhip NL5 mat do cao nhat video (6.6 / 5.6), 0 khoang dung im, hook dat muc manh
+  bang hieu ung y tuong cua dao dien (khong du phong kho), nen diu do that 173 -> 87 (nguoi giu net).
+- `DIRECTOR_VERSION` 5. **Kiem**: `HOME=$(mktemp -d) <venv> tests/test_director_guard.py` (+ test_director, test_info_flow).
+
 ## 12. CodeGraph
 
 CodeGraph `0.9.9` da duoc cai va index tai root workspace:

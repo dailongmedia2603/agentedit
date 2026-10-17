@@ -157,7 +157,7 @@ try:
     # FX-plan khong dat hieu ung nao -> hook chua co hinh: AI tu viet lai (Hook-FX-plan) truoc, khong duoc thi
     # chon trong kho (Hook-FX)
     check("thu tu cac buoc dung (+ luat hook bo sung sau cung)", [x for x in THU_TU if x != "R4-design-fix"] ==
-          ["B1-select", "B2-timeline", "DD-chi-dao", "B3-hook", "R4-design", "R5-captions", "FX-plan", "B6-inserts", "B7-audio",
+          ["B1-select", "B2-timeline", "B3-hook", "DD-chi-dao", "R4-design", "R5-captions", "FX-plan", "B6-inserts", "B7-audio",
            "Hook-FX-plan", "Hook-FX", "Hook-SFX"], THU_TU)
     check("R4 thiet ke: khong khai hieu ung (buoc FX lam), khong con luat hook R4 cua luong cu",
           'KHONG khai "effects"' in SYS.get("R4-design", "") and "LUAT HOOK" not in SYS.get("R4-design", ""))
@@ -415,7 +415,7 @@ try:
     moc = {lab: (a, b) for lab, a, b in MOC}
     check("chay xong", r.status_code == 200 and d12.get("ok"), d12.get("error"))
     check("thu tu cac buoc Claude giu nguyen nhu cu", [x for x in THU_TU if x != "R4-design-fix"][:10] ==
-          ["B1-select", "B2-timeline", "DD-chi-dao", "B3-hook", "R4-design", "R5-captions", "FX-plan", "FX-code", "B6-inserts",
+          ["B1-select", "B2-timeline", "B3-hook", "DD-chi-dao", "R4-design", "R5-captions", "FX-plan", "FX-code", "B6-inserts",
            "B7-audio"], THU_TU)
     lan_luot = sorted(MOC, key=lambda x: x[1])
     check("KHONG co 2 luot Claude nao chay cung luc", all(b[1] >= a[2] - 1e-3 for a, b in zip(lan_luot, lan_luot[1:])),

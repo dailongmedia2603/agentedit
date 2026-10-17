@@ -1546,10 +1546,25 @@ def _remotion_autoplan(b):
             run_log.emit("note", "Giọng nói %s: %s" % (_sid, _v["ly_do"]), step="voice",
                          level="warn" if _v["gain_db"] else "info", output=_v)
 
-        # DAO DIEN (2026-10-15, director.py): noi dung da chot -> MOT ban chi dao chung cho moi buoc sau (y tuong lon bam
-        # chi tiet that, the gioi hinh, mo tip, cuong do, duong cong cam xuc tung nhip, dau an, khoang lang, the gioi am
-        # thanh, cam). Di vao story["chi_dao"] -> B3..B7 + khoa cache cua chung. Loi -> cac buoc chay nhu truoc.
+        # B3: hook (goi y chuyen canh lay tu danh muc Remotion). Chay TRUOC dao dien (2026-10-17): dao dien phai biet hook
+        # that la doan nao de chi dao dung no (truoc day dao dien ve hook = doan dau video, B3 lai chon ban sao o giay 36
+        # -> cach mo cua dao dien khong ap vao hook that; khoang lang cua dao dien trung cau hook)
+        goi_y = remotion_plan.transition_goi_y_hook()
+        hook = _step("B3-hook", {
+            "segs": segs_b2, "tr": transcript_data, "emo": emotion_map_data, "km": key_moments_data,
+            "story": story, "ref": providers.phong_cach_cho_buoc(reference_analysis, "hook"),
+            "tr_goi_y": goi_y, "hr": hook_rule.HOOK_RULE_VERSION,
+        }, lambda: providers.gpt_hook(
+            segments=segs_b2, transcript_data=transcript_data, emotion_map_data=emotion_map_data,
+            key_moments_data=key_moments_data, story=story, reference_analysis=reference_analysis,
+            log=logger.info, transition_goi_y=goi_y), optional=True)
+        hook_info = providers.thong_tin_hook(hook)
+        # DAO DIEN (2026-10-15, director.py): noi dung + hook da chot -> MOT ban chi dao chung cho moi buoc sau (y tuong lon
+        # bam chi tiet that, the gioi hinh, mo tip, cuong do, duong cong cam xuc tung nhip, dau an, khoang lang, the gioi am
+        # thanh, cam) + BANG QUYET DINH theo tung doan (2026-10-17: y do, neo, khung, nen, giao viec tung bo phan). Moi bo
+        # phan nhan ban GON cua minh (director.story_for) -> R4..B7 + khoa cache cua chung. Loi -> cac buoc chay nhu truoc.
         import director
+        import director_guard
         import sfx_kit
         chi_dao = None
         _proj = b.get("project")
@@ -1561,10 +1576,14 @@ def _remotion_autoplan(b):
             logger.warning("Tao bo tieng the gioi loi: %s", ex)
         _um_dd = [{k: it.get(k) for k in ("name", "use", "placement", "note")} for it in um_items] if um_items else None
         import ref_pack
+        # muc hook theo YEU CAU EDIT la rang buoc cung -> dua dao dien TRUOC (khong ep sau khi dung)
+        _hook_lv = hook_rule.request_level(story)
+        _asr = {src.get("id"): src["asr_words"] for src in brief.get("sources") or []
+                if isinstance(src, dict) and src.get("asr_words")}
         dd_key = {"segs": segs_b2, "tr": transcript_data, "emo": emotion_map_data, "km": key_moments_data,
                   "story": story, "src": director._video_view(brief), "ref": director._ref_view(reference_analysis),
                   "brand": brand_guide.view(brand, "plan") if brand else None, "um": _um_dd,
-                  "p": director.prompt_fp(), "v": director.DIRECTOR_VERSION}
+                  "p": director.prompt_fp(), "v": director.DIRECTOR_VERSION, "hook": hook_info, "hlv": _hook_lv}
         if ref_pack.current():
             dd_key["pack"] = ref_pack.step_fp()     # chi khi co anh tham chieu -> khoa cu giu nguyen
         # so tay cac video gan day KHONG nam trong khoa (doi moi lan lam video khac) -> lap ke hoach lai du an nay
@@ -1574,36 +1593,38 @@ def _remotion_autoplan(b):
             segs_b2, transcript_data, emotion_map_data, key_moments_data, story=story, brief=brief,
             reference_analysis=reference_analysis, brand_view=brand_guide.view(brand, "plan") if brand else None,
             user_media=_um_dd, memory=_mem, overused_tags=_over, canvas_note=canvas.note("design"),
-            log=logger.info), optional=True)
-        chi_dao = director.normalize(dd_raw, segs_b2, transcript_data, story)
+            log=logger.info, hook=hook_info, hook_level=_hook_lv), optional=True)
+        chi_dao = director.normalize(dd_raw, segs_b2, transcript_data, story, hook=hook_info, asr_words=_asr,
+                                     hook_level=_hook_lv)
         if chi_dao:
             story = dict(story, chi_dao=director.story_view(chi_dao))
-            run_log.emit("note", "Đạo diễn: %s — cường độ %d/5, %d nhịp, %d khoảnh khắc dấu ấn, %d khoảng lặng, âm thanh '%s'" % (
-                chi_dao.get("y_tuong_lon")[:200], chi_dao["cuong_do"], len(chi_dao["nhip"]),
-                len(chi_dao["khoanh_khac_dau_an"]), len(chi_dao["khoang_lang"]), chi_dao["am_thanh"]["the_gioi"]),
-                step="DD-chi-dao", level="ok", output=chi_dao)
-            # SFX: chi bo tieng the gioi dao dien chon (bo kit-* chung + bo the gioi khac) + kho cua nguoi dung
+            _diem = [q for q in chi_dao["quyet_dinh"] if q["y_do"] not in director.NHE_Y_DO]
+            run_log.emit("note", "Đạo diễn: %s — cường độ %d/5 (%s), %d nhịp, %d/%d đoạn là điểm nhấn, %d khoảnh khắc dấu "
+                         "ấn, %d khoảng lặng, âm thanh '%s'" % (
+                             chi_dao.get("y_tuong_lon")[:200], chi_dao["cuong_do"], chi_dao["ho_so_nhip"]["ten"],
+                             len(chi_dao["nhip"]), len(_diem), len(chi_dao["quyet_dinh"]),
+                             len(chi_dao["khoanh_khac_dau_an"]), len(chi_dao["khoang_lang"]),
+                             chi_dao["am_thanh"]["the_gioi"]), step="DD-chi-dao", level="ok", output=chi_dao)
+            for _c in chi_dao.get("_sua") or []:
+                run_log.emit("note", "Đạo diễn (code kiểm 4 định luật): %s" % _c, step="DD-chi-dao", level="warn")
+            # SFX: chi bo tieng the gioi dao dien chon (bo kit-* chung + bo the gioi khac) + kho cua nguoi dung (tieng meme
+            # chi khi video duoc chi dao vui — director.library_sfx_ok)
             _w = chi_dao["am_thanh"]["the_gioi"]
+            _n0 = len(sfx_catalog)
             sfx_catalog = [x for x in sfx_catalog if not str(x.get("id") or "").startswith("kit-")
-                           and (sfx_kit.world_of(x.get("id")) in (None, _w))]
+                           and (sfx_kit.world_of(x.get("id")) in (None, _w))
+                           and (sfx_kit.world_of(x.get("id")) or director.library_sfx_ok(x, chi_dao))]
+            run_log.emit("note", "Âm thanh theo đạo diễn: bộ '%s' + kho của bạn (%d tiếng, đã loại tiếng meme không hợp "
+                         "tone)" % (_w, len(sfx_catalog)), step="DD-chi-dao", output={"truoc": _n0, "sau": len(sfx_catalog)})
         elif dd_raw is not None:
             warnings.append("Đạo diễn trả bản chỉ đạo không dùng được — các bước tự thiết kế như trước.")
         if not chi_dao:
             # khong co dao dien: bo tieng the gioi khong vao danh muc (giu nguyen danh muc + khoa cache nhu truoc)
             sfx_catalog = [x for x in sfx_catalog if not sfx_kit.world_of(x.get("id"))]
 
-        # B3: hook (goi y chuyen canh lay tu danh muc Remotion)
-        goi_y = remotion_plan.transition_goi_y_hook()
-        hook = _step("B3-hook", {
-            "segs": segs_b2, "tr": transcript_data, "emo": emotion_map_data, "km": key_moments_data,
-            "story": story, "ref": providers.phong_cach_cho_buoc(reference_analysis, "hook"),
-            "tr_goi_y": goi_y, "hr": hook_rule.HOOK_RULE_VERSION,
-        }, lambda: providers.gpt_hook(
-            segments=segs_b2, transcript_data=transcript_data, emotion_map_data=emotion_map_data,
-            key_moments_data=key_moments_data, story=story, reference_analysis=reference_analysis,
-            log=logger.info, transition_goi_y=goi_y), optional=True)
-        hook_info = providers.thong_tin_hook(hook)
         hints = (reference_analysis or {}).get("remotion_hints") if isinstance(reference_analysis, dict) else None
+        # moi bo phan nhan ban chi dao GON + "viec_cua_ban" (lenh dao dien giao cho chinh no) — khong co chi dao: story cu
+        st_R4, st_R5, st_FX, st_B6, st_B7 = (director.story_for(story, chi_dao, k) for k in ("R4", "R5", "FX", "B6", "B7"))
 
         # Tu day tro di dung BAN LAM VIEC: video HDR (iPhone) -> ban SDR (media_sdr.py) cho mat nguoi,
         # anh chup tu nguon, plan -> xem truoc / render / tach nguoi cung mau. B1-B3 o tren giu duong
@@ -1627,7 +1648,7 @@ def _remotion_autoplan(b):
         # R4: THIET KE — bo cuc A-roll/B-roll + tai nguyen anh + lop do hoa + camera + chuyen canh + mau
         r4_key = {
             "segs": segs_b2, "emo": emotion_map_data, "tr": transcript_data, "km": key_moments_data,
-            "story": story, "hook": hook_info, "faces": faces, "kit": kit, "cat": rm_fp,
+            "story": st_R4, "hook": hook_info, "faces": faces, "kit": kit, "cat": rm_fp,
             "ver": motion_design.DESIGN_VERSION,
             "src_desc": [(sv.get("summary"), sv.get("on_screen_text")) for sv in brief.get("sources") or []
                          if isinstance(sv, dict)],
@@ -1647,7 +1668,7 @@ def _remotion_autoplan(b):
             run_log.emit("note", brand_guide.report(brand), step="R4-design", output=brand)
         design = _step("R4-design", r4_key, lambda: motion_design.gpt_rm_design(
             segments=segs_b2, transcript_data=transcript_data, emotion_map_data=emotion_map_data,
-            key_moments_data=key_moments_data, story=story, reference_analysis=reference_analysis,
+            key_moments_data=key_moments_data, story=st_R4, reference_analysis=reference_analysis,
             hook=hook_info, faces=faces, log=logger.info,
             sources=[{"id": sv.get("id"), "summary": sv.get("summary"), "on_screen_text": sv.get("on_screen_text")}
                      for sv in brief.get("sources") or [] if isinstance(sv, dict)],
@@ -1722,7 +1743,7 @@ def _remotion_autoplan(b):
         layer_texts = motion_design.layer_texts(design.get("layers"))
         r5_key = {
             "segs": segs_b2, "tr": transcript_data, "emo": emotion_map_data, "faces": faces_regions,
-            "km": key_moments_data, "story": story, "hook": hook_info, "hints": hints, "cat": rm_fp,
+            "km": key_moments_data, "story": st_R5, "hook": hook_info, "hints": hints, "cat": rm_fp,
             "ref": providers.phong_cach_cho_buoc(reference_analysis, "captions"),
             "layers": layer_texts, "sub": (kit or {}).get("subtitle"),
             # luat karaoke (so chu / luc + danh muc hieu ung, vien) nam trong prompt R5 -> doi thi R5 chay lai
@@ -1735,7 +1756,7 @@ def _remotion_autoplan(b):
         captions = _step("R5-captions", r5_key, lambda: remotion_plan.gpt_rm_captions(
             segments=segs_b2, transcript_data=transcript_data, emotion_map_data=emotion_map_data,
             faces_regions=faces_regions, key_moments_data=key_moments_data,
-            reference_analysis=reference_analysis, story=story, hook=hook_info,
+            reference_analysis=reference_analysis, story=st_R5, hook=hook_info,
             layers=layer_texts, subtitle_style=(kit or {}).get("subtitle") if layer_texts else None,
             log=logger.info, brand=brand), optional=True) or {}
 
@@ -1835,7 +1856,7 @@ def _remotion_autoplan(b):
         lop_hinh = [{k: L.get(k) for k in ("id", "type", "source_id", "src_start", "src_end", "why") if L.get(k) is not None}
                     for L in design.get("layers") or [] if isinstance(L, dict)
                     and L.get("type") not in ("text", "counter", "badge")][:40]
-        fxp_key = {"m": moments, "story": story, "style": style_phien, "src": src_desc,
+        fxp_key = {"m": moments, "story": st_FX, "style": style_phien, "src": src_desc,
                    "lop": layer_texts, "v": fx_flow.FX_VERSION}
         if lop_hinh:
             fxp_key["hinh"] = lop_hinh
@@ -1844,7 +1865,7 @@ def _remotion_autoplan(b):
         if brand_guide.view(brand, "fx"):
             fxp_key["brand"] = brand_guide.view(brand, "fx")
         fx_plan = _step("FX-plan", fxp_key,
-                        lambda: fx_flow.gpt_fx_plan(moments, story=story, style=style_phien, sources=src_desc,
+                        lambda: fx_flow.gpt_fx_plan(moments, story=st_FX, style=style_phien, sources=src_desc,
                                                     existing=dict({"lop_chu": layer_texts[:40]},
                                                                   **({"lop_hinh": lop_hinh} if lop_hinh else {})),
                                                     log=logger.info,
@@ -1861,6 +1882,39 @@ def _remotion_autoplan(b):
             emit=lambda m, lvl, out: run_log.emit("note", m, step="FX-code", level=lvl, output=out), brand=brand,
             project=b.get("project"))
         fx_list = fx_flow.drop_dup_motifs(fx_list, design.get("layers") or [], fx_changes)
+        if chi_dao:
+            # GIAM SAT DAO DIEN (2026-10-17): lenh FX cua dao dien (nang luong >= 3) chua co hieu ung -> 1 luot FX bo sung
+            # DUNG cac khoanh khac do (cung hop cach ly / tu kiem nhu FX thuong); van thieu -> bao trong giam sat
+            _miss_fx = director_guard.missing(chi_dao, director_guard.deliveries(chi_dao, fx_list=fx_list), ("FX",))
+            if _miss_fx:
+                _mids = {"m%d" % (m["qd"] + 1) for m in _miss_fx if m["qd"] != "hook"}
+                _hm = [m for m in moments if m["id"] in _mids or (m.get("anchor") == "hook"
+                                                                  and any(x["qd"] == "hook" for x in _miss_fx))]
+                run_log.emit("note", "Giám sát đạo diễn: %d lệnh hiệu ứng chưa có (%s) -> FX bổ sung đúng các khoảnh khắc đó"
+                             % (len(_miss_fx), ", ".join("đoạn %s %s" % (m["qd"], m["y_do"]) for m in _miss_fx)),
+                             step="FX-plan", level="warn", output=_miss_fx)
+                _da_co = [{k: e.get(k) for k in ("id", "moment", "kind", "visual") if e.get(k)} for e in fx_list]
+                fx_add_plan = _step("FX-bo-sung", {"m": _hm, "miss": _miss_fx, "story": st_FX, "style": style_phien,
+                                                   "co": _da_co, "v": fx_flow.FX_VERSION, "src": src_desc,
+                                                   "hook": hook_info, "brand": brand_guide.view(brand, "fx"),
+                                                   "lop": layer_texts[:40]},
+                                    lambda: fx_flow.gpt_fx_plan(_hm, story=st_FX, style=style_phien, sources=src_desc,
+                                                                existing={"hieu_ung_da_co": _da_co, "lop_chu": layer_texts[:40]},
+                                                                log=logger.info, hook=hook_info, brand=brand,
+                                                                note=director_guard.fx_note(_miss_fx),
+                                                                step_label="FX-bo-sung"), optional=True) or {}
+                for _i, _e in enumerate(fx_add_plan.get("effects") or []):
+                    if isinstance(_e, dict):
+                        _e["id"] = "dd%d" % (_i + 1)
+                _add = fx_flow.build_effects(
+                    fx_add_plan, moments, faces, (style_phien or {}).get("palette"),
+                    step=lambda n, pl, fn: _step(n, pl, fn, optional=True), changes=fx_changes, log=logger.info,
+                    emit=lambda m, lvl, out: run_log.emit("note", m, step="FX-code", level=lvl, output=out), brand=brand,
+                    project=b.get("project"))
+                _add = fx_flow.drop_dup_motifs(_add, design.get("layers") or [], fx_changes)
+                fx_list = fx_list + _add[:max(0, fx_flow.MAX_FX + 2 - len(fx_list))]
+                run_log.emit("result", "FX bổ sung theo lệnh đạo diễn: %d hiệu ứng" % len(_add), step="FX-plan",
+                             level="ok" if _add else "warn")
         for c in fx_changes:
             logger.info("FX: %s", c)
             run_log.emit("note", "FX: %s" % c, step="FX-code", level="warn")
@@ -1874,12 +1928,12 @@ def _remotion_autoplan(b):
         meme_catalog = meme_lib.meme_catalog_for_plan(emotions=_emos)
         inserts = _step("B6-inserts", {
             "segs": segs_b2, "tr": transcript_data, "emo": emotion_map_data, "km": key_moments_data,
-            "memes": meme_catalog, "story": story, "hook": hook_info,
+            "memes": meme_catalog, "story": st_B6, "hook": hook_info,
             "caps": captions.get("captions", []),
             "ref": providers.phong_cach_cho_buoc(reference_analysis, "inserts"),
         }, lambda: providers.gpt_inserts(
             segments=segs_b2, transcript_data=transcript_data, emotion_map_data=emotion_map_data,
-            key_moments_data=key_moments_data, meme_catalog=meme_catalog, story=story,
+            key_moments_data=key_moments_data, meme_catalog=meme_catalog, story=st_B6,
             reference_analysis=reference_analysis, hook=hook_info,
             captions=captions.get("captions", []), log=logger.info), optional=True) or {}
         if um_items:
@@ -1892,7 +1946,7 @@ def _remotion_autoplan(b):
         _music_ctx = {"nhac_nen_video_goc": music_lib.source_music(brief)} if music_catalog else None
         audio = _step("B7-audio", {
             "km": key_moments_data, "emo": emotion_map_data, "sfx": sfx_catalog, "segs": segs_b2,
-            "tr": transcript_data, "story": story, "hook": hook_info,
+            "tr": transcript_data, "story": st_B7, "hook": hook_info,
             "trans": visual.get("transitions", []), "caps": captions.get("captions", []),
             "ins": inserts.get("inserts", []), "layers": layer_texts,
             "ref": providers.phong_cach_cho_buoc(reference_analysis, "audio"),
@@ -1901,13 +1955,23 @@ def _remotion_autoplan(b):
                           "goc": _music_ctx}} if music_catalog else {}),
         }, lambda: providers.gpt_audio(
             key_moments_data=key_moments_data, emotion_map_data=emotion_map_data,
-            sfx_catalog=sfx_catalog, segments=segs_b2, transcript_data=transcript_data, story=story,
+            sfx_catalog=sfx_catalog, segments=segs_b2, transcript_data=transcript_data, story=st_B7,
             reference_analysis=reference_analysis, hook=hook_info,
             transitions=visual.get("transitions", []),
             captions=captions.get("captions", []) + motion_design.layers_as_heroes(design.get("layers")),
             inserts=inserts.get("inserts", []), log=logger.info, hook_visuals=_hook_hinh,
             music_catalog=music_catalog, music_ctx=_music_ctx), optional=True) or {}
         # nhac nen: bai AI chon (kiem id) | AI bo qua / sai id -> code chon theo nhan | AI noi khong dung (co ly do)
+        if chi_dao and isinstance(audio, dict):
+            # GIAM SAT DAO DIEN: lenh B7 (nang luong >= 3) B7 bo sot -> code dat tieng bo the gioi DUNG tu neo
+            _add_sfx = director_guard.sfx_supplement(chi_dao, audio, sfx_catalog,
+                                                     director_guard.deliveries(chi_dao, audio=audio))
+            if _add_sfx:
+                audio["audio"] = list(audio.get("audio") or []) + _add_sfx
+                run_log.emit("note", "Giám sát đạo diễn: B7 bỏ sót %d lệnh tiếng -> đặt tiếng bộ '%s' đúng từ neo (%s)" % (
+                    len(_add_sfx), chi_dao["am_thanh"]["the_gioi"], ", ".join("đoạn %s %s" % (x["qd"], x["sfx_id"])
+                                                                         for x in _add_sfx)),
+                    step="B7-audio", level="warn", output=_add_sfx)
         music_pick = music_lib.choose(audio.get("music"), music_catalog, story=story,
                                       emit=lambda m, lvl: run_log.emit("note", m, step="B7-audio", level=lvl))
 
@@ -1921,7 +1985,8 @@ def _remotion_autoplan(b):
             audio = audio if isinstance(audio, dict) else {}
             rv_payload, rv_index = director.review_view(
                 chi_dao, design, captions, fx_list, visual.get("transitions"), inserts, audio, segs_b2,
-                hook_info=hook_info, overused_tags=_over)
+                hook_info=hook_info, overused_tags=_over,
+                deliv=director_guard.deliveries(chi_dao, design, captions, fx_list, inserts, audio))
             dd_review = _step("DD-duyet", {"p": rv_payload, "pf": director.prompt_fp(), "v": director.DIRECTOR_VERSION},
                               lambda: director.gpt_review(rv_payload, log=logger.info), optional=True)
             if isinstance(dd_review, dict):
@@ -1987,6 +2052,19 @@ def _remotion_autoplan(b):
         hook_obj = (hook or {}).get("hook") if isinstance(hook, dict) else None
         if isinstance(hook_obj, dict) and isinstance(visual.get("hook_transition"), dict):
             hook_obj["rm_transition"] = visual["hook_transition"]
+        _bg_focus, _subject_fx = None, None
+        if chi_dao:
+            # LOP DUNG NEN (giai doan 3): co canh tung doan theo "khung" cua quyet dinh + luan phien + chong dung im (code
+            # lam, khong de AI tu ve zoom); nen diu xuong / vien quanh nguoi theo "nen" / dong bang cua quyet dinh
+            _fr = director_guard.apply_framing(segs, chi_dao, events=director_guard.body_events(
+                segs_b2, design, captions, fx_list), hook=hook_obj if isinstance(hook_obj, dict) else None)
+            _bg_focus, _subject_fx = director_guard.focus_items(chi_dao, director_guard.accent_hex(chi_dao))
+            run_log.emit("note", "Dựng khung theo đạo diễn: %s%s%s" % (
+                ", ".join("đoạn %d %.2f%s%s" % (i, float(sg.get("scale") or 1.0), " chậm" if sg.get("zoom_ramp") else "",
+                                                " đóng băng" if sg.get("freeze") else "") for i, sg in enumerate(segs)),
+                ("; nền dịu %d lần" % len(_bg_focus)) if _bg_focus else "",
+                ("; viền người %d lần" % len(_subject_fx)) if _subject_fx else ""), step="build",
+                output={"chong_dung_im": _fr, "nen": _bg_focus, "vien_nguoi": _subject_fx})
         plan = {
             "engine": "remotion",
             "title": b.get("title") or "",
@@ -2033,12 +2111,15 @@ def _remotion_autoplan(b):
             "user_media": user_media.plan_view(um_items) if um_items else None,
             # BAN CHI DAO cua dao dien (director.py) — build_spec doc the gioi am thanh + khoang lang; UI hien
             "chi_dao": chi_dao,
+            # lenh "nen" (diu nen video, nguoi noi van net) + vien quanh nguoi (gio nguon) — build_spec -> bgFocus / subjectFx
+            "bg_focus": _bg_focus or None,
+            "subject_fx": _subject_fx or None,
             "_pipeline": {
                 "story_arc": selection.get("story_arc", ""), "tone": selection.get("tone", ""),
                 "notes": selection.get("notes", ""),
                 "thu_tu_video": selection.get("thu_tu_video"),
-                "thu_tu": ["B1-select", "B2-timeline"] + (["DD-chi-dao"] if chi_dao else []) + [
-                    "B3-hook", "R4-design" if visual is design else "R4-visual", "assets", "R5-captions",
+                "thu_tu": ["B1-select", "B2-timeline", "B3-hook"] + (["DD-chi-dao"] if chi_dao else []) + [
+                    "R4-design" if visual is design else "R4-visual", "assets", "R5-captions",
                     "TXT-art", "TXT-lib", "GFX-art", "FX-plan", "FX-code", "B6-inserts", "B7-audio"]
                     + (["DD-duyet"] if dd_review else []),
                 # nhan xet + thay doi cua dao dien o buoc duyet (UI hien)
@@ -2060,7 +2141,7 @@ def _remotion_autoplan(b):
                 plan, spec,
                 build=lambda pl: remotion_plan.build_spec(pl, log=lambda m: run_log.emit("note", m, step="build")),
                 step=lambda n, pl, fn: _step(n, pl, fn, optional=True),
-                sfx_catalog=sfx_catalog, transcript_data=transcript_data, story=story,
+                sfx_catalog=sfx_catalog, transcript_data=transcript_data, story=st_FX,
                 fx_ctx={"moments": moments, "faces": faces, "palette": (style_phien or {}).get("palette"),
                         "style": style_phien, "sources": src_desc, "hook": hook_info, "brand": brand,
                         "project": b.get("project")},
@@ -2080,6 +2161,31 @@ def _remotion_autoplan(b):
                          "dùng chữ vẽ bằng code" % len(lost), step="TXT-lib", level="warn",
                          output=[" / ".join(t["text"] for t in lk["tiers"]) for lk in lk_meta if lk["key"] in lost])
             spec, report = remotion_plan.build_spec(plan, log=lambda m: run_log.emit("note", m, step="build"))
+        if spec and chi_dao:
+            # GIAM SAT DAO DIEN tren BAN DUNG CUOI: nang luong that theo doan vs chi dao, diem nhan yeu, dung im, qua tai
+            # (bo lop phu gay qua tai roi dung lai), viec giao da lam / con thieu -> _pipeline.giam_sat + nhat ky
+            try:
+                _gs = director_guard.measure(spec, plan, remotion_plan.map_range)
+                _gfix = director_guard.relieve_overload(plan, spec, _gs) + director_guard.fix_static(plan, spec, _gs)
+                if _gfix:
+                    _sp2, _rp2 = remotion_plan.build_spec(plan, log=lambda m: run_log.emit("note", m, step="build"))
+                    if _sp2:
+                        spec, report = _sp2, _rp2
+                        _gs = director_guard.measure(spec, plan, remotion_plan.map_range)
+                _dv = director_guard.deliveries(chi_dao, {"layers": plan.get("layers"), "scenes": plan.get("scenes")},
+                                                {"captions": plan.get("captions")}, plan.get("fx"),
+                                                {"inserts": plan.get("inserts")}, {"audio": plan.get("audio")})
+                _thieu = director_guard.missing(chi_dao, _dv)
+                plan["_pipeline"]["giam_sat"] = {
+                    "tom_tat": director_guard.summary(_gs, deliv_after=_dv), "sua": _gfix,
+                    "tuong_quan": _gs.get("tuong_quan"), "diem_nhan_yeu": _gs.get("diem_nhan_yeu"),
+                    "dung_im": _gs.get("dung_im"), "qua_tai": len(_gs.get("qua_tai") or []), "doan": _gs.get("doan"),
+                    "viec_thieu": [{k: m.get(k) for k in ("qd", "bo_phan", "y_do", "viec")} for m in _thieu]}
+                run_log.emit("result", "Giám sát đạo diễn: %s" % plan["_pipeline"]["giam_sat"]["tom_tat"], step="guard",
+                             level="ok" if not _thieu and not _gs.get("diem_nhan_yeu") else "warn",
+                             output=plan["_pipeline"]["giam_sat"])
+            except Exception as ex:      # giam sat loi khong lam hong ke hoach
+                logger.warning("Giam sat dao dien loi: %s", ex, exc_info=True)
         if spec and um_items:
             # tu lieu nao hien o dau (gio timeline cua ban dung that) + ly do -> UI
             plan["_pipeline"]["tu_lieu"] = user_media.usage_report(spec, um_items, design, plan.get("assets"))

@@ -514,11 +514,16 @@ def _hook_segment(plan, speech, changes):
     tr_sec = max(0.2, min(0.6, tr_sec))
     hook["src_start"], hook["src_end"] = round(st, 3), round(en, 3)
     hook["source_id"] = sid
-    return {"source_id": sid, "start": round(st, 3), "end": round(en, 3),
-            "target_start": 0.0, "kind": "hook",
-            "scale": float(hook.get("scale", 1.0) or 1.0),
-            "transition": tr, "transition_duration": tr_sec,
-            "volume": float(hook.get("volume", 1.0) or 1.0)}
+    out = {"source_id": sid, "start": round(st, 3), "end": round(en, 3),
+           "target_start": 0.0, "kind": "hook",
+           "scale": float(hook.get("scale", 1.0) or 1.0),
+           "transition": tr, "transition_duration": tr_sec,
+           "volume": float(hook.get("volume", 1.0) or 1.0)}
+    # khung cua dao dien cho ban sao hook (director_guard.apply_framing): day cham / dong bang dau hook
+    for k in ("zoom_ramp", "freeze"):
+        if hook.get(k):
+            out[k] = hook[k]
+    return out
 
 
 def _cut_at(segs, t_body, tag):
@@ -948,6 +953,14 @@ def mix_sfx(plan, changes):
         plan["_voice_lufs"] = voice
     noi = speech_on_timeline(plan)
     hook_len, _ = read_structure(plan)
+    # NANG LUONG tung doan cua dao dien (director_guard.energy_windows, build_spec dat): doan nang luong thap -> tieng chu /
+    # tieng phu nho xuong muc vi mo cua ho so nhip; diem nhan (>= 4) + hook giu muc cu
+    energy = plan.get("_energy") or []
+    cd_ = plan.get("chi_dao") if isinstance(plan.get("chi_dao"), dict) else {}
+    prof = cd_.get("ho_so_nhip") if isinstance(cd_.get("ho_so_nhip"), dict) else None
+    if energy and not prof and cd_:
+        import director
+        prof = director.profile_for(cd_)
     dem_lap = {}
     truoc_t = None
     to_gan_day = []
@@ -970,14 +983,21 @@ def mix_sfx(plan, changes):
         # bo tieng the gioi (dao dien): toi gian nho hon, dien anh day hon mot chut — TRU tieng cua HOOK (phai nghe ro,
         # do that 2026-10-15: toi_gian -4 dB lam SFX hook duoi nguong -> luat hook chen tieng du phong)
         wdb = 0.0 if a.get("anchor") == "hook" else _world_db(a)
+        edb = 0.0
+        if energy and a.get("anchor") != "hook" and not a.get("_tpl") and not (hook_len and st < hook_len + EPS):
+            import director_guard
+            nl = director_guard.energy_at(energy, st)
+            edb = director_guard.micro_db(nl, prof) if nl is not None else 0.0
+        wdb += edb
         if voice is not None and lufs is not None:
             rel = SFX_ACCENT_REL if accent else SFX_REL.get(fam, SFX_REL["neutral"])
             muc = min((SFX_MIX.get(fam) or SFX_MIX["neutral"])["lufs"], voice + rel) + wdb
             if accent:
                 muc = min(muc, voice + SFX_REL.get(fam, SFX_REL["neutral"]) + wdb)
             vol, vmin = 10 ** ((muc - float(lufs)) / 20.0), SFX_REL_MIN_VOL
-            ly_do = ["%s%s %.1f LUFS -> muc %.1f (giong video %.1f)" % (fam, ", khi chu/hinh hien" if accent else "",
-                                                                        float(lufs), muc, voice)]
+            ly_do = ["%s%s %.1f LUFS -> muc %.1f (giong video %.1f)%s" % (
+                fam, ", khi chu/hinh hien" if accent else "", float(lufs), muc, voice,
+                (", doan nang luong thap %+.1f dB" % edb) if edb else "")]
         else:
             lufs = a.get("_lufs") if lufs is None else lufs
             vol, vmin = sfx_base_volume(fam, lufs) * 10 ** (wdb / 20.0), SFX_VOL_MIN

@@ -171,13 +171,21 @@ PROMPTS = [
              "chọn sai id → hệ thống tự chọn bài hợp nhãn nhất."},
     {"id": "_DIRECTOR_SYSTEM", "group": "plan", "module": "director", "own_key": True,
      "title": "DD · Đạo diễn — bản chỉ đạo",
-     "used_in": "Bước Plan — ngay sau B2 (nội dung đã chốt), trước B3 hook",
+     "used_in": "Bước Plan — sau B2 (nội dung đã chốt) và B3 (hook đã chọn), trước R4 thiết kế",
      "info": "Một lượt AI làm ĐẠO DIỄN: đọc toàn bộ lời nói đã chốt + phân tích Gemini (cảm xúc, khoảnh khắc, bằng "
-             "chứng) + video mẫu + yêu cầu edit + SỔ TAY các video gần đây (ý tưởng, chiêu đã dùng — để không lặp) rồi viết "
-             "BẢN CHỈ ĐẠO riêng cho video: chủ đề thật, ý tưởng lớn bám chi tiết thật của video, thế giới hình, mô-típ, "
-             "cường độ 1-5, đường cong cảm xúc theo từng nhịp, khoảnh khắc dấu ấn, khoảng lặng có chủ đích, thế giới âm "
-             "thanh, cách mở hook, danh sách cấm. Bản chỉ đạo đi vào MỌI bước sau (hook, thiết kế, chữ, hiệu ứng, meme, "
-             "SFX); code ép mức hook, bộ âm thanh và khoảng lặng. Lỗi → các bước chạy như trước (không có chỉ đạo)."},
+             "chứng) + hook đã chọn + video mẫu + yêu cầu edit + SỔ TAY các video gần đây (ý tưởng, chiêu đã dùng — để không "
+             "lặp) rồi viết BẢN CHỈ ĐẠO riêng cho video: chủ đề thật, ý tưởng lớn bám chi tiết thật của video, thế giới hình, "
+             "mô-típ, cường độ 1-5, đường cong cảm xúc theo từng nhịp, khoảnh khắc dấu ấn, khoảng lặng có chủ đích, thế giới "
+             "âm thanh, cách mở hook, danh sách cấm — và BẢNG QUYẾT ĐỊNH theo TỪNG ĐOẠN (ý đồ, từ neo, cỡ khung, nền, việc "
+             "giao cho từng bộ phận). Code kiểm 4 định luật (lý do tồn tại, đơn tiêu điểm, ngân sách nhận thức, sóng năng "
+             "lượng), dựng khung theo lệnh, và GIÁM SÁT bản dựng: việc giao chưa làm → nhờ đúng bộ phận làm bù. Lỗi → các "
+             "bước chạy như trước (không có chỉ đạo)."},
+    {"id": "_DIRECTOR_SCENE_SYSTEM", "group": "plan", "module": "director", "own_key": True,
+     "title": "DD · Đạo diễn cảnh — bảng quyết định video dài",
+     "used_in": "Bước Plan — chỉ video dài (nhiều đoạn): sau bản chỉ đạo tổng, chạy theo từng cụm ~15-25 giây",
+     "info": "Video dài thì một lượt đạo diễn không đủ chỗ viết quyết định chi tiết cho từng câu. Lượt 1 chốt bản chỉ đạo "
+             "tổng (ý tưởng, đường cong, dấu ấn), lượt 2 đi theo từng cụm đoạn viết bảng quyết định chi tiết — bám đúng "
+             "năng lượng của nhịp đã chốt, không vẽ đường cong khác."},
     {"id": "_DIRECTOR_REVIEW_SYSTEM", "group": "plan", "module": "director", "own_key": True,
      "title": "DD · Đạo diễn — duyệt bản dựng",
      "used_in": "Bước Plan — sau B7 (mọi bộ phận đã đặt xong), trước khi ráp bản dựng",

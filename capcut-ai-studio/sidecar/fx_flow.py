@@ -109,11 +109,12 @@ DUNG khoanh khac do trong video. Tha KHONG co hieu ung con hon hieu ung sai ngu 
      "y_nghia": "<lam ro / khuech dai Y nao: trich loi noi + y trong chi_dao.phan_tich>",
      "why_fit": "<vi sao hieu ung nay phuc vu dung muc tieu trong boi canh nay>",
      "visual": "<mo ta hinh anh chi tiet: hinh khoi, mau, vi tri so voi mat / khung, chuyen dong vao-dinh-ra, cuong do>",
-     "sync": "<bam vao tu / nhip nao>", "colors": ["#..."], "intensity": 0.6, "sfx": null}
+     "sync": "<bam vao tu / nhip nao>", "colors": ["#..."], "intensity": 0.6, "sfx": null, "qd": null}
   ],
   "bo_qua": [{"moment": "<id>", "ly_do": "<vi sao KHONG dat hieu ung o khoanh khac dang ke nay>"}]
 }
 "sfx" (tuy chon): whoosh | swoosh | pop | click | ding | boom | riser | typing — chi khi hop.
+"qd" (khi co chi_dao.viec_cua_ban): so doan / "hook" cua lenh dao dien ma hieu ung nay thuc hien; khong thi null.
 ⚠️ TRA VE CHI JSON GOC."""
 
 _FX_CODE_SYSTEM = """Ban la LAP TRINH VIEN MOTION GRAPHICS. Viet code cho tung hieu ung da duoc de xuat, theo DUNG mo ta
@@ -453,6 +454,8 @@ def sanitize_plan(res, moments, changes):
             item["theo_mau"] = e["theo_mau"]      # tai hien hieu ung video mau -> FX-code xem dung anh do
         if e.get("sfx") in ("whoosh", "swoosh", "pop", "click", "ding", "boom", "riser", "typing"):
             item["sfx"] = e["sfx"]
+        if e.get("qd") is not None and str(e.get("qd")).strip() != "":
+            item["qd"] = "hook" if str(e["qd"]).strip().lower() == "hook" else e["qd"]   # lenh dao dien ma hieu ung thuc hien
         if kind == "transform":
             last_tr.append((a, b, anc))
         out.append(item)

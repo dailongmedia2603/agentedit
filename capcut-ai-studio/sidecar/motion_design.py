@@ -33,6 +33,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 LAYOUTS = ("full", "split", "card", "circle", "broll", "graphic")
 LAYER_TYPES = ("text", "box", "circle", "ring", "line", "arrow", "image", "emoji", "badge", "counter", "progress", "speedlines",
+               "compare",
                "video")   # video: CHI tu lieu video cua nguoi dung (user_media.py)
 ENTER = {"fade", "pop", "scale_in", "zoom_out", "blur_in", "slide", "slide_left", "slide_right", "slide_up", "slide_down",
          "rise", "drop", "expand_y", "stretch_x", "wipe", "write_on", "spin_in", "flip", "draw", "glitch_in",
@@ -319,8 +320,12 @@ def gpt_rm_design(segments, transcript_data, emotion_map_data, key_moments_data,
     ], json_mode=True, max_tokens=24000, temperature=0.5, req_timeout=300, max_attempts=2,
         step_label="R4-design", images=ref_imgs or None)
     res = _as_design(providers._safe_json(text))
+    import director_guard
+    cd_view = (story or {}).get("chi_dao") if isinstance((story or {}).get("chi_dao"), dict) else None
     thieu = audit_design(res, kit, payload["tong_do_dai_giay"], has_hook=bool(hook), user_media=user_media)
     thieu += ref_pack.audit_usage(res, payload["tong_do_dai_giay"])      # tan suat kieu chu video mau
+    # LENH DAO DIEN (bang quyet dinh, 2026-10-17): lenh R4 nang luong >= 3 chua co lop / scene ghi "qd" -> vong tu sua
+    thieu += director_guard.r4_audit(res, cd_view)
     if thieu and (res.get("scenes") or res.get("layers")):
         # 1 vong tu sua: code dem chi tieu -> GPT bo sung (giu phan da tot)
         if log:
@@ -329,7 +334,8 @@ def gpt_rm_design(segments, transcript_data, emotion_map_data, key_moments_data,
         fix_user["ban_thiet_ke_truoc"] = res
         fix_user["thieu_can_bo_sung"] = thieu
         fix_user["yeu_cau"] = ("Sua ban_thiet_ke_truoc cho DAT moi muc trong thieu_can_bo_sung, giu cac phan da tot, "
-                               "tra lai TOAN BO JSON theo schema.")
+                               "tra lai TOAN BO JSON theo schema. Muc 'lenh dao dien': them lop / scene thuc hien DUNG "
+                               "viec do (ghi \"qd\"), dat dung luc tu neo.")
         text2 = providers.plan_chat([
             {"role": "system", "content": sys_prompt},
             {"role": "user", "content": json.dumps(fix_user, ensure_ascii=False)},
@@ -338,6 +344,7 @@ def gpt_rm_design(segments, transcript_data, emotion_map_data, key_moments_data,
         res2 = _as_design(providers._safe_json(text2))
         thieu2 = audit_design(res2, kit, payload["tong_do_dai_giay"], has_hook=bool(hook), user_media=user_media)
         thieu2 += ref_pack.audit_usage(res2, payload["tong_do_dai_giay"])
+        thieu2 += director_guard.r4_audit(res2, cd_view)
         if (res2.get("scenes") or res2.get("layers")) and len(thieu2) <= len(thieu):
             res, thieu = res2, thieu2
     # hieu ung KHONG lay tu kho mau — buoc FX tu thiet ke + viet code theo boi canh (luat hook o prompt FX)
@@ -1110,6 +1117,8 @@ def layers_to_spec(p, duration, scenes, assets_by_id, faces, changes, kit=None):
                 L["keyframes"] = kfs
         if L0.get("replaces_subtitle") or L0.get("replacesSubtitle"):
             L["replacesSubtitle"] = True
+        if L0.get("qd") is not None and str(L0.get("qd")).strip() != "":
+            L["qd"] = L0["qd"]          # lop thuc hien LENH DAO DIEN -> khong bi bo vi mat do (giam sat doi chieu)
         if typ == "text":
             spans = [s for s in (_span(x, fonts) for x in (L0.get("spans") or [])) if s]
             if not spans and str(L0.get("text") or "").strip():
@@ -1148,6 +1157,24 @@ def layers_to_spec(p, duration, scenes, assets_by_id, faces, changes, kit=None):
             L["path"] = path
             if is_cutout(assets_by_id, L0.get("asset"), path):
                 L["cutout"] = True
+        elif typ == "compare":
+            # SO SANH TRUOC / SAU (y do TRUOC_SAU): 2 anh trong 1 khung, thanh gat / chia doi + nhan
+            pa = _asset_path(assets_by_id, L0.get("a"), want_cutout=False)
+            pb = _asset_path(assets_by_id, L0.get("b"), want_cutout=False)
+            if not pa or not pb:
+                changes.append("layer%d: so sanh thieu anh ('%s' / '%s') -> bo" % (i, L0.get("a"), L0.get("b")))
+                continue
+            cp = {"a": pa, "b": pb, "mode": "split" if L0.get("mode") == "split" else "wipe"}
+            lab = [strip_emoji(x)[:24] for x in (L0.get("labels") or [])[:2] if str(x or "").strip()]
+            if len(lab) == 2:
+                cp["labels"] = lab
+            if _color(L0.get("color")):
+                cp["color"] = _color(L0["color"])
+            L["compare"] = cp
+            L.setdefault("w", 0.84)
+            if L.get("h") is None:
+                W_, H_ = CV.size()
+                L["h"] = round(L["w"] * 0.75 * W_ / float(H_), 4)
         # chu "sau nguoi" (behind_subject): nam giua nen video va nguoi -> DUOC dat ngang dau/mat
         if L0.get("behind_subject") or L0.get("behind"):
             if media_vision.available() and typ in ("text", "counter", "image", "box", "circle", "ring", "speedlines"):
@@ -1184,7 +1211,7 @@ def layers_to_spec(p, duration, scenes, assets_by_id, faces, changes, kit=None):
     kept = []
     for L in out:
         win = [k for k in kept if L["start"] - k["start"] < 10] + [L]
-        if _beats(win) > MAX_LAYERS_PER_10S and not L.get("um"):   # tu lieu nguoi dung: khong bo vi mat do
+        if _beats(win) > MAX_LAYERS_PER_10S and not L.get("um") and L.get("qd") is None:   # tu lieu / lenh dao dien: giu
             changes.append("%s: qua %d nhip do hoa trong 10s -> bo (roi mat)" % (L["id"], MAX_LAYERS_PER_10S))
             continue
         kept.append(L)
@@ -1560,7 +1587,9 @@ def attach_subject_mattes(spec, changes, log=None):
     # hieu ung tu viet lop "behind": cung can ban tach nguoi (ve giua nen va nguoi)
     behind += [f for f in spec.get("fx") or [] if f.get("layer") == "behind"]
     pops = [sc for sc in spec.get("scenes") or [] if sc.get("popout")]
-    if not behind and not pops:
+    # lenh dao dien: nen diu (nguoi van net) + vien quanh nguoi -> can ban tach nguoi trong cac khoang do
+    focus = [dict(w, id="%s%d" % (k, i)) for k in ("bgFocus", "subjectFx") for i, w in enumerate(spec.get(k) or [])]
+    if not behind and not pops and not focus:
         return
     ok_ids = set()
     for c in spec.get("clips") or []:
@@ -1568,11 +1597,12 @@ def attach_subject_mattes(spec, changes, log=None):
             continue
         hits = [L for L in behind if L["start"] < c["end"] and L["end"] > c["start"]]
         phits = [sc for sc in pops if sc["start"] < c["end"] and sc["end"] > c["start"]]
-        if not hits and not phits:
+        fhits = [w for w in focus if w["start"] < c["end"] and w["end"] > c["start"]]
+        if not hits and not phits and not fhits:
             continue
         sp = c.get("speed") or 1.0
         # chi tach doan clip can dung (+0.5s dem cho chuyen canh) — tach nguoi ton ~4s/giay video
-        wins = [(x["start"], x["end"]) for x in hits + phits]
+        wins = [(x["start"], x["end"]) for x in hits + phits + fhits]
         t0 = max(c["start"], min(w[0] for w in wins)) - 0.5
         t1 = min(c["end"], max(w[1] for w in wins)) + 0.5
         a = max(0.0, c["srcStart"] + (t0 - c["start"]) * sp)
@@ -1584,6 +1614,7 @@ def attach_subject_mattes(spec, changes, log=None):
             c["subject"] = m
             ok_ids.update(L["id"] for L in hits)
             ok_ids.update(sc["id"] for sc in phits)
+            ok_ids.update(w["id"] for w in fhits)
             _anchor_to_head(hits, c, m, spec, changes)
             _behind_clear(hits, c, m, spec, changes)
         else:
@@ -1592,6 +1623,20 @@ def attach_subject_mattes(spec, changes, log=None):
         if sc["id"] not in ok_ids:
             sc.pop("popout", None)
             changes.append("%s: khong co ban tach nguoi -> tat pop-out" % sc["id"])
+    # khong tach duoc nguoi: nen diu NHE ca khung (nguoi cung toi theo -> giam nua, khong nhoe); vien nguoi -> bo
+    for i, w in enumerate(spec.get("bgFocus") or []):
+        if "bgFocus%d" % i not in ok_ids:
+            w.update(dim=round(float(w.get("dim") or 0) * 0.5, 3), blur=0.0, desat=round(float(w.get("desat") or 0) * 0.6, 3),
+                     noSubject=True)
+            changes.append("nen diu %.1f-%.1fs: khong co ban tach nguoi -> diu nhe ca khung" % (w["start"], w["end"]))
+    if spec.get("subjectFx"):
+        keep = [w for i, w in enumerate(spec["subjectFx"]) if "subjectFx%d" % i in ok_ids]
+        if len(keep) < len(spec["subjectFx"]):
+            changes.append("vien quanh nguoi: %d lan khong co ban tach nguoi -> bo" % (len(spec["subjectFx"]) - len(keep)))
+        if keep:
+            spec["subjectFx"] = keep
+        else:
+            spec.pop("subjectFx", None)
     for L in behind:
         if L["id"] not in ok_ids and L.get("layer") == "behind":
             L["layer"] = "front"
@@ -2748,7 +2793,7 @@ FACE_BODY_MAX = 0.15        # than video: che toi da 15% khung mat (nhu tu lieu 
 FACE_TPL_MAX = 0.05         # mau Kho Text (khoi chu to + glow): che toi da 5% — thu nho / dat tren dau thay vi de len mat
 FACE_SAFE = (0.06, 0.82)    # vung dat duoc (tren 6% / duoi 82% bi giao dien TikTok che)
 FACE_FULL_AREA = 0.55       # lop phu > 55% khung = canh phu toan man hinh, khong phai vat de len mat
-_GUARD_TYPES = ("text", "counter", "badge", "image", "video", "box", "circle", "tpl")   # vong (ring) khoanh mat: co y
+_GUARD_TYPES = ("text", "counter", "badge", "image", "video", "box", "circle", "tpl", "compare")   # vong (ring) khoanh mat: co y
 
 
 def _img_ratio(path, _cache={}):
@@ -2785,7 +2830,7 @@ def _guard_box(L, W=None, H=None):
         w, h = float(L.get("w") or 0.5), float(L.get("h") or 0.2)
     elif typ == "badge" and L.get("art"):
         w, h = float(L["art"][0].get("w") or 0) / W, float(L["art"][0].get("h") or 0) / H
-    elif typ in ("badge", "box", "circle", "ring", "image", "video"):
+    elif typ in ("badge", "box", "circle", "ring", "image", "video", "compare"):
         w = float(L.get("w") or 0.3)
         if L.get("h") is not None:
             h = float(L["h"])

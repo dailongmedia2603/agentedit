@@ -592,6 +592,93 @@ const ShapeLayer: React.FC<{ L: RSLayer; fx: FxState; W: number; H: number; loca
         </div>
       )
     }
+    case 'compare': {
+      // SO SANH TRUOC / SAU (y do TRUOC_SAU cua dao dien): khung 2 anh. wipe = thanh gat chay ngang lo dan anh b de len a;
+      // split = chia doi trai / phai, nua phai truot vao. Nhan o 2 goc tren (mau nhan cua video).
+      const cp = L.compare
+      if (!cp || !cp.a || !cp.b) return null
+      const hh = L.h !== undefined ? h : w * 0.75
+      const col = cp.color || L.color || '#FFFFFF'
+      const k = pxScale(W, H)
+      const dur = Math.max(0.6, (L.end - L.start) * 0.45)
+      const p = clamp01((local - 0.25) / dur)
+      const e = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2
+      const radius = (L.radius ?? 0.03) * W
+      const label = (txt: string | undefined, side: 'left' | 'right', show: number) =>
+        txt ? (
+          <div
+            style={{
+              position: 'absolute',
+              top: 14 * k,
+              [side]: 14 * k,
+              padding: `${6 * k}px ${14 * k}px`,
+              borderRadius: 999,
+              background: 'rgba(12,10,10,0.72)',
+              color: col,
+              fontFamily: fontCss(L.font || 'montserrat', 800).fontFamily,
+              fontWeight: fontCss(L.font || 'montserrat', 800).fontWeight,
+              fontSize: 30 * k,
+              letterSpacing: 1,
+              opacity: show
+            }}
+          >
+            {txt}
+          </div>
+        ) : null
+      const img = (src: string, extra?: React.CSSProperties) => (
+        <Img src={mediaUrl(base, src)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', ...extra }} />
+      )
+      const split = cp.mode === 'split'
+      return (
+        <div
+          style={{
+            position: 'relative',
+            width: w,
+            height: hh,
+            borderRadius: radius,
+            overflow: 'hidden',
+            border: L.border || `${Math.max(2, 4 * k)}px solid rgba(255,255,255,0.9)`,
+            boxShadow: '0 24px 60px rgba(0,0,0,0.35)',
+            background: '#111'
+          }}
+        >
+          {split ? (
+            <>
+              <div style={{ position: 'absolute', left: 0, top: 0, width: '50%', height: '100%', overflow: 'hidden' }}>{img(cp.a)}</div>
+              {/* nua phai truoc khi b vao: ban mo cua a (khong de o den) */}
+              <div style={{ position: 'absolute', left: '50%', top: 0, width: '50%', height: '100%', overflow: 'hidden' }}>
+                {img(cp.a, { filter: 'blur(14px) brightness(0.8)', transform: 'scale(1.15)' })}
+              </div>
+              <div
+                style={{
+                  position: 'absolute',
+                  left: '50%',
+                  top: 0,
+                  width: '50%',
+                  height: '100%',
+                  overflow: 'hidden',
+                  transform: `translateX(${((1 - e) * 35).toFixed(2)}%)`,
+                  opacity: clamp01(e * 1.6)
+                }}
+              >
+                {img(cp.b)}
+              </div>
+              <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: Math.max(2, 5 * k), marginLeft: -Math.max(1, 2.5 * k), background: col }} />
+            </>
+          ) : (
+            <>
+              {img(cp.a)}
+              <div style={{ position: 'absolute', inset: 0, clipPath: `inset(0 ${((1 - e) * 100).toFixed(2)}% 0 0)` }}>{img(cp.b)}</div>
+              {e > 0.001 && e < 0.999 && (
+                <div style={{ position: 'absolute', top: 0, bottom: 0, left: `${(e * 100).toFixed(2)}%`, width: Math.max(2, 6 * k), marginLeft: -Math.max(1, 3 * k), background: col, boxShadow: `0 0 ${18 * k}px ${col}` }} />
+              )}
+            </>
+          )}
+          {label(cp.labels?.[0], 'left', split ? 1 : clamp01(1 - e * 1.4 + 0.4))}
+          {label(cp.labels?.[1], 'right', clamp01((e - 0.35) / 0.3))}
+        </div>
+      )
+    }
     case 'video': {
       // TU LIEU VIDEO cua nguoi dung (khung noi tren video, tat tieng). Lop nay luon nam trong <Sequence> rieng
       // (LayersLayer) nen khung cua OffthreadVideo tinh tu luc lop bat dau + mediaStart.

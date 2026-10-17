@@ -78,6 +78,8 @@ Trường chung:
   (bộ tiếng motion graphics có sẵn, âm lượng tự cân theo giọng).
 - `keyframes`: `t` tính từ lúc lớp bắt đầu; thuộc tính `x y scale scaleX rotation skewX opacity blur`;
   `easing` của đoạn DẪN TỚI keyframe đó.
+- `qd`: số đoạn (hoặc `"hook"`) của LỆNH ĐẠO DIỄN mà lớp / scene này thực hiện (`cau_chuyen.chi_dao.viec_cua_ban`) —
+  ghi trên MỌI lớp của tổ hợp làm lệnh đó; hệ thống đối chiếu lệnh ↔ lớp, lệnh không có lớp nào mang `qd` bị báo thiếu.
 
 ### Loại lớp
 - `text` — chữ, nhiều SPAN (mỗi span 1 font/màu/cỡ riêng) → tổ hợp chữ (lockup):
@@ -96,6 +98,10 @@ Trường chung:
   icon minh hoạ, chữ — theo phong cách video, nên ghi `why` = ý nghĩa của huy hiệu; các huy hiệu cùng `group` ra một
   bộ đồng nhất. Không cần khai màu) · `counter` (số chạy: `from`, `to`, `prefix`, `suffix`,
   `decimals` + kiểu chữ như text) · `progress` (thanh: w, h, `to` 0–100) ·
+  `compare` (SO SÁNH TRƯỚC / SAU — 2 hình cạnh nhau trong 1 khung: `a`, `b` = 2 asset id (ảnh AI / khung cắt từ video),
+  `labels`: ["<nhãn a>", "<nhãn b>"] (vd "TRƯỚC", "SAU" theo ngôn ngữ video), `mode`: `wipe` (thanh gạt chạy ngang lộ dần
+  hình b đè lên a) | `split` (chia đôi, b trượt vào), w, h (khung, phần bề ngang / cao canvas), `radius`, `border`,
+  `color` (màu nhãn / thanh gạt), `font`) ·
   `speedlines` (vệt tốc độ toả ra từ x,y — nhấn mạnh / tập trung).
   KHÔNG có loại `emoji`: icon emoji / ký hiệu unicode (🔒 🔥 ✅ ⭐…) trông thô → bị bỏ. Cần icon thì dùng `image` với
   ảnh AI 3D cắt nền (`cutout: true`) hoặc hình học (`ring`, `arrow`, `badge`, `box`).

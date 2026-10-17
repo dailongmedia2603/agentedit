@@ -61,7 +61,8 @@ const LAYER_TYPE_LABEL: Record<string, string> = {
   badge: 'huy hiệu',
   counter: 'số chạy',
   progress: 'thanh tiến độ',
-  speedlines: 'vệt tốc độ'
+  speedlines: 'vệt tốc độ',
+  compare: 'so sánh trước / sau'
 }
 
 function layerLabel(L: RSLayer): string {
@@ -99,8 +100,19 @@ const REVIEW_SCORE_LABEL: Record<string, string> = {
 }
 
 /** Ban chi dao cua dao dien (director.py) + ket qua buoc duyet. */
-function DirectorView({ cd, review }: { cd: DirectorTreatment; review?: DirectorReview | null }) {
+const KHUNG_LABEL: Record<string, string> = {
+  rong: 'rộng',
+  trung: 'trung',
+  can: 'cận',
+  day_cham: 'đẩy chậm',
+  giu: 'giữ',
+  nha: 'nhả',
+  dong_bang: 'đóng băng'
+}
+
+function DirectorView({ cd, review, watch }: { cd: DirectorTreatment; review?: DirectorReview | null; watch?: DirectorWatch | null }) {
   const am = cd.am_thanh
+  const diem = (cd.quyet_dinh || []).filter((q) => q.y_do !== 'NHIP_NEN' && q.y_do !== 'KHOANG_LANG')
   return (
     <div className="space-y-2.5 rounded-xl border border-violet-300/40 bg-violet-50/40 p-3">
       <div className="flex flex-wrap items-center gap-1.5">
@@ -108,6 +120,12 @@ function DirectorView({ cd, review }: { cd: DirectorTreatment; review?: Director
         <Badge tone="neutral">Cường độ {cd.cuong_do}/5</Badge>
         {am?.the_gioi && <Badge tone="neutral">Âm thanh: {SOUND_WORLD_LABEL[am.the_gioi] || am.the_gioi}</Badge>}
         {cd.hook?.muc_do && <Badge tone="neutral">Hook {cd.hook.muc_do}</Badge>}
+        {cd.ho_so_nhip?.ten && <Badge tone="neutral">Nhịp: {cd.ho_so_nhip.ten}</Badge>}
+        {!!cd.quyet_dinh?.length && (
+          <Badge tone="neutral">
+            {diem.length}/{cd.quyet_dinh.length} đoạn là điểm nhấn
+          </Badge>
+        )}
       </div>
       {cd.y_tuong_lon && <p className="text-[13px] font-medium leading-relaxed text-ink-900">{cd.y_tuong_lon}</p>}
       <div className="space-y-1 text-xs leading-relaxed text-ink-800/70">
@@ -161,6 +179,25 @@ function DirectorView({ cd, review }: { cd: DirectorTreatment; review?: Director
           ))}
         </div>
       )}
+      {!!cd.quyet_dinh?.length && (
+        <div className="space-y-0.5 text-xs leading-relaxed text-ink-800/70">
+          <b className="text-ink-800/85">Bảng quyết định từng đoạn:</b>
+          {[...(cd.hook_qd ? [cd.hook_qd] : []), ...cd.quyet_dinh].map((q, i) => (
+            <div key={i} className={q.y_do === 'NHIP_NEN' || q.y_do === 'KHOANG_LANG' ? 'text-ink-800/40' : ''}>
+              <b className="text-ink-900/80">{q.segment === undefined ? 'Hook' : `Đoạn ${q.segment}`}</b> · {q.ten || q.y_do} · năng
+              lượng {q.nang_luong}
+              {q.khung ? ` · khung ${KHUNG_LABEL[q.khung] || q.khung}` : ''}
+              {q.nen && q.nen !== 'giu' ? ` · nền ${q.nen.replace('_', ' ')}` : ''}
+              {q.neo?.tu ? ` · neo “${q.neo.tu}”` : ''}
+              {q.giao_viec && Object.keys(q.giao_viec).length
+                ? ` — ${Object.entries(q.giao_viec)
+                    .map(([k, v]) => `${k}: ${v}`)
+                    .join(' | ')}`
+                : ''}
+            </div>
+          ))}
+        </div>
+      )}
       {!!cd.khoanh_khac_dau_an?.length && (
         <div className="text-xs leading-relaxed text-ink-800/70">
           <b className="text-ink-800/85">Khoảnh khắc dấu ấn:</b>{' '}
@@ -175,6 +212,16 @@ function DirectorView({ cd, review }: { cd: DirectorTreatment; review?: Director
       {!!cd.cam?.length && (
         <div className="text-xs leading-relaxed text-ink-800/55">
           <b className="text-ink-800/75">Không dùng:</b> {cd.cam.join(' · ')}
+        </div>
+      )}
+      {watch?.tom_tat && (
+        <div className="rounded-lg bg-white/70 px-2.5 py-2 text-xs leading-relaxed text-ink-800/70">
+          <b className="text-ink-900">Giám sát bản dựng:</b> {watch.tom_tat}
+          {!!watch.viec_thieu?.length && (
+            <div className="text-ink-800/55">
+              Còn thiếu: {watch.viec_thieu.map((m) => `đoạn ${m.qd} ${m.bo_phan} (${m.y_do})`).join(' · ')}
+            </div>
+          )}
         </div>
       )}
       {review && (review.nhan_xet || review.thay_doi?.length) && (
@@ -223,7 +270,13 @@ export function RemotionPlanView({
   const tuLieu = (pipe.tu_lieu as UserMediaUsage[] | undefined) || []
   return (
     <div className="space-y-3 text-sm">
-      {plan.chi_dao && <DirectorView cd={plan.chi_dao} review={pipe.dao_dien_duyet as DirectorReview | null | undefined} />}
+      {plan.chi_dao && (
+        <DirectorView
+          cd={plan.chi_dao}
+          review={pipe.dao_dien_duyet as DirectorReview | null | undefined}
+          watch={pipe.giam_sat as DirectorWatch | null | undefined}
+        />
+      )}
       {(pipe.story_arc || pipe.tone) && (
         <p className="text-ink-800/75">
           {pipe.story_arc && <span>{String(pipe.story_arc)}</span>}

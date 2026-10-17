@@ -83,7 +83,8 @@ Day la quy trinh CHUAN, user da dong y tu truoc — lam du cac buoc, khong hoi l
   `cd capcut-ai-studio && node tests/test_motion.mts`; tu kiem that (ton han muc Claude + Saydi): `env -u ELECTRON_RUN_AS_NODE
   STUDIO_LICENSE=off STUDIO_MOTION_TEST=<brief.json> <app binary> . --user-data-dir=<tmp>`.
 - DAO DIEN Edit Video + the gioi am thanh (PROJECT_OVERVIEW 18, `sidecar/director.py`): `cd capcut-ai-studio &&
-  HOME=$(mktemp -d) ../CapCutAPI/.venv/bin/python tests/test_director.py`.
+  HOME=$(mktemp -d) ../CapCutAPI/.venv/bin/python tests/test_director.py`; bang quyet dinh + giam sat ban dung (PROJECT_OVERVIEW
+  22, `sidecar/director_guard.py`): `tests/test_director_guard.py` (cung cach chay).
 - Mac INTEL (x64): CI `macos-15-intel`. Tren may Apple Silicon: Node x64 + `arch -x86_64 npm ci` (roi
   `npm_config_arch=x64 node node_modules/electron/install.js` — electron tu tai ban ARM khi thay Rosetta) + `arch -x86_64 node
   scripts/dist.mjs --mac` -> `release/mac/`. onnxruntime Intel ghim 1.22.0 trong requirements.lock (marker platform_machine).
