@@ -247,7 +247,7 @@ def apply_framing(segs, cd, events=None, hook=None):
     shot = float(prof.get("cat_toi_thieu") or 2.0)
     trung = round(1.0 + 0.45 * (zmax - 1.0), 3)
     rows = providers._ban_do_timeline(segs)
-    evs = sorted(events or [])
+    evs = sorted(list(events)) if events else []      # (Cython: sorted(x or []) trong ham co closure -> crash)
     notes, prev, since, prev_nl = [], 1.0, 0.0, None
     for i, s in enumerate(segs):
         if s.get("kind") in ("hook", "insert"):
