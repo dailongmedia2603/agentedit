@@ -489,10 +489,10 @@ export async function runJob(id: string): Promise<number> {
     }
   }
 
-  // ---- 8. Viec nen sau khi xong (giong harvestAfterRender + kickHarvest): dong goi hieu ung tu viet vao kho ----
+  // ---- 8. Viec nen sau khi xong (giong kickHarvest): xu ly muc kho hieu ung con do (khong tu dong goi hieu ung) ----
   if (job.tail) {
     try {
-      await harvestEffects(id, planRes!.plan as Record<string, unknown>, job.input.orientation, fileLog, () => cancelled)
+      await harvestEffects(fileLog, () => cancelled)
     } catch (e) {
       fileLog('Đóng gói hiệu ứng lỗi (bỏ qua): ' + String((e as Error).message || e))
     }
@@ -710,12 +710,10 @@ export async function syncLibrary(log: (l: string) => void, force = false,
 }
 
 // ---------------------------------------------------------------------------
-// Kho hieu ung (giong src/lib/fxHarvest.ts): dong goi -> preview -> Gemini gan nhan -> gui kho chung, tung viec mot
+// Kho hieu ung (giong src/lib/fxHarvest.ts): preview -> Gemini gan nhan -> gui kho chung, tung viec mot. KHONG tu dong
+// goi hieu ung cua video vua lam (bo 2026-10-17: tac gia tu viet hieu ung roi bo sung vao kho)
 // ---------------------------------------------------------------------------
-async function harvestEffects(id: string, plan: Record<string, unknown>, orientation: string, log: (l: string) => void,
-  stop: () => boolean) {
-  const fx = Array.isArray(plan?.fx) ? (plan.fx as unknown[]) : []
-  if (fx.length) await sidecarRequest('/fxlib/harvest', { fx, project: id, orientation })
+async function harvestEffects(log: (l: string) => void, stop: () => boolean) {
   let labelOffline = false
   let shareOffline = false
   for (let guard = 0; guard < 200 && !stop(); guard++) {

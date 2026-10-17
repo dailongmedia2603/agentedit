@@ -663,9 +663,9 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
   ipcMain.handle('remotion:autoplan', (_e, payload: unknown) => rmCall('/remotion/autoplan', payload, LONG_AI_MS))
 
   // ---- KHO HIEU UNG tu viet (2026-10-05): bo dieu phoi nen o renderer (src/lib/fxHarvest.ts) goi lan luot:
-  // dong goi (sau render) -> preview (lan render, chi khi ranh) -> Gemini nhan (lan gemini) -> gui kho chung ----
+  // preview (lan render, chi khi ranh) -> Gemini nhan (lan gemini) -> gui kho chung. KHONG tu dong goi sau render
+  // (bo 2026-10-17: tac gia tu viet hieu ung roi bo sung vao kho) ----
   ipcMain.handle('fxlib:list', () => rmCall('/fxlib/list'))
-  ipcMain.handle('fxlib:harvest', (_e, payload: unknown) => rmCall('/fxlib/harvest', payload))
   ipcMain.handle('fxlib:renderPreview', (_e, id: string) => fxRenderPreview(id))
   ipcMain.handle('fxlib:label', (_e, ids: string[]) => rmCall('/fxlib/label', { ids }, LONG_AI_MS))
   // Gui kho chung qua may chu ban quyen (may tin cay tu duyet, may khach cho duyet). Loi tam thoi (mat mang...)

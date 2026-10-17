@@ -1077,28 +1077,16 @@ def text_label_route():
 
 
 # ---------------------------------------------------------------------------
-# KHO HIEU UNG TU VIET (fx_lib.py, 2026-10-05): dong goi sau khi render xong -> preview -> Gemini nhan -> kho chung.
+# KHO HIEU UNG TU VIET (fx_lib.py, 2026-10-05): preview -> Gemini nhan -> kho chung cho cac muc da co trong kho.
 # Moi viec deu chay NEN do bo dieu phoi o renderer goi (src/lib/fxHarvest.ts) — khong buoc nao chan tao video.
+# KHONG tu dong goi hieu ung sau khi render nua (bo route /fxlib/harvest 2026-10-17: tac gia tu viet code hieu ung roi
+# bo sung vao kho — fx_lib.harvest van dung duoc tu script).
 # ---------------------------------------------------------------------------
 @app.route("/fxlib/list", methods=["GET", "POST"])
 @require_token
 def fxlib_list_route():
     import fx_lib
     return jsonify({"ok": True, "effects": fx_lib.list_view(), "pending": fx_lib.pending_work()})
-
-
-@app.route("/fxlib/harvest", methods=["POST"])
-@require_token
-def fxlib_harvest_route():
-    import fx_lib
-    b = request.get_json(force=True, silent=True) or {}
-    fx = b.get("fx") if isinstance(b.get("fx"), list) else []
-    try:
-        res = fx_lib.harvest(fx, project=b.get("project"), orientation=b.get("orientation"), log=logger.info)
-        return jsonify({"ok": True, **res})
-    except Exception as e:
-        logger.warning("Kho hieu ung: dong goi loi: %s", e, exc_info=True)
-        return err(e)
 
 
 @app.route("/fxlib/preview_job", methods=["POST"])
@@ -1321,14 +1309,15 @@ def remotion_autoplan_route():
 
 
 def _text_lib_step(lk_meta, design, captions, hook_info, transcript_data, story, style, brand, step):
-    """Buoc TXT-lib: AI chon mau Kho Text cho tung cum chu noi bat (text_tpl.choose, code kiem). Tra {"items", "bo_qua"}
-    hoac None (khong co cum / kho trong / Brand Guideline ep font-mau / loi -> moi cum di chu anh AI nhu cu)."""
+    """Buoc TXT-lib (DU PHONG, 2026-10-17): AI chon mau Kho Text cho cac cum chu anh AI KHONG tao duoc (text_tpl.choose,
+    code kiem). Tra {"items", "bo_qua"} hoac None (khong co cum / kho trong / Brand Guideline ep font-mau / loi -> cum do
+    dung chu ve bang code)."""
     import text_tpl
     if not lk_meta:
         return None
     rows = text_tpl.usable()
     if not rows:
-        run_log.emit("note", "Kho Text trống (chưa có mẫu đã gắn nhãn) — mọi cụm chữ nổi bật dùng chữ ảnh AI", step="TXT-lib")
+        run_log.emit("note", "Kho Text trống (chưa có mẫu đã gắn nhãn) — cụm không có chữ ảnh AI dùng chữ vẽ bằng code", step="TXT-lib")
         return None
     if text_tpl.brand_blocks(brand):
         run_log.emit("note", "Brand Guideline ép font / mã màu thương hiệu -> không dùng mẫu Kho Text (font + màu riêng "
@@ -1351,9 +1340,9 @@ def _text_lib_step(lk_meta, design, captions, hook_info, transcript_data, story,
             txt.get(k), it["template"], ", ".join("%s='%s'" % kv for kv in it["texts"].items()), it.get("ly_do")),
             step="TXT-lib", level="ok")
     for x in res.get("bo_qua") or []:
-        run_log.emit("note", "Kho Text: '%s' không dùng mẫu (%s) -> chữ ảnh AI" % (txt.get(x["key"]), x.get("ly_do")),
+        run_log.emit("note", "Kho Text: '%s' không dùng mẫu (%s) -> chữ vẽ bằng code" % (txt.get(x["key"]), x.get("ly_do")),
                      step="TXT-lib")
-    run_log.emit("result", "Kho Text: %d/%d cụm chữ dùng mẫu làm sẵn (không cần tạo chữ ảnh AI)" % (
+    run_log.emit("result", "Kho Text: %d/%d cụm chữ (không có chữ ảnh AI) dùng mẫu làm sẵn" % (
         len(res.get("items") or {}), len(ctxs)), step="TXT-lib", level="ok" if res.get("items") else "info",
         output=res)
     return res
@@ -1756,20 +1745,16 @@ def _remotion_autoplan(b):
         import text_art
         lk_meta = text_art.lockups_from(design.get("layers"), captions.get("captions", []),
                                         (hook_info or {}).get("caption"), meta=True)
-        # KHO TEXT TRUOC (user 2026-10-04): cum nao co mau chu lam san HOP boi canh -> dung mau (chi thay chu), KHONG tao
-        # chu anh AI; con lai moi tao chu anh AI. Kho trong / Brand Guideline ep font-mau -> buoc nay khong chay.
-        tpl_res = _text_lib_step(lk_meta, design, captions, hook_info, transcript_data, story, style_phien, brand, _step)
-        import text_tpl
-        _tpl_items = (tpl_res or {}).get("items") or {}
-        # cum TRUNG CHU voi cum da dung mau + hien cung luc -> luc dung bi bo -> khong tao chu anh AI cho no
-        _dup = text_tpl.dup_of_template(lk_meta, _tpl_items, design.get("layers") or [], captions.get("captions", []),
-                                        hook_info) if _tpl_items else {}
-        if _dup:
-            run_log.emit("note", "Chữ ảnh AI: bỏ %d cụm trùng chữ với mẫu Kho Text đang hiện cùng lúc (%s) — không tạo ảnh" % (
-                len(_dup), ", ".join("'%s'" % " / ".join(t["text"] for t in lk["tiers"]) for lk in lk_meta
-                                     if lk["key"] in _dup)[:200]), step="TXT-art")
-        lockups = [{"key": lk["key"], "tiers": lk["tiers"]} for lk in lk_meta
-                   if lk["key"] not in _tpl_items and lk["key"] not in _dup]
+        # CHU ANH AI TRUOC (user 2026-10-17, dao nguoc luat 2026-10-04): MOI cum chu noi bat tao chu anh AI (GPT qua
+        # Codex); chi cum AI KHONG tao duoc (chua cai Codex / chua dang nhap / loi / OCR sai) moi dung mau KHO TEXT —
+        # buoc TXT-lib chay SAU khi chu anh AI xong (xem "CHO VIEC CHAY NEN").
+        import cli_providers
+        tpl_res = None
+        lockups = [{"key": lk["key"], "tiers": lk["tiers"]} for lk in lk_meta]
+        if lockups and not cli_providers.find_bin("gpt"):
+            run_log.emit("note", "Chưa cài Codex (GPT) nên không tạo được chữ ảnh AI — %d cụm chữ nổi bật dùng mẫu "
+                         "Kho Text" % len(lockups), step="TXT-art", level="warn")
+            lockups = []
         # VIDEO MAU: moi cum chu anh AI nhan ANH CHU THAT cua dung kieu chu (lop R4 ghi "kieu_chu"; cum khong ghi /
         # caption hero / hook -> kieu chu NHAN chinh). Khong co anh tham chieu -> lockups y nhu cu (khoa cache cu)
         art_styles = None
@@ -1959,11 +1944,21 @@ def _remotion_autoplan(b):
                 warnings.append("Chữ ảnh AI lỗi (%s) — dùng chữ vẽ bằng code." % str(ex)[:160])
             n_ok = len(art_res.get("items") or {})
             for f in art_res.get("failed") or []:
-                run_log.emit("note", "Chữ ảnh AI bỏ cụm '%s': %s — dùng chữ vẽ bằng code" % (f.get("text"), f.get("ly_do")),
+                run_log.emit("note", "Chữ ảnh AI bỏ cụm '%s': %s — thử mẫu Kho Text" % (f.get("text"), f.get("ly_do")),
                              step="TXT-art", level="warn")
-            run_log.emit("result", "Chữ ảnh AI: %d cụm đạt, %d cụm dùng chữ code" % (n_ok, len(art_res.get("failed") or [])),
-                         step="TXT-art", level="ok" if n_ok else "warn",
-                         output={k: [t.get("file") for t in v.get("tiers") or []] for k, v in (art_res.get("items") or {}).items()})
+            run_log.emit("result", "Chữ ảnh AI: %d cụm đạt, %d cụm không tạo được (thử mẫu Kho Text)" % (
+                n_ok, len(lk_meta) - n_ok), step="TXT-art", level="ok" if n_ok else "warn",
+                output={k: [t.get("file") for t in v.get("tiers") or []] for k, v in (art_res.get("items") or {}).items()})
+        # KHO TEXT DU PHONG: cum chu anh AI khong tao duoc -> AI chon mau Kho Text (chi thay chu). Kho trong / Brand
+        # Guideline ep font-mau / khong mau hop -> cum do dung chu ve bang code.
+        _art_items = (art_res or {}).get("items") or {}
+        _lk_lib = [lk for lk in lk_meta if lk["key"] not in _art_items]
+        if _lk_lib:
+            tpl_res = _text_lib_step(_lk_lib, design, captions, hook_info, transcript_data, story, style_phien, brand,
+                                     _step)
+            if not (tpl_res or {}).get("items"):
+                run_log.emit("note", "%d cụm chữ nổi bật không có chữ ảnh AI lẫn mẫu Kho Text — dùng chữ vẽ bằng code"
+                             % len(_lk_lib), step="TXT-lib", level="warn")
         if gfx_future is not None:
             try:
                 gfx_res = gfx_future.result() or {}
@@ -2044,7 +2039,7 @@ def _remotion_autoplan(b):
                 "thu_tu_video": selection.get("thu_tu_video"),
                 "thu_tu": ["B1-select", "B2-timeline"] + (["DD-chi-dao"] if chi_dao else []) + [
                     "B3-hook", "R4-design" if visual is design else "R4-visual", "assets", "R5-captions",
-                    "TXT-lib", "TXT-art", "GFX-art", "FX-plan", "FX-code", "B6-inserts", "B7-audio"]
+                    "TXT-art", "TXT-lib", "GFX-art", "FX-plan", "FX-code", "B6-inserts", "B7-audio"]
                     + (["DD-duyet"] if dd_review else []),
                 # nhan xet + thay doi cua dao dien o buoc duyet (UI hien)
                 "dao_dien_duyet": dd_review,
@@ -2074,27 +2069,16 @@ def _remotion_autoplan(b):
                 report = _rep_hook
             plan["_pipeline"]["luat_hook"] = _hook_notes or ["hook da du hieu ung hinh + am thanh"]
         if spec and (report or {}).get("tpl_lost"):
-            # MAU KHO TEXT khong dat duoc (khoi mau to, khong con cho ngoai mat nguoi noi) -> cum do theo luat: KHONG co
-            # mau dung duoc thi tao CHU ANH AI (khong de chu ve bang code)
+            # MAU KHO TEXT khong dat duoc (khoi mau to, khong con cho ngoai mat nguoi noi). Cum dung mau = cum chu anh AI
+            # da KHONG tao duoc (chu anh AI chay truoc, 2026-10-17) -> khong tao lai, cum do dung chu ve bang code
             lost = set(report["tpl_lost"])
-            lk_lost = [{"key": lk["key"], "tiers": lk["tiers"]} for lk in lk_meta if lk["key"] in lost]
             for k in lost:
                 ((plan.get("text_lib") or {}).get("items") or {}).pop(k, None)
             if not ((plan.get("text_lib") or {}).get("items")):
                 plan["text_lib"] = None
             run_log.emit("note", "Kho Text: %d cụm có mẫu nhưng khối chữ của mẫu không còn chỗ ngoài mặt người nói -> "
-                         "tạo chữ ảnh AI cho cụm đó" % len(lk_lost), step="TXT-lib", level="warn",
-                         output=[" / ".join(t["text"] for t in lk["tiers"]) for lk in lk_lost])
-            if lk_lost:
-                bu_key = {"lk": lk_lost, "style": style_phien, "story": story, "v": text_art.ART_VERSION}
-                if brand_guide.view(brand, "text_art"):
-                    bu_key["brand"] = brand_guide.view(brand, "text_art")
-                bu = _step("TXT-art", bu_key, lambda: text_art.make_text_art(
-                    lk_lost, style=style_phien, story=story, log=logger.info,
-                    emit=lambda m: run_log.emit("note", m, step="TXT-art"), brand=brand), True) or {}
-                items = dict(((plan.get("text_art") or {}).get("items")) or {})
-                items.update(bu.get("items") or {})
-                plan["text_art"] = {"items": items} if items else None
+                         "dùng chữ vẽ bằng code" % len(lost), step="TXT-lib", level="warn",
+                         output=[" / ".join(t["text"] for t in lk["tiers"]) for lk in lk_meta if lk["key"] in lost])
             spec, report = remotion_plan.build_spec(plan, log=lambda m: run_log.emit("note", m, step="build"))
         if spec and um_items:
             # tu lieu nao hien o dau (gio timeline cua ban dung that) + ly do -> UI

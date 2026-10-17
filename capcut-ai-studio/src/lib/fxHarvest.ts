@@ -1,8 +1,8 @@
 /**
  * KHO HIEU UNG — bo dieu phoi viec NEN (2026-10-05).
  *
- * Video render xong -> harvestAfterRender(): sidecar dong goi hieu ung tu viet cua plan vao kho may nay (ms, khong AI).
- * Sau do vong lap nen lam TUNG viec mot, cho toi khi het viec:
+ * KHONG tu dong goi hieu ung sau khi render nua (user 2026-10-17: tac gia tu viet code hieu ung roi bo sung vao kho).
+ * Vong lap nen chi xu ly cac muc da co trong kho, lam TUNG viec mot, cho toi khi het viec:
  *   1. render preview.mp4   — lan 'render' UU TIEN THAP (acquireIdle): chi khi khong video nao dang / cho render,
  *                             video nguoi dung bam sau van chen len truoc (moi preview ~10-20s).
  *   2. Gemini gan nhan       — lan 'gemini' uu tien thap, 4 preview / luot.
@@ -56,17 +56,7 @@ export function subscribeHarvest(fn: () => void): () => void {
   }
 }
 
-/** Goi khi 1 video RENDER XONG: dong goi hieu ung tu viet cua plan roi chay viec nen. Khong bao gio nem loi. */
-export function harvestAfterRender(plan: RemotionPlan | null | undefined, project: string, orientation?: VideoOrientation): void {
-  const fx = Array.isArray(plan?.fx) ? (plan?.fx as unknown[]) : []
-  if (!fx.length || !window.studio.fxlibHarvest) return
-  window.studio
-    .fxlibHarvest({ fx, project, orientation })
-    .then(() => kickHarvest())
-    .catch(() => undefined)
-}
-
-/** Danh thuc vong lap nen (mo app, sau dong goi, sau "Thu lai"). Dang chay -> chay them 1 vong sau khi xong.
+/** Danh thuc vong lap nen (mo app, sau "Thu lai"). Dang chay -> chay them 1 vong sau khi xong.
  *  retryOffline: nguoi dung bam thu lai -> bo co "Gemini / may chu khong dung duoc" cua phien nay. */
 export function kickHarvest(retryOffline = false): void {
   if (retryOffline) {

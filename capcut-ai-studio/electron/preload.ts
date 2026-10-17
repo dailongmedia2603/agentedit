@@ -129,7 +129,6 @@ const api = {
   remotionAutoplan: (payload: unknown) => ipcRenderer.invoke('remotion:autoplan', payload),
   // Kho hieu ung tu viet
   fxlibList: () => ipcRenderer.invoke('fxlib:list'),
-  fxlibHarvest: (payload: unknown) => ipcRenderer.invoke('fxlib:harvest', payload),
   fxlibRenderPreview: (id: string) => ipcRenderer.invoke('fxlib:renderPreview', id),
   fxlibLabel: (ids: string[]) => ipcRenderer.invoke('fxlib:label', ids),
   fxlibShare: (id: string) => ipcRenderer.invoke('fxlib:share', id),

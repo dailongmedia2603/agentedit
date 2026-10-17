@@ -31,7 +31,7 @@ function stateOf(e: FxLibItem): { text: string; tone: 'neutral' | 'ok' | 'warn' 
   return { text: 'chờ gửi kho chung', tone: 'neutral' }
 }
 
-/** Kho hiệu ứng tự viết: hiệu ứng AI đã viết code ở video trước, đóng gói để video sau dùng lại. */
+/** Kho hiệu ứng: hiệu ứng đã viết sẵn (tác giả tự code rồi bổ sung vào kho) để AI dùng lại khi dựng video. */
 export default function FxLibraryPage() {
   const [items, setItems] = useState<FxLibItem[]>([])
   const [filter, setFilter] = useState<Filter>('all')
@@ -141,8 +141,8 @@ export default function FxLibraryPage() {
       <div className="mt-5 flex items-start gap-2 rounded-xl border border-ink-200/40 bg-white/50 px-4 py-3">
         <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-500" />
         <p className="text-[13px] leading-relaxed text-ink-800/65">
-          Tự động: video <b>render xong</b> thì hiệu ứng của nó được đóng gói vào kho này, rồi chạy nền khi máy rảnh: dựng
-          xem trước (trên nền trung tính, không dùng hình video của bạn) → Gemini xem và viết mô tả → gửi kho chung (cần
+          Kho chứa hiệu ứng viết sẵn được bổ sung vào — hiệu ứng AI viết khi dựng video <b>không</b> tự lưu vào đây. Mỗi
+          hiệu ứng mới chạy nền khi máy rảnh: dựng xem trước (trên nền trung tính, không dùng hình video của bạn) → Gemini xem và viết mô tả → gửi kho chung (cần
           duyệt trước khi phát cho các máy khác). Hiệu ứng tắt <Power className="inline h-3 w-3" /> sẽ không được gợi ý
           dùng lại.
         </p>
@@ -266,8 +266,7 @@ export default function FxLibraryPage() {
         <div className="mt-4 flex items-start gap-2 rounded-xl border border-ink-200/40 bg-white/40 px-4 py-6 text-center">
           <Info className="mx-auto h-4 w-4 text-ink-800/30" />
           <p className="w-full text-sm text-ink-800/40">
-            Kho còn trống — tạo và render một video, hiệu ứng AI viết cho video đó sẽ tự vào đây. Hoặc bấm "Đồng bộ kho"
-            để tải kho chung.
+            Kho còn trống — chưa có hiệu ứng viết sẵn nào. Bấm "Đồng bộ kho" để tải kho chung.
           </p>
         </div>
       )}

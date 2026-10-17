@@ -269,7 +269,7 @@ try:
     check("plan la cua Remotion", plan.get("engine") == "remotion", plan.get("engine"))
     check("_pipeline co story_arc + tone", pip.get("story_arc") == STORY_ARC and pip.get("tone"), pip)
     check("_pipeline ghi dung thu tu buoc", pip.get("thu_tu") == ["B1-select", "B2-timeline", "B3-hook", "R4-design",
-                                                                  "assets", "R5-captions", "TXT-lib", "TXT-art", "GFX-art", "FX-plan",
+                                                                  "assets", "R5-captions", "TXT-art", "TXT-lib", "GFX-art", "FX-plan",
                                                                   "FX-code", "B6-inserts", "B7-audio"],
           pip.get("thu_tu"))
     body = [s for s in plan.get("segments", []) if s.get("beat")]
@@ -487,6 +487,60 @@ try:
           ((d13b.get("spec") or {}).get("width"), (d13b.get("spec") or {}).get("height")) == (1080, 1920)
           and not any("khung_hinh" in (p.get("cau_chuyen") or {}) for p in NHAN.values())
           and not any("KHUNG VIDEO: NGANG" in s for s in SYS.values()), d13b.get("error"))
+
+    print("\n[14] CHU ANH AI TRUOC, KHO TEXT DU PHONG (2026-10-17): chi cum AI khong tao duoc moi sang Kho Text")
+    import text_tpl
+    import cli_providers
+    LIB14 = []
+
+    def fake_choose(ctxs, rows, **k):
+        LIB14.append([c["key"] for c in ctxs])
+        return {"items": {}, "bo_qua": []}
+
+    ART14 = []
+
+    def fake_art(lockups, **k):
+        ART14.append([lk["key"] for lk in lockups])
+        k0 = lockups[0]["key"]
+        return {"items": {k0: {"tiers": []}}, "failed": [{"key": lk["key"], "text": "x", "ly_do": "loi"} for lk in lockups[1:]]}
+
+    _g14 = (text_tpl.usable, text_tpl.choose, text_tpl.catalog_fp, text_art.make_text_art, cli_providers.find_bin)
+    text_tpl.usable = lambda: [{"id": "tpl-gia"}]
+    text_tpl.catalog_fp = lambda rows: "gia"
+    text_tpl.choose = fake_choose
+    text_art.make_text_art = fake_art
+    try:
+        THU_TU.clear()
+        ev14 = []
+        _emit14 = server.run_log.emit
+        server.run_log.emit = lambda kind, msg, step=None, **kw: (ev14.append((step, kind)), _emit14(kind, msg, step=step, **kw))[1]
+        try:
+            with server.app.test_client() as c:
+                r = c.post("/remotion/autoplan", json={"brief": BRIEF, "fresh": True,
+                                                       "edit_request": {"purpose": "canh bao lua dao"}})
+        finally:
+            server.run_log.emit = _emit14
+        d14 = r.get_json() or {}
+        check("chay xong", r.status_code == 200 and d14.get("ok"), d14.get("error"))
+        tat_ca = ART14[0] if ART14 else []
+        check("chu anh AI nhan MOI cum chu noi bat (khong bi Kho Text lay truoc)", len(tat_ca) >= 2, ART14)
+        check("Kho Text chi nhan cum chu anh AI khong tao duoc", LIB14 and LIB14[0] == tat_ca[1:], (LIB14, tat_ca))
+        _st = [s for s, _ in ev14]
+        check("TXT-lib chay SAU ket qua TXT-art", "TXT-lib" in _st and _st.index("TXT-lib") > max(
+            i for i, (s, kd) in enumerate(ev14) if s == "TXT-art" and kd == "result"), _st)
+
+        # chua cai Codex (khong co GPT) -> khong tao chu anh AI, moi cum sang Kho Text
+        cli_providers.find_bin = lambda name, *a, **k: None if name == "gpt" else _g14[4](name, *a, **k)
+        ART14.clear()
+        LIB14.clear()
+        with server.app.test_client() as c:
+            r = c.post("/remotion/autoplan", json={"brief": BRIEF, "fresh": True,
+                                                   "edit_request": {"purpose": "canh bao lua dao"}})
+        d14b = r.get_json() or {}
+        check("khong GPT: chay xong, khong goi chu anh AI", d14b.get("ok") and not ART14, (d14b.get("error"), ART14))
+        check("khong GPT: moi cum sang Kho Text", LIB14 and sorted(LIB14[0]) == sorted(tat_ca), (LIB14, tat_ca))
+    finally:
+        text_tpl.usable, text_tpl.choose, text_tpl.catalog_fp, text_art.make_text_art, cli_providers.find_bin = _g14
 finally:
     shutil.rmtree(TMP, ignore_errors=True)
 

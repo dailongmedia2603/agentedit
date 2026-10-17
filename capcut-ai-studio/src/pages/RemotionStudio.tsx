@@ -41,7 +41,6 @@ import { loadVideoMeta } from '@/lib/media'
 import type { RenderSpec } from '../../remotion-src/types'
 import { IS_WIN, REVEAL_LABEL } from '../lib/platform'
 import { acquire, cancelWait, waitPosition, QueueCancelled, type Lane } from '@/lib/jobQueue'
-import { harvestAfterRender } from '@/lib/fxHarvest'
 import { useJobQueue } from '@/lib/useJobQueue'
 
 /** Khop sidecar remotion_plan.SPEC_MEDIA_VERSION — spec cu hon thi dung lai tu plan khi mo du an */
@@ -1023,8 +1022,6 @@ export default function RemotionStudioPage({
       if (ev.type === 'done' && ev.output) {
         setRender({ output: ev.output, size: ev.size, seconds: ev.seconds, at: Date.now() })
         logUi(rid, `Render xong: ${ev.output} (${fmtBytes(ev.size)}, ${Math.round(ev.seconds || 0)}s)`, 'ok')
-        // Kho hieu ung: video da xong -> dong goi hieu ung tu viet de video sau dung lai (chay nen, khong chan gi)
-        harvestAfterRender(plan, rid, orientationOf(spec))
         setStage('done')
       } else if (ev.type === 'cancelled') {
         logUi(rid, 'Đã huỷ render', 'warn')

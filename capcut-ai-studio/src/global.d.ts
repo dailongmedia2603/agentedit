@@ -196,13 +196,6 @@ interface StudioBridge {
   }>
   // ---- Kho hieu ung tu viet (sidecar fx_lib.py) ----
   fxlibList(): Promise<{ ok: boolean; effects?: FxLibItem[]; pending?: FxLibPending; error?: string }>
-  fxlibHarvest(payload: { fx: unknown[]; project?: string; orientation?: VideoOrientation }): Promise<{
-    ok: boolean
-    added?: string[]
-    reused?: string[]
-    skipped?: { id: string; src?: string; ly_do?: string }[]
-    error?: string
-  }>
   fxlibRenderPreview(id: string): Promise<{ ok: boolean; busy?: boolean; cancelled?: boolean; error?: string }>
   fxlibLabel(ids: string[]): Promise<{
     ok: boolean

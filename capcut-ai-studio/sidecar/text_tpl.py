@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""KHO TEXT KHI LAP KE HOACH (user 2026-10-04): moi cum chu noi bat KIEM TRA KHO TEXT TRUOC.
+"""KHO TEXT KHI LAP KE HOACH (user 2026-10-04; DAO THU TU 2026-10-17): chu anh AI (text_art, GPT qua Codex) chay TRUOC
+cho moi cum chu noi bat; Kho Text la DU PHONG cho cum chu anh AI khong tao duoc (chua cai Codex / loi / OCR sai).
 
 Mau hop boi canh (chu de video, khoanh khac, muc do, vai tro cum chu) -> dung NGUYEN mau (hoat canh, font, hieu ung,
-am thanh) va chi THAY CHU: tung o chu (slot) nhan dung chu cua cum (loi noi that). Khong mau nao hop -> cum do moi di
-duong chu anh AI (text_art) nhu cu. Buoc "TXT-lib" chay sau R5, TRUOC TXT-art (cum da dung mau khong tao anh AI).
+am thanh) va chi THAY CHU: tung o chu (slot) nhan dung chu cua cum (loi noi that). Khong mau nao hop -> cum do dung chu
+ve bang code. Buoc "TXT-lib" chay SAU khi TXT-art xong, chi voi cac cum TXT-art bo.
 
 Kiem bang CODE (AI de xuat, code quyet):
   - chu cac o doc theo THU TU DOC cua mau (tren -> duoi, trai -> phai — do tu hinh hoc mau) = dung chu cua cum, dung
@@ -45,9 +46,9 @@ def _p(name):
 
 
 _TEXT_LIB_SYSTEM = """Ban la EDITOR chu dong cho video ngan. Video nay co cac CUM CHU NOI BAT (chu to hien tren video, khong phai
-phu de karaoke). Truoc khi cho AI ve chu bang anh, PHAI KIEM TRA KHO TEXT (mau chu dong lam san: hoat canh + font +
-hieu ung + am thanh, chuan Remotion). Voi MOI cum chu: xem kho co mau nao HOP khong -> hop thi dung mau do va DIEN CHU
-CUA CUM vao cac o chu cua mau; khong hop thi khong dung (he thong se tao chu anh AI cho cum do).
+phu de karaoke) ma he thong KHONG tao duoc chu anh AI -> dung KHO TEXT (mau chu dong lam san: hoat canh + font +
+hieu ung + am thanh, chuan Remotion) thay the. Voi MOI cum chu: xem kho co mau nao HOP khong -> hop thi dung mau do va
+DIEN CHU CUA CUM vao cac o chu cua mau; khong hop thi khong dung (he thong se ve chu bang code cho cum do).
 
 # KHI NAO MAU "HOP" (danh gia theo nhan cua mau — ban KHONG xem duoc hoat canh)
 - Phong cach / cam giac / muc do (nhe-vua-manh) cua mau hop CHU DE + GIONG video va hop KHOANH KHAC do (cau dang noi,
@@ -810,7 +811,7 @@ def catalog_fp(rows):
 
 
 # ---------------------------------------------------------------------------
-# 4. BUOC AI "TXT-lib": de xuat -> code kiem -> sai thi AI sua 1 luot -> van sai thi cum do di chu anh AI
+# 4. BUOC AI "TXT-lib": de xuat -> code kiem -> sai thi AI sua 1 luot -> van sai thi cum do dung chu ve bang code
 # ---------------------------------------------------------------------------
 def _ask(payload, note=None, log=None, story=None):
     import providers

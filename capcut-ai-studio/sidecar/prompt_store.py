@@ -243,13 +243,14 @@ PROMPTS = [
              "Hệ thống tự điền {chu_de} {phong_cach} {hang} {mau_tham_chieu} {out} — giữ nguyên {hang} và {out}."},
     {"id": "_TEXT_LIB_SYSTEM", "group": "remotion", "module": "text_tpl", "own_key": True,
      "title": "Kho Text · Chọn mẫu chữ cho từng cụm chữ (TXT-lib)",
-     "used_in": "Video Remotion — bước Plan, sau R5, TRƯỚC chữ ảnh AI",
-     "info": "Mỗi cụm chữ nổi bật được KIỂM TRA KHO TEXT TRƯỚC: AI đọc nhãn từng mẫu (phong cách, mức độ, hợp khi / tránh "
+     "used_in": "Video Remotion — bước Plan, SAU chữ ảnh AI (chỉ cụm chữ ảnh AI không tạo được)",
+     "info": "Chữ ảnh AI (GPT) chạy TRƯỚC cho mọi cụm chữ nổi bật; cụm nào AI không tạo được (chưa cài / chưa đăng nhập "
+             "Codex, lỗi, chữ sai) mới dùng KHO TEXT: AI đọc nhãn từng mẫu (phong cách, mức độ, hợp khi / tránh "
              "khi, vai trò từng ô chữ) + bối cảnh cụm chữ (câu đang nói, hook, ý đồ) rồi chọn mẫu và điền CHỮ CỦA CỤM vào "
              "các ô. Code kiểm: đọc theo thứ tự đọc của mẫu phải đúng nguyên chữ + đúng thứ tự lời nói, font đủ dấu tiếng "
              "Việt, chữ không phải thu nhỏ dưới 60% để vừa ô, mỗi mẫu tối đa 2 lần / video — sai thì AI sửa 1 lượt. Cụm "
-             "dùng mẫu giữ NGUYÊN hoạt cảnh + font + âm thanh của mẫu, KHÔNG tạo chữ ảnh AI; cụm không có mẫu hợp mới tạo "
-             "chữ ảnh AI. Kho trống thì bước này không chạy."},
+             "dùng mẫu giữ NGUYÊN hoạt cảnh + font + âm thanh của mẫu; cụm không có mẫu hợp thì vẽ chữ bằng code. Kho "
+             "trống thì bước này không chạy."},
     {"id": "_GRAPHIC_ART_PROMPT", "group": "remotion", "module": "graphic_art", "own_key": True,
      "template": ["phan_tu", "out"],
      "title": "Đồ hoạ có chữ bằng ảnh AI (huy hiệu…)",

@@ -1222,6 +1222,12 @@ sau Cloudflare Access, email `dailongmedia.agency@gmail.com`). Bi mat o `~/.capc
   Remotion ma hoa AAC lam tieng TRE ~43ms (WAV thi dung) — anh huong moi video app xuat, chua sua.
 
 ### 13i. KHO TEXT KHI LAP KE HOACH — kiem kho truoc, chu anh AI sau (2026-10-04, `sidecar/text_tpl.py`)
+- **DAO THU TU (user 2026-10-17)**: CHU ANH AI (GPT qua Codex) chay TRUOC cho MOI cum chu noi bat; Kho Text chi la DU
+  PHONG cho cum chu anh AI khong tao duoc (chua cai Codex -> `cli_providers.find_bin("gpt")` rong thi bo TXT-art, moi cum
+  sang Kho Text; chua dang nhap / loi / OCR sai -> cum `failed`). TXT-lib chay SAU khi cho ket qua TXT-art (server.py
+  "CHO VIEC CHAY NEN"), chi voi cac cum do; khong mau hop / kho trong / Brand Guideline ep font -> chu ve bang code.
+  `tpl_lost` -> chu code (khong tao lai chu anh AI). `dup_of_template` khong con dung trong autoplan. `_pipeline.thu_tu`:
+  TXT-art truoc TXT-lib. Test: `tests/test_info_flow.py` [14]. Phan duoi day la luat cu (kho truoc) de tham khao.
 - User: moi cum chu noi bat (lop chu R4, caption hero / hook) phai KIEM KHO TEXT TRUOC; mau hop boi canh -> dung NGUYEN
   mau (hoat canh + font + hieu ung + am thanh), chi THAY CHU + xep cho khong vo bo cuc; khong mau nao hop moi tao chu
   anh AI. Buoc **TXT-lib** (Claude) chay sau R5, TRUOC TXT-art; cum dung mau bi loai khoi TXT-art (khong tao anh).
@@ -1293,6 +1299,13 @@ sau Cloudflare Access, email `dailongmedia.agency@gmail.com`). Bi mat o `~/.capc
   "ngay tại nhà!" nay len (chuong cua ding-dong), 3.3s ca khoi mo. Test: `tests/test_text_tpl.py` muc [7].
 
 ### 13k. KHO HIEU UNG TU VIET — dong goi, dung lai, kho chung co duyet (2026-10-05, `sidecar/fx_lib.py`)
+- **BO TU DONG GOI (user 2026-10-17)**: hieu ung AI viet khi edit video KHONG con tu vao kho (bo `harvestAfterRender`
+  o RemotionStudio, route `/fxlib/harvest`, IPC `fxlib:harvest`, buoc dong goi trong CLI `harvestEffects`). Tac gia TU
+  VIET code hieu ung roi bo sung vao kho (`fx_lib.harvest` van goi duoc tu script); viec nen preview / Gemini / gui kho
+  chung + dung lai khi lap plan giu nguyen cho cac muc duoc bo sung. DA DON KHO 2026-10-17: may nay 123 muc -> 0 (xoa
+  `fx_effects/`, `fx_library.json` rong); R2 `fx/` 334 muc (668 file) da xoa; D1 `fx_items` 334 dong -> `rejected`
+  (decided_by 'don dep kho 2026-10-17' — giu dong de app cu gui lai cung code van bi tu choi). App cu (<= 1.11.0) van tu
+  dong goi + gui len cho toi khi cap nhat (may tin cay -> tu duyet).
 
 User: hieu ung Claude viet code (plan.fx, FX-code / Hook-FX-plan; KHONG gom anh AI / chu anh AI / mau Kho Text) chi dung 1
 lan la lang phi -> tu dong goi vao kho, Gemini mo ta, day len kho chung R2; video sau kiem kho truoc, dung lai / sua nhe.
