@@ -78,8 +78,6 @@ Trường chung:
   (bộ tiếng motion graphics có sẵn, âm lượng tự cân theo giọng).
 - `keyframes`: `t` tính từ lúc lớp bắt đầu; thuộc tính `x y scale scaleX rotation skewX opacity blur`;
   `easing` của đoạn DẪN TỚI keyframe đó.
-- `qd`: số đoạn (hoặc `"hook"`) của LỆNH ĐẠO DIỄN mà lớp / scene này thực hiện (`cau_chuyen.chi_dao.viec_cua_ban`) —
-  ghi trên MỌI lớp của tổ hợp làm lệnh đó; hệ thống đối chiếu lệnh ↔ lớp, lệnh không có lớp nào mang `qd` bị báo thiếu.
 
 ### Loại lớp
 - `text` — chữ, nhiều SPAN (mỗi span 1 font/màu/cỡ riêng) → tổ hợp chữ (lockup):

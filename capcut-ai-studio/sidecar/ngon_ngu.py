@@ -6,7 +6,7 @@ hien thi, chu anh AI, mau Kho Text, phu de phai theo ngon ngu do").
 - Ngon ngu lay tu phan tich Gemini (`brief.language`, schema "vi|en|..."); thieu -> doan theo transcript.
 - `story_view(brief)` ghi vao `cau_chuyen` (story) cho MOI buoc AI sau B1 — CHI khi KHAC tieng Viet. Giong
   canvas.story_view: video tieng Viet khong them gi vao prompt / khoa cache -> ket qua AI da luu van dung lai.
-- `luat(story, buoc)` = luat NOI BANG CODE vao system prompt cac buoc viet chu (B3 hook, DD dao dien, R4 thiet ke,
+- `luat(story, buoc)` = luat NOI BANG CODE vao system prompt cac buoc viet chu (B3 hook, R4 thiet ke,
   R5 phu de, TXT-lib kho text, text_art / graphic_art anh AI) — ke ca khi user da sua prompt cua buoc do (prompt goc
   van ghi "tieng Viet co dau": luat nay UU TIEN hon). Tieng Viet -> ''.
 - Ghi chu / ly do cho NGUOI DUNG doc (why, ly_do, nhan xet...) van tieng Viet — chi chu HIEN TREN VIDEO doi ngon ngu.
@@ -142,8 +142,6 @@ Ghi chu cho nguoi dung doc (why, ly_do, reason, nhan_xet, mo ta...) van viet tie
 
 _BUOC = {
     "B3": "\n- Rieng buoc HOOK: \"caption\" cua hook viet bang {vn}, tom y dung cau hook nguoi do noi.",
-    "DD": "\n- Rieng DAO DIEN: cac truong mo ta van tieng Viet, NHUNG moi cho TRICH loi noi (loi_noi, chu_nhan) chep "
-          "NGUYEN VAN {vn} nhu transcript; chu / CTA ban de xuat hien tren video cung bang {vn}.",
     "R4": "\n- Rieng buoc THIET KE: moi lop chu (text, counter, badge label / value, chu nhan, CTA, chu trong bo cuc) "
           "viet bang {vn}; \"illustrates\" chep NGUYEN VAN cau noi {vn} tu transcript; \"prompt\" anh AI van TIENG ANH "
           "nhu quy dinh.",
@@ -158,7 +156,7 @@ _BUOC = {
 
 
 def luat(story, buoc):
-    """Khoi luat ngon ngu noi vao system prompt cua buoc `buoc` (B3 | DD | R4 | R5 | TXT-lib | image). Tieng Viet -> ''."""
+    """Khoi luat ngon ngu noi vao system prompt cua buoc `buoc` (B3 | R4 | R5 | TXT-lib | image). Tieng Viet -> ''."""
     c = cua_story(story)
     if c == VI:
         return ""

@@ -6,7 +6,7 @@ Chay: HOME=$(mktemp -d) <venv_python> tests/test_ref_pack.py      (macOS: OCR Vi
 
 [1] dung bo anh: OCR tim dung hop chu (vung Gemini lech van cat dung), gop kieu chu trung (alias), anh chu dang vao,
     anh hieu ung, anh tong the, files_ok
-[2] moi buoc CHI nhan anh cua no (DD tong the; R4 kieu chu + vao + tong the; R5 phu de; FX-plan hieu ung; FX-code chi
+[2] moi buoc CHI nhan anh cua no (R4 kieu chu + vao + tong the; R5 phu de; FX-plan hieu ung; FX-code chi
     hieu ung duoc goi ten)
 [3] ensure: phan tich cu khong co bo anh -> dung (1 luot Gemini gia) + luu thu vien; lan sau doc tu dia (khong Gemini)
 [4] Claude CLI: chep anh vao thu muc lam viec, chi bat Read, du luot, prompt liet ke anh; khong mo anh -> goi lai 1 lan
@@ -104,7 +104,7 @@ check("CUNG chu 2 kieu: lop ghi kieu_chu lay dung anh kieu do (khong lay anh dau
 
 print("\n[2] Moi buoc chi nhan anh cua no")
 names = lambda b, ids=None: [os.path.basename(x["path"]) for x in ref_pack.images_for(pk, b, ids)]  # noqa: E731
-check("DD: chi tong the", names("DD") == ["tong_the.jpg"], names("DD"))
+check("buoc la (vd DD da go) -> khong anh", names("DD") == [], names("DD"))
 check("R4: kieu chu (tinh + dang vao) + tong the, khong hieu ung", names("R4") == ["chu_chu1.jpg", "chu_chu1_vao.jpg",
                                                                                  "chu_phude.jpg", "tong_the.jpg"], names("R4"))
 check("R5: chi phu de", names("R5") == ["chu_phude.jpg"], names("R5"))
@@ -219,8 +219,6 @@ TRA = {
                                                                      {"source_id": "source_1", "start": 8.0, "end": 13.9}]},
     "B2-timeline": {"segments": [{"source_id": "source_1", "start": 0.0, "end": 5.8, "target_start": 0.0},
                                  {"source_id": "source_1", "start": 8.0, "end": 13.9, "target_start": 5.8}]},
-    "DD-chi-dao": {"y_tuong_lon": "con dau do", "chu_de_that": "x", "cuong_do": 4,
-                   "nhip": [{"tu_segment": 0, "den_segment": 1, "nang_luong": 4}], "am_thanh": {"the_gioi": "dien_anh"}},
     "B3-hook": {"hook": None},
     "R4-design": {"concept": "c", "scenes": [], "assets": [], "effects": [], "transitions": [], "layers": [
         {"id": "a1", "type": "text", "kieu_chu": "chu2", "source_id": "source_1", "src_start": 0.5, "src_end": 2.0,
@@ -238,7 +236,7 @@ TRA = {
     "FX-code": {"effects": [
         {"id": "fx1", "fit_check": {"ok": True}, "code": "function render(ctx){ return h('svg', {width: ctx.W, height: ctx.H}, h('rect', {x: 10, y: 10, width: 100 * env(ctx.t, ctx.d), height: 20, fill: '#ffffff'})) }"},
         {"id": "fx2", "fit_check": {"ok": True}, "code": "function render(ctx){ return h('svg', {width: ctx.W, height: ctx.H}, h('circle', {cx: 100, cy: 100, r: 30 * env(ctx.t, ctx.d) + 1, fill: 'none', stroke: '#fff'})) }"}]},
-    "B6-inserts": {"inserts": []}, "B7-audio": {"audio": []}, "DD-duyet": {"nhan_xet": "ok", "bo": []},
+    "B6-inserts": {"inserts": []}, "B7-audio": {"audio": []},
 }
 GOT = {}
 
@@ -264,9 +262,7 @@ with server.app.test_client() as c:
 dd = r.get_json() or {}
 check("autoplan chay xong", r.status_code == 200 and dd.get("ok"), dd.get("error"))
 im = lambda lab: (GOT.get(lab) or [{}])[0].get("images")  # noqa: E731
-check("DD nhan CHI anh tong the + bo phong cach video mau", im("DD-chi-dao") == ["tong_the.jpg"]
-      and (GOT["DD-chi-dao"][0]["user"].get("video_mau") or {}).get("bo_phong_cach"), im("DD-chi-dao"))
-check("DD: luat uu tien video mau trong prompt", "NGUOI DUNG DA CHON PHONG CACH NAY" in GOT["DD-chi-dao"][0]["sys"])
+check("khong con buoc dao dien", not any(str(k).startswith("DD-") for k in GOT), list(GOT))
 check("R4 nhan anh kieu chu (tinh + vao) + tong the + id trong payload + luat", im("R4-design") == [
     "chu_chu1.jpg", "chu_chu1_vao.jpg", "chu_phude.jpg", "tong_the.jpg"]
       and (GOT["R4-design"][0]["user"].get("anh_tham_chieu") or {}).get("kieu_chu")

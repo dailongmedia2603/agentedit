@@ -18,6 +18,7 @@ import os
 import re
 import shutil
 import subprocess
+import unicodedata
 
 import canvas as CV
 import creative
@@ -68,8 +69,8 @@ DUNG khoanh khac do trong video. Tha KHONG co hieu ung con hon hieu ung sai ngu 
 2. MUC TIEU ("goal"): nguoi xem can CAM THAY / CHU Y dieu gi ngay luc do (nhan manh cau chot, tao to mo, cam
    giac soc / bat ngo, dan mat toi san pham, the hien cam xuc cua nguoi noi, chuyen y, minh hoa mot y an du...).
    Khong tim duoc muc tieu ro -> KHONG dat hieu ung o khoanh khac do.
-2b. Y NGHIA ("y_nghia", bat buoc): hieu ung nay lam ro / khuech dai Y NAO dang noi (trich loi noi + doi chieu
-   cau_chuyen.chi_dao.phan_tich: mach_y / tu_khoa), hoac dan mat toi tu / vat nao. Khong ghi duoc y cu the -> KHONG dat.
+2b. Y NGHIA ("y_nghia", bat buoc): hieu ung nay lam ro / khuech dai Y NAO dang noi (trich loi noi), hoac dan mat toi
+   tu / vat nao. Khong ghi duoc y cu the -> KHONG dat.
 3. VI SAO HOP ("why_fit"): giai thich hieu ung nay phuc vu muc tieu tren NHU THE NAO, nhac CU THE toi loi noi /
    cam xuc / hinh anh cua chinh khoanh khac do. Cau chung chung ("tang tinh hap dan") = KHONG dat.
 4. THIET KE ("visual"): mo ta hinh anh chi tiet de viet code: hinh khoi (vet, hat, vong, anh sang, khung,
@@ -106,15 +107,14 @@ DUNG khoanh khac do trong video. Tha KHONG co hieu ung con hon hieu ung sai ngu 
      "source_id": "source_1", "src_start": 12.3, "src_end": 13.6, "anchor": null,
      "context": "<boi canh: dang noi gi (trich), cam xuc, tren man hinh co gi>",
      "goal": "<nguoi xem can cam thay / chu y gi>",
-     "y_nghia": "<lam ro / khuech dai Y nao: trich loi noi + y trong chi_dao.phan_tich>",
+     "y_nghia": "<lam ro / khuech dai Y nao: trich loi noi>",
      "why_fit": "<vi sao hieu ung nay phuc vu dung muc tieu trong boi canh nay>",
      "visual": "<mo ta hinh anh chi tiet: hinh khoi, mau, vi tri so voi mat / khung, chuyen dong vao-dinh-ra, cuong do>",
-     "sync": "<bam vao tu / nhip nao>", "colors": ["#..."], "intensity": 0.6, "sfx": null, "qd": null}
+     "sync": "<bam vao tu / nhip nao>", "colors": ["#..."], "intensity": 0.6, "sfx": null}
   ],
   "bo_qua": [{"moment": "<id>", "ly_do": "<vi sao KHONG dat hieu ung o khoanh khac dang ke nay>"}]
 }
 "sfx" (tuy chon): whoosh | swoosh | pop | click | ding | boom | riser | typing — chi khi hop.
-"qd" (khi co chi_dao.viec_cua_ban): so doan / "hook" cua lenh dao dien ma hieu ung nay thuc hien; khong thi null.
 ⚠️ TRA VE CHI JSON GOC."""
 
 _FX_CODE_SYSTEM = """Ban la LAP TRINH VIEN MOTION GRAPHICS. Viet code cho tung hieu ung da duoc de xuat, theo DUNG mo ta
@@ -345,20 +345,30 @@ _MOTIF = {
 }
 
 
+def _plain(s):
+    """Bo dau tieng Viet + thuong hoa (so khop tu khoa tren mo ta co dau / khong dau)."""
+    s = unicodedata.normalize("NFD", str(s or "")).replace("đ", "d").replace("Đ", "D")
+    return "".join(c for c in s if unicodedata.category(c) != "Mn").lower()
+
+
+# Cum PHU DINH ("khong phai vong", "thay vi gach chan") khong tinh la ve mo tip do
+_NEG_RE = re.compile(r"(chu khong phai|khong phai|khong co|khong|thay vi|tranh|chu khong|not|no|without|instead of)"
+                     r"\s+[^.,;:()\n]{0,40}")
+
+
 def drop_dup_motifs(fx_list, layers, changes):
     """MOT Y CHI MOT LAN (2026-10-16, do that video Yen Phan: y 'vong khep quanh others' xuat hien 3 lan cung luc — vong R4
     o hook, vong hieu ung tu viet o hook, vong R4 o than video): hieu ung LOP PHU ve lai DUNG loai hinh ma lop thiet ke R4
     da ve trong CUNG khoanh khac (cung phan hook / than, gio nguon chong nhau) -> bo hieu ung (lop R4 dat theo chu that,
     con hieu ung ve toa do doan). Tra danh sach con lai."""
-    import director
     f = providers._f
     keep = []
     for e in fx_list or []:
         if e.get("kind") != "overlay":
             keep.append(e)
             continue
-        txt = director._plain(" ".join(str(e.get(k) or "") for k in ("visual", "goal", "why_fit")))
-        txt = director._NEG_RE.sub(" ", txt)
+        txt = _plain(" ".join(str(e.get(k) or "") for k in ("visual", "goal", "why_fit")))
+        txt = _NEG_RE.sub(" ", txt)
         hook = e.get("anchor") == "hook"
         dup = None
         for typ, rx in _MOTIF.items():
@@ -454,8 +464,6 @@ def sanitize_plan(res, moments, changes):
             item["theo_mau"] = e["theo_mau"]      # tai hien hieu ung video mau -> FX-code xem dung anh do
         if e.get("sfx") in ("whoosh", "swoosh", "pop", "click", "ding", "boom", "riser", "typing"):
             item["sfx"] = e["sfx"]
-        if e.get("qd") is not None and str(e.get("qd")).strip() != "":
-            item["qd"] = "hook" if str(e["qd"]).strip().lower() == "hook" else e["qd"]   # lenh dao dien ma hieu ung thuc hien
         if kind == "transform":
             last_tr.append((a, b, anc))
         out.append(item)
@@ -845,7 +853,7 @@ _BOOST_CAP = {"scale": (0.6, 1.6), "rotate": (-25.0, 25.0), "blur": (0.0, 30.0),
 
 def boost_values(values, gain):
     """KHUECH DAI chuyen dong khung da tinh (luat hook, 2026-10-15): do lech so voi khung goc x gain cho moi kenh
-    (scale, x, y, xoay, nhoe, sang...). Dung khi hieu ung hook AI tu viet (theo y tuong cua dao dien) con YEU -> manh len
+    (scale, x, y, xoay, nhoe, sang...). Dung khi hieu ung hook AI tu viet con YEU -> manh len
     ma van giu dung hinh dang chuyen dong, thay vi chen zoom_punch / flash / shake trong kho. Doc lap voi code AI (code
     co the tu kep params.intensity). Tren / duoi gioi han an toan; zoom muot (smooth_scale) van ap sau do."""
     try:

@@ -169,30 +169,6 @@ PROMPTS = [
              "rất nhỏ / nhỏ / vừa. Độ to THẬT do code tính theo giọng nói của chính video (thanh trượt ở Kho nhạc nền), "
              "không bao giờ lấn giọng; nhạc bắt đầu SAU hook, tự giảm khi meme cắt vào, fade ở cuối. AI không chọn / "
              "chọn sai id → hệ thống tự chọn bài hợp nhãn nhất."},
-    {"id": "_DIRECTOR_SYSTEM", "group": "plan", "module": "director", "own_key": True,
-     "title": "DD · Đạo diễn — bản chỉ đạo",
-     "used_in": "Bước Plan — sau B2 (nội dung đã chốt) và B3 (hook đã chọn), trước R4 thiết kế",
-     "info": "Một lượt AI làm ĐẠO DIỄN: đọc toàn bộ lời nói đã chốt + phân tích Gemini (cảm xúc, khoảnh khắc, bằng "
-             "chứng) + hook đã chọn + video mẫu + yêu cầu edit + SỔ TAY các video gần đây (ý tưởng, chiêu đã dùng — để không "
-             "lặp) rồi viết BẢN CHỈ ĐẠO riêng cho video: chủ đề thật, ý tưởng lớn bám chi tiết thật của video, thế giới hình, "
-             "mô-típ, cường độ 1-5, đường cong cảm xúc theo từng nhịp, khoảnh khắc dấu ấn, khoảng lặng có chủ đích, thế giới "
-             "âm thanh, cách mở hook, danh sách cấm — và BẢNG QUYẾT ĐỊNH theo TỪNG ĐOẠN (ý đồ, từ neo, cỡ khung, nền, việc "
-             "giao cho từng bộ phận). Code kiểm 4 định luật (lý do tồn tại, đơn tiêu điểm, ngân sách nhận thức, sóng năng "
-             "lượng), dựng khung theo lệnh, và GIÁM SÁT bản dựng: việc giao chưa làm → nhờ đúng bộ phận làm bù. Lỗi → các "
-             "bước chạy như trước (không có chỉ đạo)."},
-    {"id": "_DIRECTOR_SCENE_SYSTEM", "group": "plan", "module": "director", "own_key": True,
-     "title": "DD · Đạo diễn cảnh — bảng quyết định video dài",
-     "used_in": "Bước Plan — chỉ video dài (nhiều đoạn): sau bản chỉ đạo tổng, chạy theo từng cụm ~15-25 giây",
-     "info": "Video dài thì một lượt đạo diễn không đủ chỗ viết quyết định chi tiết cho từng câu. Lượt 1 chốt bản chỉ đạo "
-             "tổng (ý tưởng, đường cong, dấu ấn), lượt 2 đi theo từng cụm đoạn viết bảng quyết định chi tiết — bám đúng "
-             "năng lượng của nhịp đã chốt, không vẽ đường cong khác."},
-    {"id": "_DIRECTOR_REVIEW_SYSTEM", "group": "plan", "module": "director", "own_key": True,
-     "title": "DD · Đạo diễn — duyệt bản dựng",
-     "used_in": "Bước Plan — sau B7 (mọi bộ phận đã đặt xong), trước khi ráp bản dựng",
-     "info": "Đạo diễn xem lại bản dựng theo từng nhịp (chữ, hiệu ứng tự viết, chuyển cảnh, meme, SFX) cùng số liệu LẶP do "
-             "code đếm (trong video + so với các video gần đây) rồi BỎ / ĐỔI những gì rập khuôn, lấn khoảnh khắc dấu ấn, "
-             "rơi vào khoảng lặng hay sai cảm xúc nhịp. Code chỉ cho bỏ hoặc đổi trong danh mục (kiểu vào chữ, chuyển "
-             "cảnh), không đụng phần của hook / tư liệu của bạn, mỗi loại bỏ tối đa 45%."},
     {"id": "_CREATIVE_RULE", "group": "plan", "module": "creative",
      "title": "Luật sáng tạo + cảm xúc (chung)",
      "used_in": "Hệ thống tự nối vào B3 hook, R4 thiết kế, R5 chữ, FX hiệu ứng, B6 meme, B7 SFX",
@@ -239,7 +215,7 @@ PROMPTS = [
              "/ viền / hiệu ứng = 1 kiểu — video dùng 1 kiểu chữ xuyên suốt thì chỉ 1 ảnh), các HIỆU ỨNG / chuyển động / bố "
              "cục đặc trưng và vài khung tổng thể, kèm giây + vùng. Hệ thống cắt ẢNH THẬT từ video gốc (OCR tìm đúng hộp "
              "chữ, ảnh chuyển động 8 khung), gộp kiểu chữ trùng, lưu cùng bản phân tích. Khi lập kế hoạch mỗi bước chỉ nhận "
-             "đúng ảnh nó cần: Đạo diễn — tổng thể; R4 — kiểu chữ + cách chữ vào; R5 — phụ đề; FX — hiệu ứng; chữ ảnh AI — "
+             "đúng ảnh nó cần: R4 — kiểu chữ + cách chữ vào + tổng thể; R5 — phụ đề; FX — hiệu ứng; chữ ảnh AI — "
              "đúng kiểu chữ của cụm đó."},
     {"id": "_TEXT_ART_PROMPT", "group": "remotion", "module": "text_art",
      "template": ["hang", "out"],

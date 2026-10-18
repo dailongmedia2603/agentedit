@@ -3,7 +3,7 @@
 """NGON NGU CHU TREN VIDEO = ngon ngu loi noi cua video nguon (sidecar/ngon_ngu.py, 2026-10-15).
 
 Video tieng Viet: story / prompt / khoa cache Y NHU TRUOC. Video tieng khac: luat ngon ngu noi bang code vao moi buoc viet
-chu (B3 hook, DD dao dien, R4 thiet ke, R5 phu de, TXT-lib, chu anh AI, huy hieu anh AI) + OCR kiem chinh ta theo dung
+chu (B3 hook, R4 thiet ke, R5 phu de, TXT-lib, chu anh AI, huy hieu anh AI) + OCR kiem chinh ta theo dung
 ngon ngu + so khop chu khong chi Latin.
 
 Chay: HOME=$(mktemp -d) <venv_python> tests/test_ngon_ngu.py      (khong goi AI)
@@ -47,7 +47,7 @@ check("brief rong -> vi (nhu truoc)", ngon_ngu.cua_brief({}) == "vi" and ngon_ng
 
 print("\n[2] Video tieng Viet: khong doi gi")
 check("story_view tieng Viet = None", ngon_ngu.story_view({"language": "vi"}) is None)
-check("luat tieng Viet = ''", all(ngon_ngu.luat({}, b) == "" for b in ("B3", "DD", "R4", "R5", "TXT-lib", "image")))
+check("luat tieng Viet = ''", all(ngon_ngu.luat({}, b) == "" for b in ("B3", "R4", "R5", "TXT-lib", "image")))
 check("ocr tieng Viet = vi-VT", ngon_ngu.ocr_langs(ngon_ngu.cua_story({})) == ["vi-VT"])
 lk = [{"key": "k1", "tiers": [{"text": "MẤT 3 TỶ", "role": "chinh"}]}]
 check("prompt chu anh AI tieng Viet y nhu cu (khong co khoi ngon ngu)",
@@ -58,7 +58,7 @@ nn = ngon_ngu.story_view({"language": "en"})
 check("story_view en", nn == {"ma": "en", "ten": "TIENG ANH (English)"}, nn)
 EN = {"tone": "vui", "ngon_ngu": nn}
 check("cua_story en", ngon_ngu.cua_story(EN) == "en")
-for b in ("B3", "DD", "R4", "R5", "TXT-lib", "image"):
+for b in ("B3", "R4", "R5", "TXT-lib", "image"):
     r = ngon_ngu.luat(EN, b)
     check("luat %s co 'TIENG ANH' + khong dich" % b, "TIENG ANH" in r and "KHONG dich" in r, r[:200])
 check("ocr en = en-US", ngon_ngu.ocr_langs("en") == ["en-US"])
@@ -87,7 +87,6 @@ def fake_chat(msgs, **kw):
 providers.plan_chat = fake_chat
 import motion_design   # noqa: E402
 import remotion_plan   # noqa: E402
-import director        # noqa: E402
 import text_tpl        # noqa: E402
 seg = {"source_id": "source_1", "start": 0, "end": 5, "target_start": 0}
 for story, tag in ((EN, "en"), ({"tone": "vui"}, "vi")):
@@ -96,9 +95,8 @@ for story, tag in ((EN, "en"), ({"tone": "vui"}, "vi")):
     providers.gpt_hook([seg], {}, {}, {}, story=story)
     motion_design.gpt_rm_design([seg], {}, {}, {}, story=story)
     remotion_plan.gpt_rm_captions([seg], {}, {}, {}, {}, story=story)
-    director.gpt_direct([seg], {}, {}, {}, story=story, brief={})
     text_tpl._ask({"video": {}}, story=story)
-    for lb in ("B3-hook", "R4-design", "R5-captions", "DD-chi-dao", "TXT-lib"):
+    for lb in ("B3-hook", "R4-design", "R5-captions", "TXT-lib"):
         has = "NGON NGU CHU TREN VIDEO" in (seen.get(lb) or "")
         check("%s: prompt %s %s khoi ngon ngu" % (tag, lb, "CO" if tag == "en" else "KHONG co"),
               has == (tag == "en"), list(seen))

@@ -193,27 +193,7 @@ def _style_text(style, story):
         parts.append("font theo vai (goi y cam giac): " + ", ".join("%s=%s" % kv for kv in list(fonts.items())[:4]))
     story = story if isinstance(story, dict) else {}
     chu_de = " — ".join(x for x in (str(story.get("story_arc") or "")[:300], str(story.get("tone") or "")[:120]) if x)
-    cd = story.get("chi_dao") if isinstance(story.get("chi_dao"), dict) else {}
-    if cd.get("the_gioi_hinh"):
-        parts.append("the gioi hinh (dao dien): " + str(cd["the_gioi_hinh"])[:300])
-    if cd.get("mau_nhan"):
-        parts.append("mau nhan duy nhat (dao dien): " + str(cd["mau_nhan"])[:200])
     return chu_de or "(khong ro)", "; ".join(parts) or "hien dai, sach, noi bat, hop mang xa hoi"
-
-
-def director_type_rule(story):
-    """GIONG CHU cua dao dien (director.py) — noi vao prompt chu anh / do hoa anh, UU TIEN hon phan cap mac dinh (truoc
-    day moi video ra cung mot kieu 'chu sticker dam vien day co chieu sau'). Khong co dao dien -> ''."""
-    cd = story.get("chi_dao") if isinstance(story, dict) and isinstance(story.get("chi_dao"), dict) else {}
-    if not cd.get("chu"):
-        return ""
-    mo_tip = "; ".join("%s: %s" % (m.get("ten"), m.get("mo_ta")) for m in cd.get("mo_tip") or [] if isinstance(m, dict))
-    return ("\n# GIONG CHU CUA DAO DIEN (UU TIEN hon muc 'PHAN CAP + PHONG CACH CHU' o tren)\n"
-            "- %s\n%s- Kieu chu, do dam, vien, bong, chat lieu phai thuoc the gioi hinh cua video; neu dao dien muon chu "
-            "mong / phang / moc thi KHONG lam chu 3D bong bay hay vien day kieu sticker. Cac cum KHAC NHAU duoc phep khac "
-            "do dam / khoang chu theo Y NGHIA cua tu (nhe -> mong, nang -> dam) mien la cung mot ho chu.\n"
-            "- Van phai doc ro tren nen video (vien / bong mong toi thieu).\n" % (
-                str(cd["chu"])[:600], ("- Mo tip: %s\n" % mo_tip[:500]) if mo_tip else ""))
 
 
 # 2026-10-01 (user, kem anh): chu "g" cua 'tặng voucher' thong xuong sat hang 'HỜI' -> cat ngang con du mot manh
@@ -246,7 +226,7 @@ def sheet_prompt(lockups, style, story, has_ref, out, brand=None, style_ref=Fals
     # luat cat ngang + Brand Guideline NOI THEM bang code (prompt tren sua duoc trong menu — ban da sua van phai co)
     import brand_guide
     import canvas
-    extra = (_ROW_GAP_RULE + (_STYLE_REF_NOTE if style_ref else director_type_rule(story))
+    extra = (_ROW_GAP_RULE + (_STYLE_REF_NOTE if style_ref else "")
              + brand_guide.rule_text(brand, "text_art") + canvas.note_for(story, "text_art") + ngon_ngu.luat(story, "image"))
     return txt.replace("\nTao xong:", "\n" + extra + "\nTao xong:", 1) if "\nTao xong:" in txt else txt + "\n" + extra
 

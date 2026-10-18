@@ -41,8 +41,6 @@ export interface RSClip {
   /** DONG BANG HINH trong cac khoang (gio timeline) — tieng VAN CHAY, het khoang hinh nhay toi dung giay (lenh dao dien
    *  khung 'dong_bang': bien nguoi noi thanh "poster" ~0.8s) */
   freezes?: { start: number; end: number }[]
-  /** source_id cua doan (giam sat dao dien quy gio nguon -> timeline) — renderer khong dung */
-  sourceId?: string
   /** Video CHI CO NGUOI (nen trong suot, WebM VP9 alpha) cho doan [srcStart, srcEnd] gio nguon —
    *  ve de len lop chu `behind` de chu nam SAU nguoi. */
   subject?: { path: string; srcStart: number; srcEnd: number }

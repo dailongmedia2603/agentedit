@@ -115,8 +115,7 @@ def _level_of(txt):
 
 def request_level(story):
     """(muc, ly_do) neu YEU CAU EDIT cua nguoi dung noi ro tinh chat (vui / bat trend / nhanh -> manh; nhe nhang -> nhe),
-    nguoc lai None. Dua cho DAO DIEN TRUOC khi chi dao (2026-10-17: truoc day chi ep sau khi dung -> dao dien thiet ke hook
-    em, luat hook khuech dai x2.4 trai y dao dien)."""
+    nguoc lai None."""
     st = story or {}
     req = st.get("edit_request") if isinstance(st.get("edit_request"), dict) else {}
     rtxt = " ".join(str(req.get(k) or "") for k in ("style", "purpose", "phong_cach", "muc_dich"))
@@ -133,12 +132,6 @@ def muc_do(plan, story=None):
     rl = request_level(st)
     if rl:
         return rl
-    # DAO DIEN (director.py, 2026-10-15): ban chi dao chot muc hook theo cuong do + cam xuc ca video -> uu tien hon B3
-    cd = st.get("chi_dao") if isinstance(st.get("chi_dao"), dict) else (
-        plan.get("chi_dao") if isinstance(plan.get("chi_dao"), dict) else {})
-    dm = str(((cd.get("hook") or {}) if isinstance(cd.get("hook"), dict) else {}).get("muc_do") or "").strip()
-    if dm in LEVELS:
-        return dm, "đạo diễn chọn (cường độ %s/5): %s" % (cd.get("cuong_do"), str((cd.get("hook") or {}).get("cam_xuc") or "")[:140])
     hk = plan.get("hook") if isinstance(plan.get("hook"), dict) else {}
     att = hk.get("attention") if isinstance(hk.get("attention"), dict) else {}
     m = str(att.get("muc_do") or "").strip().lower()
@@ -559,17 +552,9 @@ def fallback_sfx(moment, sfx_catalog, level="vua"):
             if any(k in str(x.get("use_when") or "").lower() for k in ("mở đầu", "hook", "gây chú ý", "bất ngờ", "sốc")):
                 s += 2
         return s
-    pool = [x for x in sfx_catalog or [] if isinstance(x, dict) and not x.get("has_speech") and x.get("id")]
-    # DAO DIEN da chon the gioi am thanh (danh muc chi con bo do + kho) -> du phong lay tieng cua CHINH bo do (boom /
-    # whoosh), khong lay tieng meme (vd 'vine boom' trong video chuyen nghiep tiet che — do that 2026-10-15)
-    world = next((x["id"][3:].rsplit("-", 1)[0] for x in pool if str(x["id"]).startswith("kw-")), None)
-    want = (("kw-%s-whoosh" % world, "kw-%s-riser" % world) if soft else ("kw-%s-boom" % world, "kw-%s-whoosh" % world)
-            ) if world else ()
-    sid = next((w for w in want if any(x["id"] == w for x in pool)), None)
-    pool = sorted(pool, key=score, reverse=True)
-    if sid:
-        pass
-    elif pool and score(pool[0]) > 0:
+    pool = sorted([x for x in sfx_catalog or [] if isinstance(x, dict) and not x.get("has_speech") and x.get("id")],
+                  key=score, reverse=True)
+    if pool and score(pool[0]) > 0:
         sid = pool[0]["id"]
     else:
         import sfx_kit
@@ -653,27 +638,7 @@ def clean_effects(res, moment, level=None):
     return out
 
 
-_SWAP = ("zoom_punch", "flash", "shake", "zoom_out_reveal", "rgb_split", "blur_focus", "pulse", "focus")   # khong fisheye: meo mat nguoi noi
-
-
-def fallback_effect(moment, level="vua", need=None, banned=None):
-    """banned: loai hieu ung kho dao dien da cam (director.banned_catalog) -> thay bang loai manh gan nhat con lai."""
-    out = _fallback_effect(moment, level, need)
-    if not banned:
-        return out
-    used = {e["type"] for e in out if e["type"] not in banned}
-    for e in out:
-        if e["type"] in banned:
-            alt = next((t for t in _SWAP if t not in banned and t not in used
-                        and CATALOG_STRENGTH.get(t, 0) >= 0.6 * CATALOG_STRENGTH.get(e["type"], 1)), None)
-            if alt:
-                used.add(alt)
-                e["why"] += " — '%s' bi dao dien cam -> '%s'" % (e["type"], alt)
-                e["type"] = alt
-    return out
-
-
-def _fallback_effect(moment, level="vua", need=None):
+def fallback_effect(moment, level="vua", need=None):
     """Du phong khi AI khong dat, THEO MUC: du nhip toan khung + du nguong (`need`, co tinh hieu ung manh nhat than
     video). nhe -> keo mat vao chu the (focus, em, 1 nhip); vua -> dap camera o dau + giua hook; manh -> dap camera +
     loe sang o dau, rung o 1/3, dap lai o 2/3 hook."""
@@ -788,9 +753,7 @@ def ensure(plan, spec, build, step, sfx_catalog=None, transcript_data=None, stor
         if use_fallback:
             if gat:
                 drop_hook(lambda e: e.get("id") in harsh or e.get("type") in harsh)
-            import director
-            plan["scene_effects"] = list(plan.get("scene_effects") or []) + fallback_effect(
-                moment, level, r["do"].get("can"), banned=director.banned_catalog(plan.get("chi_dao")))
+            plan["scene_effects"] = list(plan.get("scene_effects") or []) + fallback_effect(moment, level, r["do"].get("can"))
             notes.append("hieu ung hinh hook: du phong muc %s (AI khong dat)" % level)
             return True
         vd = van_de_visual(r)
@@ -877,7 +840,7 @@ def ensure(plan, spec, build, step, sfx_catalog=None, transcript_data=None, stor
         return True
 
     def amplify_visual():
-        """TRUOC du phong (2026-10-15, dao dien): hieu ung hook AI tu viet (theo y tuong cua video) con YEU -> tang
+        """TRUOC du phong (2026-10-15): hieu ung hook AI tu viet (theo y tuong cua video) con YEU -> tang
         params.intensity theo AMPLIFY_STEPS, dung + DO lai; dat thi giu y tuong cua video thay vi chen zoom_punch /
         flash / shake trong kho. Khong dat -> tra cuong do cu, de du phong lam."""
         hk = [e for e in plan.get("fx") or [] if isinstance(e, dict) and e.get("anchor") == "hook" and e.get("code")
@@ -906,7 +869,7 @@ def ensure(plan, spec, build, step, sfx_catalog=None, transcript_data=None, stor
     for use_fallback in (False, True):
         changed = False
         if "visual" in _problems(res):
-            # luot 1: tang cuong do hieu ung hook DANG CO (y tuong cua dao dien / FX-plan) truoc khi nho AI lam lai;
+            # luot 1: tang cuong do hieu ung hook DANG CO (FX-plan) truoc khi nho AI lam lai;
             # luot 2: tang hieu ung AI vua viet lai truoc khi dung du phong
             amp = amplify_visual()
             if amp:

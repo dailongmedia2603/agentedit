@@ -15,7 +15,7 @@ Luot 3 (`build`): Gemini xem lai cac dai khung day + style_kit vua boc -> liet k
   - LOC TRUNG kieu chu: cung font gan nhat + chu ky mau giong (cosine >= 0.93) -> gop (giu alias id).
   - luu vinh vien: ~/.capcut-studio/library/ref_pack/<van tay file video mau>/ (+ pack.json); ban phan tich luu
     "ref_pack" (ten file tuong doi) -> lap ke hoach lai khong goi Gemini.
-`images_for(pack, buoc, ids)` -> chi anh can cho TUNG buoc (DD: tong the; R4: kieu chu + anh vao + tong the; R5: kieu
+`images_for(pack, buoc, ids)` -> chi anh can cho TUNG buoc (R4: kieu chu + anh vao + tong the; R5: kieu
 chu phu de; FX-plan: hieu ung; FX-code: chi hieu ung duoc goi ten; TXT-art: dung kieu chu cua cum).
 """
 import hashlib
@@ -529,16 +529,16 @@ def view(pack, buoc):
     if buoc == "R5":
         ks = [s for s in ks if s["vai"] in VAI_PHU_DE]
     out = {}
-    if buoc in ("R4", "R5", "DD"):
+    if buoc in ("R4", "R5"):
         out["kieu_chu"] = [{k: v for k, v in {
             "id": s["id"], "vai": s["vai"], "mo_ta": s["mo_ta"], "font_gan_nhat": s.get("font"),
             "chu_mau": s.get("chu_mau"), "dung_cho": s.get("dung_cho"), "anh": s["anh"], "anh_vao": s.get("anh_vao"),
             "so_lan_trong_video_mau": s.get("so_lan"), "de_doc": s.get("de_doc", True)}.items() if v is not None}
             for s in ks]
-    if buoc in ("FX-plan", "DD", "R4"):
+    if buoc in ("FX-plan", "R4"):
         out["hieu_ung"] = [{"id": e["id"], "loai": e["loai"], "mo_ta": e["mo_ta"], "anh": e["anh"]}
                            for e in pack.get("hieu_ung") or []]
-    if buoc in ("DD", "R4") and pack.get("tong_the"):
+    if buoc == "R4" and pack.get("tong_the"):
         out["tong_the"] = pack["tong_the"]
     return {k: v for k, v in out.items() if v} or None
 
@@ -555,9 +555,7 @@ def images_for(pack, buoc, ids=None):
             out.append({"path": os.path.join(d, f), "label": label})
 
     ks = pack.get("kieu_chu") or []
-    if buoc == "DD":
-        add(pack.get("tong_the"), "tong the video mau (cac khung dai dien)")
-    elif buoc == "R4":
+    if buoc == "R4":
         for s in ks:
             add(s["anh"], "kieu chu '%s' (%s): %s" % (s["id"], s["vai"], s["mo_ta"][:160]))
             add(s.get("anh_vao"), "kieu chu '%s' DANG VAO — 8 khung theo gio" % s["id"])
@@ -588,7 +586,7 @@ _TL = threading.local()
 
 
 class use:
-    """with ref_pack.use(pack): cac buoc DD / R4 / R5 / FX tu lay anh + luat cua buoc minh (current())."""
+    """with ref_pack.use(pack): cac buoc R4 / R5 / FX tu lay anh + luat cua buoc minh (current())."""
 
     def __init__(self, pack):
         self.pack = pack if files_ok(pack) else None
@@ -608,10 +606,6 @@ def current():
 
 
 RULES = {
-    "DD": """
-
-# ANH THAM CHIEU VIDEO MAU (anh dinh kem + video_mau.anh_tham_chieu)
-Anh tong the = cac khung that cua video mau. Nhin de hieu CHAT hinh (anh sang, mau, mat do do hoa, bo cuc, nhip).""",
     "R4": """
 
 # ANH THAT CUA VIDEO MAU (anh dinh kem; danh sach + id trong payload "anh_tham_chieu")

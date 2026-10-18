@@ -40,7 +40,8 @@ _BUOC = {
           "phai gay cam xuc hoac cau hoi trong dau nguoi xem, khong tom tat kho khan.",
     "R4": "\n- Rieng buoc THIET KE: bo cuc, lop do hoa, camera, chuyen canh di theo duong cong cam xuc; doi kieu vao "
           "(enter) cua chu / huy hieu theo cam xuc tung luc (khong mac dinh 'pop' cho moi lop); it nhat 2-3 y tuong "
-          "hinh rieng cho noi dung video nay.",
+          "hinh rieng cho noi dung video nay. Lop 'ring' / 'line' / 'arrow' nham vao MOT TU trong lop chu: ghi "
+          "\"target_text\" = dung tu / cum do (nguyen van nhu trong lop chu); moi y chi the hien MOT lan.",
     "R5": "\n- Rieng buoc CHU: nhan dung TU mang cam xuc (khong nhan tu vo nghia), cach nhan + kieu hien hop cam xuc "
           "cua cau (nhe cho cau tam su, manh cho cu chot).",
     "FX": "\n- Rieng buoc HIEU UNG: moi hieu ung la de KHUECH DAI cam xuc dang co cua khoanh khac (khong trang tri); "
@@ -54,7 +55,5 @@ _BUOC = {
 
 
 def luat(buoc):
-    """Khoi luat sang tao + cam xuc noi vao system prompt cua buoc `buoc` (B3 | R4 | R5 | FX | B6 | B7) + khoi CHI DAO
-    CUA DAO DIEN (director.luat, 2026-10-15: cac buoc thuc hien ban chi dao chung trong cau_chuyen.chi_dao)."""
-    import director
-    return prompt_store.get_prompt("_CREATIVE_RULE", _CREATIVE_RULE) + _BUOC.get(buoc, "") + director.luat(buoc)
+    """Khoi luat sang tao + cam xuc noi vao system prompt cua buoc `buoc` (B3 | R4 | R5 | FX | B6 | B7)."""
+    return prompt_store.get_prompt("_CREATIVE_RULE", _CREATIVE_RULE) + _BUOC.get(buoc, "")

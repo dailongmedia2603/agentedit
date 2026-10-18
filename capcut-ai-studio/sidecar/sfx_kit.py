@@ -8,7 +8,6 @@ chu va do hoa bay vao, thu editor dung dac dac trong video nhu mau1.mp4. Tong ho
 sfx_library.json voi id co dinh "kit-*" -> dung duoc o CA hai luong (B7 chon, lop do hoa goi).
 """
 import os
-import threading
 import wave
 import zlib
 import numpy as np
@@ -148,10 +147,9 @@ FAMILY = {"whoosh": "kit-whoosh", "swoosh": "kit-swoosh", "pop": "kit-pop", "cli
 
 
 # ---------------------------------------------------------------------------
-# THE GIOI AM THANH (dao dien chon 1 cho ca video — director.SOUND_WORLDS, user 2026-10-15)
-# Truoc day MOI video dung chung 10 tieng kit-* (do tren 8 ke hoach: kit-whoosh / kit-boom / kit-pop lap lai o moi
-# video) -> nghe "rap khuon". Nay 5 bo tieng co CHAT RIENG; tieng chu / lop / hieu ung / du phong hook lay theo bo dao
-# dien chon. Id "kw-<the_gioi>-<ho>", WAV 44.1k mono, tong hop bang numpy (khong ban quyen, khong can mang).
+# THE GIOI AM THANH (user 2026-10-15) — 5 bo tieng co CHAT RIENG cho luong Tao video (`sound_catalog` -> motion/sound.ts:
+# AI chon 1 bo cho ca video). Luong Edit Video khong dung (dao dien da go 2026-10-18 -> dung kit-* + kho nhu truoc).
+# Id "kw-<the_gioi>-<ho>", WAV 44.1k mono, tong hop bang numpy (khong ban quyen, khong can mang).
 # ---------------------------------------------------------------------------
 WORLDS = {
     "am_ap": ("Ấm áp", -1.5),          # (ten, chinh muc to so voi bo chuan, dB — mix_sfx cong vao muc theo giong noi)
@@ -159,6 +157,15 @@ WORLDS = {
     "dien_anh": ("Điện ảnh", 0.5),
     "vui_nhon": ("Vui nhộn", 0.0),
     "toi_gian": ("Tối giản", -4.0),
+}
+WORLD_CHARACTER = {     # mo ta chat tung bo (dua AI cua Tao video chon)
+    "am_ap": "Ấm, mộc, mềm: tiếng gỗ, tiếng bong bóng tròn, chuông marimba — kể chuyện, gia đình, chữa lành, cảm ơn.",
+    "cong_nghe": "Sạch, sáng, kính / kỹ thuật số: blip, click giao diện, chuông thuỷ tinh, quét điện tử — công nghệ, "
+                 "SaaS, dịch vụ số, số liệu.",
+    "dien_anh": "Dày, sâu, có không gian: impact trầm có đuôi vang, whoosh nặng, riser dài, chuông trầm — kịch tính, "
+                "truyền cảm hứng, tiết lộ lớn, sang trọng.",
+    "vui_nhon": "Nảy, hoạt hình: bloop, tiếng gõ đồ chơi, xylophone, bonk lò xo, còi trượt — hài, trẻ em, bắt trend.",
+    "toi_gian": "Rất khẽ, tinh: tick nhỏ, chạm nhẹ, hơi gió — chuyên gia, tài chính, y tế, cao cấp, tâm sự sâu.",
 }
 WORLD_FAMILIES = ("whoosh", "swoosh", "pop", "click", "boom", "riser", "ding", "typing")
 WORLD_VERSION = 4       # 4: toi_gian pop / click day hon; 2: mo go am_ap (Gemini nghe ban 1 thanh 'click chuot'); 3: summary = Gemini nghe that
@@ -215,7 +222,6 @@ HEARD = {
     "kw-toi_gian-typing": "Tiếng gõ phím cơ lách cách liên hồi ngắn gọn và rõ ràng",
 }
 HEARD["kw-am_ap-click"] = "Tiếng click bấm nút trầm ấm, gọn gàng và dứt khoát như tiếng công tắc êm (mõ gỗ mềm)."
-_WORLD_TL = threading.local()
 
 
 def world_id(world, fam):
@@ -236,26 +242,6 @@ def world_of(sfx_id):
 def world_gain_db(sfx_id):
     w = world_of(sfx_id)
     return WORLDS[w][1] if w else 0.0
-
-
-class use_world:
-    """with sfx_kit.use_world("am_ap"): family_file(...) tra tieng cua bo do (theo luong — sidecar chay nhieu luong)."""
-
-    def __init__(self, world):
-        self.world = world if world in WORLDS else None
-
-    def __enter__(self):
-        self.prev = getattr(_WORLD_TL, "world", None)
-        _WORLD_TL.world = self.world
-        return self
-
-    def __exit__(self, *a):
-        _WORLD_TL.world = self.prev
-        return False
-
-
-def current_world():
-    return getattr(_WORLD_TL, "world", None)
 
 
 def _t(n):
@@ -534,12 +520,12 @@ def ensure_worlds(worlds=None):
 
 
 def family_file(name, world=None):
-    """Ho tieng -> (id, duong dan). Co the gioi (tham so hoac `use_world` dang bat) -> tieng cua bo do; khong thi kit-*."""
+    """Ho tieng -> (id, duong dan). Co the gioi (tham so) -> tieng cua bo do; khong thi kit-*."""
     fam = str(name or "").strip().lower()
     sid = FAMILY.get(fam)
     if not sid:
         return None, None
-    w = world if world in WORLDS else current_world()
+    w = world if world in WORLDS else None
     if w:
         wf = {"impact": "boom", "punch": "boom"}.get(fam, fam)
         if wf in WORLD_FAMILIES:
@@ -556,3 +542,43 @@ def family_file(name, world=None):
     if not os.path.isfile(path):
         ensure_kit()
     return (sid, path) if os.path.isfile(path) else (None, None)
+
+
+def sound_catalog():
+    """Danh muc am thanh cho luong Tao video (sidecar /sound/catalog -> motion/sound.ts): 5 bo tieng the gioi + SFX kho
+    khong giong noi co nhan + nhac nen khong loi."""
+    import music_lib
+    try:
+        ensure_worlds()
+    except Exception:
+        pass
+    lib = {e.get("id"): e for e in engine.sfx_list() if isinstance(e, dict)}
+    worlds = {}
+    for w, (name, _db) in WORLDS.items():
+        sounds = []
+        for fam in WORLD_FAMILIES:
+            e = lib.get(world_id(w, fam)) or {}
+            if e.get("file") and os.path.isfile(e["file"]):
+                sounds.append({"family": fam, "file": e["file"], "duration": e.get("duration"),
+                               "peak_time": e.get("peak_time")})
+        if sounds:
+            worlds[w] = {"name": name, "character": WORLD_CHARACTER.get(w, ""), "sounds": sounds}
+    library = []
+    for e in lib.values():
+        sid = str(e.get("id") or "")
+        if sid.startswith(("kit-", "kw-")) or e.get("has_speech") or not os.path.isfile(str(e.get("file") or "")):
+            continue
+        if not (e.get("summary") or e.get("use_when")):
+            continue
+        library.append({k: e.get(k) for k in ("id", "name", "file", "sound_type", "summary", "use_when", "avoid_when",
+                                              "emotion", "intensity", "duration", "peak_time") if e.get(k) not in (None, "", [])})
+    music = []
+    try:
+        for t in music_lib.usable():
+            if t.get("has_vocals"):
+                continue
+            music.append({k: t.get(k) for k in ("id", "name", "file", "summary", "genre", "moods", "energy", "tempo",
+                                                "use_when", "avoid_when", "duration") if t.get(k) not in (None, "", [])})
+    except Exception:
+        pass
+    return {"sfx_worlds": worlds, "sfx_library": library, "music": music}

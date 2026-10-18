@@ -8,7 +8,6 @@
 - cover_check: net ve chay qua loi mat -> bo; vong bao NGOAI mat -> giu.
 - drop_dup_motifs: hieu ung ve lai vong / mui ten ma lop R4 da ve cung khoanh khac -> bo.
 - ring_targets: vong khoanh chu nham dung tu (target_text > tu trong ngoac cua why > tu gan tam vong).
-- director: dau vao co tong quan + toan bo loi noi goc; phan_tich duoc giu + dua xuong cac buoc.
 
 Chay: HOME=$(mktemp -d) <venv_python> tests/test_fx_meaning.py      (khong goi AI)
 """
@@ -21,7 +20,6 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "sidecar"))
 
 import fx_flow              # noqa: E402
-import director             # noqa: E402
 import motion_design as MD  # noqa: E402
 import hook_rule            # noqa: E402
 
@@ -134,30 +132,9 @@ R4 = {"id": "r4", "type": "ring", "start": 2.0, "end": 3.0, "x": 0.68, "y": 0.3,
 MD.ring_targets([T, R4], [{"why": "nhan manh"}], [])
 check("khong ghi tu -> chon tu gan tam vong nhat", (R4.get("target") or {}).get("text") == "others,", R4)
 
-print("\n[6] dao dien: du thong tin + phan tich")
-brief = {"summary": "Chi Yen gioi thieu cong dong WHC", "tone": "am ap", "language": "en",
-         "sources": [{"id": "s", "summary": "...", "transcript": [{"start": 0, "end": 2, "text": "hello everyone"},
-                                                                   {"start": 12, "end": 14, "text": "we care for others"}]}]}
-ov = director._overview(brief)
-fs = director._full_speech(brief)
-check("tong quan co tom tat + tone + ngon ngu", ov == {"summary": brief["summary"], "tone": "am ap", "language": "en"}, ov)
-check("toan bo loi noi goc kem moc gio", fs and "[0:00] hello everyone" in fs[0]["loi_noi"] and "[0:12]" in fs[0]["loi_noi"], fs)
-seen = {}
-orig = director.providers.plan_chat
-director.providers.plan_chat = lambda msgs, **kw: (seen.update(sys=msgs[0]["content"], user=json.loads(msgs[-1]["content"])),
-                                                    "{}")[1]
-director.gpt_direct([{"source_id": "s", "start": 0, "end": 14, "target_start": 0}], {}, {}, {}, story={}, brief=brief)
-director.providers.plan_chat = orig
-check("payload dao dien co tong_quan + toan_bo_loi_noi", seen["user"].get("tong_quan") and seen["user"].get("toan_bo_loi_noi"))
-check("prompt dao dien bat HIEU NOI DUNG TRUOC + luat Y NGHIA", "HIEU NOI DUNG TRUOC" in seen["sys"] and "Y NGHIA CUA MOI PHAN TU" in seen["sys"])
-raw = {"chu_de_that": "x", "y_tuong_lon": "vong cham soc", "phan_tich": {"thong_diep_chinh": "cham soc nguoi cham soc",
-       "mach_y": [{"tu_segment": 0, "den_segment": 0, "y": "gioi thieu"}], "tu_khoa": [{"tu": "others", "segment": 0,
-       "y_nghia": "nguoi cham soc nguoi khac"}]},
-       "nhip": [{"tu_segment": 0, "den_segment": 0, "vai_tro": "hook", "hinh": "vong", "y_nghia": "lam ro y cham soc"}]}
-cd = director.normalize(raw, [{"source_id": "s", "start": 0, "end": 14, "target_start": 0}], {})
-check("normalize giu phan_tich + y_nghia nhip", cd["phan_tich"].get("thong_diep_chinh") and cd["phan_tich"].get("tu_khoa")
-      and cd["nhip"][0].get("y_nghia"), cd.get("phan_tich"))
-check("luat chung co Y NGHIA cho moi buoc", "Y NGHIA (luat cung)" in director.luat("FX") and "target_text" in director.luat("R4"))
+print("\n[6] luat R4: vong khoanh chu ghi target_text")
+import creative             # noqa: E402
+check("luat R4 co target_text", "target_text" in creative.luat("R4"))
 
 print("\n%d loi" % len(FAILED) if FAILED else "\nTAT CA OK")
 sys.exit(1 if FAILED else 0)

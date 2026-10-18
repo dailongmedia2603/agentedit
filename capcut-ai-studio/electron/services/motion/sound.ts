@@ -1,5 +1,5 @@
 // AM THANH cho "Tao video" (2026-10-15, user: video tao ra khong con cam). Truoc day prompt bao skill bo SFX + nhac vi
-// khong co ElevenLabs. Nay sidecar `/sound/catalog` (director.sound_catalog) tra: 5 bo tieng "the gioi" tong hop + SFX
+// khong co ElevenLabs. Nay sidecar `/sound/catalog` (sfx_kit.sound_catalog) tra: 5 bo tieng "the gioi" tong hop + SFX
 // trong kho (khong giong noi) + nhac nen da gan nhan, kem duong dan file. Module nay (thuan fs, khong electron ->
 // tests/test_motion.mts) lien ket thu muc tieng / nhac vao <job>/sound/ (Windows: junction, khong can quyen admin) va
 // ghi <job>/sound/catalog.json voi duong dan TUONG DOI trong job -> Claude chi lam viec trong thu muc job.

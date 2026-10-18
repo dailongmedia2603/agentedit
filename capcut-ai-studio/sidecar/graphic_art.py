@@ -164,7 +164,7 @@ def sheet_prompt(group, style, story, has_ref, out, brand=None, attempt=1):
     # Brand Guideline NOI THEM bang code (prompt tren sua duoc trong menu — ban da sua van phai co)
     import brand_guide
     import canvas
-    extra = (text_art.director_type_rule(story) + brand_guide.rule_text(brand, "text_art") + canvas.note_for(story, "text_art")
+    extra = (brand_guide.rule_text(brand, "text_art") + canvas.note_for(story, "text_art")
              + ngon_ngu.luat(story, "image")
              + (_RETRY_NOTE if attempt > 1 else ""))
     if not extra:

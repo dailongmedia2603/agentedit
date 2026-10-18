@@ -1786,6 +1786,10 @@ CO DINH SaydiVoice; Cai dat API them the SaydiVoice. Luong Edit Video (Remotion,
 
 ## 18. DAO DIEN cho Edit Video + THE GIOI AM THANH + am thanh cho Tao video (2026-10-15, `sidecar/director.py`)
 
+> **DA GO 2026-10-18 (muc 23)**: phan DAO DIEN (DD-chi-dao, DD-duyet, so tay, luat noi prompt) khong con. Con giu: bo tieng
+> the gioi + `/sound/catalog` cho Tao video (nay o `sfx_kit.sound_catalog`), ref_pack (tru phan DD), cover_check, khuech dai
+> hieu ung hook, tieng hook uu tien.
+
 User: "ke hoach edit phai co DAO DIEN that su, dua vao chu de that cua TUNG video (phan Gemini da phan tich), khong phai
 chuyen dong / cach edit AI rap khuon". Do 8 ke hoach gan nhat tren may: chu de khac nhau ma video nao cung punch-in
 1.00->1.12-1.18 vao mat o hook, dai sang cheo, 4 goc khung ngam chu L, thanh tien trinh mong, giam bao hoa luc noi dau ->
@@ -1949,7 +1953,7 @@ moi buoc (B3 / R4 / R5 / FX / B6 / B7) tu doc lai cau chuyen + tu quyet cao trao
   gan tam vong); renderer `RingTarget` (Layers.tsx) tim cac tu `data-tw` cua lop chu (TextLayer gan cho moi tu), DO
   KHUNG THAT (getBoundingClientRect / ti le goc `data-autoedit-root`) -> bau duc vua khit, ve dan (draw). Khong tim thay
   (chu anh AI / mau Kho Text) -> vong cu. R4 DSL: `target_text`.
-- DAO DIEN (`DIRECTOR_VERSION` 4): dau vao them `tong_quan` (summary / tone / ngon ngu) + `toan_bo_loi_noi` (NGUYEN VAN
+- (DA GO 2026-10-18, muc 23) DAO DIEN (`DIRECTOR_VERSION` 4): dau vao them `tong_quan` (summary / tone / ngon ngu) + `toan_bo_loi_noi` (NGUYEN VAN
   ca video goc, moc gio ~10s, <= 9000 ky tu); buoc 0 HIEU NOI DUNG bat buoc -> `phan_tich` {nguoi_noi, khan_gia,
   thong_diep_chinh, muc_dich, mach_y theo segment, tu_khoa + y_nghia, cam_xuc_chu_dao, nguoi_xem_can_hieu, chua_ro};
   nhip co `y_nghia`; muc "Y NGHIA CUA MOI PHAN TU" (minh hoa y / khuech dai cam xuc that / dan mat toi tu khoa; khoanh /
@@ -1962,6 +1966,8 @@ moi buoc (B3 / R4 / R5 / FX / B6 / B7) tu doc lai cau chuyen + tu quyet cao trao
 - **Kiem**: `HOME=$(mktemp -d) <venv> tests/test_fx_meaning.py`.
 
 ## 22. DAO DIEN v5: BANG QUYET DINH THEO DOAN + GIAM SAT BAN DUNG (2026-10-17, `sidecar/director_guard.py`)
+
+> **DA GO 2026-10-18 (muc 23)** — ca bang quyet dinh, giam sat, lop dung nen, muc tieng theo nang luong, tat / bat nhac.
 
 User gui 2 tai lieu `Dao-dien-ai/` (Multi-Pass Director: 4 dinh luat, 15 pattern, style pack, schema EDL, baseline rhythm) +
 "dao dien AI chua sau, chua hieu qua; xem buoc thua / mau thuan". Do that 9 ke hoach gan nhat (78 nhip): nhip CAO TRAO
@@ -2025,6 +2031,25 @@ Lay tu tai lieu: 4 dinh luat + y do (chuc nang, KHONG cong thuc hinh) + baseline
   +0.68 (9 video cu ~0, co video -0.63), 2 nhip NL5 mat do cao nhat video (6.6 / 5.6), 0 khoang dung im, hook dat muc manh
   bang hieu ung y tuong cua dao dien (khong du phong kho), nen diu do that 173 -> 87 (nguoi giu net).
 - `DIRECTOR_VERSION` 5. **Kiem**: `HOME=$(mktemp -d) <venv> tests/test_director_guard.py` (+ test_director, test_info_flow).
+
+## 23. GO DAO DIEN khoi Edit Video (2026-10-18)
+
+User: "xoa tinh nang va cac phan cua dao dien — phan dao dien lam video edit kem hon". Luong lap ke hoach tro lai
+B1 -> B2 -> B3 hook -> R4 -> R5 -> TXT / GFX -> FX -> B6 -> B7 (khong DD-chi-dao, FX-bo-sung, DD-duyet, giam sat).
+
+- **Xoa**: `sidecar/director.py`, `sidecar/director_guard.py`, `tests/test_director*.py`; prompt `_DIRECTOR_SYSTEM`,
+  `_DIRECTOR_SCENE_SYSTEM`, `_DIRECTOR_REVIEW_SYSTEM` (menu Prompt & quy tac); `story["chi_dao"]` + `director.luat` noi
+  vao prompt moi buoc (`creative.luat` chi con luat sang tao chung); truong `qd` (DSL R4, FX-plan, tran SFX, mat do lop);
+  lop dung nen `apply_framing` / `bg_focus` / `subject_fx`; R4 tu sua theo lenh (`r4_audit`); SFX bu (`sfx_supplement`);
+  muc tieng theo nang luong (`_energy`); tat / bat nhac (`_music_stop` / `_music_mutes`, `music_lib._mute_gain`); so tay
+  `director.remember`; muc hook "dao dien chon", du phong hook tranh chieu bi cam; the gioi hinh / mau nhan / giong chu cho
+  anh AI + chu anh AI; khung UI "Chi dao cua dao dien" (`RemotionViews.DirectorView`) + kieu `Director*` (global.d.ts).
+- **Giu**: `sfx_kit.WORLDS` + `sfx_kit.sound_catalog` (route `/sound/catalog` cho Tao video); Edit Video loai tieng `kw-*`
+  khoi danh muc B7 (dung kit-* + kho nhu truoc). Luat chung "hieu ung co y nghia" (muc 21: fx_moments h<n>, cover_check,
+  drop_dup_motifs — `_plain` / `_NEG_RE` chuyen vao fx_flow, ring_targets + `target_text`: dong luat R4 trong
+  `creative._BUOC`). Renderer van doc `freezes` / `_zoomSlow` / `bgFocus` / `subjectFx` / lop `compare` (plan cu van
+  render; plan moi khong sinh `bgFocus` / `subjectFx` nua).
+- Du lieu nguoi dung khong dong toi: `~/.capcut-studio/director_memory.json` (bo qua), plan cu co `chi_dao` (bo qua).
 
 ## 12. CodeGraph
 

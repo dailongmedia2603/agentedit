@@ -400,10 +400,7 @@ def resolve_plan_sfx(plan, max_sfx=None, min_gap=None):
             continue
         # tieng cho CHU hien ("reveal": chu hero / chu do hoa) khong tinh vao tran — moi chu hien ra deu co tieng
         # (user 2026-10-01). Tran MAX_SFX chi gioi han tieng nhan / chuyen canh / dam.
-        # tieng thuc hien LENH DAO DIEN ("qd", 2026-10-17) cung khong tinh vao tran: do that, tran cat mat tieng cao trao
-        def _capped(x):
-            return x.get("purpose") != "reveal" and x.get("qd") is None and not x.get("_dd")
-        if _capped(a) and sum(1 for x in resolved if _capped(x)) >= max_sfx:
+        if a.get("purpose") != "reveal" and sum(1 for x in resolved if x.get("purpose") != "reveal") >= max_sfx:
             continue
         resolved.append(a)
     plan["audio"] = resolved

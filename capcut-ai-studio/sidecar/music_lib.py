@@ -629,31 +629,11 @@ def _simplify(pts, tol=ENV_TOL):
     return keep
 
 
-def _mute_gain(t, mutes):
-    """He so tat nhac theo lenh dao dien [(t_tat, t_bat_lai | None, fade_ra, fade_vao)] tai giay t."""
-    g = 1.0
-    for a, b, fo, fi in mutes or []:
-        if t < a - fo:
-            continue
-        if t <= a:
-            g = min(g, max(0.0, (a - t) / fo) if fo > 0 else 0.0)
-        elif b is None or t < b:
-            g = 0.0
-        elif t < b + fi:
-            g = min(g, (t - b) / fi if fi > 0 else 1.0)
-    return g
-
-
-def _envelope(t0, t1, base_db, inserts, overlays, fade_in, fade_out, mutes=None):
+def _envelope(t0, t1, base_db, inserts, overlays, fade_in, fade_out):
     """Duong am luong (dB tuong doi base) tren [t0, t1], gio TIMELINE -> [(t tuong doi, gain tuyen tinh)]. Muc nen giu
-    DUNG quy tac (% tieng nguoi) suot video; chi ha khi meme co tieng rieng + fade 2 dau + TAT / BAT LAI theo lenh dao dien
-    (mutes)."""
+    DUNG quy tac (% tieng nguoi) suot video; chi ha khi meme co tieng rieng + fade 2 dau."""
     n = max(2, int(math.ceil((t1 - t0) / ENV_STEP)) + 1)
     ts = [min(t1, t0 + i * ENV_STEP) for i in range(n)]
-    if mutes:
-        # diem mep cua lenh tat / bat lai (cat dut 0.06s nho hon luoi 0.05s) -> them dung moc
-        edges = [x for a, b, fo, fi in mutes for x in (a - fo, a, b, (b + fi) if b is not None else None) if x is not None]
-        ts = sorted(set([round(t, 4) for t in ts] + [round(x, 4) for x in edges if t0 < x < t1]))
     tgt = []
     for t in ts:
         d = 0.0
@@ -664,14 +644,14 @@ def _envelope(t0, t1, base_db, inserts, overlays, fade_in, fade_out, mutes=None)
         tgt.append(d)
     # lam muot: xuong nhanh (0.12s), len cham (0.5s)
     sm, cur = [], tgt[0]
-    for i, d in enumerate(tgt):
+    for d in tgt:
         tau = 0.12 if d < cur else 0.5
-        a = 1.0 - math.exp(-max(1e-4, (ts[i] - ts[i - 1]) if i else ENV_STEP) / tau)
+        a = 1.0 - math.exp(-ENV_STEP / tau)
         cur = cur + (d - cur) * a
         sm.append(cur)
     pts = []
     for t, d in zip(ts, sm):
-        g = 10 ** ((base_db + d) / 20.0) * _mute_gain(t, mutes)
+        g = 10 ** ((base_db + d) / 20.0)
         rel = t - t0
         if fade_in > 0 and rel < fade_in:
             g *= max(0.0, rel / fade_in)
@@ -721,23 +701,6 @@ def plan_rows(p, spec, changes):
     if dur - t0 < MIN_MUSIC_SEC:
         changes.append("nhac nen: phan sau hook chi %.1fs -> khong dat nhac" % (dur - t0))
         return []
-    stop = p.get("_music_stop")
-    mutes = [tuple(m) for m in p.get("_music_mutes") or [] if isinstance(m, (list, tuple)) and len(m) == 4]
-    end_fade = None
-    if mutes:
-        # LENH DAO DIEN (director.music_mutes): cat dut / lang dan o 1 cau, BAT LAI o cau khac (hoac tat toi het)
-        a_, b_, fo_, fi_ = mutes[0]
-        if not (t0 + MIN_MUSIC_SEC <= a_ < dur - 0.3):
-            mutes = []
-        elif b_ is None or b_ >= dur - MIN_MUSIC_SEC:
-            changes.append("nhac nen: dao dien tat nhac luc %.1fs (%s, khong bat lai)" % (a_, "cat dut" if fo_ < 0.2 else "lang dan"))
-            dur, end_fade, mutes = a_, fo_, []
-        else:
-            changes.append("nhac nen: dao dien tat nhac %.1fs (%s) -> bat lai %.1fs" % (a_, "cat dut" if fo_ < 0.2 else "lang dan", b_))
-    elif isinstance(stop, (int, float)) and t0 + MIN_MUSIC_SEC <= float(stop) < dur - 0.3:
-        # DAO DIEN tat nhac o 1 cau (director.music_stop): nhac fade het tai day, phan con lai khong nhac
-        changes.append("nhac nen: dao dien tat nhac luc %.1fs (con %.1fs cuoi khong nhac)" % (float(stop), dur - float(stop)))
-        dur = float(stop)
     tlen = float(t.get("duration") or 0) or None
     if tlen is None:
         tlen = measure(t["file"]).get("duration")
@@ -765,8 +728,8 @@ def plan_rows(p, spec, changes):
         lvl = _track_level(t["file"], src, seg_end, t.get("lufs_i"))
         base_db = (target - float(lvl)) if lvl is not None else (target - ABS_VOICE)
         fi = FADE_IN if k == 0 else XFADE
-        fo = (end_fade if end_fade is not None else FADE_OUT) if last else XFADE
-        env = _envelope(cur, cur + span, base_db, inserts, overlays, fi, fo, mutes=mutes)
+        fo = FADE_OUT if last else XFADE
+        env = _envelope(cur, cur + span, base_db, inserts, overlays, fi, fo)
         row = {"id": "bgm%d" % k, "path": t["file"], "start": round(cur, 3),
                "volume": round(max(v for _, v in env), 4), "srcStart": round(src, 3), "srcEnd": round(seg_end, 3),
                "role": "bgm", "name": t.get("name") or t["id"], "env": env}

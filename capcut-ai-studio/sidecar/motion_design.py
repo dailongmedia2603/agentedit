@@ -320,12 +320,8 @@ def gpt_rm_design(segments, transcript_data, emotion_map_data, key_moments_data,
     ], json_mode=True, max_tokens=24000, temperature=0.5, req_timeout=300, max_attempts=2,
         step_label="R4-design", images=ref_imgs or None)
     res = _as_design(providers._safe_json(text))
-    import director_guard
-    cd_view = (story or {}).get("chi_dao") if isinstance((story or {}).get("chi_dao"), dict) else None
     thieu = audit_design(res, kit, payload["tong_do_dai_giay"], has_hook=bool(hook), user_media=user_media)
     thieu += ref_pack.audit_usage(res, payload["tong_do_dai_giay"])      # tan suat kieu chu video mau
-    # LENH DAO DIEN (bang quyet dinh, 2026-10-17): lenh R4 nang luong >= 3 chua co lop / scene ghi "qd" -> vong tu sua
-    thieu += director_guard.r4_audit(res, cd_view)
     if thieu and (res.get("scenes") or res.get("layers")):
         # 1 vong tu sua: code dem chi tieu -> GPT bo sung (giu phan da tot)
         if log:
@@ -334,8 +330,7 @@ def gpt_rm_design(segments, transcript_data, emotion_map_data, key_moments_data,
         fix_user["ban_thiet_ke_truoc"] = res
         fix_user["thieu_can_bo_sung"] = thieu
         fix_user["yeu_cau"] = ("Sua ban_thiet_ke_truoc cho DAT moi muc trong thieu_can_bo_sung, giu cac phan da tot, "
-                               "tra lai TOAN BO JSON theo schema. Muc 'lenh dao dien': them lop / scene thuc hien DUNG "
-                               "viec do (ghi \"qd\"), dat dung luc tu neo.")
+                               "tra lai TOAN BO JSON theo schema.")
         text2 = providers.plan_chat([
             {"role": "system", "content": sys_prompt},
             {"role": "user", "content": json.dumps(fix_user, ensure_ascii=False)},
@@ -344,7 +339,6 @@ def gpt_rm_design(segments, transcript_data, emotion_map_data, key_moments_data,
         res2 = _as_design(providers._safe_json(text2))
         thieu2 = audit_design(res2, kit, payload["tong_do_dai_giay"], has_hook=bool(hook), user_media=user_media)
         thieu2 += ref_pack.audit_usage(res2, payload["tong_do_dai_giay"])
-        thieu2 += director_guard.r4_audit(res2, cd_view)
         if (res2.get("scenes") or res2.get("layers")) and len(thieu2) <= len(thieu):
             res, thieu = res2, thieu2
     # hieu ung KHONG lay tu kho mau — buoc FX tu thiet ke + viet code theo boi canh (luat hook o prompt FX)
@@ -564,9 +558,6 @@ def asset_contexts(design, transcript_data=None, story=None, sources=None, user_
                "minh_hoa": str(a.get("illustrates") or a.get("why") or "")[:300],
                "chu_de": str(story.get("story_arc") or "")[:400],
                "tone": str(story.get("tone") or "")[:120],
-               # chi co khi dao dien chay (director.py) -> du an cu giu nguyen khoa cache anh
-               "the_gioi_hinh": str(((story.get("chi_dao") or {}) if isinstance(story.get("chi_dao"), dict) else {})
-                                    .get("the_gioi_hinh") or "")[:400],
                "chu_tren_anh": " / ".join(chu)[:200],
                "boi_canh_nguon": src_desc[:400],
                # chi co khi khung NGANG (canvas.py) -> anh cua video doc giu nguyen khoa cache cu
@@ -1117,8 +1108,6 @@ def layers_to_spec(p, duration, scenes, assets_by_id, faces, changes, kit=None):
                 L["keyframes"] = kfs
         if L0.get("replaces_subtitle") or L0.get("replacesSubtitle"):
             L["replacesSubtitle"] = True
-        if L0.get("qd") is not None and str(L0.get("qd")).strip() != "":
-            L["qd"] = L0["qd"]          # lop thuc hien LENH DAO DIEN -> khong bi bo vi mat do (giam sat doi chieu)
         if typ == "text":
             spans = [s for s in (_span(x, fonts) for x in (L0.get("spans") or [])) if s]
             if not spans and str(L0.get("text") or "").strip():
@@ -1211,7 +1200,7 @@ def layers_to_spec(p, duration, scenes, assets_by_id, faces, changes, kit=None):
     kept = []
     for L in out:
         win = [k for k in kept if L["start"] - k["start"] < 10] + [L]
-        if _beats(win) > MAX_LAYERS_PER_10S and not L.get("um") and L.get("qd") is None:   # tu lieu / lenh dao dien: giu
+        if _beats(win) > MAX_LAYERS_PER_10S and not L.get("um"):   # tu lieu cua nguoi dung: giu
             changes.append("%s: qua %d nhip do hoa trong 10s -> bo (roi mat)" % (L["id"], MAX_LAYERS_PER_10S))
             continue
         kept.append(L)
@@ -1587,7 +1576,7 @@ def attach_subject_mattes(spec, changes, log=None):
     # hieu ung tu viet lop "behind": cung can ban tach nguoi (ve giua nen va nguoi)
     behind += [f for f in spec.get("fx") or [] if f.get("layer") == "behind"]
     pops = [sc for sc in spec.get("scenes") or [] if sc.get("popout")]
-    # lenh dao dien: nen diu (nguoi van net) + vien quanh nguoi -> can ban tach nguoi trong cac khoang do
+    # nen diu (nguoi van net) + vien quanh nguoi (spec cu) -> can ban tach nguoi trong cac khoang do
     focus = [dict(w, id="%s%d" % (k, i)) for k in ("bgFocus", "subjectFx") for i, w in enumerate(spec.get(k) or [])]
     if not behind and not pops and not focus:
         return
