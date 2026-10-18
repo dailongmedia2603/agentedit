@@ -23,7 +23,7 @@
 // O anh `icon` (tuy chon): icon app / logo san pham lam nhan vat chinh; khong co -> logo thuong hieu cua video
 // (hoac dau hieu trung tinh). Khung doc (native): icon 1.3x, Dock o 3/4 duoi khung, panel rong 1700 can giua phan tren
 // Dock, chu to; cu dong / bong / tieng nay giu nguyen thong so goc (4 cu nhay tang dan 0.35 -> 1.2 lan icon).
-import { useCurrentFrame, useVideoConfig, useText, useList, useImage, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useImage, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, Img } from 'remotion';
 import { EASE, FONT, mix, ramp, softShadow } from '../../../fixtures/Polish';
@@ -197,16 +197,19 @@ export const AttentionBounce: React.FC = () => {
   const shaft = Math.sin(f / 70) * 14;
   const badgeD = 104 * K * (badge.length > 1 ? 1 + 0.3 * (badge.length - 1) : 1);
 
+  // [Agent Edit] nen anh AI: bo nen tuong kem + vet nang cua chop (nen code ve); giu Dock / icon / panel
+  const bd = !!useBackdrop();
+
   return (
-    <AbsoluteFill style={{ background: L.bg[1] }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[1] }}>
       <Stage look={L} keyLight={{ x: 0.3, y: 0.05 }} fill={{ x: 0.85, y: 0.2 }} style={{ background: 'linear-gradient(180deg, #e6d9c6 0%, #dccdb8 60%, #d3c3ac 100%)' }} />
       {/* 百叶窗光：两道斜光带打在背景墙上 */}
-      <div style={{
+      {!bd && <div style={{
         position: 'absolute', left: -400 + shaft, top: -200, width: 2800 + (portrait ? 1600 : 0), height: 1500 * (portrait ? 2.2 : 1), transform: 'rotate(-24deg)', transformOrigin: '0 0',
         background: `repeating-linear-gradient(90deg, transparent 0px, transparent ${250 * K}px, ${alpha('#fffaf0', 0.85)} ${280 * K}px, ${alpha('#fff6e6', 0.7)} ${400 * K}px, transparent ${430 * K}px, transparent ${620 * K}px)`,
         filter: 'blur(6px)', opacity: 0.9, mixBlendMode: 'soft-light',
         WebkitMaskImage: 'linear-gradient(180deg, #000 0%, #000 45%, transparent 75%)', maskImage: 'linear-gradient(180deg, #000 0%, #000 45%, transparent 75%)',
-      }} />
+      }} />}
 
       {/* 镜头层 */}
       <AbsoluteFill style={{ transform: `scale(${zoom})`, transformOrigin: `${focus.x}px ${focus.y}px` }}>

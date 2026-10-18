@@ -33,7 +33,7 @@
 // logo thuong hieu (hoac dau hieu trung tinh) lam vat the chinh nhu ban goc.
 // Toa do cac o (光标落点) KHONG con viet cung: tinh tu bo cuc that (so dong tieu de / mo ta, be ngang gia) -> khung
 // tu dien luon om dung truong. Khung doc (native): the doc — anh lon o tren, cac truong xep ben duoi, chu to hon.
-import { useCurrentFrame, useVideoConfig, useText, useList, useImage, useShot, useShotFonts, fitSize, measureText, staticFile } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useImage, useShot, useShotFonts, fitSize, measureText, staticFile } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, Img } from 'remotion';
 import { EASE, mix, ramp } from '../../../fixtures/Polish';
@@ -125,7 +125,7 @@ export const ProductCardProgressiveAssemble: React.FC = () => {
   const body = useText('body', 'Âm thanh sống động, chống ồn chủ động, đeo cả ngày vẫn êm tai.');
   const hl = useText('highlight', 'chống ồn chủ động');
   const variant = useText('variant', 'Màu · Đen nhám');
-  const ctaT = useText('cta', 'Mua ngay — giao trong 2 giờ');
+  const ctaT = useText('cta', 'Mua ngay · giao trong 2 giờ');
   const preview = !shot || (!!shot.preview && Object.keys(shot.images).length === 0); // [Agent Edit] chi xem thu kho moi dung anh mau
   const product = useImage('product') ?? (preview ? staticFile('samples/square1.jpg') : undefined);
 
@@ -263,11 +263,13 @@ export const ProductCardProgressiveAssemble: React.FC = () => {
   // 色卡 = 品牌四色（中性）
   const SWATCHES = [BRAND.ink, BRAND.paper, BRAND.amber, BRAND.slate];
   const imgR = portrait ? 32 : 24;
+  // [Agent Edit] nen anh AI: bo nen dac + quang sang xanh phia sau the (Stage tu bo gradient)
+  const bd = useBackdrop();
   return (
-    <AbsoluteFill style={{ background: L.bg[1], overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[1], overflow: 'hidden' }}>
       <Stage look={L} keyLight={{ x: 0.3, y: 0.05 }} fill={{ x: 0.85, y: 0.95 }} vignette={0.2} />
       {/* 远景：一块极淡的钴蓝光晕在卡片右后方（空间层次） */}
-      <div style={{ position: 'absolute', left: 1100, top: CT + CH * 0.55, width: 900, height: 700, background: `radial-gradient(closest-side, ${alpha(BLUE, 0.08)}, ${alpha(BLUE, 0)})` }} />
+      {!bd && <div style={{ position: 'absolute', left: 1100, top: CT + CH * 0.55, width: 900, height: 700, background: `radial-gradient(closest-side, ${alpha(BLUE, 0.08)}, ${alpha(BLUE, 0)})` }} />}
 
       <div style={{
         position: 'absolute', left: CL, top: CT, width: CW, height: CH,

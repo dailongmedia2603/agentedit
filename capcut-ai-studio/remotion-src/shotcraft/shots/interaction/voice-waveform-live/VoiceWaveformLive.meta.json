@@ -6,25 +6,83 @@
  "duration": 172,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
  "hold": 152,
  "slots": [
-  {"id": "line1", "role": "quote", "sample": "Đặt giúp mình một bàn tối thứ Sáu,", "max": 50, "note": "câu nói với trợ lý giọng nói — vế 1"},
-  {"id": "line2", "role": "quote", "sample": "cho bốn người, gần cửa sổ nhé.", "max": 50, "note": "vế 2 (sau một nhịp ngừng)"},
-  {"id": "hint", "role": "label", "sample": "Bạn cần giúp gì?…", "max": 30, "optional": true, "note": "chữ gợi ý mờ trước khi nói"},
-  {"id": "label", "role": "label", "sample": "Trợ lý đang nghe", "max": 30, "optional": true, "note": "nhãn trên khung thu âm"},
-  {"id": "sent", "role": "label", "sample": "Đã gửi", "max": 30, "optional": true, "note": "dòng xác nhận sau khi gửi (kèm thời lượng)"}
+  {
+   "id": "line1",
+   "role": "quote",
+   "sample": "Đặt giúp mình một bàn tối thứ Sáu,",
+   "max": 50,
+   "note": "câu nói với trợ lý giọng nói — vế 1"
+  },
+  {
+   "id": "line2",
+   "role": "quote",
+   "sample": "cho bốn người, gần cửa sổ nhé.",
+   "max": 50,
+   "note": "vế 2 (sau một nhịp ngừng)"
+  },
+  {
+   "id": "hint",
+   "role": "label",
+   "sample": "Bạn cần giúp gì?…",
+   "max": 30,
+   "optional": true,
+   "note": "chữ gợi ý mờ trước khi nói"
+  },
+  {
+   "id": "label",
+   "role": "label",
+   "sample": "Trợ lý đang nghe",
+   "max": 30,
+   "optional": true,
+   "note": "nhãn trên khung thu âm"
+  },
+  {
+   "id": "sent",
+   "role": "label",
+   "sample": "Đã gửi",
+   "max": 30,
+   "optional": true,
+   "note": "dòng xác nhận sau khi gửi (kèm thời lượng)"
+  }
  ],
  "images": [],
  "brand": "optional",
- "sfx": [{"at": 126, "type": "pop"}, {"at": 128, "type": "swoosh"}],
+ "sfx": [
+  {
+   "at": 126,
+   "type": "pop"
+  },
+  {
+   "at": 128,
+   "type": "swoosh"
+  }
+ ],
  "vi": {
   "ten": "Ra lệnh bằng giọng nói — sóng âm trực tiếp",
   "mo_ta": "Nền kem ấm: một khung thu âm dạng viên thuốc màu trắng với nút micro cam đất, 64 vạch sóng âm nhảy theo lời nói và trôi từ phải sang trái (khi ngừng thì xẹp thành hàng chấm); phía trên câu nói hiện ra từng chữ theo nhịp (chữ mới màu cam rồi chuyển đen, có con trỏ nhấp nháy khi ngừng). Bấm nút gửi: sóng xẹp lại, câu chữ thu nhỏ bay vào bong bóng chat màu cam, hiện dòng 'Đã gửi · 0:03'.",
   "hop_khi": "Nói về trợ lý ảo / AI giọng nói, ra lệnh bằng giọng nói, chatbot, tính năng ghi âm, dictation, 'chỉ cần nói là xong', đặt hàng/đặt chỗ qua app bằng giọng nói; minh họa câu người dùng nói với máy.",
   "tranh_khi": "Không liên quan giọng nói / trợ lý; câu quá dài (> 2 vế); lúc người nói đang nói câu khác hẳn (chữ trên màn hình sẽ lệch lời).",
   "nang_luong": "vua",
-  "chu_de": ["giọng nói", "trợ lý ảo", "AI", "chatbot", "ghi âm", "app", "điện thoại", "ra lệnh", "tin nhắn"]
- }
+  "chu_de": [
+   "giọng nói",
+   "trợ lý ảo",
+   "AI",
+   "chatbot",
+   "ghi âm",
+   "app",
+   "điện thoại",
+   "ra lệnh",
+   "tin nhắn"
+  ]
+ },
+ "backdrop": true
 }

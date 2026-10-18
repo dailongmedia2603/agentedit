@@ -14,7 +14,7 @@
 // MOI = trung tam) / items (3-7 dong trong trang moi) / apps (5 nhan duoi 5 bieu tuong ung dung, tuy chon). Moi chu tren giao dien
 // = tieng Viet; 5 bieu tuong la icon net chung (web / tin nhan / gio hang / email / bieu do), khong logo ben thu ba.
 // Khung doc (native): trang to hon (1.7x) giua khung, 3 bieu tuong phia tren + 2 phia duoi, ong sang dung doc; nhip giu nguyen.
-import { useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize } from '../../../runtime';
 import React, { useId } from 'react';
 import { AbsoluteFill, interpolate, Easing } from 'remotion';
 import { Grain, Vignette, bezier } from '../../../fixtures/Polish';
@@ -328,6 +328,7 @@ export const IntegrationHubMap: React.FC = () => {
   // 滤镜/渐变 ID 按实例生成，多实例同场不串引（useId 的 «:» 在 url() 里非法，需清洗）
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
 
+  const bd = useBackdrop(); // [Agent Edit] nen anh AI: bo nen tim + quang + khung neon nen + toi goc + hat tu ve
   const oldTitle = useText('old_title', 'Quy trình thủ công');
   const oldNote = useText('old_note', 'Mỗi ngày phải mở năm ứng dụng khác nhau, sao chép dữ liệu bằng tay rồi gửi báo cáo qua email. Mất hàng giờ mà vẫn dễ sai sót, thông tin nằm rải rác khắp nơi.');
   const title = useText('title', 'Trung tâm bán hàng');
@@ -372,17 +373,17 @@ export const IntegrationHubMap: React.FC = () => {
   const sw = P ? 1.5 : 1; // 竖版管线加粗
 
   return (
-    <AbsoluteFill style={{ background: '#09080e' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : '#09080e' }}>
       {/* 暗紫底：中心冷紫柔光 + 左下品红余光 */}
-      <AbsoluteFill
+      {!bd && <AbsoluteFill
         style={{
           background:
             'radial-gradient(ellipse 60% 55% at 50% 50%, rgba(98,58,160,0.28), transparent 70%), radial-gradient(ellipse 45% 40% at 16% 80%, rgba(150,56,128,0.13), transparent 70%), radial-gradient(ellipse 40% 35% at 86% 18%, rgba(70,90,190,0.10), transparent 70%)',
         }}
-      />
+      />}
 
       {/* 背景霓虹矩形轮廓：细、淡、轻微失焦，作远景衬场 */}
-      <AbsoluteFill style={{ transform: bgPar, transformOrigin: '50% 50%' }}>
+      {!bd && <AbsoluteFill style={{ transform: bgPar, transformOrigin: '50% 50%' }}>
         {RECTS.map((r, i) => {
           const on = interpolate(frame, [36 + i * 4, 56 + i * 4], [0, 1], {
             extrapolateLeft: 'clamp',
@@ -408,7 +409,7 @@ export const IntegrationHubMap: React.FC = () => {
             />
           );
         })}
-      </AbsoluteFill>
+      </AbsoluteFill>}
 
       {/* 光管层 */}
       <svg width={1920} height={SH} style={{ position: 'absolute', inset: 0, opacity: mapIn }}>
@@ -683,8 +684,8 @@ export const IntegrationHubMap: React.FC = () => {
           />
         </div>
       )}
-      <Vignette strength={0.55} inner={0.42} color="#040308" />
-      <Grain opacity={0.07} blend="soft-light" />
+      {!bd && <Vignette strength={0.55} inner={0.42} color="#040308" />}
+      {!bd && <Grain opacity={0.07} blend="soft-light" />}
     </AbsoluteFill>
   );
 };

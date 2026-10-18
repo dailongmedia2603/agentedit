@@ -26,5 +26,6 @@
   "tranh_khi": "Cần năng lượng cao hoặc giới thiệu nhiều số liệu; giữa video khi còn nhiều ý tiếp theo (đây là dấu chấm hết); không có con số.",
   "nang_luong": "thap",
   "chu_de": ["số liệu", "kết luận", "con số", "chỉ số", "báo cáo", "uy tín", "kết thúc"]
- }
+ },
+ "backdrop": true
 }

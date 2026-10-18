@@ -6,30 +6,121 @@
  "duration": 156,
  "kind": "insert",
  "dark": true,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
  "hold": 104,
  "slots": [
-  {"id": "kicker", "role": "kicker", "sample": "Chính thức ra mắt", "max": 26, "optional": true, "note": "nhãn nhỏ phía trên tiêu đề (tự in hoa)"},
-  {"id": "title", "role": "title", "sample": "Điều bạn chờ đã đến.", "max": 40, "note": "tiêu đề lớn cạnh / dưới tấm thẻ"},
-  {"id": "subtitle", "role": "subtitle", "sample": "Phiên bản mới nhanh hơn, đẹp hơn và dành riêng cho bạn.", "max": 90, "optional": true},
-  {"id": "card_line1", "role": "title", "sample": "Ra mắt", "max": 12, "note": "chữ lớn đậm trên thẻ (1-2 từ)"},
-  {"id": "card_line2", "role": "title", "sample": "Bản mới", "max": 12, "optional": true, "note": "dòng chữ lớn mảnh thứ hai trên thẻ"},
-  {"id": "card_kicker", "role": "label", "sample": "Công chiếu · Số 01", "max": 26, "optional": true, "note": "nhãn nhỏ màu nhấn trên thẻ"},
-  {"id": "card_footer", "role": "label", "sample": "20:00 · 25.10", "max": 22, "optional": true, "note": "dòng cuống vé: giờ / ngày / địa điểm"},
-  {"id": "card_tag", "role": "label", "sample": "SỐ 01", "max": 12, "optional": true, "note": "mã nhỏ góc phải trên thẻ"}
+  {
+   "id": "kicker",
+   "role": "kicker",
+   "sample": "Chính thức ra mắt",
+   "max": 26,
+   "optional": true,
+   "note": "nhãn nhỏ phía trên tiêu đề (tự in hoa)"
+  },
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Điều bạn chờ đã đến.",
+   "max": 40,
+   "note": "tiêu đề lớn cạnh / dưới tấm thẻ"
+  },
+  {
+   "id": "subtitle",
+   "role": "subtitle",
+   "sample": "Phiên bản mới nhanh hơn, đẹp hơn và dành riêng cho bạn.",
+   "max": 90,
+   "optional": true
+  },
+  {
+   "id": "card_line1",
+   "role": "title",
+   "sample": "Ra mắt",
+   "max": 12,
+   "note": "chữ lớn đậm trên thẻ (1-2 từ)"
+  },
+  {
+   "id": "card_line2",
+   "role": "title",
+   "sample": "Bản mới",
+   "max": 12,
+   "optional": true,
+   "note": "dòng chữ lớn mảnh thứ hai trên thẻ"
+  },
+  {
+   "id": "card_kicker",
+   "role": "label",
+   "sample": "Công chiếu · Số 01",
+   "max": 26,
+   "optional": true,
+   "note": "nhãn nhỏ màu nhấn trên thẻ"
+  },
+  {
+   "id": "card_footer",
+   "role": "label",
+   "sample": "20:00 · 25.10",
+   "max": 22,
+   "optional": true,
+   "note": "dòng cuống vé: giờ / ngày / địa điểm"
+  },
+  {
+   "id": "card_tag",
+   "role": "label",
+   "sample": "SỐ 01",
+   "max": 12,
+   "optional": true,
+   "note": "mã nhỏ góc phải trên thẻ"
+  }
  ],
  "images": [
-  {"id": "photo", "role": "photo", "aspect": "1:1", "optional": true, "note": "ảnh thay huy hiệu giữa thẻ (sản phẩm, bìa sách, poster, khóa học...), tỉ lệ bất kỳ, được cắt phủ vào khung bo góc; không có thì hiện huy hiệu ánh sáng + dấu hiệu thương hiệu"}
+  {
+   "id": "photo",
+   "role": "photo",
+   "aspect": "1:1",
+   "optional": true,
+   "note": "ảnh thay huy hiệu giữa thẻ (sản phẩm, bìa sách, poster, khóa học...), tỉ lệ bất kỳ, được cắt phủ vào khung bo góc; không có thì hiện huy hiệu ánh sáng + dấu hiệu thương hiệu"
+  }
  ],
  "brand": "optional",
- "sfx": [{"at": 0, "type": "riser"}, {"at": 9, "type": "whoosh"}, {"at": 57, "type": "boom"}, {"at": 65, "type": "swoosh"}],
+ "sfx": [
+  {
+   "at": 0,
+   "type": "riser"
+  },
+  {
+   "at": 9,
+   "type": "whoosh"
+  },
+  {
+   "at": 57,
+   "type": "boom"
+  },
+  {
+   "at": 65,
+   "type": "swoosh"
+  }
+ ],
  "vi": {
   "ten": "Ảo thuật gia tung thẻ từ tia sáng",
   "mo_ta": "Nền xanh nửa đêm: một tia sáng hình chữ X màu xanh lóe lên và xoay trong 0,3 giây, rồi một tấm thẻ (vé mời / thẻ sản phẩm màu xanh navy) được 'biến' ra từ chính điểm sáng — xoay tít bay vòng cung về phía camera, chậm dần rồi KHỰNG đứng yên thật to, một vòng sáng tỏa ra, vệt sáng lướt qua mặt thẻ; sau đó nhãn, tiêu đề lớn và câu phụ hiện từng dòng bên cạnh (khung dọc: phía dưới).",
   "hop_khi": "Khoảnh khắc hé lộ / 'biến ra' một thứ: ra mắt sản phẩm, công bố sự kiện, vé mời, phần quà, thẻ thành viên, bìa sách / khóa học mới; mở đầu video với cú bùng nổ; câu nói kiểu 'và đây là...', 'chính thức ra mắt'.",
   "tranh_khi": "Nội dung nhẹ nhàng, chậm rãi, nghiêm túc; đã có cú mở đầu mạnh khác; video tone sáng.",
   "nang_luong": "cao",
-  "chu_de": ["ra mắt", "hé lộ", "sự kiện", "vé mời", "sản phẩm", "mở đầu", "thẻ", "ảo thuật"]
- }
+  "chu_de": [
+   "ra mắt",
+   "hé lộ",
+   "sự kiện",
+   "vé mời",
+   "sản phẩm",
+   "mở đầu",
+   "thẻ",
+   "ảo thuật"
+  ]
+ },
+ "backdrop": true
 }

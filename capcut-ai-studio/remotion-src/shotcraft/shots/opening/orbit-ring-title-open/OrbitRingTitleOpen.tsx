@@ -27,7 +27,7 @@
 // tag (nhan nho canh ten thuong hieu). Anh tuy chon img1..img4 thay the o vi tri 1/3/5/7 cua vong (anh B-roll that, cover 16:9).
 // Chu tren 8 the giao dien gia doi sang tieng Viet trung tinh (chi la hoa van). Khung doc (native): vong elip DUNG (RX 600 /
 // RY ~1250) bao quanh tieu de, the to hon; toc do quay giu nguyen (toc do dai tren man hinh tuong duong khung ngang).
-import { useCurrentFrame, useVideoConfig, useText, useImage, useShotFonts, useBrand, fitSize, measureText } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useImage, useShotFonts, useBrand, fitSize, measureText } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, Easing, Freeze, Img, interpolate } from 'remotion';
 import { EASE, FONT, ramp } from '../../../fixtures/Polish';
@@ -160,7 +160,7 @@ const TileRoute: React.FC = () => {
   const tag = F(f, 42, 54);
   return (
     <Pad bg={L.surface2}>
-      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(220,255,170,0.06) 2px, transparent 2px), linear-gradient(90deg, rgba(220,255,170,0.06) 2px, transparent 2px)', backgroundSize: '80px 80px' }} />
+      {/* [Agent Edit] bo luoi ke o trang tri */}
       <svg width={848} height={428} viewBox="0 0 848 428" style={{ position: 'relative', overflow: 'visible' }}>
         <path d={ROUTE} fill="none" stroke="rgba(220,255,170,0.14)" strokeWidth={10} strokeLinecap="round" />
         <path d={ROUTE} fill="none" stroke={LIME} strokeWidth={10} strokeLinecap="round" pathLength={1} strokeDasharray={1} strokeDashoffset={1 - draw} />
@@ -204,13 +204,13 @@ const TileTerminal: React.FC = () => {
   );
 };
 
-/** 6 线稿描画（点阵纸底） */
+/** 6 线稿描画 */
 const SKETCH = ['M80 380 L768 380', 'M140 380 L200 90 L648 90 L708 380', 'M280 90 L280 380', 'M500 90 L500 380'];
 const TileSketch: React.FC = () => {
   const f = useCurrentFrame();
   return (
     <Pad>
-      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle, rgba(220,255,170,0.14) 2px, transparent 2.5px)', backgroundSize: '40px 40px' }} />
+      {/* [Agent Edit] bo nen giay cham trang tri */}
       <svg width={848} height={428} viewBox="0 0 848 428" style={{ position: 'relative' }}>
         {SKETCH.map((d, i) => <path key={`g${i}`} d={d} fill="none" stroke="rgba(220,255,170,0.12)" strokeWidth={7} strokeLinecap="round" />)}
         {SKETCH.map((d, i) => {
@@ -336,6 +336,7 @@ export const OrbitRingTitleOpen: React.FC = () => {
   const track = ramp(frame, 0, 30, EASE.out);
   const push = 1 + 0.025 * ramp(frame, 40, 110, EASE.smooth); // hold 段极缓推近
 
+  const bd = useBackdrop(); // [Agent Edit] nen anh AI: bo nen dac + scrim nen; chu co bong nhe
   const marker = Math.min(1.03, springAt(frame, MARKER_AT, { damping: 20, stiffness: 190 }));
   const kickerIn = ramp(frame, 60, 16, EASE.out);
   const exitQ = HANDOFF_EXIT ? ramp(frame, EXIT_AT, 10, EASE.exit) : 0;
@@ -359,10 +360,10 @@ export const OrbitRingTitleOpen: React.FC = () => {
   });
 
   return (
-    <AbsoluteFill style={{ background: L.bg[1], fontFamily: FONT.sans }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[1], fontFamily: FONT.sans }}>
       <Stage look={L} keyLight={{ x: 0.5, y: 0.0 }} fill={null} intensity={0.5} vignette={0.62}>
-        {/* 标题背后的暗 scrim：卡从背后经过时标题始终压得住 */}
-        <div style={{ position: 'absolute', left: 360, top: CY - 240, width: 1200, height: 480, background: `radial-gradient(ellipse 50% 50% at 50% 50%, ${alpha('#050604', 0.75)} 0%, ${alpha('#050604', 0)} 70%)` }} />
+        {/* 标题背后的暗 scrim：卡从背后经过时标题始终压得住（[Agent Edit] nen anh AI: bo, scrim tren the da du） */}
+        {!bd && <div style={{ position: 'absolute', left: 360, top: CY - 240, width: 1200, height: 480, background: `radial-gradient(ellipse 50% 50% at 50% 50%, ${alpha('#050604', 0.75)} 0%, ${alpha('#050604', 0)} 70%)` }} />}
       </Stage>
 
       <AbsoluteFill style={{ transform: `scale(${push})` }}>
@@ -407,13 +408,13 @@ export const OrbitRingTitleOpen: React.FC = () => {
         <div style={{ position: 'absolute', left: portrait ? 60 : 260, top: CY - titleH / 2 - (portrait ? 200 : 90), width: portrait ? 1800 : 1400, height: titleH + (portrait ? 400 : 180), zIndex: 25, background: `radial-gradient(ellipse 50% 50% at 50% 50%, ${alpha('#060705', 0.82)} 0%, ${alpha('#060705', 0.55)} 45%, ${alpha('#060705', 0)} 72%)` }} />
 
         {/* 标题：上行次级灰、下行主角大字 + 荧光马克 */}
-        <div style={{ position: 'absolute', left: 0, right: 0, top: titleTop, textAlign: 'center', zIndex: 30, ...titleExit }}>
+        <div style={{ position: 'absolute', left: 0, right: 0, top: titleTop, textAlign: 'center', zIndex: 30, textShadow: bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined, ...titleExit }}>
           <div style={{ fontFamily: fonts.sans, fontSize: S1, fontWeight: 500, letterSpacing: '0.02em', color: '#b7bdaa', whiteSpace: 'nowrap', lineHeight: 1.25 }}>
             {l1.map((ch, i) => <span key={i} style={charStyle(frame, 10 + i * step1, S1, 27)}>{ch}</span>)}
           </div>
           {hiRows.map((r, k) => (
             <div key={k}>
-              <div style={{ marginTop: k ? hiGap : 34, display: 'inline-block', position: 'relative', fontFamily: fonts.sans, fontSize: S2, fontWeight: 600, letterSpacing: '0.01em', lineHeight: 1.12, whiteSpace: 'nowrap' }}>
+              <div style={{ marginTop: k ? hiGap : 34, display: 'inline-block', position: 'relative', fontFamily: fonts.sans, fontSize: S2, fontWeight: 600, letterSpacing: '0.01em', lineHeight: 1.12, whiteSpace: 'nowrap', textShadow: 'none' }}>
                 {/* 马克块：自左横扫铺满（垫在字下） */}
                 <span aria-hidden style={{
                   position: 'absolute', left: '-0.14em', right: '-0.14em', top: '0.04em', bottom: '0.02em', background: LIME, borderRadius: 8,

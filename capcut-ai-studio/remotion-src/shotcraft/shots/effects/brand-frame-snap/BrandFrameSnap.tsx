@@ -29,7 +29,7 @@
 // the tu thu vua cho. Logo / ten thuong hieu tren khung chi hien khi video co thuong hieu.
 // Khung doc (portrait.mode = 'native'): khung dày 84px theo chieu cao that, cua so phong 1.12x dat duoi, phia tren la TEN
 // CHE DO lon (doi cung khung voi khung mau), duoi cua so la caption.
-import { useBrand, useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
+import { useBackdrop, useBrand, useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
 import React from 'react';
 
 import { EASE, FONT, SpeedBlur, mix, ramp, softShadow } from '../../../fixtures/Polish';
@@ -524,29 +524,32 @@ export const BrandFrameSnap: React.FC = () => {
   const modeLabel = (dev ? modeB : modeA).toLocaleUpperCase('vi');
   const modeLabelS = fitSize(modeLabel, { family: fam, size: LABEL, maxWidth: labelMax - LABEL, weight: 800, letterSpacingEm: 0.16, minSize: 18 });
   const brandName = brandObj?.name ?? '';
+  // [Agent Edit] nen anh AI: bo nen toi ngoai khung + quang mau day khung (Stage tu trong suot); chu dat thang tren nen co bong sang
+  const bd = useBackdrop();
+  const TS = bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined;
 
   return (
-    <div style={{ width: 1920, height: SH, background: '#0c1020', position: 'relative', overflow: 'hidden', fontFamily: fam }}>
+    <div style={{ width: 1920, height: SH, background: bd ? 'transparent' : '#0c1020', position: 'relative', overflow: 'hidden', fontFamily: fam }}>
       {/* 框内内容区：瓷白舞台（带当前模式色的极淡地光，同帧翻） */}
       <div style={{ position: 'absolute', inset: inner, overflow: 'hidden', borderRadius: 22 }}>
         <Stage look={L} keyLight={{ x: 0.5, y: 0.0 }} fill={null} vignette={0.07} intensity={1.15} />
-        <div style={{
+        {!bd && <div style={{
           position: 'absolute', inset: 0,
           background: `radial-gradient(ellipse 70% 40% at 50% 104%, ${alpha(color, 0.16)} 0%, ${alpha(color, 0)} 70%)`,
-        }} />
+        }} />}
         <div style={{ position: 'absolute', left: -inner, top: -inner, width: 1920, height: SH, transform: `scale(${push})`, transformOrigin: `50% ${winCY}px` }}>
           {/* portrait 标题：当前模式名（与画框同帧翻） */}
           {portrait ? (
             <div style={{
               position: 'absolute', left: 0, right: 0, top: blockTop, height: headS * 1.25, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: headS, fontWeight: 800, letterSpacing: '-0.03em', color, whiteSpace: 'nowrap', lineHeight: 1.25,
+              fontSize: headS, fontWeight: 800, letterSpacing: '-0.03em', color, whiteSpace: 'nowrap', lineHeight: 1.25, textShadow: TS,
               opacity: headIn, transform: `translateY(${((1 - headIn) * 40).toFixed(2)}px)`,
             }}>{dev ? modeB : modeA}</div>
           ) : null}
           {capLines.map((l, i) => (
             <div key={i} style={{
               position: 'absolute', left: 0, right: 0, top: winCY + winH / 2 + 130 + i * capS * 1.3, textAlign: 'center',
-              fontSize: capS, fontWeight: 500, color: L.ink2, lineHeight: 1.3, opacity: capIn, transform: `translateY(${((1 - capIn) * 16).toFixed(2)}px)`,
+              fontSize: capS, fontWeight: 500, color: L.ink2, lineHeight: 1.3, textShadow: TS, opacity: capIn, transform: `translateY(${((1 - capIn) * 16).toFixed(2)}px)`,
             }}>{l}</div>
           ))}
           <SpeedBlur vx={0} vy={vy} amount={0.28} max={14}>
@@ -559,11 +562,7 @@ export const BrandFrameSnap: React.FC = () => {
                 borderRadius: 18, overflow: 'hidden', background: '#eef1f6',
                 boxShadow: `0 0 0 1px rgba(15,30,60,0.10), inset 0 1px 0 rgba(255,255,255,0.9), ${softShadow(elev, { color: '#0c1a3a', strength: 1.3 })}`,
               }}>
-                {/* 画布：点阵 */}
-                <div style={{
-                  position: 'absolute', left: CANVAS_X, top: BAR_H, width: CANVAS_W, height: BODY_H,
-                  backgroundImage: 'radial-gradient(circle, rgba(15,30,60,0.13) 1.2px, transparent 1.5px)', backgroundSize: '28px 28px',
-                }} />
+                {/* [Agent Edit] 画布：bo luoi cham trang tri (khong luoi ke o, luoi cham): canvas tron */}
                 <div style={{ position: 'absolute', left: CARD_X, top: CARD_Y - 38, fontSize: 19, fontWeight: 600, color: L.ink3, whiteSpace: 'nowrap' }}>Thẻ khuyến mãi · 468 × 600</div>
                 <PricingCard t={t} />
                 {!dev ? <Selection f={f} color={color} /> : <Redlines f={f} color={color} />}

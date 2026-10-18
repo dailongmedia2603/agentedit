@@ -27,5 +27,6 @@
   "tranh_khi": "Cần số liệu, danh sách, hình ảnh minh họa; câu dài hơn ~2 dòng; nhịp nhanh, gấp (cảnh dài 6-7s, nhịp chậm).",
   "nang_luong": "thap",
   "chu_de": ["ra mắt", "giới thiệu", "mở đầu", "chương mới", "tên sản phẩm", "thương hiệu", "khẩu hiệu", "cảm hứng"]
- }
+ },
+ "backdrop": false
 }

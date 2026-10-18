@@ -28,7 +28,7 @@
 // bat ky: tieu de tu thu nho theo be ngang that, nhan sau khi ha cap giu ~48px (doc 64px); moi doan wrapLines + fitSize.
 // Khung doc (portrait.mode = 'native'): tieu de to hon, 3 the xep doc, the ghi chu nam DUOI kich ban (day noi doc xuong),
 // ca khoi noi dung can giua theo chieu cao that. Khung ngang giu bo cuc goc.
-import { useCurrentFrame, useVideoConfig, useText, useList, useBrand, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useBrand, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, SpeedBlur, bezier, mix, ramp, softShadow } from '../../../fixtures/Polish';
@@ -84,6 +84,7 @@ const cardStyle = (w: number, h: number | 'auto', u: number): React.CSSPropertie
   position: 'relative', width: w, height: h, borderRadius: 22 * u, background: L.surface,
   border: `1px solid ${L.line}`, boxShadow: `inset 0 1px 0 rgba(255,255,255,0.9), ${softShadow(10, { color: L.shadow, strength: 0.9 })}`,
   padding: `${34 * u}px ${36 * u}px`, boxSizing: 'border-box', overflow: 'hidden',
+  textShadow: 'none', // [Agent Edit] chu trong the co nen rieng: khong ke bong sang cua nen anh
 });
 
 type Copy = {
@@ -409,8 +410,10 @@ export const TitleDemoteToLabel: React.FC = () => {
   };
   // A 内容退场
   const outA = ramp(frame, B0, 12, EASE.exit);
+  // [Agent Edit] nen anh AI (Stage tu bo gradient): chu nam thang tren anh -> bong sang nhe de doc ro
+  const bd = useBackdrop();
   return (
-    <AbsoluteFill style={{ overflow: 'hidden' }}>
+    <AbsoluteFill style={{ overflow: 'hidden', textShadow: bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined }}>
       <Stage look={L} keyLight={{ x: 0.3, y: 0.05 }} fill={{ x: 0.9, y: 0.95 }} />
       {/* 网格页眉：右上角品牌（视频自己的品牌）/ 页码（纹理级小字） */}
       <div style={{ position: 'absolute', right: MARGIN, top: g.headerY, display: 'flex', alignItems: 'center', gap: 40 * g.u, ...type(22 * g.u, 600, { caps: true, mono: true }), letterSpacing: '0.16em', color: L.ink3, opacity: ramp(frame, 40, 20, EASE.out) }}>

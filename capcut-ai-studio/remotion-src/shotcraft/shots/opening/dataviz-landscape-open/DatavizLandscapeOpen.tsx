@@ -28,7 +28,7 @@
  * hinh phoi canh, duong chan troi ha xuong ~45-50% chieu cao, bau troi phia tren chua tieu de lon, mat dat phia duoi
  * keo dai toi sat ong kinh (nhanh chinh di tu day khung len diem tu); nhan to hon 1.35x.
  */
-import { useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import {EASE, FONT, bezier, mix, ramp} from '../../../fixtures/Polish';
@@ -339,18 +339,10 @@ export const DatavizLandscapeOpen: React.FC = () => {
   const trunkSegs = sharp.filter((s) => s.c === L.accent);
 
   // 地面点阵：与世界锁定的网格，前飞时从远处涌来
-  const dots: {x: number; y: number; r: number; o: number}[] = [];
-  const STEP = 420;
-  const zStart = Math.ceil((cam.z + 300) / STEP) * STEP;
-  for (let z = zStart; z < cam.z + 9000; z += STEP) {
-    for (let x = Math.floor((cam.x - 5200) / STEP) * STEP; x < cam.x + 5200; x += STEP) {
-      const pr = project({x, z}, cam, HY, camH);
-      if (pr.sx < -20 || pr.sx > 1940 || pr.sy > SH + 20) continue;
-      const o = 0.28 * (1 - smooth01(2000, 9000, pr.zr)) * smooth01(300, 900, pr.zr);
-      if (o < 0.01) continue;
-      dots.push({x: pr.sx, y: pr.sy, r: Math.max(0.8, Math.min(3.2, 2400 / pr.zr)), o});
-    }
-  }
+  // [Agent Edit] bo luoi cham mat dat (luoi cham trang tri, ke ca khi khong co nen anh)
+  // [Agent Edit] nen anh AI: bo nen toi + bui troi + mat dat toi (Stage tu trong suot); chu tren troi co bong toi
+  const bd = useBackdrop();
+  const TSH = bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined;
 
   const handoff = ramp(frame, 118, 50, EASE.swift);
   const lineRender = (s: Seg, i: number) => (
@@ -359,19 +351,19 @@ export const DatavizLandscapeOpen: React.FC = () => {
   const kickP = ramp(frame, 104, 14, EASE.out);
 
   return (
-    <AbsoluteFill style={{background: L.bg[2], overflow: 'hidden'}}>
+    <AbsoluteFill style={{background: bd ? 'transparent' : L.bg[2], overflow: 'hidden'}}>
       <AbsoluteFill style={{opacity: 0.35 + 0.65 * fadeUp}}>
         <Stage look={L} keyLight={{x: VPX / 1920, y: HY / SH}} fill={{x: 0.12, y: 0.95}} horizon={HY / SH} intensity={0.55} grain={0.1} vignette={0.6}>
           {/* 天空里的极淡浮尘 */}
-          <div style={{position: 'absolute', left: 0, right: 0, top: 0, height: HY, overflow: 'hidden'}}>
+          {!bd && <div style={{position: 'absolute', left: 0, right: 0, top: 0, height: HY, overflow: 'hidden'}}>
             <Dust look={L} count={26} seed={7} drift={0.12} opacity={0.35} color={L.ink2} />
             {portrait && <div style={{position: 'absolute', left: 0, right: 0, top: 1080, height: 1080}}><Dust look={L} count={26} seed={19} drift={0.12} opacity={0.3} color={L.ink2} /></div>}
-          </div>
+          </div>}
           {/* 地面：地平线以下略亮一档的冷灰绿，向近处压暗 */}
-          <div style={{
+          {!bd && <div style={{
             position: 'absolute', left: 0, right: 0, top: HY, height: SH - HY,
             background: `linear-gradient(180deg, ${alpha('#2a3122', 0.55)} 0%, ${alpha('#141811', 0.3)} ${portrait ? 18 : 30}%, ${alpha('#050604', 0)} 100%)`,
-          }} />
+          }} />}
           {/* 地平线发丝线 */}
           <div style={{
             position: 'absolute', left: 0, right: 0, top: HY - 0.5, height: 1,
@@ -389,7 +381,6 @@ export const DatavizLandscapeOpen: React.FC = () => {
               <stop offset="1" stopColor={L.accent} stopOpacity={0} />
             </radialGradient>
           </defs>
-          {dots.map((d, i) => <circle key={i} cx={d.x} cy={d.y} r={d.r} fill={L.ink2} fillOpacity={d.o} />)}
           {/* 主干泛光（只给主角） */}
           <g filter="url(#dv-glow)" opacity={0.75}>
             {trunkSegs.map((s, i) => <line key={i} x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2} stroke={L.accent} strokeWidth={s.w * 3} strokeOpacity={s.o * 0.45} strokeLinecap="butt" />)}
@@ -432,7 +423,7 @@ export const DatavizLandscapeOpen: React.FC = () => {
       <div style={{position: 'absolute', left: 120, top: titleTop}}>
         {kicker ? (
           <div style={{
-            fontFamily: FONT.mono, fontSize: kickSize, fontWeight: 600, color: L.accent, letterSpacing: '0.12em', lineHeight: 1.3, whiteSpace: 'nowrap',
+            fontFamily: FONT.mono, fontSize: kickSize, fontWeight: 600, color: L.accent, letterSpacing: '0.12em', lineHeight: 1.3, whiteSpace: 'nowrap', textShadow: TSH,
             opacity: kickP, transform: `translateY(${(1 - ramp(frame, 104, 18, EASE.snappy)) * 12}px)`,
           }}>
             {kicker}
@@ -440,7 +431,7 @@ export const DatavizLandscapeOpen: React.FC = () => {
         ) : null}
       </div>
       {[...rowsA.map((r) => ({r, c: L.ink})), ...rowsB.map((r) => ({r, c: L.accent}))].map(({r, c}, i) => (
-        <div key={i} style={{position: 'absolute', left: 120 - TS * 0.04, top: titleY + i * TLH, ...type(TS, 650), lineHeight: 1.12, color: c}}>
+        <div key={i} style={{position: 'absolute', left: 120 - TS * 0.04, top: titleY + i * TLH, ...type(TS, 650), lineHeight: 1.12, color: c, textShadow: TSH}}>
           <RiseWords words={r} frame={frame} each={20} />
         </div>
       ))}

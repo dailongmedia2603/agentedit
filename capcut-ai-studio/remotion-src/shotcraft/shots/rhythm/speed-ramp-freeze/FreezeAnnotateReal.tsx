@@ -27,7 +27,7 @@
 // live-layout.json). O chu: note (loi phe tay, 1-2 dong, tu thu nho), name (chu ky nguoi phe, optional), label (goc phai
 // tren, optional, canh ten thuong hieu). Chu giao dien co dinh doi sang tieng Viet. Khung doc (native): the 1240 rong,
 // loi phe to o phia tren, mui ten cong xuong vong khoanh; dong ho / nhan / 4 goc khung bam mep khung that.
-import { useCurrentFrame, useImage, useShotFonts, useText, useVideoConfig, measureText, useBrand } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useImage, useShotFonts, useText, useVideoConfig, measureText, useBrand } from '../../../runtime';
 import React, { useId } from 'react';
 import { AbsoluteFill, Img } from 'remotion';
 import { EASE, SpeedBlur, mix, ramp, velocity } from '../../../fixtures/Polish';
@@ -133,6 +133,9 @@ export const FreezeAnnotateReal: React.FC = () => {
   const fonts = useShotFonts();
   const brand = useBrand();
   const portrait = SH > 1080 * 1.2;
+  // nen anh AI: bo nen dac + dai tiep dat; chu nam tren nen them bong sang
+  const bd = !!useBackdrop();
+  const tsh = bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined;
   const roughId = `rough-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const focusImg = useImage('focus', 'textures/live/card9.png');
   const others = [useImage('card1'), useImage('card2'), useImage('card3')].filter(Boolean) as string[];
@@ -291,10 +294,10 @@ export const FreezeAnnotateReal: React.FC = () => {
   const labelS = Math.min(30 * Z, (30 * Z * 820) / Math.max(1, measureText(`${BRAND.name} ${label}`, fonts.sans, 30 * Z, 600)));
 
   return (
-    <AbsoluteFill style={{ background: L.bg[1], overflow: 'hidden', fontFamily: fonts.sans }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[1], overflow: 'hidden', fontFamily: fonts.sans }}>
       <Stage look={L} keyLight={{ x: 0.5, y: portrait ? 0.3 : 0.1 }} fill={{ x: 0.5, y: 1.0 }} horizon={portrait ? undefined : 0.86} />
       {/* 展台地面：一道很淡的冷灰接地带，让卡片"立在台上" */}
-      <div
+      {!bd && <div
         style={{
           position: 'absolute',
           left: 0,
@@ -303,7 +306,7 @@ export const FreezeAnnotateReal: React.FC = () => {
           height: 120 * Z,
           background: `radial-gradient(ellipse 60% 50% at 50% 0%, ${alpha(L.shadow, 0.08)} 0%, ${alpha(L.shadow, 0)} 70%)`,
         }}
-      />
+      />}
 
       {/* 导轨 */}
       <SpeedBlur vx={blurV} amount={0.3 * (PITCH / 652)} max={26 * (PITCH / 652)}>
@@ -337,14 +340,14 @@ export const FreezeAnnotateReal: React.FC = () => {
           )}
           {live}
         </div>
-        <span style={{ ...type(30 * Z, 600, { mono: true }), color: frozen ? INK : L.ink2 }}>{timecode(frame)}</span>
+        <span style={{ ...type(30 * Z, 600, { mono: true }), color: frozen ? INK : L.ink2, textShadow: tsh }}>{timecode(frame)}</span>
       </div>
       {/* 右上：品牌 + 场次标签（定格时退场，让位给批注）；竖屏放到时间码下一行 */}
       {(brand || label) && (
-        <div style={{ position: 'absolute', right: M, top: portrait ? tcTop + 110 : 96, display: 'flex', alignItems: 'center', gap: 16 * Z, opacity: 1 - focus, whiteSpace: 'nowrap' }}>
+        <div style={{ position: 'absolute', right: M, top: portrait ? tcTop + 110 : 96, display: 'flex', alignItems: 'center', gap: 16 * Z, opacity: 1 - focus, whiteSpace: 'nowrap', textShadow: tsh }}>
           {brand ? <ShotcraftMark size={44 * Z * (labelS / (30 * Z))} tone="light" /> : null}
           {brand ? <span style={{ ...type(labelS * 1.06, 700), fontFamily: BRAND.font, letterSpacing: '0.02em', color: L.ink }}>{BRAND.name}</span> : null}
-          {label ? <span style={{ ...type(labelS, 450), color: L.ink3 }}>{label}</span> : null}
+          {label ? <span style={{ ...type(labelS, 450), color: bd ? L.ink2 : L.ink3 }}>{label}</span> : null}
         </div>
       )}
 
@@ -373,7 +376,7 @@ export const FreezeAnnotateReal: React.FC = () => {
 
       {/* 批注：粗体钴蓝，从线下升起；署名一行 */}
       {showInk && frame >= 66 && (
-        <div style={{ position: 'absolute', left: NOTE_X, top: NOTE_TOP, opacity: fade, transform: 'rotate(-2deg)', transformOrigin: '0% 100%' }}>
+        <div style={{ position: 'absolute', left: NOTE_X, top: NOTE_TOP, opacity: fade, transform: 'rotate(-2deg)', transformOrigin: '0% 100%', textShadow: tsh }}>
           {nf.lines.map((l, i) => (
             <div key={i} style={{ ...type(nf.size, 820), lineHeight: 1.15, color: INK, whiteSpace: 'pre' }}>
               <TextReveal text={l} by="word" variant="rise" start={66 + i * 4} each={14} gap={Math.min(3, 10 / Math.max(1, l.split(' ').length))} />
@@ -396,6 +399,7 @@ export const FreezeAnnotateReal: React.FC = () => {
             lineHeight: 1.3,
             color: L.ink2,
             whiteSpace: 'nowrap',
+            textShadow: tsh,
           }}
         >
           <span style={{ width: 34 * Z, height: 34 * Z, borderRadius: 17 * Z, background: `linear-gradient(135deg, #8aa4ff, ${INK})`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', ...type(18 * Z, 750) }}>
@@ -423,6 +427,7 @@ export const FreezeAnnotateReal: React.FC = () => {
               ...type(22 * Z, 700, { mono: true }),
               letterSpacing: '0.24em',
               color: alpha(INK, 0.8),
+              textShadow: tsh,
             }}
           >
             DỪNG HÌNH · 0 FPS

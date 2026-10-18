@@ -15,7 +15,7 @@ import React from 'react';
 // bieu do cao len). So the theo so muc: 3 = 1 hang, 4 = 2×2, 5 = 3+2, 6 = 3×2.
 // Khung doc (portrait.mode = 'native'): giao dien kieu app dien thoai — dau trang (ten trang to) + luoi 2 cot (muc le: the cuoi
 // rong het hang), chi tiet trong the phong 1.5x; duong quet doc van chay trai -> phai, cao het khung.
-import { useCurrentFrame, useVideoConfig, useText, useList, useBrand, useShotFonts, measureText, fitSize } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useBrand, useShotFonts, measureText, fitSize } from '../../../runtime';
 import { AbsoluteFill, Easing, interpolate } from 'remotion';
 import { Grain, Vignette } from '../../../fixtures/Polish';
 import { ShotcraftMark } from '../../../fixtures/Brand';
@@ -195,7 +195,10 @@ export const WireframeDrawOn: React.FC = () => {
   const scan = interpolate(frame, [88, 118], [0, 1], { ...clamp, easing: Easing.bezier(0.55, 0, 0.25, 1) });
   const scanX = scan * 1920;
   const lineOpacity = interpolate(frame, [86, 92, 112, 120], [0, 1, 1, 0], clamp);
-  const gridIn = interpolate(frame, [0, 18], [0, 1], { ...clamp, easing: Easing.out(Easing.quad) });
+  // [Agent Edit] NEN ANH AI: bo giay ban ve + nen canvas cua lop thuc (anh nen hien ra); lop ban ve chi con o phan
+  // chua quet (khong ke duoi lop thuc trong suot); chu dau trang (khung doc) co bong sang. Luoi cham da bo (ca khi khong co anh)
+  const bd = useBackdrop();
+  const ts = bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined;
 
   // 描线小工具：pathLength=1 + dashoffset 从 1 → 0
   const stroke = (t: number, w = 1.25): React.SVGAttributes<SVGElement> => ({
@@ -259,15 +262,9 @@ export const WireframeDrawOn: React.FC = () => {
   };
 
   return (
-    <AbsoluteFill style={{ background: PAPER, overflow: 'hidden' }}>
-      {/* 蓝图点阵底 */}
-      <AbsoluteFill style={{
-        opacity: gridIn * 0.9,
-        backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(108,120,148,0.28) 1px, rgba(0,0,0,0) 1.4px)',
-        backgroundSize: '24px 24px',
-      }} />
+    <AbsoluteFill style={{ background: bd ? 'transparent' : PAPER, overflow: 'hidden' }}>
       {/* —— 线框层（蓝图描线） —— */}
-      <svg width={1920} height={SH} viewBox={`0 0 1920 ${SH}`} style={{ position: 'absolute', inset: 0 }}>
+      <svg width={1920} height={SH} viewBox={`0 0 1920 ${SH}`} style={{ position: 'absolute', inset: 0, clipPath: bd && scan > 0 ? `inset(0 0 0 ${(scan * 100).toFixed(3)}%)` : undefined }}>
         {!portrait ? (
           <>
             {/* 侧栏 */}
@@ -308,7 +305,7 @@ export const WireframeDrawOn: React.FC = () => {
 
       {/* —— 实体层：clip-path inset 从左向右展开 —— */}
       <div style={{ position: 'absolute', inset: 0, clipPath: `inset(0 ${((1 - scan) * 100).toFixed(3)}% 0 0)`, fontFamily: fonts.sans }}>
-        <div style={{ position: 'absolute', inset: 0, background: UI.canvas }} />
+        {!bd && <div style={{ position: 'absolute', inset: 0, background: UI.canvas }} />}
         {!portrait ? (
           <>
             <div style={{ position: 'absolute', left: 0, top: 0, width: 220, height: 1080, background: UI.side }} />
@@ -338,9 +335,9 @@ export const WireframeDrawOn: React.FC = () => {
         ) : (
           <>
             {brand ? <div style={{ position: 'absolute', left: 80, top: headTitle.cy - 222, width: 64, height: 64, borderRadius: 16, background: '#2a2a26', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ShotcraftMark size={42} tone="dark" /></div> : null}
-            <div style={{ position: 'absolute', left: 80 + (brand ? 86 : 0), top: headTitle.cy - 190 - 24, fontSize: 36, fontWeight: 600, lineHeight: '48px', color: UI.ink3, whiteSpace: 'nowrap' }}>{pBrand}</div>
+            <div style={{ position: 'absolute', left: 80 + (brand ? 86 : 0), top: headTitle.cy - 190 - 24, fontSize: 36, fontWeight: 600, lineHeight: '48px', color: UI.ink3, whiteSpace: 'nowrap', textShadow: ts }}>{pBrand}</div>
             <div style={{ position: 'absolute', left: 1768, top: headTitle.cy - 226, width: 72, height: 72, borderRadius: 36, background: 'linear-gradient(145deg, #3a3c44, #23242a)' }} />
-            <div style={{ position: 'absolute', left: 80, top: headTitle.cy - headTitle.size * 0.66, fontSize: headTitle.size, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.3, color: UI.ink, whiteSpace: 'nowrap' }}>{title}</div>
+            <div style={{ position: 'absolute', left: 80, top: headTitle.cy - headTitle.size * 0.66, fontSize: headTitle.size, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.3, color: UI.ink, whiteSpace: 'nowrap', textShadow: ts }}>{title}</div>
           </>
         )}
         {cards.map((g, i) => <SolidCard key={i} g={g} />)}

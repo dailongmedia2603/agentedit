@@ -6,11 +6,12 @@
  "duration": 140,
  "kind": "insert",
  "dark": false,
+ "backdrop": false,
  "portrait": {"mode": "native"},
  "rate": [0.85, 1.2],
  "hold": 96,
  "slots": [
-  {"id": "title", "role": "title", "sample": "Tuần 14 – 18 tháng 9", "max": 26, "note": "tiêu đề lớn của lịch (tuần / tháng / tên kế hoạch)"},
+  {"id": "title", "role": "title", "sample": "Tuần 14-18 tháng 9", "max": 26, "note": "tiêu đề lớn của lịch (tuần / tháng / tên kế hoạch)"},
   {"id": "kicker", "role": "label", "sample": "TUẦN 38", "max": 12, "optional": true, "note": "nhãn rất ngắn cạnh tiêu đề"},
   {"id": "subtitle", "role": "subtitle", "sample": "Ra mắt sản phẩm · thứ Sáu", "max": 36, "optional": true, "note": "ghi chú mốc quan trọng"},
   {"id": "name", "role": "name", "sample": "", "max": 18, "optional": true, "note": "tên app lịch trên thanh đầu; bỏ trống = tên thương hiệu của video"}

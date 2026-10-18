@@ -26,7 +26,7 @@
 // day vao rat cham (1 → 1.05) thay cho cuon. Chip dai -> thu nho / xuong 2 dong, mep ngoai luon trong le an toan 96px.
 // Khung doc (native): dien thoai phong 2.1 lan o giua, 2 chip de len mep trai / phai dien thoai (tren / duoi),
 // ten + khau hieu can giua phia duoi; vong song phong theo.
-import { useCurrentFrame, useImage, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useImage, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
 import React, { useEffect, useState } from 'react';
 import { Img, continueRender, delayRender } from 'remotion';
 
@@ -186,6 +186,7 @@ export const RadialRipplePhoneChips: React.FC = () => {
   const fonts = useShotFonts();
   const SANS = fonts.sans;
   const portrait = SH > 1080 * 1.2;
+  const bd = !!useBackdrop();
   const chip1 = useText('chip1', 'Gợi ý bằng AI');
   const chip2 = useText('chip2', 'Xuất bản một chạm');
   const name = useText('name', '');
@@ -279,14 +280,17 @@ export const RadialRipplePhoneChips: React.FC = () => {
           return (
             <div key={i} style={{
               position: 'absolute', left: CX - size / 2, top: CY - size / 2, width: size, height: size, borderRadius: '50%',
-              background: `linear-gradient(180deg, rgba(255,250,240,0.42) 0%, rgba(255,250,240,0) 40%), ${color}`,
-              boxShadow: `inset 0 2px 0 rgba(255,252,246,0.85), 0 0 0 1.5px rgba(255,250,242,0.55), 0 -4px 22px rgba(255,248,236,0.4), 0 10px 40px ${alpha(L.shadow, 0.06 + i * 0.015)}`,
+              // [Agent Edit] nen anh AI: dia tron dac -> vong gon song mo (de lo anh nen), giu nhip tho
+              background: bd ? alpha(color, 0.16) : `linear-gradient(180deg, rgba(255,250,240,0.42) 0%, rgba(255,250,240,0) 40%), ${color}`,
+              boxShadow: bd
+                ? `inset 0 2px 0 rgba(255,252,246,0.7), 0 0 0 2px rgba(255,250,242,0.75), 0 10px 40px ${alpha(L.shadow, 0.05 + i * 0.01)}`
+                : `inset 0 2px 0 rgba(255,252,246,0.85), 0 0 0 1.5px rgba(255,250,242,0.55), 0 -4px 22px rgba(255,248,236,0.4), 0 10px 40px ${alpha(L.shadow, 0.06 + i * 0.015)}`,
               transform: `scale(${(1 + 0.06 * Math.sin(t * Math.PI * 2 * 1.5 + phase)).toFixed(5)})`,
             }} />
           );
         })}
         {/* 中心暖白柔光：把视觉重心收到手机 */}
-        <div style={{ position: 'absolute', left: 0, top: 0, width: 1920, height: SH, background: `radial-gradient(ellipse ${portrait ? '46% 30%' : '26% 44%'} at 50% ${((CY / SH) * 100).toFixed(1)}%, rgba(255,250,240,0.7) 0%, rgba(255,250,240,0) 100%)` }} />
+        {!bd && <div style={{ position: 'absolute', left: 0, top: 0, width: 1920, height: SH, background: `radial-gradient(ellipse ${portrait ? '46% 30%' : '26% 44%'} at 50% ${((CY / SH) * 100).toFixed(1)}%, rgba(255,250,240,0.7) 0%, rgba(255,250,240,0) 100%)` }} />}
       </Stage>
 
       {/* 手机（含投影、侧键）整体上升 */}
@@ -390,7 +394,7 @@ export const RadialRipplePhoneChips: React.FC = () => {
       {/* 收尾字标：品牌标志与名字同拍升起；横屏左下角，竖屏手机下方居中 */}
       {(head || tLines.length) ? (
         <div style={{
-          position: 'absolute', color: L.ink,
+          position: 'absolute', color: L.ink, textShadow: bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined,
           ...(portrait ? { left: 160, right: 160, top: phB + 150, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' } : { left: 120, bottom: 104 }),
         }}>
           {head ? (

@@ -88,7 +88,8 @@
      "vận hành",
      "app"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "dataviz-landscape-open",
@@ -126,7 +127,7 @@
      "role": "title",
      "sample": "về một nơi.",
      "max": 26,
-     "note": "nửa sau câu tiêu đề (màu nhấn) — vế chốt"
+     "note": "nửa sau câu tiêu đề (màu nhấn), vế chốt"
     },
     {
      "id": "tags",
@@ -154,7 +155,7 @@
     }
    ],
    "vi": {
-    "ten": "Mở màn dòng chảy dữ liệu — nhánh đổ về trục chính",
+    "ten": "Mở màn dòng chảy dữ liệu, nhánh đổ về trục chính",
     "mo_ta": "Nền tối, một mặt đất phối cảnh 3D thật: một dòng sáng xanh vàng chói (trục chính) uốn từ sát ống kính chạy về điểm tụ ở chân trời, hơn mười nhánh xám mọc từ hai bên và đổ vào nó; các thẻ nhãn nhỏ (#01 Đơn hàng, #02 Khách hàng...) cắm trên các nhánh, xung sáng chạy dọc dòng chảy. Máy quay bay thấp chậm rãi tiến về phía trước rồi dừng êm; điểm tụ bừng sáng và tiêu đề lớn hai phần hiện từng từ trên bầu trời.",
     "hop_khi": "Mở đầu video / mở chương về dữ liệu, hệ thống, nền tảng gom nhiều thứ về một chỗ: 'tất cả dữ liệu của bạn về một nơi', 'kết nối mọi kênh bán hàng', AI tổng hợp thông tin, giới thiệu phần mềm quản lý, dashboard, tự động hóa quy trình; tone công nghệ, điềm tĩnh, sang.",
     "tranh_khi": "Khoảnh khắc cần nhanh / đập mạnh (đây là đoạn không khí chậm 6 giây); video tone sáng, đời thường; nội dung không liên quan dữ liệu / hệ thống; dùng quá 1 lần mỗi video.",
@@ -169,7 +170,8 @@
      "tự động hóa",
      "công nghệ"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "fracture",
@@ -178,6 +180,7 @@
    "duration": 156,
    "kind": "insert",
    "dark": true,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -315,7 +318,8 @@
      "ra mắt",
      "phần mềm"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "letterspace-materialize",
@@ -355,7 +359,7 @@
    ],
    "vi": {
     "ten": "Chữ kết tinh — nét mảnh tự viết trên mặt hồ hoàng hôn",
-    "mo_ta": "Phong cảnh hồ lúc chạng vạng (trời tím hồng, dải núi, mặt nước lấp lánh, chậm rãi tiến gần). Một dòng chữ thường giãn rộng, nét đơn mảnh phát sáng tự VIẾT ra: mọi chữ cái (kể cả dấu tiếng Việt) cùng bắt đầu và cùng hoàn thành một lúc, rồi lóe sáng nhẹ; bóng chữ in mờ dưới mặt nước. Tĩnh lặng, sang trọng.",
+    "mo_ta": "Trên ảnh nền theo chủ đề (không có ảnh nền: phong cảnh hồ lúc chạng vạng, trời tím hồng, dải núi, mặt nước lấp lánh, chậm rãi tiến gần). Một dòng chữ thường giãn rộng, nét đơn mảnh phát sáng tự VIẾT ra: mọi chữ cái (kể cả dấu tiếng Việt) cùng bắt đầu và cùng hoàn thành một lúc, rồi lóe sáng nhẹ (cảnh hồ: bóng chữ in mờ dưới mặt nước). Tĩnh lặng, sang trọng.",
     "hop_khi": "Mở đầu / kết video bằng tên thương hiệu, tên kênh, tên sản phẩm; chốt một từ khóa cảm xúc (vd 'bình yên', 'khởi đầu mới'); khoảnh khắc chậm, truyền cảm hứng, du lịch, lifestyle, chữa lành.",
     "tranh_khi": "Câu dài (hơn ~4 từ), số liệu, danh sách; nhịp nhanh / năng lượng cao; nội dung kỹ thuật cần đọc kỹ.",
     "nang_luong": "thap",
@@ -369,7 +373,8 @@
      "cảm hứng",
      "lifestyle"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "magician-card-flourish",
@@ -493,7 +498,8 @@
      "thẻ",
      "ảo thuật"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "orbit-ring-title-open",
@@ -593,7 +599,8 @@
      "ra mắt",
      "tiêu đề"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "spotlight-hero-card",
@@ -707,7 +714,8 @@
      "case study",
      "sân khấu"
     ]
-   }
+   },
+   "backdrop": false
   },
   {
    "id": "stroke-segment-build",
@@ -777,7 +785,8 @@
      "từ khoá",
      "sự kiện"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "text-as-mask",
@@ -864,7 +873,8 @@
      "sản phẩm",
      "chuyển cảnh"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "blur-slide",
@@ -914,7 +924,7 @@
     {
      "id": "label",
      "role": "label",
-     "sample": "SỐ 07 — THÁNG 10",
+     "sample": "SỐ 07 · THÁNG 10",
      "max": 22,
      "optional": true,
      "note": "nhãn nhỏ góc phải đầu trang"
@@ -953,7 +963,8 @@
      "chương mới",
      "tạp chí"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "brace-expand",
@@ -1013,7 +1024,7 @@
    ],
    "vi": {
     "ten": "Ngoặc nhọn { } bung mở lộ từ khoá",
-    "mo_ta": "Nền tối kiểu trình soạn code (lưới chấm, xanh điện): con trỏ nhấp nháy giữa màn hình rồi biến thành cặp ngoặc nhọn { } nhỏ, cặp ngoặc bật mạnh sang hai bên (có nảy nhẹ) và phóng to, kéo mở như tấm màn để lộ TỪ KHOÁ chính ở giữa; sau đó dòng chú thích '// ...' phía trên và câu phụ phía dưới hiện dần.",
+    "mo_ta": "Nền tối xanh điện kiểu trình soạn code (hoặc ảnh nền theo chủ đề): con trỏ nhấp nháy giữa màn hình rồi biến thành cặp ngoặc nhọn { } nhỏ, cặp ngoặc bật mạnh sang hai bên (có nảy nhẹ) và phóng to, kéo mở như tấm màn để lộ TỪ KHOÁ chính ở giữa; sau đó dòng chú thích '// ...' phía trên và câu phụ phía dưới hiện dần.",
     "hop_khi": "Nhắc tới một khái niệm/từ khoá công nghệ cần nhấn: AI, code, lập trình, tự động hoá, API, tên tính năng/công cụ phần mềm; mở chương mới trong video về công nghệ, dev, sản phẩm số.",
     "tranh_khi": "Chủ đề đời sống, cảm xúc, ẩm thực, làm đẹp (chất code không hợp); câu dài nhiều ý; video tone sáng ấm.",
     "nang_luong": "vua",
@@ -1026,7 +1037,8 @@
      "tiêu đề",
      "phần mềm"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "brand-ink-open",
@@ -1090,7 +1102,8 @@
      "giới thiệu",
      "ra mắt"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "countdown-arc-scatter",
@@ -1174,7 +1187,8 @@
      "tiết kiệm",
      "giá"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "drift-assembly",
@@ -1231,7 +1245,8 @@
      "chương mới",
      "tiêu đề"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "error-retype",
@@ -1240,6 +1255,7 @@
    "duration": 160,
    "kind": "insert",
    "dark": false,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -1387,7 +1403,8 @@
      "mở đầu",
      "thông tin"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "font-weight-pump",
@@ -1465,7 +1482,8 @@
      "khuyến mãi",
      "năng lượng"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "glitch-cycle",
@@ -1543,7 +1561,8 @@
      "danh sách",
      "đang xử lý"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "gradient-word-sweep",
@@ -1552,6 +1571,7 @@
    "duration": 105,
    "kind": "insert",
    "dark": true,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -1660,7 +1680,8 @@
      "nhấn mạnh",
      "chữ"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "lead-word-zoom-assemble",
@@ -1696,7 +1717,7 @@
     {
      "id": "subtitle",
      "role": "subtitle",
-     "sample": "Một câu lệnh, một video hoàn chỉnh — gõ, duyệt, xuất bản.",
+     "sample": "Một câu lệnh, một video hoàn chỉnh: gõ, duyệt, xuất bản.",
      "max": 80,
      "optional": true
     }
@@ -1735,7 +1756,8 @@
      "mở đầu",
      "tính năng mới"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "letter-drop-physics",
@@ -1744,6 +1766,7 @@
    "duration": 150,
    "kind": "insert",
    "dark": false,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -1875,7 +1898,8 @@
      "thông điệp",
      "tối giản"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "outline-word-fill",
@@ -1946,7 +1970,7 @@
      "sample": "4 giờ",
      "max": 10,
      "optional": true,
-     "note": "giá trị mới — sáng cam khi chữ bật sáng"
+     "note": "giá trị mới, sáng cam khi chữ bật sáng"
     }
    ],
    "images": [],
@@ -1962,7 +1986,7 @@
     }
    ],
    "vi": {
-    "ten": "Chữ rỗng bật sáng — đóng đinh một từ khóa",
+    "ten": "Chữ rỗng bật sáng, đóng đinh một từ khóa",
     "mo_ta": "Nền đen ấm: một từ cực lớn dạng chữ rỗng (viền mảnh) lao từ sát mặt người xem co về giữa khung; vòng tròn nét đứt kiểu bản vẽ kỹ thuật thu nhỏ quanh chữ và xoay chậm, hai vạch ngang nét đứt chạy từ mép khung vào như ống ngắm, kèm số đo 'TRƯỚC 1 tuần' / 'SAU 4 giờ'. Viền chữ nóng dần rồi trong một khung hình chữ bật đặc trắng rực, lóe sáng cam, vòng tròn khóa lại; dòng nhỏ phía trên và câu phụ phía dưới hiện lên.",
     "hop_khi": "Câu chốt một lợi ích bằng MỘT từ: 'nhanh hơn', 'rẻ hơn', 'miễn phí', 'gấp 10 lần', 'tự động'; so sánh trước / sau bằng con số (thời gian, chi phí); nhấn mạnh từ khóa đúng nhịp nhạc khi giới thiệu app, AI, công cụ.",
     "tranh_khi": "Câu dài nhiều ý; cần đọc nhiều chữ; tone nhẹ nhàng / cảm xúc buồn; dùng liền với mẫu chữ chuyển tiếp từng từ khác; video tone sáng.",
@@ -1977,7 +2001,8 @@
      "AI",
      "app"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "paper-title-card",
@@ -2037,7 +2062,7 @@
    ],
    "vi": {
     "ten": "Thẻ chữ giấy — ép từng từ một câu",
-    "mo_ta": "Nền giấy trắng ngà ấm, một câu serif lớn ở giữa hiện TỪNG TỪ như được ép in lên giấy (từ to hơn, mờ nhòe rồi nén xuống rõ nét), một từ khoá nghiêng màu nhấn; gạch ngang màu nhấn kéo ra bên dưới, dòng chữ nhỏ kèm con số cuộn kiểu đồng hồ; cuối cảnh chữ mờ đi. Rất ngắn (~1,8 giây), nhẹ nhàng.",
+    "mo_ta": "Trên ảnh nền sáng theo chủ đề (không có ảnh nền: giấy trắng ngà ấm), một câu serif lớn ở giữa hiện TỪNG TỪ như được ép in (từ to hơn, mờ nhòe rồi nén xuống rõ nét), một từ khoá nghiêng màu nhấn; gạch ngang màu nhấn kéo ra bên dưới, dòng chữ nhỏ kèm con số cuộn kiểu đồng hồ; cuối cảnh chữ mờ đi. Rất ngắn (~1,8 giây), nhẹ nhàng.",
     "hop_khi": "Khoảng nghỉ giữa hai đoạn nhiều thông tin; câu dẫn trước khi giới thiệu một tính năng/phần mới (\"Tiếp theo là…\", \"Điều quan trọng nhất là…\"); một câu giá trị cốt lõi ngắn gọn; tone tri thức, doanh nghiệp, chia sẻ kinh nghiệm.",
     "tranh_khi": "Câu dài quá 12 từ hoặc nhiều ý; khoảnh khắc cần năng lượng cao; video tone tối, gắt; cần giữ chữ trên màn hình lâu.",
     "nang_luong": "thap",
@@ -2049,7 +2074,8 @@
      "chuyển cảnh",
      "tiêu đề"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "pill-chip-slot-cycle-handled",
@@ -2058,6 +2084,7 @@
    "duration": 150,
    "kind": "insert",
    "dark": false,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -2135,6 +2162,7 @@
    "duration": 200,
    "kind": "insert",
    "dark": false,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -2203,7 +2231,7 @@
     }
    ],
    "vi": {
-    "ten": "Câu có ô trống — các tính năng lăn vào như máy đánh bạc",
+    "ten": "Câu có ô trống, các tính năng lăn vào như máy đánh bạc",
     "mo_ta": "Nền sáng sạch, một câu chữ đậm đứng yên ('Chỉ một app để …'), cuối câu là một viên thuốc trắng có icon: cứ ~0,7 giây viên cũ lật bay lên mờ đi, viên mới lật từ dưới lên (hiệu ứng trống quay, mờ chuyển động) với một cụm động từ khác. Sau 3-6 lần đổi, viên cuối bay đi và vế chốt ('làm tất cả.') nảy vào chỗ, cả câu trượt êm ra giữa và đứng yên.",
     "hop_khi": "Liệt kê nhiều tính năng / việc mà một sản phẩm làm được trong MỘT câu: 'chỉ một app để quay, dựng, chèn nhạc...', 'AI giúp bạn viết bài, làm ảnh, trả lời khách', 'khóa học dạy bạn...'; giới thiệu app / phần mềm / dịch vụ đa năng; nhịp đều, dễ hiểu.",
     "tranh_khi": "Các mục dài (hơn ~4 từ) hoặc độ dài chênh nhau nhiều; danh sách chỉ 1-2 mục; nội dung là số liệu; khoảnh khắc cần cảm xúc mạnh; video tone tối.",
@@ -2272,7 +2300,8 @@
      "chữ động",
      "kết luận"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "text-column-converge",
@@ -2281,6 +2310,7 @@
    "duration": 180,
    "kind": "insert",
    "dark": true,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -2341,7 +2371,7 @@
     }
    ],
    "vi": {
-    "ten": "Hai từ đối xứng rồi ghép lại — công bố tên sản phẩm",
+    "ten": "Hai từ đối xứng rồi ghép lại, công bố tên sản phẩm",
     "mo_ta": "Nền đen lạnh, chữ đơn cách nhỏ kiểu bảng thông số: từ 'RA MẮT' đứng yên bên trái, bên phải các từ khóa tính năng thay nhau cắt cứng theo nhịp máy (mỗi lần đổi chớp sáng 1 khung), hai bên cách mép đúng bằng nhau. Đến từ cuối (tên sản phẩm) thì dừng một nhịp, rồi hai từ trượt êm vào giữa ghép thành một cụm 'RA MẮT PHIÊN BẢN 2.0', dòng nghiêng nhỏ hiện ngay bên dưới.",
     "hop_khi": "Đoạn tổng kết liệt kê tính năng rồi chốt bằng tên sản phẩm / phiên bản / ngày ra mắt: 'có phụ đề tự động, xuất 4K, nhạc AI... tất cả trong phiên bản 2.0'; kết video kiểu sự kiện ra mắt, tone công nghệ tối giản.",
     "tranh_khi": "Cần chữ to đập mạnh; không có tên / thông điệp chốt cuối; nội dung cảm xúc đời thường; video tone sáng.",
@@ -2468,7 +2498,8 @@
      "dashboard",
      "kinh doanh"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "title-demote-to-label",
@@ -2599,7 +2630,8 @@
      "kế hoạch",
      "tạp chí"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "vertical-word-roll-blur-cycle",
@@ -2666,7 +2698,8 @@
      "giới thiệu sản phẩm",
      "app"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "word-relay-filmstrip",
@@ -2768,7 +2801,8 @@
      "danh sách",
      "giới thiệu sản phẩm"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "word-relay-geometry",
@@ -2833,7 +2867,7 @@
    "vi": {
     "ten": "Ba từ lợi ích tiếp sức — mỗi từ một hình học",
     "mo_ta": "Nền tối kiểu phim, ba cụm từ lớn lần lượt thay nhau ở giữa màn hình (mỗi cụm ~2 giây): chữ hiện viền trước rồi tô trắng quét ngang, cụm cũ thu nhỏ mờ đi. Cụm 1 có vòng tròn nét đứt + vành vạch chia quay và một vệt sao chổi chạy vòng; cụm 2 có ba vòng tròn tự vẽ rồi xích lại khoá vào nhau; cụm 3 (kết luận) được quét ánh kim loại rồi bừng trắng, có vệt sáng dưới chân. Dưới mỗi cụm là câu giải thích, góc dưới có thanh tiến độ 01/02/03.",
-    "hop_khi": "Người nói nêu 3 lợi ích / 3 giá trị / 3 điểm song song: 'nhanh hơn, rẻ hơn, hiệu quả hơn', 'uy tín – tận tâm – chuyên nghiệp'; tóm tắt 3 ý chính, giá trị cốt lõi thương hiệu, phần giữa video cần nhịp đều có cao trào ở ý thứ ba.",
+    "hop_khi": "Người nói nêu 3 lợi ích / 3 giá trị / 3 điểm song song: 'nhanh hơn, rẻ hơn, hiệu quả hơn', 'uy tín, tận tâm, chuyên nghiệp'; tóm tắt 3 ý chính, giá trị cốt lõi thương hiệu, phần giữa video cần nhịp đều có cao trào ở ý thứ ba.",
     "tranh_khi": "Không phải đúng 3 ý; các ý dài (> 2 từ) hoặc không cùng cú pháp; cần hình ảnh sản phẩm cụ thể.",
     "nang_luong": "vua",
     "chu_de": [
@@ -2845,7 +2879,8 @@
      "tóm tắt",
      "câu chốt"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "avatar-bracket-carousel",
@@ -2854,6 +2889,7 @@
    "duration": 156,
    "kind": "insert",
    "dark": true,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -2966,6 +3002,7 @@
    "duration": 150,
    "kind": "insert",
    "dark": true,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -3130,7 +3167,8 @@
      "tự động hóa",
      "CRM"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "card-stack",
@@ -3225,7 +3263,8 @@
      "sản phẩm",
      "lựa chọn"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "carousel-3d",
@@ -3361,7 +3400,8 @@
      "dịch vụ",
      "3D"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "clipcard-looping",
@@ -3444,7 +3484,8 @@
      "footage",
      "trích đoạn"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "cloner-depth-echo",
@@ -3570,7 +3611,8 @@
      "một thành nhiều",
      "đa nền tảng"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "contact-shadow-lift",
@@ -3672,7 +3714,8 @@
      "app",
      "con số"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "deck-deal-flyin",
@@ -3811,7 +3854,8 @@
      "bài đăng",
      "template"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "doc-park-left-pill-deal",
@@ -3820,6 +3864,7 @@
    "duration": 174,
    "kind": "insert",
    "dark": false,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -4043,7 +4088,8 @@
      "năng suất",
      "kế hoạch"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "draw-svg-trace",
@@ -4172,7 +4218,8 @@
      "vẽ tay",
      "tóm tắt"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "integration-hub-map",
@@ -4259,7 +4306,7 @@
    ],
    "vi": {
     "ten": "Lật trang cũ thành trung tâm — 5 ứng dụng nối ống sáng",
-    "mo_ta": "Nền tối tím neon, cận cảnh một trang tài liệu 'cách làm cũ'; trang lật nhanh 180° (chớp sáng ở cạnh) thành trang quản lý mới và lùi máy ra. Năm biểu tượng ứng dụng (web, giỏ hàng, email, tin nhắn, biểu đồ) cùng bật lên quanh trang, rồi năm ống sáng cầu vồng cùng lúc nối vào, các chấm sáng chạy liên tục theo ống vào trang như đang truyền dữ liệu. Khung dọc: trang to giữa, 3 biểu tượng trên, 2 dưới.",
+    "mo_ta": "Trên ảnh nền chủ đề (hoặc nền tối tím neon), cận cảnh một trang tài liệu 'cách làm cũ'; trang lật nhanh 180° (chớp sáng ở cạnh) thành trang quản lý mới và lùi máy ra. Năm biểu tượng ứng dụng (web, giỏ hàng, email, tin nhắn, biểu đồ) cùng bật lên quanh trang, rồi năm ống sáng cầu vồng cùng lúc nối vào, các chấm sáng chạy liên tục theo ống vào trang như đang truyền dữ liệu. Khung dọc: trang to giữa, 3 biểu tượng trên, 2 dưới.",
     "hop_khi": "Nói về TÍCH HỢP / kết nối mọi công cụ về một nơi (\"quản lý tất cả trong một app\", \"đồng bộ Shopee, Zalo, website\"), chuyển từ cách làm thủ công sang hệ thống mới, ra mắt phiên bản mới, tự động hoá, AI gom dữ liệu.",
     "tranh_khi": "Không nói về phần mềm / công cụ / quy trình; cần hiện logo thật của các ứng dụng (đây là icon chung); video tone sáng nhẹ nhàng.",
     "nang_luong": "cao",
@@ -4274,7 +4321,8 @@
      "AI",
      "phiên bản mới"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "list-reveal",
@@ -4340,7 +4388,7 @@
     {
      "id": "subtitle",
      "role": "subtitle",
-     "sample": "Công thức, bản dựng và kịch bản — chỉ cách một phím bấm.",
+     "sample": "Công thức, bản dựng và kịch bản, chỉ cách một phím bấm.",
      "max": 90,
      "optional": true
     }
@@ -4377,7 +4425,8 @@
      "mục lục",
      "phần mềm"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "list-stack-press",
@@ -4485,7 +4534,8 @@
      "app",
      "feed"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "neon-frame-forerun",
@@ -4608,7 +4658,8 @@
      "giao diện",
      "công nghệ"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "neon-frame-orbit-drop",
@@ -4673,7 +4724,7 @@
    ],
    "vi": {
     "ten": "Khung neon vẽ viền → giao diện app rơi xuống, máy quay xoay vòng",
-    "mo_ta": "Nền đen có nhiều khung ống neon tím hồng cam mờ ảo; một khung neon gradient tự vẽ viền quanh bảng giao diện ứng dụng (trang chủ quản lý công việc: menu, ô tìm kiếm, thẻ gần đây, danh sách việc — hoặc ảnh chụp màn hình thật), góc nhìn 3D xoay vòng từ trái sang phải, đồng thời TẤT CẢ thành phần lơ lửng có bóng mềm rồi cùng lúc hạ xuống áp vào bảng.",
+    "mo_ta": "Trên ảnh nền theo chủ đề (không có ảnh nền: nền đen có nhiều khung ống neon tím hồng cam mờ ảo), một khung neon gradient tự vẽ viền quanh bảng giao diện ứng dụng (trang chủ quản lý công việc: menu, ô tìm kiếm, thẻ gần đây, danh sách việc — hoặc ảnh chụp màn hình thật), góc nhìn 3D xoay vòng từ trái sang phải, đồng thời TẤT CẢ thành phần lơ lửng có bóng mềm rồi cùng lúc hạ xuống áp vào bảng.",
     "hop_khi": "Ra mắt / giới thiệu tổng thể giao diện một app, phần mềm, web, dashboard; câu \"đây là giao diện chính\", \"mọi thứ nằm trong một màn hình\"; video công nghệ, SaaS, quản lý công việc.",
     "tranh_khi": "Không nói về app/phần mềm; cần đọc rõ chữ trên giao diện (chữ trong app nhỏ); video tone sáng, mộc mạc.",
     "nang_luong": "vua",
@@ -4687,7 +4738,8 @@
      "neon",
      "quản lý công việc"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "page-waterfall-wall",
@@ -4783,7 +4835,7 @@
    ],
    "vi": {
     "ten": "Bức tường ảnh chảy — 3 cột màn hình cuộn ngược chiều",
-    "mo_ta": "Nền tối, một bức tường nghiêng ra sau (phối cảnh 3D) gồm 3 cột thẻ ảnh chụp màn hình bo góc cuộn liên tục với tốc độ khác nhau, cột giữa cuộn ngược chiều; máy quay chậm rãi tiến gần. Cảm giác 'nhiều đến xem không hết'. Có thể kèm một câu ngắn nổi giữa khung trên nền kính mờ.",
+    "mo_ta": "Trên ảnh nền theo chủ đề (hoặc nền tối), một bức tường nghiêng ra sau (phối cảnh 3D) gồm 3 cột thẻ ảnh chụp màn hình bo góc cuộn liên tục với tốc độ khác nhau, cột giữa cuộn ngược chiều; máy quay chậm rãi tiến gần. Cảm giác 'nhiều đến xem không hết'. Có thể kèm một câu ngắn nổi giữa khung trên nền kính mờ.",
     "hop_khi": "Khoe số lượng / độ phong phú: rất nhiều mẫu, nhiều tính năng, nhiều trang, nhiều sản phẩm, kho template, danh mục khóa học, portfolio nhiều dự án, hàng loạt bài đăng / video đã làm; câu kiểu 'có hàng trăm mẫu', 'tất cả những thứ này đều làm bằng...'.",
     "tranh_khi": "Chỉ có 1-2 ảnh (sẽ lặp lại lộ rõ); cần người xem đọc chi tiết một màn hình; video không có ảnh chụp giao diện / sản phẩm.",
     "nang_luong": "vua",
@@ -4798,7 +4850,8 @@
      "số lượng",
      "sản phẩm"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "product-card-progressive-assemble",
@@ -4892,7 +4945,7 @@
     {
      "id": "cta",
      "role": "cta",
-     "sample": "Mua ngay — giao trong 2 giờ",
+     "sample": "Mua ngay · giao trong 2 giờ",
      "max": 32,
      "note": "chữ trên nút cuối"
     }
@@ -4945,7 +4998,8 @@
      "mua ngay",
      "giảm giá"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "radial-wave",
@@ -4954,6 +5008,7 @@
    "duration": 114,
    "kind": "insert",
    "dark": true,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -5012,7 +5067,9 @@
      "độ phủ",
      "con số"
     ]
-   }
+   },
+   "hidden": true,
+   "hidden_reason": "hieu ung la luoi cham phu kin khung — user 2026-10-18 khong dung nen dang luoi"
   },
   {
    "id": "research-card-stack-scroll",
@@ -5080,7 +5137,7 @@
    ],
    "vi": {
     "ten": "Chồng tài liệu bay vào liên tục",
-    "mo_ta": "Nền sáng có kẻ dòng mờ; từng thẻ tài liệu màu đen (tiêu đề chữ trắng) cứ khoảng nửa giây lại rơi xuống giữa màn hình chồng lên thẻ trước, thẻ trên cùng hiện rõ dòng nguồn + các dòng tóm tắt, các thẻ cũ trôi chéo xuống dưới, mờ dần và tối đi như đang chìm vào chồng giấy. Phía trên có nhãn nhỏ và bộ đếm 01/11 nhảy theo; cuối cảnh dừng lại ở thẻ cuối rõ nét.",
+    "mo_ta": "Từng thẻ tài liệu màu đen (tiêu đề chữ trắng) cứ khoảng nửa giây lại rơi xuống giữa màn hình chồng lên thẻ trước, thẻ trên cùng hiện rõ dòng nguồn + các dòng tóm tắt, các thẻ cũ trôi chéo xuống dưới, mờ dần và tối đi như đang chìm vào chồng giấy. Phía trên có nhãn nhỏ và bộ đếm 01/11 nhảy theo; cuối cảnh dừng lại ở thẻ cuối rõ nét.",
     "hop_khi": "Người nói nhấn mạnh khối lượng tài liệu đã đọc / phân tích / tổng hợp (\"mình đã đọc hơn 100 báo cáo\", \"AI quét hàng nghìn bài viết\"), nghiên cứu thị trường, tra cứu, xử lý văn bản hàng loạt, giới thiệu công cụ AI đọc tài liệu.",
     "tranh_khi": "Cần người xem đọc kỹ từng tiêu đề (mỗi thẻ chỉ hiện rõ ~0,5 giây); ít hơn 5 mục; nội dung cảm xúc, đời thường không liên quan tài liệu.",
     "nang_luong": "vua",
@@ -5095,7 +5152,8 @@
      "tra cứu",
      "danh sách"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "row-embed",
@@ -5183,7 +5241,8 @@
      "hồ sơ",
      "dashboard"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "value-stagger-gradient",
@@ -5192,6 +5251,7 @@
    "duration": 150,
    "kind": "insert",
    "dark": true,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -5258,6 +5318,7 @@
    "duration": 150,
    "kind": "insert",
    "dark": false,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -5445,7 +5506,8 @@
      "3D",
      "chương mới"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "bullet-time-freeze-orbit",
@@ -5548,7 +5610,8 @@
      "kỷ lục",
      "dữ liệu"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "crash-impact",
@@ -5650,7 +5713,7 @@
    ],
    "vi": {
     "ten": "Zoom giật đập khựng + rung màn hình (HUD chiến thuật)",
-    "mo_ta": "Sân khấu tối có lưới mờ, ảnh (màn hình app/web, ảnh điện thoại, ảnh chụp) đặt thẳng như một màn hình giám sát viền xanh chanh; khung ngắm xanh chanh nhảy quét 2 điểm trong ảnh rồi KHOÁ vào vùng giữa kèm nhãn 'ĐÃ KHOÁ'. Máy quay lùi nhẹ lấy đà rồi ĐẬP thẳng vào cực nhanh (6 khung, nhoè chuyển động) và KHỰNG LẠI như vật nặng rơi: một khung chớp xanh chanh toàn màn hình, xung quanh tối đen, hai vòng sóng xung kích toả ra, màn hình rung mạnh rồi tắt hẳn. Một vạch quét sáng chạy qua chi tiết, rồi các thông số HUD (nhãn: giá trị) và một con số rất to màu nhấn + tiêu đề + câu giải thích hiện lần lượt (khung ngang: hai cột trái/phải; khung dọc: dưới ảnh).",
+    "mo_ta": "Sân khấu tối, ảnh (màn hình app/web, ảnh điện thoại, ảnh chụp) đặt thẳng như một màn hình giám sát viền xanh chanh; khung ngắm xanh chanh nhảy quét 2 điểm trong ảnh rồi KHOÁ vào vùng giữa kèm nhãn 'ĐÃ KHOÁ'. Máy quay lùi nhẹ lấy đà rồi ĐẬP thẳng vào cực nhanh (6 khung, nhoè chuyển động) và KHỰNG LẠI như vật nặng rơi: một khung chớp xanh chanh toàn màn hình, xung quanh tối đen, hai vòng sóng xung kích toả ra, màn hình rung mạnh rồi tắt hẳn. Một vạch quét sáng chạy qua chi tiết, rồi các thông số HUD (nhãn: giá trị) và một con số rất to màu nhấn + tiêu đề + câu giải thích hiện lần lượt (khung ngang: hai cột trái/phải; khung dọc: dưới ảnh).",
     "hop_khi": "Khoảnh khắc chốt mạnh 'chính là nó', 'đây là thứ quan trọng nhất', 'lỗi nằm ở đây', 'chỉ cần bấm nút này': chỉ thẳng vào MỘT chi tiết trên màn hình app/web/dashboard/điện thoại hoặc sản phẩm rồi đọc con số, mức ưu tiên, kết quả; tone công nghệ, dữ liệu, kiểm tra, phát hiện.",
     "tranh_khi": "Không có ảnh chi tiết phù hợp hoặc chi tiết nằm sát mép ảnh (máy luôn đập vào giữa); nội dung nhẹ nhàng, cảm xúc, đời thường; video tone sáng ấm; đã dùng zoom giật khác gần đó (tối đa 2 lần/video, không dùng cạnh 'crash-zoom-punch').",
     "nang_luong": "cao",
@@ -5667,7 +5730,8 @@
      "công nghệ",
      "kết quả"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "crash-zoom-punch",
@@ -5756,7 +5820,8 @@
      "điện thoại",
      "báo cáo"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "cursor-flyover",
@@ -5834,7 +5899,8 @@
      "doanh thu",
      "website"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "drone-dive-landing",
@@ -5922,7 +5988,8 @@
      "con số",
      "3D"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "exploded-view",
@@ -6018,7 +6085,8 @@
      "danh sách",
      "3D"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "graze-face-tour",
@@ -6095,7 +6163,8 @@
      "danh sách",
      "công nghệ"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "multiplane",
@@ -6229,7 +6298,8 @@
      "giới thiệu",
      "chiều sâu"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "overhead-tabletop-drop",
@@ -6238,6 +6308,7 @@
    "duration": 140,
    "kind": "insert",
    "dark": true,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -6445,7 +6516,8 @@
      "uy tín",
      "kết thúc"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "steep-tilt-glide",
@@ -6454,6 +6526,7 @@
    "duration": 120,
    "kind": "insert",
    "dark": true,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -6620,7 +6693,8 @@
      "AI",
      "công nghệ"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "tilt-reveal",
@@ -6728,7 +6802,8 @@
      "biểu đồ",
      "app"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "axis-rescale-shock",
@@ -6872,7 +6947,8 @@
      "viral",
      "báo cáo"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "before-after-slider-scrub",
@@ -6881,6 +6957,7 @@
    "duration": 150,
    "kind": "insert",
    "dark": false,
+   "backdrop": false,
    "portrait": {
     "mode": "native"
    },
@@ -6956,6 +7033,7 @@
    "duration": 150,
    "kind": "insert",
    "dark": false,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -7045,7 +7123,7 @@
     }
    ],
    "vi": {
-    "ten": "Danh sách phanh gấp — khung ngắm khóa mục tiêu",
+    "ten": "Danh sách phanh gấp, khung ngắm khóa mục tiêu",
     "mo_ta": "Nền sáng kiểu giao diện app: một danh sách thẻ dài (icon loại, tên, mô tả, mã phiên bản, ngày) tăng tốc cuộn lên đến nhòe, giảm tốc mạnh vượt quá một chút rồi bật lại dừng; ĐÚNG khoảnh khắc phanh, bốn góc ngắm chữ L màu nhấn bay từ ngoài vào kẹp chặt thẻ ở giữa (nảy nhẹ), thẻ sáng viền, các thẻ khác mờ đi, một nhãn đen 'Vừa ra mắt' bật ra cạnh thẻ.",
     "hop_khi": "Nhấn mạnh MỘT mục giữa danh sách dài với lực mạnh: 'trong hàng trăm tính năng, đây là cái đáng giá nhất', công bố cập nhật mới của app, chọn ra sản phẩm / việc quan trọng nhất, 'tìm thấy rồi'; video công nghệ, phần mềm, năng suất.",
     "tranh_khi": "Không có mục chính rõ ràng; video tone tối hoặc cảm xúc nhẹ nhàng; đã dùng mẫu nhật ký cập nhật phanh gấp gần đó (cùng họ chuyển động).",
@@ -7069,6 +7147,7 @@
    "duration": 150,
    "kind": "insert",
    "dark": false,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -7306,7 +7385,8 @@
      "kiểm tra",
      "công nghệ"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "oscilloscope-stream",
@@ -7429,7 +7509,8 @@
      "viral",
      "server"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "tape-scroll-fixed-pointer",
@@ -7556,7 +7637,8 @@
      "hiệu suất",
      "dashboard"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "timeline-travel",
@@ -7692,7 +7774,8 @@
      "changelog",
      "năm"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "unit-dot-swarm-regroup",
@@ -7830,7 +7913,8 @@
      "infographic",
      "báo cáo"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "autolayout-gap-dial",
@@ -7904,7 +7988,8 @@
      "công cụ",
      "tuỳ chỉnh"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "cast-ensemble",
@@ -8009,7 +8094,8 @@
      "bảng trắng",
      "mục tiêu"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "chip-grid-single-select-blackout",
@@ -8125,7 +8211,8 @@
      "so sánh",
      "tiết kiệm"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "diagram-cascade",
@@ -8206,7 +8293,8 @@
      "phân tích",
      "app"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "glass-pill-dictation-typing",
@@ -8268,7 +8356,8 @@
      "trợ lý ảo",
      "câu hỏi"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "hashtag-to-pill-materialize",
@@ -8277,6 +8366,7 @@
    "duration": 120,
    "kind": "insert",
    "dark": false,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -8361,6 +8451,7 @@
    "duration": 156,
    "kind": "insert",
    "dark": true,
+   "backdrop": false,
    "portrait": {
     "mode": "native"
    },
@@ -8515,7 +8606,7 @@
    ],
    "vi": {
     "ten": "Chọn mục trong danh sách bay lên bảng",
-    "mo_ta": "Giao diện app tông be ấm: bảng danh sách 3-5 mục, con trỏ chuột lần lượt tick 3 mục rồi bấm nút 'Đưa lên bảng'; 3 hàng nhấc lên, bay vòng cung lệch nhịp và biến hình thành 3 thẻ ghi chú nằm nghiêng trên bảng trắng chấm bi (tiêu đề serif lớn), chỗ cũ trong danh sách thành khung nét đứt 'Đã lên bảng', bộ đếm 'mục đã ghim' tăng lên. Khung dọc: bảng + thẻ ở trên, danh sách ở dưới, thẻ bay lên.",
+    "mo_ta": "Giao diện app tông be ấm: bảng danh sách 3-5 mục, con trỏ chuột lần lượt tick 3 mục rồi bấm nút 'Đưa lên bảng'; 3 hàng nhấc lên, bay vòng cung lệch nhịp và biến hình thành 3 thẻ ghi chú nằm nghiêng trên bảng (tiêu đề serif lớn), chỗ cũ trong danh sách thành khung nét đứt 'Đã lên bảng', bộ đếm 'mục đã ghim' tăng lên. Khung dọc: bảng + thẻ ở trên, danh sách ở dưới, thẻ bay lên.",
     "hop_khi": "Nói về chọn lọc / lên kế hoạch / sắp xếp ý tưởng: 'mình chọn ra 3 việc quan trọng nhất', công cụ AI gợi ý rồi đưa vào kế hoạch, app quản lý công việc, Miro/Notion/Trello, chuyển danh sách thành hành động.",
     "tranh_khi": "Không có danh sách cụ thể; các mục quá dài (> 32 ký tự); video tông tối hoặc cần nhịp gắt.",
     "nang_luong": "vua",
@@ -8529,7 +8620,8 @@
      "giao diện",
      "chọn lọc"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "picker-carousel-feature-cycle",
@@ -8606,7 +8698,8 @@
      "menu",
      "liệt kê"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "segmented-thumb-hero",
@@ -8615,6 +8708,7 @@
    "duration": 110,
    "kind": "insert",
    "dark": false,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -8688,6 +8782,7 @@
    "duration": 140,
    "kind": "insert",
    "dark": false,
+   "backdrop": false,
    "portrait": {
     "mode": "native"
    },
@@ -8700,7 +8795,7 @@
     {
      "id": "title",
      "role": "title",
-     "sample": "Tuần 14 – 18 tháng 9",
+     "sample": "Tuần 14-18 tháng 9",
      "max": 26,
      "note": "tiêu đề lớn của lịch (tuần / tháng / tên kế hoạch)"
     },
@@ -8906,7 +9001,8 @@
      "thư viện",
      "demo tính năng"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "voice-waveform-live",
@@ -8992,7 +9088,8 @@
      "ra lệnh",
      "tin nhắn"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "barn-door-split",
@@ -9023,7 +9120,7 @@
      "role": "title",
      "sample": "Phiên bản 3",
      "max": 22,
-     "note": "tên cái CŨ (bản cũ, cách cũ, phương án A) — nên cùng khuôn với new_title"
+     "note": "tên cái CŨ (bản cũ, cách cũ, phương án A), nên cùng khuôn với new_title"
     },
     {
      "id": "old_subtitle",
@@ -9110,7 +9207,7 @@
     }
    ],
    "vi": {
-    "ten": "Cửa đôi tách đôi — cái cũ nhường chỗ cái mới",
+    "ten": "Cửa đôi tách đôi, cái cũ nhường chỗ cái mới",
     "mo_ta": "Trang CŨ màu xám lạnh như tấm kim loại (nhãn, tiêu đề lớn, câu phụ, 3 ô số liệu). Một vệt sáng mảnh chạy dọc chính giữa, khe nứt mở ra rồi trang cũ tách thành hai cánh cửa trượt vụt ra hai bên (mép cửa bắt ánh cam); trang MỚI cùng bố cục trên nền đen ấm lao tới từ ánh sáng chói: tiêu đề mới với từ cuối phát sáng cam, câu phụ hiện từng từ, các con số chạy từ giá trị cũ sang giá trị mới.",
     "hop_khi": "Chuyển chương 'cũ → mới': ra mắt phiên bản mới, cách làm cũ vs cách làm mới, trước và sau khi dùng công cụ / AI, đổi chiến lược (phương án A → B), nâng cấp sản phẩm; nhất là khi có số liệu cải thiện (thời gian, chi phí, doanh số).",
     "tranh_khi": "Hai thứ không có quan hệ thay thế; dùng quá 2 lần mỗi video; nội dung chỉ một ý không có 'cũ'; video tone sáng nhẹ nhàng.",
@@ -9125,7 +9222,8 @@
      "số liệu",
      "cải thiện"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "blinds-slice",
@@ -9134,6 +9232,7 @@
    "duration": 132,
    "kind": "insert",
    "dark": false,
+   "backdrop": false,
    "portrait": {
     "mode": "native"
    },
@@ -9255,7 +9354,7 @@
     {
      "id": "intro_sub",
      "role": "subtitle",
-     "sample": "Làm ít hơn, hiệu quả hơn — bắt đầu từ hôm nay.",
+     "sample": "Làm ít hơn, hiệu quả hơn. Bắt đầu từ hôm nay.",
      "max": 70,
      "optional": true
     },
@@ -9373,7 +9472,8 @@
      "năng suất",
      "chuyển chương"
     ]
-   }
+   },
+   "backdrop": false
   },
   {
    "id": "card-flip-reveal",
@@ -9489,7 +9589,8 @@
      "case study",
      "tăng trưởng"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "card-flock-tumble",
@@ -9600,7 +9701,8 @@
      "khẩu hiệu",
      "chuyển cảnh"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "circle-match-iris",
@@ -9715,14 +9817,14 @@
     {
      "id": "stats",
      "role": "item",
-     "sample": "47 video — Đã đăng|6 tuần — Liên tục|4:52 phút — Thời lượng TB",
+     "sample": "47 video · Đã đăng|6 tuần · Liên tục|4:52 phút · Thời lượng TB",
      "max": 30,
      "list": {
       "min": 0,
       "max": 3
      },
      "optional": true,
-     "note": "mỗi mục dạng 'số đơn vị — nhãn' (cách nhau bằng ' — ')"
+     "note": "mỗi mục dạng 'số đơn vị · nhãn' (cách nhau bằng ' · ')"
     },
     {
      "id": "pill",
@@ -9769,7 +9871,8 @@
      "KPI",
      "chuyển cảnh"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "flash-cut",
@@ -9808,7 +9911,8 @@
      "nhịp nhanh",
      "nối cảnh"
     ]
-   }
+   },
+   "backdrop": false
   },
   {
    "id": "glitch-displace",
@@ -9817,6 +9921,7 @@
    "duration": 135,
    "kind": "insert",
    "dark": true,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -10011,7 +10116,8 @@
      "khẩu hiệu",
      "cảm hứng"
     ]
-   }
+   },
+   "backdrop": false
   },
   {
    "id": "ink-bleed-reveal",
@@ -10020,6 +10126,7 @@
    "duration": 130,
    "kind": "insert",
    "dark": false,
+   "backdrop": false,
    "portrait": {
     "mode": "native"
    },
@@ -10250,7 +10357,8 @@
      "trước sau",
      "thao tác nhanh"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "letterform-zoom",
@@ -10259,6 +10367,7 @@
    "duration": 150,
    "kind": "insert",
    "dark": true,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -10380,7 +10489,7 @@
     {
      "id": "kicker_a",
      "role": "kicker",
-     "sample": "01 — Khó khăn",
+     "sample": "01 · Khó khăn",
      "max": 24,
      "optional": true,
      "note": "nhãn nhỏ cảnh trước"
@@ -10395,7 +10504,7 @@
     {
      "id": "kicker_b",
      "role": "kicker",
-     "sample": "02 — Bước ngoặt",
+     "sample": "02 · Bước ngoặt",
      "max": 24,
      "optional": true
     },
@@ -10466,7 +10575,8 @@
      "lóe sáng",
      "chương mới"
     ]
-   }
+   },
+   "backdrop": false
   },
   {
    "id": "line-carry-transition",
@@ -10588,7 +10698,8 @@
      "dự án",
      "khóa học"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "mask-wipe",
@@ -10730,7 +10841,8 @@
      "tính năng",
      "phân tích"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "mosaic-reframe",
@@ -10921,7 +11033,8 @@
      "du lịch",
      "chuyển cảnh"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "versus-slam",
@@ -11075,7 +11188,8 @@
      "AI",
      "năng suất"
     ]
-   }
+   },
+   "backdrop": false
   },
   {
    "id": "whip-pan",
@@ -11186,7 +11300,8 @@
      "nổi bật",
      "tìm kiếm"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "white-flash-logo-simplify-cut",
@@ -11253,7 +11368,8 @@
      "công bố",
      "chuyển cảnh"
     ]
-   }
+   },
+   "backdrop": false
   },
   {
    "id": "beat-step-list-theme-cycle",
@@ -11347,7 +11463,8 @@
      "nhịp nhanh",
      "đổi chủ đề"
     ]
-   }
+   },
+   "backdrop": false
   },
   {
    "id": "comic-panel-split",
@@ -11425,7 +11542,7 @@
    ],
    "vi": {
     "ten": "Chia khung truyện tranh — 3 góc máy rồi thành poster",
-    "mo_ta": "Nền đen đỏ kiểu truyện tranh: hình toàn màn hình bị 3 nhát cắt xiên 'cạch cạch cạch' chia thành 3 ô, mỗi ô là một góc nhìn của CÙNG chủ thể (toàn cảnh, cận, đặc tả) kèm khung lời thoại nghiêng; dừng một nhịp rồi ô cuối quét xiên ăn hết màn hình, thành poster với tiêu đề lớn trồi lên (từ cuối màu đỏ). Không có ảnh thì chủ thể là ống kính máy ảnh vẽ đẹp, ống kính tự xoay lấy nét, khép khẩu. Khung dọc: 3 ô xếp chồng dọc.",
+    "mo_ta": "Kiểu truyện tranh đen đỏ (có ảnh nền chủ đề thì hiện sau các ô): hình toàn màn hình bị 3 nhát cắt xiên 'cạch cạch cạch' chia thành 3 ô, mỗi ô là một góc nhìn của CÙNG chủ thể (toàn cảnh, cận, đặc tả) kèm khung lời thoại nghiêng; dừng một nhịp rồi ô cuối quét xiên ăn hết màn hình, thành poster với tiêu đề lớn trồi lên (từ cuối màu đỏ). Không có ảnh thì chủ thể là ống kính máy ảnh vẽ đẹp, ống kính tự xoay lấy nét, khép khẩu. Khung dọc: 3 ô xếp chồng dọc.",
     "hop_khi": "Giới thiệu MỘT sản phẩm / món đồ / nhân vật từ nhiều góc (\"nhìn tổng thể, chi tiết, cận cảnh chất liệu\"); review sản phẩm, unbox; chủ đề quay phim, máy ảnh, nhiếp ảnh, góc máy; đoạn có nhịp mạnh cần cắt theo beat.",
     "tranh_khi": "Ba ý khác nhau không cùng một chủ thể (dùng mẫu lưới / bento); ảnh nhỏ, mờ (bị phóng 1.8x); video tone sáng nhẹ nhàng; đã dùng một mẫu chia khung khác trong video.",
     "nang_luong": "cao",
@@ -11439,7 +11556,8 @@
      "poster",
      "nhịp beat"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "freeze-annotate",
@@ -11543,7 +11661,8 @@
      "danh sách",
      "so sánh"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "jump-cut-punch-in",
@@ -11552,6 +11671,7 @@
    "duration": 135,
    "kind": "insert",
    "dark": false,
+   "backdrop": false,
    "portrait": {
     "mode": "native"
    },
@@ -11604,6 +11724,7 @@
    "duration": 140,
    "kind": "insert",
    "dark": true,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -11641,7 +11762,7 @@
      "role": "number",
      "sample": "1",
      "max": 7,
-     "note": "CON SỐ được 'đăng quang' — chỉ chữ số + đơn vị ngắn (1, 98%, 10K, 5 sao); càng ngắn càng to"
+     "note": "CON SỐ được 'đăng quang': chỉ chữ số + đơn vị ngắn (1, 98%, 10K, 5 sao); càng ngắn càng to"
     },
     {
      "id": "caption",
@@ -11689,7 +11810,7 @@
     }
    ],
    "vi": {
-    "ten": "Chụp ảnh đèn flash — vinh danh con số",
+    "ten": "Chụp ảnh đèn flash, vinh danh con số",
     "mo_ta": "Nền tối kiểu thảm đỏ lễ trao giải (tường logo lặp lại, đèn flash máy ảnh khác lóe lên), giữa là tấm thẻ giải thưởng: vòng nguyệt quế vàng, tên danh hiệu, con số cực lớn (vd 'Top 1') kèm câu giải thích và tên người nhận. Khung ngắm máy ảnh (góc ngắm, tốc độ, ISO, đèn đang sạc). Ba cú chớp trắng như bấm máy liên tiếp, mỗi cú cắt cứng vào gần hơn: toàn cảnh → tấm thẻ → cận con số, rồi đứng yên như một bức ảnh với chữ 'ĐÃ LƯU'.",
     "hop_khi": "Khoảnh khắc đỉnh cao cần 'đăng quang': công bố thành tích, xếp hạng số 1, giải thưởng, kỷ lục doanh số, con số ấn tượng nhất của video ('chúng tôi đứng top 1', 'bán được 10.000 đơn', 'đạt 5 sao'); cao trào trước khi chốt.",
     "tranh_khi": "Dùng quá 1 lần trong video (đây là cú đánh mạnh nhất); nội dung buồn / nghiêm túc / tin tiêu cực; không có con số hay danh hiệu rõ ràng; video không có âm thanh tiếng chụp ảnh.",
@@ -11868,7 +11989,8 @@
      "đa nhiệm",
      "B-roll"
     ]
-   }
+   },
+   "backdrop": false
   },
   {
    "id": "sakuga-timing-shift",
@@ -11977,7 +12099,8 @@
      "hoạt hình",
      "cao trào"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "trailer-bumper",
@@ -12072,7 +12195,8 @@
      "sản phẩm",
      "sự kiện"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "anime-impact",
@@ -12081,6 +12205,7 @@
    "duration": 120,
    "kind": "insert",
    "dark": false,
+   "backdrop": false,
    "portrait": {
     "mode": "native"
    },
@@ -12260,7 +12385,7 @@
    ],
    "vi": {
     "ten": "Trang web tự lắp ráp — khung bay vào, chữ xoay 3D rơi vào chỗ",
-    "mo_ta": "Nền tối có lưới căn chỉnh: các khung trống (thanh menu, thẻ ảnh, nút, 3 ô chỉ số, bánh xe màu) bay từ bốn phía vào khớp chỗ; rồi từng ký tự xoay lộn 3D từ xa bay tới rơi đúng vị trí — tiêu đề lớn trước, nút và chỉ số sau. Cuối cùng nút chính sáng vàng và ảnh trong thẻ được quét 'chỉnh màu' từ xám sang màu thật. Khung dọc: trang xếp dọc, tiêu đề to giữa màn hình.",
+    "mo_ta": "Trên nền ảnh chủ đề (hoặc nền tối): các khung trống (thanh menu, thẻ ảnh, nút, 3 ô chỉ số, bánh xe màu) bay từ bốn phía vào khớp chỗ; rồi từng ký tự xoay lộn 3D từ xa bay tới rơi đúng vị trí — tiêu đề lớn trước, nút và chỉ số sau. Cuối cùng nút chính sáng vàng và ảnh trong thẻ được quét 'chỉnh màu' từ xám sang màu thật. Khung dọc: trang xếp dọc, tiêu đề to giữa màn hình.",
     "hop_khi": "Giới thiệu ra mắt sản phẩm / app / website / landing page; nói về việc AI hay công cụ 'tự dựng' trang, video, thiết kế; khoe 3 con số nổi bật kèm câu chốt và lời kêu gọi dùng thử.",
     "tranh_khi": "Chủ đề đời thường, cảm xúc, không liên quan sản phẩm/công nghệ; cảnh cần ngắn dưới 4 giây; video tone sáng nhẹ nhàng.",
     "nang_luong": "cao",
@@ -12274,7 +12399,8 @@
      "số liệu",
      "giới thiệu sản phẩm"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "attention-bounce",
@@ -12391,7 +12517,8 @@
      "ra mắt",
      "phần mềm"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "aurora-bloom-bg-flip",
@@ -12455,7 +12582,8 @@
      "AI",
      "thông điệp"
     ]
-   }
+   },
+   "backdrop": false
   },
   {
    "id": "brand-frame-snap",
@@ -12485,7 +12613,7 @@
      "role": "label",
      "sample": "Lập trình",
      "max": 14,
-     "note": "tên chế độ / giai đoạn 2 — đổi sang ngay khi khung đổi màu"
+     "note": "tên chế độ / giai đoạn 2, đổi sang ngay khi khung đổi màu"
     },
     {
      "id": "name",
@@ -12596,7 +12724,8 @@
      "giao diện",
      "chuyển chương"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "corner-spotlight-reveal",
@@ -12605,6 +12734,7 @@
    "duration": 130,
    "kind": "insert",
    "dark": true,
+   "backdrop": false,
    "portrait": {
     "mode": "native"
    },
@@ -12674,6 +12804,7 @@
    "duration": 140,
    "kind": "insert",
    "dark": true,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -12759,6 +12890,7 @@
    "duration": 170,
    "kind": "insert",
    "dark": true,
+   "backdrop": false,
    "portrait": {
     "mode": "native"
    },
@@ -12827,6 +12959,7 @@
    "duration": 140,
    "kind": "insert",
    "dark": true,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -12881,6 +13014,7 @@
    "duration": 176,
    "kind": "insert",
    "dark": true,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -13110,7 +13244,8 @@
      "khuyến nghị",
      "danh sách"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "kanada-perspective-snap",
@@ -13214,7 +13349,8 @@
      "thông báo",
      "cập nhật"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "misregistration-hit",
@@ -13311,7 +13447,8 @@
      "lợi ích",
      "retro"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "orb-flyline-relay",
@@ -13400,7 +13537,8 @@
      "công nghệ",
      "tính năng"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "radial-ripple-phone-chips",
@@ -13500,7 +13638,8 @@
      "giới thiệu",
      "logo"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "reticle-lock-on",
@@ -13509,6 +13648,7 @@
    "duration": 90,
    "kind": "insert",
    "dark": false,
+   "backdrop": false,
    "portrait": {
     "mode": "native"
    },
@@ -13660,7 +13800,8 @@
      "quét",
      "tự động hóa"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "scanline-annotate-focus",
@@ -13781,7 +13922,8 @@
      "quét",
      "audit"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "scanline-assemble-flyin",
@@ -13968,7 +14110,8 @@
      "sản phẩm số",
      "công nghệ"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "score-slam",
@@ -14077,7 +14220,8 @@
      "trước sau",
      "đối thủ"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "sheen-sweep",
@@ -14175,7 +14319,7 @@
     }
    ],
    "vi": {
-    "ten": "Thẻ kim loại cao cấp — vệt sáng lướt qua",
+    "ten": "Thẻ kim loại cao cấp, vệt sáng lướt qua",
     "mo_ta": "Nền màu cát ấm: một tấm thẻ titan đen bóng (chip vàng, chữ khắc tên gói, tên chủ thẻ, hạng thẻ) nâng lên nằm nghiêng 3D; giữa chừng thẻ xoay nhẹ về phía nguồn sáng và một vệt sáng chéo lướt qua mặt thẻ đúng một lần làm chữ khắc lóe lên. Bên cạnh (khung dọc: phía dưới) là tiêu đề đậm trồi lên từng dòng, câu mô tả và nút kêu gọi hành động.",
     "hop_khi": "Giới thiệu gói hội viên / thẻ VIP / thẻ tín dụng / gói Premium / đặc quyền khách hàng thân thiết; ra mắt sản phẩm cao cấp; câu nói về ưu đãi độc quyền, nâng cấp tài khoản, 'chỉ dành cho...'.",
     "tranh_khi": "Nội dung không liên quan tới thẻ, gói, hội viên hay sản phẩm cao cấp; tone bình dân vui nhộn; đã có hiệu ứng ánh sáng khác trong video.",
@@ -14189,7 +14333,8 @@
      "thẻ tín dụng",
      "gói premium"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "slide-spotlight-pan",
@@ -14198,6 +14343,7 @@
    "duration": 132,
    "kind": "insert",
    "dark": true,
+   "backdrop": false,
    "portrait": {
     "mode": "native"
    },
@@ -14252,6 +14398,7 @@
    "duration": 170,
    "kind": "insert",
    "dark": true,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -14328,6 +14475,7 @@
    "duration": 60,
    "kind": "insert",
    "dark": true,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -14446,7 +14594,8 @@
      "tiết lộ",
      "ra mắt"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "input-morph-assemble",
@@ -14541,7 +14690,8 @@
      "SaaS",
      "kết video"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "logo-shrink-wordmark-lockup",
@@ -14550,6 +14700,7 @@
    "duration": 132,
    "kind": "insert",
    "dark": true,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -14620,6 +14771,7 @@
    "duration": 150,
    "kind": "insert",
    "dark": true,
+   "backdrop": true,
    "portrait": {
     "mode": "native"
    },
@@ -14782,7 +14934,8 @@
      "tổng kết",
      "tên kênh"
     ]
-   }
+   },
+   "backdrop": true
   },
   {
    "id": "ui-strip-away-outro",
@@ -14826,7 +14979,7 @@
     {
      "id": "tagline",
      "role": "subtitle",
-     "sample": "Một chạm — mọi thứ đã sẵn sàng.",
+     "sample": "Một chạm, mọi thứ đã sẵn sàng.",
      "max": 44,
      "optional": true,
      "note": "dòng chốt dưới tên (không có tên/thương hiệu thì thành chữ chính)"
@@ -14862,7 +15015,7 @@
    ],
    "vi": {
     "ten": "Bấm 'Xuất bản' — giao diện bốc hơi, còn logo",
-    "mo_ta": "Màn hình phần mềm chỉnh sửa sáng (thanh lớp bên trái, bảng thuộc tính, khung trình duyệt có thẻ số liệu hoặc ảnh chụp app). Con trỏ di tới bấm nút màu nhấn; ngay sau đó từng mảng giao diện lần lượt bay ra ngoài và mờ tan từ ngoài vào trong, nền chuyển đen, chỉ còn nút trượt về giữa phóng to phát sáng, rồi nhường chỗ cho logo + tên và dòng chốt. Khung dọc: giao diện xếp dọc, logo to giữa màn hình.",
+    "mo_ta": "Màn hình phần mềm chỉnh sửa sáng (thanh lớp bên trái, bảng thuộc tính, khung trình duyệt có thẻ số liệu hoặc ảnh chụp app). Con trỏ di tới bấm nút màu nhấn; ngay sau đó từng mảng giao diện lần lượt bay ra ngoài và mờ tan từ ngoài vào trong, lộ ra ảnh nền chủ đề (hoặc nền đen), chỉ còn nút trượt về giữa phóng to phát sáng, rồi nhường chỗ cho logo + tên và dòng chốt. Khung dọc: giao diện xếp dọc, logo to giữa màn hình.",
     "hop_khi": "Kết video / kết phần với ý 'xong rồi, chỉ một cú bấm': đăng tải, xuất bản, ra mắt, hoàn tất đơn, gửi đi; giới thiệu phần mềm / app / công cụ AI làm thay mọi thứ phức tạp; outro có tên kênh / sản phẩm.",
     "tranh_khi": "Không liên quan phần mềm / thao tác số; giữa video (đây là cảnh kết); đã có một cảnh outro khác.",
     "nang_luong": "vua",
@@ -14876,7 +15029,8 @@
      "logo",
      "AI"
     ]
-   }
+   },
+   "backdrop": true
   }
  ]
 }

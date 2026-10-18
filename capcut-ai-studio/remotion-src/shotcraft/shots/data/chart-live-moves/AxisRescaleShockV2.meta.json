@@ -6,30 +6,141 @@
  "duration": 168,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.25],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.25
+ ],
  "hold": 126,
  "slots": [
-  {"id": "kicker", "role": "kicker", "sample": "Doanh thu · 2026", "max": 32, "optional": true},
-  {"id": "title", "role": "title", "sample": "Doanh thu hằng tháng", "max": 34, "note": "tên biểu đồ (đang đo cái gì)"},
-  {"id": "value", "role": "number", "sample": "340k", "max": 10, "note": "giá trị BÙNG NỔ kỳ cuối (vd 340k, 1,2 tỷ, 5.000 đơn); đơn vị ngắn (k, tr, %) được dùng cho nhãn trục"},
-  {"id": "before", "role": "number", "sample": "72k", "max": 10, "optional": true, "note": "giá trị kỳ ngay trước (cùng đơn vị với value); bỏ trống = value/4,7"},
-  {"id": "series", "role": "number", "sample": "", "max": 10, "list": {"min": 4, "max": 12}, "optional": true, "note": "nếu lời nói có cả chuỗi số: các giá trị theo kỳ, SỐ CUỐI = giá trị bùng nổ (thay value/before)"},
-  {"id": "periods", "role": "label", "sample": "T1|T2|T3|T4|T5|T6|T7|T8|T9|T10|T11|T12", "max": 6, "list": {"min": 4, "max": 12}, "optional": true, "note": "nhãn trục x cho từng kỳ (tháng / quý / năm), cùng số lượng với series (mặc định 12 tháng)"},
-  {"id": "kpi_label", "role": "label", "sample": "Tăng trưởng", "max": 22, "optional": true, "note": "nhãn số lớn góc phải"},
-  {"id": "kpi", "role": "number", "sample": "", "max": 9, "optional": true, "note": "số lớn góc phải (vd tổng cả năm '833k'); bỏ trống = % tăng trưởng tự tính"},
-  {"id": "kpi_from", "role": "number", "sample": "", "max": 9, "optional": true, "note": "số KPI trước khi bùng nổ (mặc định kpi − value)"},
-  {"id": "badge", "role": "label", "sample": "gấp 4,7 lần T11", "max": 26, "optional": true, "note": "dòng nhỏ dưới số trên nhãn; bỏ trống = tự tính 'gấp X lần <kỳ trước>'"}
+  {
+   "id": "kicker",
+   "role": "kicker",
+   "sample": "Doanh thu · 2026",
+   "max": 32,
+   "optional": true
+  },
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Doanh thu hằng tháng",
+   "max": 34,
+   "note": "tên biểu đồ (đang đo cái gì)"
+  },
+  {
+   "id": "value",
+   "role": "number",
+   "sample": "340k",
+   "max": 10,
+   "note": "giá trị BÙNG NỔ kỳ cuối (vd 340k, 1,2 tỷ, 5.000 đơn); đơn vị ngắn (k, tr, %) được dùng cho nhãn trục"
+  },
+  {
+   "id": "before",
+   "role": "number",
+   "sample": "72k",
+   "max": 10,
+   "optional": true,
+   "note": "giá trị kỳ ngay trước (cùng đơn vị với value); bỏ trống = value/4,7"
+  },
+  {
+   "id": "series",
+   "role": "number",
+   "sample": "",
+   "max": 10,
+   "list": {
+    "min": 4,
+    "max": 12
+   },
+   "optional": true,
+   "note": "nếu lời nói có cả chuỗi số: các giá trị theo kỳ, SỐ CUỐI = giá trị bùng nổ (thay value/before)"
+  },
+  {
+   "id": "periods",
+   "role": "label",
+   "sample": "T1|T2|T3|T4|T5|T6|T7|T8|T9|T10|T11|T12",
+   "max": 6,
+   "list": {
+    "min": 4,
+    "max": 12
+   },
+   "optional": true,
+   "note": "nhãn trục x cho từng kỳ (tháng / quý / năm), cùng số lượng với series (mặc định 12 tháng)"
+  },
+  {
+   "id": "kpi_label",
+   "role": "label",
+   "sample": "Tăng trưởng",
+   "max": 22,
+   "optional": true,
+   "note": "nhãn số lớn góc phải"
+  },
+  {
+   "id": "kpi",
+   "role": "number",
+   "sample": "",
+   "max": 9,
+   "optional": true,
+   "note": "số lớn góc phải (vd tổng cả năm '833k'); bỏ trống = % tăng trưởng tự tính"
+  },
+  {
+   "id": "kpi_from",
+   "role": "number",
+   "sample": "",
+   "max": 9,
+   "optional": true,
+   "note": "số KPI trước khi bùng nổ (mặc định kpi − value)"
+  },
+  {
+   "id": "badge",
+   "role": "label",
+   "sample": "gấp 4,7 lần T11",
+   "max": 26,
+   "optional": true,
+   "note": "dòng nhỏ dưới số trên nhãn; bỏ trống = tự tính 'gấp X lần <kỳ trước>'"
+  }
  ],
  "images": [],
  "brand": "optional",
- "sfx": [{"at": 14, "type": "swoosh"}, {"at": 62, "type": "riser"}, {"at": 69, "type": "boom"}, {"at": 94, "type": "whoosh"}, {"at": 110, "type": "pop"}],
+ "sfx": [
+  {
+   "at": 14,
+   "type": "swoosh"
+  },
+  {
+   "at": 62,
+   "type": "riser"
+  },
+  {
+   "at": 69,
+   "type": "boom"
+  },
+  {
+   "at": 94,
+   "type": "whoosh"
+  },
+  {
+   "at": 110,
+   "type": "pop"
+  }
+ ],
  "vi": {
   "ten": "Biểu đồ vỡ trần — trục phải co giãn lại",
   "mo_ta": "Trang giấy màu cát kiểu poster Thụy Sĩ: tiêu đề đen đậm, biểu đồ đường phủ kín khung leo đều từng kỳ; rồi kỳ cuối vọt lên bằng nét màu đất nung, xuyên thủng đường trần (vạch trần nứt, mảnh vỡ văng, biểu đồ rung) và đâm vào con số lớn góc phải; khựng nửa nhịp rồi trục Y 'ào' đổi thang (nhãn cũ bay xuống, nhãn mới trượt vào, đường cũ bị ép dẹt), điểm cuối hạ về đúng giá trị và bật nhãn số kèm 'gấp X lần'.",
   "hop_khi": "Khoảnh khắc tăng trưởng đột phá 'vượt mọi dự đoán': doanh thu tháng này gấp mấy lần tháng trước, lượt xem bùng nổ sau video viral, đơn hàng sau chiến dịch, người dùng tăng vọt sau ra mắt — 'biểu đồ không chứa nổi'.",
   "tranh_khi": "Tăng trưởng nhỏ / đều (dưới ~2 lần); số liệu giảm; so sánh nhiều nhóm; dùng quá 1 lần trong cùng video.",
   "nang_luong": "cao",
-  "chu_de": ["số liệu", "tăng trưởng", "doanh thu", "bùng nổ", "biểu đồ đường", "kỷ lục", "viral", "báo cáo"]
- }
+  "chu_de": [
+   "số liệu",
+   "tăng trưởng",
+   "doanh thu",
+   "bùng nổ",
+   "biểu đồ đường",
+   "kỷ lục",
+   "viral",
+   "báo cáo"
+  ]
+ },
+ "backdrop": true
 }

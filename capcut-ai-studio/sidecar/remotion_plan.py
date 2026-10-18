@@ -256,6 +256,7 @@ Tung caption co the ghi de "style" / "font" / "accent" neu that su can, con lai 
 # QUY TAC CHU (bat buoc)
 - KHONG emoji / ky hieu emoji (🔒 🔥 ✅ ...) trong bat ky caption nao — he thong tu xoa.
 - Moi luc chi MOT khoi chu noi bat: hero to, dam, ngan; phu de nho, nhe — khong de hai khoi ngang nhau tranh nhau.
+- KHONG DAU GACH trong chu hien thi ("—", "–", " - " lam dau noi): dung dau phay / xuong dong. Khoang so "3-4" giu duoc.
 - Hero va phu de hien cung luc: hero nam TREN neu cum do duoc NOI TRUOC (nguoi xem doc tren -> duoi).
 - PHU DE va CHU NOI BAT (hero / lop chu do hoa) KHONG BAO GIO chong hay sat nhau: he thong tu doi phu de ra
   cho trong cach >= 4% khung, khong con cho thi AN phu de trong luc chu noi bat hien.
@@ -678,6 +679,15 @@ def _bam_chu_whisper(c, asr, i, changes):
     if not wt:
         return None
     na, nb = wt[0][1], max(wt[-1][2], wt[0][1] + 0.3)
+    if c.get("anchor") == "hook":
+        # CHU HOOK (user 2026-10-18: "chu hien truoc roi moi noi"): hook_caption gan ca doan hook -> tim cum chu trong
+        # doan do, hien DUNG luc noi, giu toi het cum + 1s (khong qua cuoi hook)
+        if na < a - 0.1 or wt[-1][2] > b + 0.3:
+            return None
+        nb = min(b, max(wt[-1][2] + 1.0, na + 1.2))
+        changes.append("cap%d (chu hook): hien dung luc noi %.2f-%.2f -> %.2f-%.2f (gio nguon)" % (i, a, b, na, nb))
+        c["src_start"], c["src_end"] = round(na, 3), round(nb, 3)
+        return wt
     if abs(na - a) > 0.8 or abs(nb - b) > 1.2:
         return None          # khop sang cau ben canh -> khong tin
     if abs(na - a) > 0.08 or abs(nb - b) > 0.08:
@@ -1007,12 +1017,52 @@ def _fit_for(w, h, W, H):
     return "cover" if abs(ar - AR) / AR < 0.2 else "blur"
 
 
+ZOOM_MIN_GAP = 14.0      # hai lan zoom vao cach nhau toi thieu (giay timeline) — user 2026-10-18: "lam dung zoom"
+ZOOM_MAX = 1.15          # muc zoom toi da (truoc 1.35)
+ZOOM_HOLD = 4.0          # mot lan zoom giu toi da (giay) roi ve 1.0
+ZOOM_MIN = 1.05          # B2 xin zoom duoi muc nay = rung khung vo nghia -> 1.0
+_ZOOM_BEATS = ("hook", "twist", "payoff", "cta", "proof")
+
+
+def han_che_zoom(segs, changes=None):
+    """Zoom khung CHI khi can (user 2026-10-18): moi doan mac dinh 1.0; giu lan zoom B2 xin o nhip quan trong (hook /
+    twist / payoff / cta / proof) hoac muc zoom ro (>= 1.08), cach lan truoc >= ZOOM_MIN_GAP, toi da ZOOM_HOLD giay
+    lien tiep, muc <= ZOOM_MAX. Con lai ve 1.0. Ham thuan (chay lai khong doi)."""
+    t, last_in, run = 0.0, -1e9, 0.0
+    n_bo = 0
+    prev_z = 1.0
+    for s in segs:
+        if (s.get("kind") or "body") == "insert":
+            t += max(0.0, providers._f(s.get("end")) - providers._f(s.get("start")))
+            prev_z = 1.0
+            continue
+        dur = max(0.0, providers._f(s.get("end")) - providers._f(s.get("start")))
+        want = _clamp(providers._f(s.get("scale"), 1.0), 1.0, 1.35)
+        keep = 1.0
+        if want >= ZOOM_MIN:
+            important = (s.get("beat") in _ZOOM_BEATS) or want >= 1.12
+            if prev_z > 1.0 and want >= prev_z - 1e-6 and run + dur <= ZOOM_HOLD:
+                keep = prev_z                                # dang zoom, doan noi tiep cung muc -> giu (khong nhay)
+            elif important and t - last_in >= ZOOM_MIN_GAP:
+                keep = round(min(ZOOM_MAX, want), 3)
+                last_in, run = t, 0.0
+        if keep == 1.0 and want > 1.0 + 1e-6:
+            n_bo += 1
+        s["scale"] = keep
+        run = run + dur if keep > 1.0 else 0.0
+        prev_z = keep
+        t += dur
+    if n_bo and changes is not None:
+        changes.append("zoom khung: bo %d lan zoom khong can thiet (cach >= %.0fs, toi da %.2f)" % (n_bo, ZOOM_MIN_GAP, ZOOM_MAX))
+    return segs
+
+
 def _clips_to_spec(p, W, H, changes):
     srcs = {sv.get("id"): sv for sv in p.get("source_videos") or []}
     trs = _by_id("transitions")
     clips = []
     done_fz = set()
-    segs = p.get("segments") or []
+    segs = han_che_zoom(p.get("segments") or [], changes)
     for i, s in enumerate(segs):
         kind = s.get("kind") or "body"
         if kind == "insert":
@@ -1381,6 +1431,7 @@ def _build_spec(plan, log=None):
             lim = speech_cut.plan_pause_limit(p)
             segs = speech_cut.tighten_pauses(p, segs, lim, changes, removed=removed)
             segs = speech_cut.cut_restarts(p, segs, changes, removed=removed)
+            segs = speech_cut.cut_stutters(p, segs, p.get("stutter_cuts"), changes, removed=removed)
             segs, dur = plan_guard.chuan_hoa_segments(segs, changes)
             speech_cut.audit_cuts(p, segs, lim, changes)          # mep cat roi vao duoi am -> sua
             segs, dur = plan_guard.chuan_hoa_segments(segs, changes)
@@ -1589,6 +1640,8 @@ def _build_spec(plan, log=None):
     }
     if any(sc.get("shot") for sc in scenes):
         spec["shotTheme"] = shot_lib.theme(p)
+    # KHONG DAU GACH trong chu hien thi (user 2026-10-18; ca plan cu)
+    plan_guard.lam_sach_dau_gach(spec, changes, label="spec")
     # LUAT karaoke <= KARAOKE_MAX_WORDS chu / luc: chia TRUOC ne chu noi bat / bao ve mat (tinh tren khoi chu that)
     spec["captions"] = split_karaoke(spec["captions"], changes)
     if p.get("brand_guide"):

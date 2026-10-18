@@ -26,5 +26,6 @@
   "tranh_khi": "Câu dài trên 5-6 từ; nội dung nghiêm túc / buồn; video công nghệ tối màu; dùng quá 2 lần trong một video.",
   "nang_luong": "cao",
   "chu_de": ["câu chốt", "ưu đãi", "bán hàng", "poster", "slogan", "sự kiện", "lợi ích", "retro"]
- }
+ },
+ "backdrop": true
 }

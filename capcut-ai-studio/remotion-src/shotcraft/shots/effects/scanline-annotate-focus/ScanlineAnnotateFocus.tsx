@@ -27,7 +27,7 @@
 // Toa do cac khoi (bbox) TINH TU chu that (measureText) -> thoi diem quet trung + nhan may tu theo; nhan may do be ngang that.
 // Khung doc (portrait.mode = 'native'): trang chuyen thanh bo cuc DOC kieu mobile (cac khoi xep doc, chu to hon), cua so
 // cao theo noi dung, can giua khung; khung ngang giu bo cuc goc.
-import { useCurrentFrame, useBrand, useImage, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useBrand, useImage, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, Img } from 'remotion';
 import { EASE, FONT, ramp, softShadow } from '../../../fixtures/Polish';
@@ -361,6 +361,9 @@ export const ScanlineAnnotateFocus: React.FC = () => {
   const statusIn = ramp(frame, 0, 10, EASE.out);
   const scanProg = Math.min(1, Math.max(0, (frame - SCAN0) / (SCAN1 - SCAN0)));
   const stFs = P ? 40 : 30;
+  // [Agent Edit] nen anh AI (Stage tu bo nen): chu nam truc tiep tren nen (dong trang thai, toa do Y) co bong nhe
+  const bd = useBackdrop();
+  const tsh = bd ? (bd.dark ? '0 2px 18px rgba(0,0,0,0.55)' : '0 1px 12px rgba(255,255,255,0.7)') : undefined;
   const curFs = P ? 30 : 22;
 
   return (
@@ -368,7 +371,7 @@ export const ScanlineAnnotateFocus: React.FC = () => {
       <Stage look={L} keyLight={{ x: 0.3, y: 0.05 }} fill={{ x: 0.9, y: 0.95 }} vignette={0.2} />
       <div style={{ position: 'absolute', inset: 0, transform: `scale(${push.toFixed(5)})`, transformOrigin: `50% ${WY + WH * 0.45}px` }}>
         {/* ── 状态行（窗外上方）── */}
-        <div style={{ position: 'absolute', left: WX, top: WY - statusH, width: WW, height: stFs * 1.6, opacity: statusIn, font: `600 ${stFs}px ${MONO}`, color: L.ink, display: 'flex', alignItems: 'center', whiteSpace: 'nowrap', lineHeight: 1.3 }}>
+        <div style={{ position: 'absolute', left: WX, top: WY - statusH, width: WW, height: stFs * 1.6, opacity: statusIn, font: `600 ${stFs}px ${MONO}`, color: L.ink, display: 'flex', alignItems: 'center', whiteSpace: 'nowrap', lineHeight: 1.3, textShadow: tsh }}>
           <div style={{ width: stFs * 0.47, height: stFs * 0.47, borderRadius: stFs, marginRight: 16, flex: 'none', background: done > 0.5 ? MACHINE : alpha(MACHINE, 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(frame / 3))), boxShadow: `0 0 0 6px ${alpha(MACHINE, 0.12)}` }} />
           <span style={{ color: done > 0.5 ? MACHINE : L.ink, letterSpacing: '0.06em' }}>{done > 0.5 ? doneText : reading}</span>
           {P ? null : <span style={{ color: L.ink3, marginLeft: 18, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 420 }}>{name}</span>}
@@ -387,18 +390,14 @@ export const ScanlineAnnotateFocus: React.FC = () => {
         {/* ── 浏览器窗：页面 + 扫描余晖（裁进窗内）── */}
         <div style={{ position: 'absolute', left: WX, top: WY, width: WW, height: WH, borderRadius: 20, overflow: 'hidden', boxShadow: `${softShadow(30, { color: L.shadow, strength: 1.1 })}, 0 0 0 1px ${alpha(L.ink, 0.08)}` }}>
           <Page g={g} name={name} nav={nav} cta={cta} caption={caption} photo={photo} />
-          {/* 已读余晖：扫描线身后 140px 的淡蓝洗色 + 点阵（机器"读过"的痕迹） */}
+          {/* 已读余晖：扫描线身后 140px 的淡蓝洗色（机器"读过"的痕迹） */}
           {lineOn > 0.01 && (
             <>
               <div style={{
                 position: 'absolute', left: 0, width: WW, top: ly - 140, height: 140, opacity: lineOn,
                 background: `linear-gradient(180deg, ${alpha(MACHINE, 0)} 0%, ${alpha(MACHINE, 0.05)} 60%, ${alpha(MACHINE, 0.13)} 100%)`,
               }} />
-              <div style={{
-                position: 'absolute', left: 0, width: WW, top: ly - 90, height: 90, opacity: lineOn * 0.8,
-                backgroundImage: `radial-gradient(circle, ${alpha(MACHINE, 0.55)} 1.3px, transparent 1.9px)`, backgroundSize: '18px 18px', backgroundPosition: '0 0',
-                WebkitMaskImage: 'linear-gradient(180deg, transparent, #000)', maskImage: 'linear-gradient(180deg, transparent, #000)',
-              }} />
+              {/* [Agent Edit] bo dai luoi cham sau vach quet (khong luoi cham), giu lop xanh mo */}
               <div style={{
                 position: 'absolute', left: 0, width: WW, top: ly - 1.5, height: P ? 4 : 3, opacity: lineOn, background: MACHINE,
                 boxShadow: `0 0 10px ${alpha(MACHINE, 0.55)}, 0 0 28px ${alpha(MACHINE, 0.3)}`,
@@ -417,7 +416,7 @@ export const ScanlineAnnotateFocus: React.FC = () => {
               <path d="M20 2 L2 13 L20 24 Z" fill={MACHINE} />
             </svg>
             {P ? null : (
-              <div style={{ position: 'absolute', left: WX - 150, top: WY + ly - 14, width: 112, textAlign: 'right', font: `600 ${curFs}px ${MONO}`, color: MACHINE, fontVariantNumeric: 'tabular-nums' }}>
+              <div style={{ position: 'absolute', left: WX - 150, top: WY + ly - 14, width: 112, textAlign: 'right', font: `600 ${curFs}px ${MONO}`, color: MACHINE, fontVariantNumeric: 'tabular-nums', textShadow: tsh }}>
                 Y {String(Math.max(0, Math.round(ly))).padStart(4, '0')}
               </div>
             )}

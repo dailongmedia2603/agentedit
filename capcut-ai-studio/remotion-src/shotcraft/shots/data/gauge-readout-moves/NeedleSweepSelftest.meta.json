@@ -27,5 +27,6 @@
   "tranh_khi": "Số không thuộc thang 0-100 (doanh thu, số người — dùng mẫu đếm số / băng cuộn); hơn 3 chỉ số; nội dung cảm xúc, không có số đo.",
   "nang_luong": "vua",
   "chu_de": ["số liệu", "dashboard", "hiệu năng", "phần trăm", "đo lường", "hệ thống", "kiểm tra", "công nghệ"]
- }
+ },
+ "backdrop": true
 }

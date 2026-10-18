@@ -49,7 +49,7 @@ const fmt = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 const Corner: React.FC<{ n: string; label: string; color: string; bold?: boolean }> = ({ n, label, color, bold }) =>
   label ? (
     <div style={{ position: 'absolute', left: 34, top: 28, ...type(bold ? 26 : 20, 700, { caps: true }), letterSpacing: '0.2em', color, opacity: bold ? 0.95 : 0.7, lineHeight: 1.3, whiteSpace: 'nowrap' }}>
-      {n} — {label}
+      {n} · {label}
     </div>
   ) : null;
 

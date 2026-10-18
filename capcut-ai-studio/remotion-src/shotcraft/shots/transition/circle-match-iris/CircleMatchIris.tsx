@@ -29,8 +29,9 @@
 // Khung doc (portrait.mode = 'native'): bang xep hang phu ngang khung (dong cao hon, chu to), tam neo = tam avatar dong
 // giua; vong tron mo ra DUNG tam neo (khop hinh giu nguyen), sau khi mong mat da phu kin man hinh (f78) vong tron truot
 // mem ve giua nua tren (f78-98), cot chu xep ben duoi va vao muon 20f. Khung ngang giu dung bo cuc + nhip goc.
-import { useBrand, useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
+import { useBackdrop, useBrand, useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
 import React from 'react';
+import { Img } from 'remotion';
 
 import { EASE, Grain, bezier, mix, ramp } from '../../../fixtures/Polish';
 import { LOOKS, Stage, TYPE, alpha, stagger, type } from '../../../fixtures/Look';
@@ -103,7 +104,7 @@ export const CircleMatchIris: React.FC = () => {
   const kickerText = useText('kicker', 'Tuần của bạn').trim();
   const titleText = useText('title', 'Sắp về đích.').replace(/\s+/g, ' ').trim();
   const subText = useText('subtitle', 'Chỉ còn 7 video nữa là hoàn thành.').trim();
-  const statItems = useList('stats', ['47 video — Đã đăng', '6 tuần — Liên tục', '4:52 phút — Thời lượng TB']).slice(0, 3);
+  const statItems = useList('stats', ['47 video · Đã đăng', '6 tuần · Liên tục', '4:52 phút · Thời lượng TB']).slice(0, 3);
   const pillText = useText('pill', 'Còn 6 video nữa để vượt lên hạng 2').trim();
   const pctNum = parseFloat(pctText.replace(',', '.').replace(/[^0-9.]/g, ''));
   const GOAL = Number.isFinite(pctNum) ? Math.max(0.02, Math.min(1, pctNum / 100)) : GOAL_DEFAULT;
@@ -152,7 +153,7 @@ export const CircleMatchIris: React.FC = () => {
   const statGap = portrait ? 64 : 56;
   const statW = (COLW - statGap * Math.max(0, statItems.length - 1)) / Math.max(1, statItems.length);
   const stats = statItems.map((s) => {
-    const [vRaw, kRaw] = s.split(/\s+[—–-]\s+/);
+    const [vRaw, kRaw] = s.split(/\s+[·|—–-]\s+|:\s+/); // [Agent Edit] 'gia tri · nhan' (van doc duoc dau gach / hai cham cu)
     const vv = (vRaw || '').trim();
     const sp = vv.indexOf(' ');
     const v = sp > 0 ? vv.slice(0, sp) : vv;
@@ -212,9 +213,13 @@ export const CircleMatchIris: React.FC = () => {
 
   const brandName = BRAND.name;
   const pctShown = Math.round(sweep * 100);
+  // [Agent Edit] nen anh AI: canh A trong suot tren anh nen (Stage tu bo); canh B trong mong mat = cung anh nen
+  // (toi hon, phong hon) thay cho nen o liu toi + quang -> van doc la "canh moi". Bo hat. Chu co bong toi nhe.
+  const bd = useBackdrop();
+  const TSH = bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined;
 
   return (
-    <div style={{ width: 1920, height: SH, position: 'relative', overflow: 'hidden', background: L.bg[2] }}>
+    <div style={{ width: 1920, height: SH, position: 'relative', overflow: 'hidden', background: bd ? 'transparent' : L.bg[2], textShadow: TSH }}>
       {/* ===== 景 A：周榜（共享舞台只有这一层 Stage；景 B 在光圈里自带暗底） ===== */}
       <div style={{ position: 'absolute', inset: 0, transformOrigin: `${CX}px ${CY}px`, transform: `scale(${aScale.toFixed(4)})`, filter: away > 0 ? `brightness(${aDim.toFixed(3)})` : undefined }}>
         <Stage look={L} keyLight={{ x: 0.5, y: -0.06 }} fill={{ x: 0.92, y: 0.98 }} intensity={0.7} grain={0} breathe={0.4} />
@@ -306,13 +311,18 @@ export const CircleMatchIris: React.FC = () => {
           }} />
           <div style={{ position: 'absolute', inset: 0, clipPath: `circle(${irisR.toFixed(1)}px at ${CX}px ${CY}px)` }}>
             {/* B 底：更深的橄榄黑 + 以圆心为光源的荧光余光 + 右上冷白主光 */}
-            <div style={{
+            {bd ? (
+              <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#000' }}>
+                <Img src={bd.src} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.16)', filter: 'blur(6px) brightness(0.4) saturate(0.85)' }} />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(4,6,10,0.45) 0%, rgba(4,6,10,0.3) 45%, rgba(4,6,10,0.55) 100%)' }} />
+              </div>
+            ) : <div style={{
               position: 'absolute', inset: 0,
               background:
                 `radial-gradient(circle at ${RX}px ${RY}px, ${alpha(L.accent, 0.2 + 0.03 * breathe)} 0px, ${alpha(L.accent, 0.06)} ${380 * RS}px, ${alpha(L.accent, 0)} ${760 * RS}px), ` +
                 `radial-gradient(ellipse 50% 60% at 78% 14%, ${alpha('#e9f3d4', 0.07)}, rgba(0,0,0,0) 70%), ` +
                 `linear-gradient(180deg, #11140d 0%, #0a0c08 55%, #050604 100%)`,
-            }} />
+            }} />}
             <svg width={1920} height={SH} style={{ position: 'absolute', inset: 0, overflow: 'visible' }}>
               <defs>
                 <linearGradient id="cmi-arc" x1="0" y1="0" x2="1" y2="1">
@@ -417,7 +427,7 @@ export const CircleMatchIris: React.FC = () => {
           )}
         </>
       )}
-      <Grain opacity={0.08} blend="soft-light" />
+      {!bd && <Grain opacity={0.08} blend="soft-light" />}
     </div>
   );
 };

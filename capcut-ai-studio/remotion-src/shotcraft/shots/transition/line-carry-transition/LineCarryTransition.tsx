@@ -32,7 +32,7 @@
 // Khung doc (portrait.mode = 'native'): van lia ngang 1920px (cot loi), canh A phong 1.75x, canh B: nhan tren — khung 1440×860
 // duoi; duong ke cung mot Y. Khung lon hon -> doan dong khung bat dau tang toc ngay khi net da re goc trong luc lia
 // (truoc do net van ghim tai TIP_X), khung van khep dung khung 136.
-import { useCurrentFrame, useVideoConfig, useText, useImage, useShotFonts, wrapLines, fitSize } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useImage, useShotFonts, wrapLines, fitSize } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, SpeedBlur, mix, ramp, softShadow, velocity } from '../../../fixtures/Polish';
@@ -246,9 +246,12 @@ export const LineCarryTransition: React.FC = () => {
   const capIn = (k: number) => ramp(f, 100 + k * 6, 20, EASE.snappy);
   const kick: React.CSSProperties = { display: 'flex', gap: 18 * (portrait ? 1.4 : 1), alignItems: 'baseline', fontFamily: fonts.sans, fontSize: kSz, fontWeight: 700, letterSpacing: '0.24em', lineHeight: 1.3, whiteSpace: 'nowrap' };
   const K = portrait ? 1.6 : 1;
+  // [Agent Edit] NEN ANH AI: bo nen giay cat (Stage tu bo); chu nam truc tiep tren nen co bong sang
+  const bd = useBackdrop();
+  const ts = bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined;
 
   return (
-    <AbsoluteFill style={{ background: L.bg[1], overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[1], overflow: 'hidden' }}>
       {/* 共享舞台（屏幕空间，像摄影棚里的固定灯） */}
       <Stage look={L} keyLight={{ x: 0.28, y: 0.02 }} fill={{ x: 0.9, y: 0.95 }} />
 
@@ -256,21 +259,14 @@ export const LineCarryTransition: React.FC = () => {
       <SpeedBlur vx={vx} amount={0.28} max={16}>
         <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
           <div style={world}>
-            {/* 制图点阵：给眼睛一个速度参照，上下渐隐 */}
-            <div style={{
-              position: 'absolute', inset: 0,
-              backgroundImage: `radial-gradient(circle, ${alpha(L.ink, 0.13)} 1.7px, ${alpha(L.ink, 0)} 2.3px)`,
-              backgroundSize: '60px 60px', backgroundPosition: '6px 10px',
-              WebkitMaskImage: 'linear-gradient(180deg, transparent 6%, #000 28%, #000 80%, transparent 97%)',
-              maskImage: 'linear-gradient(180deg, transparent 6%, #000 28%, #000 80%, transparent 97%)',
-            }} />
+            {/* [Agent Edit] bo luoi cham (制图点阵) trang tri; van con thuoc do duoi net lam moc toc do */}
             {/* A 眉题 */}
-            <div style={{ ...kick, position: 'absolute', left: g.AX, top: g.AY - 86 * K }}>
+            <div style={{ ...kick, position: 'absolute', left: g.AX, top: g.AY - 86 * K, textShadow: ts }}>
               <span style={{ color: L.accent }}>01</span><span style={{ color: L.ink2 }}>{kickerA}</span>
             </div>
             <ExportCard g={g} pct={pct} f={f} task={task} taskSub={taskSub} status={status} poster={poster} photo={photo} />
             {/* B 展签：框外标题，镜头到位前后逐行升起 */}
-            <div style={{ position: 'absolute', left: capLeft, top: capTop, width: capW }}>
+            <div style={{ position: 'absolute', left: capLeft, top: capTop, width: capW, textShadow: ts }}>
               <div style={{ ...kick, opacity: capIn(0) }}>
                 <span style={{ color: L.accent }}>02</span><span style={{ color: L.ink2 }}>{kickerB}</span>
               </div>

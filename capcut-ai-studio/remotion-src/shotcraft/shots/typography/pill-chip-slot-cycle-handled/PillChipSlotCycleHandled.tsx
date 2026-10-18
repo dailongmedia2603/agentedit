@@ -9,7 +9,7 @@
 // moi lan 0.12 (≈18f, inOutCubic — giu nguyen). Chu dai / khung doc: cau tu xep thanh 1-3 hang (hang co chip van dung
 // flex:none -> chu canh chip van bi "day ra"), co chu lon nhat vua be ngang.
 import React from 'react';
-import { measureText, useList, useShotFonts, useText, useVideoConfig, wrapLines, useShot } from '../../../runtime';
+import { measureText, useBackdrop, useList, useShotFonts, useText, useVideoConfig, wrapLines, useShot } from '../../../runtime';
 import { E, lerp, seg, useT } from '../../../fixtures/Motion';
 import { LOOKS } from '../../../fixtures/Look';
 
@@ -100,6 +100,9 @@ export const PillChipSlotCycleHandled: React.FC = () => {
   const near = Math.round(pos);
   const roll = (pos - near) * 48 * 0.5 * k;
   const settle = 1 - Math.min(1, Math.abs(pos - near) * 3);
+  // [Agent Edit] NEN ANH AI: bo nen trang; chu nam truc tiep tren nen co bong sang
+  const bd = useBackdrop();
+  const ts = bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined;
   const ghost = (top: number): React.CSSProperties => ({
     position: 'absolute',
     left: '50%',
@@ -122,6 +125,7 @@ export const PillChipSlotCycleHandled: React.FC = () => {
     letterSpacing: -0.5 * k,
     flex: 'none',
     whiteSpace: 'nowrap',
+    textShadow: ts,
   };
 
   const chip = (
@@ -159,7 +163,7 @@ export const PillChipSlotCycleHandled: React.FC = () => {
   );
 
   return (
-    <div style={{ position: 'absolute', inset: 0, background: '#fbfbfd', overflow: 'hidden' }}>
+    <div style={{ position: 'absolute', inset: 0, background: bd ? 'transparent' : '#fbfbfd', overflow: 'hidden' }}>
       <div
         style={{
           position: 'absolute',

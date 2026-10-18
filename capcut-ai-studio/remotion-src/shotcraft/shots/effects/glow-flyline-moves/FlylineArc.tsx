@@ -13,7 +13,7 @@
 // labels (3 nhan the: the xuat phat -> the dich 1 -> the dich 2) / values (3 con so tuong ung). 3 the con lai la so lieu nen.
 // Khung doc (portrait.mode = 'native'): dashboard kieu app dien thoai — tieu de trang + luoi 2 cot x 3 hang the lon,
 // duong bay zic-zac A(trai tren) -> B(phai giua) -> C(trai duoi); thoi gian / do day net / xung sang giu nguyen.
-import { useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, useBrand, fitSize } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, useBrand, fitSize } from '../../../runtime';
 import React, { useId } from 'react';
 import { interpolate, Easing } from 'remotion';
 import { Grain, Vignette } from '../../../fixtures/Polish';
@@ -259,18 +259,22 @@ export const FlylineArc: React.FC = () => {
     L1 = { p0: { x: A.cx, y: A.cy }, p1: { x: A.cx + 420, y: A.cy - 520 }, p2: { x: B.cx + 260, y: B.cy - 640 }, p3: { x: B.cx, y: B.cy } };
     L2 = { p0: { x: B.cx, y: B.cy }, p1: { x: B.cx + 520, y: B.cy + 260 }, p2: { x: C.cx + 700, y: C.cy - 200 }, p3: { x: C.cx, y: C.cy } };
   }
+  // [Agent Edit] NEN ANH AI: bo nen trang dashboard (canvas toi) -> the / thanh giao dien noi tren anh nen; chu nam
+  // truc tiep tren nen (dau trang khung doc) co bong do de doc ro
+  const bd = useBackdrop();
+  const ts = bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined;
   const titleSz = portrait ? fitSize(title, { family: fonts.sans, size: 96, maxWidth: 1600, weight: 700, minSize: 56 }) : 15;
 
   // 时间轴：线1 生长 10–32f → 卡B 脉冲 32–50f；线2 生长 46–68f → 卡C 脉冲 68–86f
   // f86 后全静止（140f 总长 → 静止 54f ≥ 35f）
   return (
-    <div style={{ width: 1920, height: SH, position: 'relative', background: '#0b0c10', overflow: 'hidden' }}>
+    <div style={{ width: 1920, height: SH, position: 'relative', background: bd ? 'transparent' : '#0b0c10', overflow: 'hidden' }}>
       {/* 背景：深色 dashboard 压暗 0.65，常量、不动画——让飞线成为前景层 */}
-      <div style={{ position: 'absolute', inset: 0, filter: 'brightness(0.65) saturate(0.9)', background: D.canvas, fontFamily: fonts.sans }}>
+      <div style={{ position: 'absolute', inset: 0, filter: bd ? 'brightness(0.8) saturate(0.9)' : 'brightness(0.65) saturate(0.9)', background: bd ? 'transparent' : D.canvas, fontFamily: fonts.sans }}>
         {!portrait ? (
           <>
             {/* 侧栏 */}
-            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 220, background: D.side, boxShadow: `inset -1px 0 0 ${D.line}`, padding: '28px 22px', boxSizing: 'border-box' }}>
+            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 220, background: bd ? 'rgba(11,12,15,0.72)' : D.side, boxShadow: `inset -1px 0 0 ${D.line}`, padding: '28px 22px', boxSizing: 'border-box' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 24, height: 40 }}>
                 {brand ? <ShotcraftMark size={30} tone="dark" /> : null}
                 <div style={{ fontSize: 15, fontWeight: 650, color: D.ink, whiteSpace: 'nowrap', overflow: 'hidden' }}>{brand?.name || ''}</div>
@@ -283,7 +287,7 @@ export const FlylineArc: React.FC = () => {
               ))}
             </div>
             {/* 顶栏 */}
-            <div style={{ position: 'absolute', left: 220, right: 0, top: 0, height: 72, background: D.raised, borderBottom: `1px solid ${D.line}`, display: 'flex', alignItems: 'center', padding: '0 32px', gap: 10, fontSize: titleSz }}>
+            <div style={{ position: 'absolute', left: 220, right: 0, top: 0, height: 72, background: bd ? 'rgba(20,21,25,0.72)' : D.raised, borderBottom: `1px solid ${D.line}`, display: 'flex', alignItems: 'center', padding: '0 32px', gap: 10, fontSize: titleSz }}>
               <span style={{ color: D.ink3 }}>Bảng điều khiển</span>
               <span style={{ color: D.ink3 }}>›</span>
               <span style={{ color: D.ink, fontWeight: 600, whiteSpace: 'nowrap' }}>{title}</span>
@@ -298,12 +302,12 @@ export const FlylineArc: React.FC = () => {
         ) : (
           <>
             {/* khung doc: dau trang kieu app dien thoai */}
-            <div style={{ position: 'absolute', left: 64, right: 64, top: headTop, display: 'flex', alignItems: 'center', gap: 22 }}>
+            <div style={{ position: 'absolute', left: 64, right: 64, top: headTop, display: 'flex', alignItems: 'center', gap: 22, textShadow: ts }}>
               {brand ? <ShotcraftMark size={64} tone="dark" /> : null}
               <div style={{ fontSize: 36, fontWeight: 600, color: D.ink3, letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>{brand?.name ? `${brand.name} · ` : ''}Bảng điều khiển</div>
               <div style={{ marginLeft: 'auto', width: 72, height: 72, borderRadius: 36, background: 'linear-gradient(145deg, #3a3c44, #23242a)' }} />
             </div>
-            <div style={{ position: 'absolute', left: 64, top: headTop + 104, fontSize: titleSz, fontWeight: 700, color: D.ink, letterSpacing: '-0.03em', lineHeight: 1.2, whiteSpace: 'nowrap' }}>{title}</div>
+            <div style={{ position: 'absolute', left: 64, top: headTop + 104, fontSize: titleSz, fontWeight: 700, color: D.ink, letterSpacing: '-0.03em', lineHeight: 1.2, whiteSpace: 'nowrap', textShadow: ts }}>{title}</div>
           </>
         )}
         {cards.map((r, i) => (
@@ -311,7 +315,7 @@ export const FlylineArc: React.FC = () => {
             label={i < 3 ? labels[i] : FILL[i - 3].label} value={i < 3 ? values[i] : FILL[i - 3].value} delta={i < 3 ? DELTA[i] : FILL[i - 3].delta} />
         ))}
       </div>
-      <Vignette strength={0.5} inner={0.45} color="#030408" />
+      {!bd && <Vignette strength={0.5} inner={0.45} color="#030408" />}
       <svg width={1920} height={SH} viewBox={`0 0 1920 ${SH}`} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}>
         <defs>
           <radialGradient id={haloId}>

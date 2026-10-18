@@ -13,7 +13,7 @@
 // luong khoang cach d dieu khien scale / opacity / blur nhu goc; khung + o phong to 1.8 lan, ca khoi can giua.
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
-import { useImage, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText } from '../../../runtime';
+import { useBackdrop, useImage, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText } from '../../../runtime';
 import { E, seg, useT } from '../../../fixtures/Motion';
 import { Backdrop, EASE, FONT, Grain } from '../../../fixtures/Polish';
 import { LOOKS, alpha } from '../../../fixtures/Look';
@@ -123,7 +123,11 @@ export const AvatarBracketCarousel: React.FC = () => {
   const wl = wordIn(0.0);
   const wr = wordIn(0.035);
 
+  // [Agent Edit] nen anh AI: bo nen code (Backdrop gradient + quang); chu nam thang tren anh -> bong toi nhe
+  // (toa do thiet ke bi phong Z lan -> chia bong cho Z de ra 2/18px that)
+  const bd = useBackdrop();
   const word: React.CSSProperties = {
+    textShadow: bd ? `0 ${(2 / Z).toFixed(3)}px ${(18 / Z).toFixed(3)}px rgba(0,0,0,0.55)` : undefined,
     color: '#eef0f6',
     fontWeight: 700,
     fontSize: wordSize,
@@ -137,7 +141,7 @@ export const AvatarBracketCarousel: React.FC = () => {
   return (
     <AbsoluteFill>
       {/* 全分辨率背景：冷调深底 + 主光斑落在槽位上方 + 极淡强调色余光 */}
-      <Backdrop tone="dark" light={{ x: 0.42, y: portrait ? 0.4 : 0.34 }} accent={ACCENT} grain={0} vignette={0.55} />
+      {!bd && <Backdrop tone="dark" light={{ x: 0.42, y: portrait ? 0.4 : 0.34 }} accent={ACCENT} grain={0} vignette={0.55} />}
       <div style={{ position: 'absolute', left: 0, top: 0, width: DW, height: DH, overflow: 'hidden', transform: `scale(${Z})`, transformOrigin: '0 0' }}>
         <div
           style={{

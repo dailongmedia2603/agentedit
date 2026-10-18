@@ -19,7 +19,7 @@ import { AbsoluteFill } from 'remotion';
 import { DesignStage, E, lerp, seg, useT } from '../../../fixtures/Motion';
 import { Backdrop, EASE, FONT, softShadow } from '../../../fixtures/Polish';
 import { LOOKS, alpha } from '../../../fixtures/Look';
-import { useList, useShotFonts, useText, useVideoConfig, fitSize, wrapLines, useShot } from '../../../runtime';
+import { useBackdrop, useList, useShotFonts, useText, useVideoConfig, fitSize, wrapLines, useShot } from '../../../runtime';
 
 // [Agent Edit] o chu TUY CHON: app da gui noi dung (co texts) ma bo trong o nay -> '' (an di), khong hien chu mau
 const useOptText = (id: string, sample: string): string => {
@@ -92,7 +92,8 @@ const Caption: React.FC<{
   innP: number;
   outP: number;
   family: string;
-}> = ({ lines, left, top, size, showV, innP, outP, family }) => {
+  ts?: string;
+}> = ({ lines, left, top, size, showV, innP, outP, family, ts }) => {
   const rows = lines.map((l) => l.split(' ').filter(Boolean));
   const n = Math.max(1, rows.reduce((a, r) => a + r.length, 0));
   const st = 0.78 / n, win = st * 1.5; // 入场逐词交错
@@ -100,7 +101,7 @@ const Caption: React.FC<{
   const rowOpacity = outP > 0 ? clamp01(1 - (outP - 0.7) / 0.3) : showV;
   let idx = 0;
   return (
-    <div style={{ position: 'absolute', left, top, opacity: rowOpacity }}>
+    <div style={{ position: 'absolute', left, top, opacity: rowOpacity, textShadow: ts }}>
       {rows.map((words, ri) => (
         <div key={ri} style={{ display: 'flex', alignItems: 'baseline', whiteSpace: 'nowrap' }}>
           {words.map((w, wi) => {
@@ -227,9 +228,11 @@ export const DocParkLeftPillDeal: React.FC = () => {
       ? { x: DOC_LEFT + DW / 2 + sc * (xd - DW / 2), y: DOC_TOP0 + ty + sc * yd }
       : { x: DOC_LEFT + tx + sc * xd, y: DOC_TOP0 + DH / 2 + sc * (yd - DH / 2) };
 
+  // [Agent Edit] NEN ANH AI: bo nen sang (Backdrop fixtures); cau giai thich nam truc tiep tren nen co bong sang
+  const bd = useBackdrop();
   return (
     <AbsoluteFill>
-      <Backdrop tone="light" light={{ x: 0.6, y: 0.24 }} accent={ACCENT} grain={0.05} vignette={0.12} />
+      {!bd && <Backdrop tone="light" light={{ x: 0.6, y: 0.24 }} accent={ACCENT} grain={0.05} vignette={0.12} />}
       <DesignStage bg="transparent" h={P ? SHd : 270}>
         {/* 页面 + 440×CH 定尺画布（居中） */}
         <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', fontFamily: SANS, WebkitFontSmoothing: 'antialiased' }}>
@@ -370,6 +373,7 @@ export const DocParkLeftPillDeal: React.FC = () => {
                     innP={innP}
                     outP={outP}
                     family={SANS}
+                    ts={bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined}
                   />
                 </React.Fragment>
               );

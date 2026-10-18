@@ -13,7 +13,7 @@
 // Khung doc (portrait.mode = 'native'): toa do thiet ke phong to 1.6 lan (lockup to hon), ca khoi can giua chieu cao that.
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
-import { useBrand, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
+import { useBackdrop, useBrand, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
 import { E, lerp, seg, useT } from '../../../fixtures/Motion';
 import { Grain, Vignette } from '../../../fixtures/Polish';
 import { ShotcraftMark } from '../../../fixtures/Brand';
@@ -169,12 +169,16 @@ export const LogoShrinkWordmarkLockup: React.FC = () => {
   );
 
   // 底色标定：原样片 mp4（yuv420p，无色彩元数据）把 #05060a 解码回 rgb(3,5,9)；此处改用带色相的深场
+  // [Agent Edit] nen anh AI: bo nen toi code (giu quang nang luong quanh logo); chu nam thang tren anh -> bong toi
+  // nhe (toa do thiet ke bi zoom ~4x -> bong 0.5/4.5px = 2/18px that)
+  const bd = useBackdrop();
+  const tsh = bd ? '0 0.5px 4.5px rgba(0,0,0,0.55)' : undefined;
   return (
-    <AbsoluteFill style={{ background: '#06070c' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : '#06070c' }}>
     <div style={{ position: 'absolute', left: 0, top: 0, width: DW, height: DH, overflow: 'hidden', zoom: Z }}>
       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
         {/* 深场：顶部略亮的冷色纵向渐变 */}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, #0d0f17 0%, #07080d 60%, #05060a 100%)' }} />
+        {!bd && <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, #0d0f17 0%, #07080d 60%, #05060a 100%)' }} />}
         {/* 能量光晕（随大环坍缩） */}
         <div
           style={{
@@ -235,7 +239,7 @@ export const LogoShrinkWordmarkLockup: React.FC = () => {
                   opacity: lk,
                   transform: `translateX(${lerp(lk, 8, 0)}px)`,
                   filter: lk < 0.999 ? `blur(${lerp(lk, 2.5, 0).toFixed(2)}px)` : undefined,
-                  textShadow: '0 0 12px rgba(150,140,255,0.18)',
+                  textShadow: tsh ? `0 0 12px rgba(150,140,255,0.18), ${tsh}` : '0 0 12px rgba(150,140,255,0.18)',
                 }}
               >
                 {ch}
@@ -257,6 +261,7 @@ export const LogoShrinkWordmarkLockup: React.FC = () => {
             padding: '0 20px',
             opacity: seg(t, 0.72, 0.84, E.outQuad),
             transform: `translateY(${lerp(seg(t, 0.72, 0.86, E.outCubic), 3, 0)}px)`,
+            textShadow: tsh,
           }}
         >
           {tagLines.map((l, i) => <div key={i}>{l}</div>)}

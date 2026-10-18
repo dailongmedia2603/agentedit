@@ -26,7 +26,7 @@
 // gia (page2 = trang duoc chon, phong full man hinh). Hai trang ben (bang gia / nhat ky cap nhat) = giao dien trung
 // tinh tieng Viet. Khung doc (native): the cao theo ti le khung (996 x 996·H/1920), trang xep doc; khi lao xuong the
 // phu kin khung doc. Camera (luot ngang 0–50 chi translateX, chon 44–60, lao 58–86 ba kenh cung chay) giu nguyen.
-import { useCurrentFrame, useImage, useList, useShot, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useImage, useList, useShot, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
 import type { ShotFonts } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
@@ -285,8 +285,8 @@ const PageCard: React.FC<{ x: number; ch: number; pgh: number; lift?: number; ch
 );
 
 // 桌面上的印刷标签：编号 + 页名（等宽、全大写），贴在样稿下沿外
-const DeskTag: React.FC<{ x: number; ch: number; n: string; label: string; on: number }> = ({ x, ch, n, label, on }) => (
-  <div style={{
+const DeskTag: React.FC<{ x: number; ch: number; n: string; label: string; on: number; shadow?: string }> = ({ x, ch, n, label, on, shadow }) => (
+  <div style={{ textShadow: shadow,
     position: 'absolute', left: x - CARD_W / 2, top: ch / 2 + 34, width: CARD_W, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18,
     fontFamily: FONT.mono, fontSize: 30, lineHeight: 1.3, letterSpacing: '0.16em', color: alpha(L.ink, 0.42 + 0.5 * on), transform: 'translateZ(1px)', whiteSpace: 'nowrap',
   }}>
@@ -346,30 +346,29 @@ export const OverheadTabletopDrop: React.FC = () => {
   const side = 1 - 0.65 * pick;
   const beamH = P ? 1000 : 560; // 顶灯光束长度（横版 −60→500）
   const hero = 1 + 0.25 * pick;
+  // [Agent Edit] NEN ANH AI: mat ban / den / toi xa khong ve (anh nen hien ra); nhan tren ban co bong do de doc ro
+  const bd = useBackdrop();
+  const tagShadow = bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined;
 
   return (
-    <AbsoluteFill style={{ background: L.bg[2], overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[2], overflow: 'hidden' }}>
       <div style={{ position: 'absolute', inset: 0, perspective: P ? 2600 : 1600, perspectiveOrigin: '50% 42%' }}>
         {/* 世界原点 = 屏心；先 in-plane scale，再 rotateX，最后 translateX */}
         <div style={{
           position: 'absolute', left: '50%', top: '50%', width: 0, height: 0, transformStyle: 'preserve-3d',
           transform: `translateX(${tx}px) rotateX(${rotX}deg) scale(${scale})`,
         }}>
-          {/* 台面：深石墨 + 三盏顶灯光池 + 发丝网格（细 80 / 粗 400） */}
-          <div style={{
+          {/* 台面：深石墨 + 三盏顶灯光池（[Agent Edit] bo luoi ke o; co anh nen -> khong ve mat ban） */}
+          {!bd && <div style={{
             position: 'absolute', left: -2800, top: -3200, width: 5600, height: 3200 + Math.max(900, CARD_H / 2 + 600), backfaceVisibility: 'hidden',
             background: [
               pool(-PITCH, side), pool(0, hero), pool(PITCH, side),
-              'repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 1.5px, transparent 1.5px, transparent 400px)',
-              'repeating-linear-gradient(0deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 1.5px, transparent 1.5px, transparent 400px)',
-              'repeating-linear-gradient(90deg, rgba(255,255,255,0.022) 0px, rgba(255,255,255,0.022) 1px, transparent 1px, transparent 80px)',
-              'repeating-linear-gradient(0deg, rgba(255,255,255,0.022) 0px, rgba(255,255,255,0.022) 1px, transparent 1px, transparent 80px)',
               `linear-gradient(180deg, ${L.bg[0]}, ${L.bg[1]})`,
             ].join(', '),
-          }} />
-          <DeskTag x={-PITCH} ch={CARD_H} n="01" label={fitTag(tags[0])} on={0} />
-          <DeskTag x={0} ch={CARD_H} n="02" label={fitTag(tags[1])} on={pick} />
-          <DeskTag x={PITCH} ch={CARD_H} n="03" label={fitTag(tags[2])} on={0} />
+          }} />}
+          <DeskTag x={-PITCH} ch={CARD_H} n="01" label={fitTag(tags[0])} on={0} shadow={tagShadow} />
+          <DeskTag x={0} ch={CARD_H} n="02" label={fitTag(tags[1])} on={pick} shadow={tagShadow} />
+          <DeskTag x={PITCH} ch={CARD_H} n="03" label={fitTag(tags[2])} on={0} shadow={tagShadow} />
           <PageCard x={-PITCH} ch={CARD_H} pgh={PGH}>{img1 ? <PhotoPage src={img1} /> : <PricingPage env={env} />}</PageCard>
           <PageCard x={0} ch={CARD_H} pgh={PGH} lift={lift}>{img2 ? <PhotoPage src={img2} /> : <HomePage env={env} slot={slot} t={home} />}</PageCard>
           <PageCard x={PITCH} ch={CARD_H} pgh={PGH}>{img3 ? <PhotoPage src={img3} /> : <ChangelogPage env={env} />}</PageCard>
@@ -385,7 +384,7 @@ export const OverheadTabletopDrop: React.FC = () => {
       {/* 顶灯光束（屏幕空间体积光）：三盏灯各一束斜落到样稿上，跟着卡阵横移；扎入时随俯角散去 */}
       {[-PITCH, 0, PITCH].map((x, i) => {
         const k = (i === 1 ? hero : side) * tilt;
-        if (k < 0.02) return null;
+        if (k < 0.02 || bd) return null;
         const cx = 960 + tx + x * 0.92; // 卡阵中线 → 屏幕 x（透视下略收拢）
         return (
           <div key={x} style={{
@@ -400,10 +399,10 @@ export const OverheadTabletopDrop: React.FC = () => {
         );
       })}
       {/* 屏幕空间：远端（画面上部）沉入夜色，随俯角收起；暗角 + 颗粒 */}
-      <div style={{
+      {!bd && <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
         background: `linear-gradient(180deg, ${alpha(L.bg[2], 0.95 * tilt)} 0%, ${alpha(L.bg[2], 0.55 * tilt)} 24%, ${alpha(L.bg[2], 0)} 48%)`,
-      }} />
+      }} />}
       <Vignette strength={0.12 + 0.45 * tilt} inner={0.45} color="#000000" />
       <Grain opacity={0.04 + 0.05 * tilt} blend="soft-light" />
     </AbsoluteFill>

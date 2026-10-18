@@ -27,7 +27,7 @@
 // tieng Viet trung tinh. Co chu tu thu nho cho vua be ngang con lai; mat na chu troi co dem tren 0.32em (dau tieng Viet).
 // Khung doc (native): cuon phim phong 1.7x o nua tren (the trong tam o ~40% chieu cao, the duoi mo dan), khoi chu dat duoi
 // the trong tam, can trai theo mep the; duong dan vang chay doc tu day the xuong khoi chu.
-import { useCurrentFrame, useVideoConfig, useText, useList, useImage, useShotFonts, fitSize } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useImage, useShotFonts, fitSize } from '../../../runtime';
 import React from 'react';
 
 import { EASE, FONT, SpeedBlur, mix, ramp, velocity } from '../../../fixtures/Polish';
@@ -82,7 +82,7 @@ const LightArticle: React.FC = () => (
         ))}
       </div>
       <div style={{ fontSize: 13, color: '#8a8780', lineHeight: 1.45 }}>
-        <span style={{ fontWeight: 700, color: '#4a4741' }}>Hình 1</span> — Độ dài từng cảnh, khớp lưới nhịp
+        <span style={{ fontWeight: 700, color: '#4a4741' }}>Hình 1:</span> Độ dài từng cảnh, khớp lưới nhịp
       </div>
       <div style={{ marginLeft: 'auto', fontSize: 13, color: '#8a8780' }}>Kịch bản v3 · 30 fps</div>
     </div>
@@ -407,10 +407,13 @@ export const WordRelayFilmstrip: React.FC = () => {
   const u = portrait ? 1.6 : 1;
   // 竖屏卡列下缘渐隐：焦点卡以下的邻卡淡出，不压到词块
   const focusBottom = focusCY + (CARD_H * cs) / 2;
+  // [Agent Edit] nen anh AI: bo nen toi (Stage tu trong suot); chu ngoai the co bong toi nhe
+  const bd = useBackdrop();
+  const TSH = bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined;
   const colMask = portrait ? `linear-gradient(180deg, #000 0px, #000 ${focusBottom + 20}px, transparent ${focusBottom + 190}px)` : undefined;
 
   return (
-    <div style={{ width: 1920, height: SH, position: 'relative', overflow: 'hidden', background: L.bg[2] }}>
+    <div style={{ width: 1920, height: SH, position: 'relative', overflow: 'hidden', background: bd ? 'transparent' : L.bg[2] }}>
       <Stage look={L} keyLight={{ x: portrait ? 0.5 : 0.72, y: 0.12 }} fill={{ x: 0.15, y: 1.0 }} intensity={0.85} breathe={0.4} />
       <div style={{ position: 'absolute', inset: 0, transformOrigin: `960px ${focusCY}px`, transform: `scale(${cam.toFixed(4)})` }}>
         <div style={{ position: 'absolute', inset: 0, WebkitMaskImage: colMask, maskImage: colMask }}>
@@ -434,11 +437,11 @@ export const WordRelayFilmstrip: React.FC = () => {
         )}
 
         {/* 序号 */}
-        <div style={{ position: 'absolute', left: WX + 6, top: BLOCK_TOP - 58 * u - (portrait ? 20 : 0), fontFamily: FONT.mono, fontSize: 28 * u, color: L.ink3, letterSpacing: '0.04em', lineHeight: 1.2 }}>
+        <div style={{ position: 'absolute', left: WX + 6, top: BLOCK_TOP - 58 * u - (portrait ? 20 : 0), fontFamily: FONT.mono, fontSize: 28 * u, color: L.ink3, letterSpacing: '0.04em', lineHeight: 1.2, textShadow: TSH }}>
           <span style={{ color: L.accent2 }}>{String(Math.min(idx, n)).padStart(2, '0')}</span> / {String(n).padStart(2, '0')}
         </div>
         {/* 词块：主语恒定 + 动词接力；两行行盒各 LINE，横屏整块中心 = 540 */}
-        <div style={{ position: 'absolute', left: WX, top: BLOCK_TOP, fontFamily: FONT.serif, fontSize: FS, lineHeight: `${LINE}px`, letterSpacing: '-0.01em' }}>
+        <div style={{ position: 'absolute', left: WX, top: BLOCK_TOP, fontFamily: FONT.serif, fontSize: FS, lineHeight: `${LINE}px`, letterSpacing: '-0.01em', textShadow: TSH }}>
           <div style={{ height: LINE, color: L.ink2, whiteSpace: 'pre' }}>{subject}</div>
           <div style={{ position: 'relative', height: LINE + PAD_T + PAD_B, marginTop: -PAD_T, width: maxW + FS * 0.2, overflow: 'hidden', fontStyle: 'italic' }}>
             {verbs.map((w, i) => (
@@ -457,7 +460,7 @@ export const WordRelayFilmstrip: React.FC = () => {
           return (
             <div key={i} style={{
               position: 'absolute', left: WX + 6, top: BLOCK_TOP + LINE * 2 + 40 * u, fontFamily: FONT.sans, fontSize: noteFit(note), fontWeight: 450, lineHeight: 1.3,
-              color: L.ink2, letterSpacing: '-0.01em', opacity: op, transform: `translateY(${((1 - pIn) * 14 - pOut * 10).toFixed(2)}px)`, whiteSpace: 'nowrap',
+              color: L.ink2, letterSpacing: '-0.01em', textShadow: TSH, opacity: op, transform: `translateY(${((1 - pIn) * 14 - pOut * 10).toFixed(2)}px)`, whiteSpace: 'nowrap',
             }}>
               {note}
             </div>

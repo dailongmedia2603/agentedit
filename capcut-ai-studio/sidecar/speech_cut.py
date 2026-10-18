@@ -1275,6 +1275,16 @@ def _score_at(win, toks, key, whole):
         if k is not None:
             pos, hit = k + 1, hit + 1
     score = hit / float(len(key))
+    if score < 0.6 and len(key) >= 3:
+        # chu tren man hinh noi RONG hon loi (vd 'RAO CAN LON NHAT' khi chi noi 'rao can ...'): 2+ chu khoa DAU
+        # khop LIEN NHAU ngay tu chu dau va du nua cum -> van la cho noi cum do (2026-10-18)
+        pre = 0
+        for t, w in zip(key, win):
+            if not _tok_eq(w, t):
+                break
+            pre += 1
+        if pre >= 2 and pre / float(len(key)) >= 0.5:
+            score = 0.6
     return score if score >= 0.6 else None
 
 
@@ -1587,3 +1597,131 @@ def voice_level(plan):
         return None
     x = x[x >= float(np.percentile(x, 95)) - 20.0]      # bo khoang lang / tieng nen
     return round(float(np.percentile(x, 90)), 1)
+
+
+# ----------------------------------------------------------------------------
+# NGAP NGUNG / LAP CHU do CLAUDE (B1) chi ra — user 2026-10-18: "noi ngap ngung lap chu (vd 'cai cai', 'bi bi...')
+# phai duoc cat gon". Claude doc loi Gemini + chu Whisper tung tu (gio that) + goi y cua code -> tra cac khoang can bo
+# (`selection.cat_vap`); code kiem + canh mep (dau chu Whisper, cho nho tieng nhat) roi cat ca than video lan ban sao hook.
+# ----------------------------------------------------------------------------
+STUTTER_MIN = 0.12        # khoang bo ngan hon -> khong dang cat
+STUTTER_MAX = 2.5         # mot cho vap toi da 2.5s (dai hon = Claude chon nham ca cau)
+STUTTER_SNAP = 0.18       # mep Claude dua -> keo ve dau chu Whisper gan nhat trong ban kinh nay
+STUTTER_FILL = {"o", "a", "u", "um", "uh", "ơ", "ờ", "à", "ừ", "ừm", "ưm", "ậm", "ừa"}
+
+
+def compact_words(words):
+    """[(chu, s, e)] -> 'chu@12.34 chu@12.80 ...' (gio BAT DAU tung chu) — dua Claude doc gon."""
+    return " ".join("%s@%.2f" % (w[0].strip(), w[1]) for w in words if w[0].strip())
+
+
+def stutter_hints(words, max_n=80):
+    """Goi y cho B1 (Claude quyet): lap 1-2 chu lien ke, chu keo dai bat thuong, tieng dem dung rieng."""
+    out = []
+    toks = [" ".join(_norm(w[0])) for w in words]
+    n = len(words)
+    for i in range(n):
+        w, s, e = words[i]
+        if i + 1 < n and toks[i] and toks[i] == toks[i + 1]:
+            out.append({"tu": round(s, 2), "den": round(words[i + 1][2], 2), "chu": "%s %s" % (w, words[i + 1][0]),
+                        "kieu": "lap 1 chu", "nghi_giua": round(words[i + 1][1] - e, 2)})
+        if i + 3 < n and toks[i] and toks[i + 1] and toks[i] == toks[i + 2] and toks[i + 1] == toks[i + 3]:
+            out.append({"tu": round(s, 2), "den": round(words[i + 3][2], 2),
+                        "chu": " ".join(x[0] for x in words[i:i + 4]), "kieu": "lap 2 chu"})
+        d = e - s
+        nxt = words[i + 1][1] if i + 1 < n else e
+        if 0.6 <= d <= STUTTER_MAX and nxt - e < 0.9:
+            out.append({"tu": round(s, 2), "den": round(e, 2), "chu": w, "kieu": "keo dai %.1fs" % d})
+        if toks[i] in STUTTER_FILL:
+            out.append({"tu": round(s, 2), "den": round(e, 2), "chu": w, "kieu": "tieng dem"})
+    out.sort(key=lambda x: x["tu"])
+    return out[:max_n]
+
+
+def normalize_stutter_cuts(raw, words_by_sid, changes=None):
+    """Kiem danh sach Claude tra: dung dang, dung nguon, 0.12-2.5s, co chu Whisper ben trong (khong cat cho im lang /
+    ngoai loi). Tra [{source_id, start, end, bo, ly_do}] sap theo gio, khong chong nhau."""
+    out = []
+    for c in raw or []:
+        if not isinstance(c, dict):
+            continue
+        sid = c.get("source_id") or (next(iter(words_by_sid)) if len(words_by_sid) == 1 else None)
+        ws = words_by_sid.get(sid)
+        try:
+            a, b = float(c.get("start")), float(c.get("end"))
+        except (TypeError, ValueError):
+            continue
+        if not ws or not (STUTTER_MIN <= b - a <= STUTTER_MAX):
+            if changes is not None:
+                changes.append("cat vap %s %.2f-%.2f: sai do dai / nguon -> bo" % (sid, a if a == a else -1, b if b == b else -1))
+            continue
+        if not any(w[1] < b - 0.03 and w[2] > a + 0.03 for w in ws):
+            continue
+        out.append({"source_id": sid, "start": round(a, 3), "end": round(b, 3),
+                    "bo": str(c.get("bo") or c.get("chu") or "")[:60], "ly_do": str(c.get("ly_do") or "")[:80]})
+    out.sort(key=lambda x: (x["source_id"], x["start"]))
+    merged = []
+    for c in out:
+        if merged and merged[-1]["source_id"] == c["source_id"] and c["start"] <= merged[-1]["end"] + 0.05:
+            merged[-1]["end"] = max(merged[-1]["end"], c["end"])
+            continue
+        merged.append(c)
+    return merged
+
+
+def _snap_word_start(ws, t):
+    best = min((w[1] for w in ws if abs(w[1] - t) <= STUTTER_SNAP), key=lambda x: abs(x - t), default=None)
+    return t if best is None else best
+
+
+def cut_stutters(plan, segs, cuts, changes=None, label="seg", removed=None):
+    """Bo cac khoang vap Claude chi ra (plan['stutter_cuts']) khoi moi doan chua no — ca than video lan manh hook.
+    Mep: dau chu Whisper gan nhat, roi cho nho tieng nhat +-60ms (khong cat ngang am). Ham thuan (chay lai khong doi:
+    khoang da bo nam ngoai doan)."""
+    if not cuts or not segs:
+        return segs
+    words = words_by_source(plan)
+    audios, out = {}, []
+    for s in segs:
+        if not isinstance(s, dict) or s.get("kind") == "insert":
+            out.append(s)
+            continue
+        sid = s.get("source_id")
+        st, en = float(s["start"]), float(s["end"])
+        mine = [c for c in cuts if c.get("source_id") == sid and c["start"] < en - 0.05 and c["end"] > st + 0.05]
+        if not mine:
+            out.append(s)
+            continue
+        ws = words.get(sid) or []
+        try:
+            au = _audio_for(plan, sid, audios)
+        except Exception:
+            au = None
+        acc = []
+        for c in mine:
+            lo = _snap_word_start(ws, max(st, c["start"]))
+            hi = _snap_word_start(ws, min(en, c["end"]))
+            if au is not None and au.thr is not None:
+                lo = au.valley(max(st, lo - 0.06), lo + 0.06) if lo > st + 0.06 else lo
+                hi = au.valley(hi - 0.06, min(en, hi + 0.06)) if hi < en - 0.06 else hi
+            if lo - st < MIN_PIECE:
+                lo = st
+            if en - hi < MIN_PIECE:
+                hi = en
+            if not (STUTTER_MIN <= hi - lo <= STUTTER_MAX + 0.5):
+                continue
+            if acc and lo <= acc[-1][1]:
+                acc[-1] = (acc[-1][0], max(acc[-1][1], hi), acc[-1][2] + " + " + c["bo"])
+                continue
+            acc.append((lo, hi, c["bo"]))
+        if not acc or (acc[0][0] <= st + 1e-6 and acc[-1][1] >= en - 1e-6 and len(acc) == 1):
+            out.append(s)
+            continue
+        pieces = _pieces(s, [(lo, hi) for lo, hi, _b in acc])
+        for lo, hi, bo in acc:
+            if removed is not None:
+                removed.append((sid, lo, hi))
+            if changes is not None:
+                changes.append("%s %.2f-%.2f: bo cho vap '%s' %.2f-%.2f (Claude chi ra)" % (label, st, en, bo, lo, hi))
+        out.extend(pieces)
+    return out

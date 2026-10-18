@@ -30,7 +30,7 @@
 // Tieu de "len tu duoi vach" tu viet (TextReveal cua fixtures chi chua 0.06em phia tren -> cat dau tieng Viet).
 // Khung doc (portrait.mode = 'native'): the dat giua nua tren (cao ~40% khung), cot chu xep duoi the; vong cung bay vong
 // xuong qua cho cot chu (nhu ban goc vong qua cot chu ben phai).
-import { useBrand, useCurrentFrame, useImage, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
+import { useBackdrop, useBrand, useCurrentFrame, useImage, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
 import React, { useId } from 'react';
 import { AbsoluteFill, Img, interpolate, Easing } from 'remotion';
 import { EASE, ramp } from '../../../fixtures/Polish';
@@ -313,8 +313,9 @@ const LandPulse: React.FC<{ lay: Layout }> = ({ lay }) => {
 const Copy: React.FC<{ lay: Layout; kicker: string; title: string[]; titleSize: number; sub: string; subSize: number; portrait: boolean }> = ({ lay, kicker, title, titleSize, sub, subSize, portrait }) => {
   const f = useCurrentFrame();
   const rule = ramp(f, 62, 22, EASE.snappy);
+  const bd = useBackdrop(); // [Agent Edit] chu dat thang tren nen anh: bong toi nhe
   return (
-    <div style={{ position: 'absolute', left: lay.textX, top: lay.textY, width: lay.textW, color: L.ink }}>
+    <div style={{ position: 'absolute', left: lay.textX, top: lay.textY, width: lay.textW, color: L.ink, textShadow: bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined }}>
       {kicker ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: portrait ? 44 : 34, whiteSpace: 'nowrap' }}>
           <div style={{ width: 56 * rule * (portrait ? 1.4 : 1), height: 2, background: L.accent, boxShadow: `0 0 12px ${alpha(L.accent, 0.8)}`, flex: 'none' }} />
@@ -400,15 +401,17 @@ export const MagicianCardFlourish: React.FC = () => {
   // 运动模糊：7 个子帧样本（快门 150°），plus-lighter 等权叠加（同 CameraMotionBlur 的合成方式）
   const SAMPLES = 7;
   const SHUTTER = 150 / 360;
+  // [Agent Edit] nen anh AI: bo nen toi, quang xanh sau the va bui (Stage tu trong suot)
+  const bd = useBackdrop();
   return (
-    <AbsoluteFill style={{ background: L.bg[2] }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[2] }}>
       <Stage look={L} keyLight={{ x: CX / 1920, y: portrait ? (CY / SH) * 0.3 : 0.1 }} fill={null} intensity={0.25 + 0.75 * lit} vignette={0.6} />
       {/* 卡后背光：落定后亮起的一团蓝光 */}
-      <div style={{
+      {!bd && <div style={{
         position: 'absolute', left: CX - 620 * (lay.fs / FINAL_SCALE), top: CY - 560 * (lay.fs / FINAL_SCALE), width: 1240 * (lay.fs / FINAL_SCALE), height: 1120 * (lay.fs / FINAL_SCALE), opacity: back,
         background: `radial-gradient(ellipse 50% 50% at 50% 50%, ${alpha(L.light, 0.38)} 0%, ${alpha(L.light, 0.1)} 42%, ${alpha(L.light, 0)} 70%)`,
-      }} />
-      {Array.from({ length: Math.ceil(SH / 1080) }, (_, k) => (
+      }} />}
+      {!bd && Array.from({ length: Math.ceil(SH / 1080) }, (_, k) => (
         <div key={k} style={{ position: 'absolute', left: 0, top: k * 1080, width: 1920, height: 1080 }}>
           <Dust look={L} count={26} seed={7 + k * 5} drift={0.22} opacity={0.35 + 0.35 * lit} />
         </div>

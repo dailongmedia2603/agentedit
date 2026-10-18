@@ -21,7 +21,7 @@
 // chong tang tieng Viet) / kicker (ban ghi goc trai) / items + notes (2-3 cot thong tin) / stamp (chu vong tron con dau).
 // Tam con dau: logo thuong hieu (neu co) / chu viet tat / dau tick. Bien do lech ban theo co chu (>= 16px moi ban, the: 20/8 @300px).
 // Khung doc (native): mat troi to goc tren phai, con dau tren mat troi, tieu de giua, thong tin xep hang doc o duoi.
-import { useBrand, useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText } from '../../../runtime';
+import { useBackdrop, useBrand, useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText } from '../../../runtime';
 import React from 'react';
 
 import { EASE, Grain, SpeedBlur, Vignette, bezier, mix, ramp, velocity } from '../../../fixtures/Polish';
@@ -40,14 +40,14 @@ const inCubic = bezier(0.55, 0.055, 0.675, 0.19);
 const TITLE_LH = 1.12; // 越南语叠放声调：行距 ≥ 1.1
 
 // 单色印版：同字形、可调色、可错位，multiply 叠到纸上
-const Plate: React.FC<{ color: string; dx: number; dy: number; scale?: number; lines: string[]; size: number; x: number; y: number; family: string }> = ({
-  color, dx, dy, scale = 1, lines, size, x, y, family,
+const Plate: React.FC<{ color: string; dx: number; dy: number; scale?: number; lines: string[]; size: number; x: number; y: number; family: string; shadow?: string }> = ({
+  color, dx, dy, scale = 1, lines, size, x, y, family, shadow,
 }) => (
   <div style={{
     position: 'absolute', left: x, top: y,
     transform: `translate(${dx.toFixed(2)}px, ${dy.toFixed(2)}px) scale(${scale})`, transformOrigin: '30% 60%',
     mixBlendMode: 'multiply', color, fontFamily: family, fontWeight: 900, fontSize: size, lineHeight: TITLE_LH,
-    letterSpacing: '-0.045em', whiteSpace: 'nowrap',
+    letterSpacing: '-0.045em', whiteSpace: 'nowrap', textShadow: shadow,
   }}>
     {lines.map((l, i) => <div key={i}>{l}</div>)}
   </div>
@@ -160,6 +160,9 @@ export const RisoMisregistrationHit: React.FC = () => {
   const { height: SH } = useVideoConfig();
   const fonts = useShotFonts();
   const P = SH > 1080 * 1.2;
+  // [Agent Edit] nen anh AI: bo giay / hat / toi goc tu ve; chu tren nen co bong sang nhe (multiply voi trang = khong doi mau muc)
+  const bd = useBackdrop();
+  const glow = bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined;
   const SANS = fonts.sans;
   const MONO = fonts.mono;
 
@@ -232,15 +235,15 @@ export const RisoMisregistrationHit: React.FC = () => {
   };
   const hdrW = P ? 820 : 800;
   const plate = (color: string, pdx: number, pdy: number, scale = 1) => (
-    <Plate color={color} dx={pdx} dy={pdy} scale={scale} lines={fit.lines} size={tSize} x={120} y={tY} family={SANS} />
+    <Plate color={color} dx={pdx} dy={pdy} scale={scale} lines={fit.lines} size={tSize} x={120} y={tY} family={SANS} shadow={glow} />
   );
 
   return (
-    <div style={{ width: 1920, height: SH, background: PAPER, position: 'relative', overflow: 'hidden' }}>
+    <div style={{ width: 1920, height: SH, background: bd ? 'transparent' : PAPER, position: 'relative', overflow: 'hidden' }}>
       <div style={{ position: 'absolute', inset: 0, transform: `scale(${(cam * kick).toFixed(5)})`, transformOrigin: '40% 50%' }}>
         {/* 纸面：中心略亮 + 静态纸纤维（multiply） */}
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 72% 70% at 42% 44%, #f8f4ea 0%, #f3eee2 58%, #e8e1d1 100%)' }} />
-        <Grain opacity={0.11} step={100000} scale={2.4} freq={0.55} blend="multiply" />
+        {!bd && <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 72% 70% at 42% 44%, #f8f4ea 0%, #f3eee2 58%, #e8e1d1 100%)' }} />}
+        {!bd && <Grain opacity={0.11} step={100000} scale={2.4} freq={0.55} blend="multiply" />}
 
         <Sun reveal={sunReveal} cx={sunC.x} cy={sunC.y} k={sunK} />
 
@@ -252,7 +255,7 @@ export const RisoMisregistrationHit: React.FC = () => {
         <div style={{
           position: 'absolute', left: 120, right: 120, top: hdrY, display: 'flex', justifyContent: 'space-between', whiteSpace: 'nowrap',
           fontFamily: MONO, fontWeight: 600, letterSpacing: '0.12em', color: BLUE, mixBlendMode: 'multiply',
-          opacity: ramp(frame, 0, 10, EASE.out), lineHeight: 1.3,
+          opacity: ramp(frame, 0, 10, EASE.out), lineHeight: 1.3, textShadow: glow,
         }}>
           <span style={{ fontSize: fitSize(kicker, { family: MONO, size: hdrSize, maxWidth: hdrW, weight: 600, minSize: hdrSize * 0.55, letterSpacingEm: 0.12 }) }}>{kicker}</span>
           <span style={{ fontSize: hdrSize }}>{RIGHT_LABEL}</span>
@@ -263,7 +266,7 @@ export const RisoMisregistrationHit: React.FC = () => {
         <div style={{ position: 'absolute', left: 120, right: 120, top: ruleBot, height: P ? 6 : 4, background: BLUE, mixBlendMode: 'multiply', transformOrigin: '0 50%', transform: `scaleX(${ramp(frame, 2, 18, EASE.snappy).toFixed(4)})` }} />
         <div style={{
           position: 'absolute', left: 120, right: 120, top: infoTop, display: 'grid', color: BLUE, mixBlendMode: 'multiply',
-          gridTemplateColumns: P ? '1fr' : `repeat(${n}, 1fr)`, gap: P ? 44 : 48,
+          gridTemplateColumns: P ? '1fr' : `repeat(${n}, 1fr)`, gap: P ? 44 : 48, textShadow: glow,
         }}>
           {items.map((a, i) => (
             <div key={i} style={{ ...info(i), whiteSpace: 'nowrap' }}>
@@ -295,8 +298,8 @@ export const RisoMisregistrationHit: React.FC = () => {
       </div>
 
       {/* 油墨颗粒：screen 细噪让墨块带 riso 那种不均匀的白点（静态）+ 暖褐暗角 */}
-      <Grain opacity={0.2} step={100000} freq={1.25} blend="screen" />
-      <Vignette strength={0.13} inner={0.55} color="#5a4a32" />
+      {!bd && <Grain opacity={0.2} step={100000} freq={1.25} blend="screen" />}
+      {!bd && <Vignette strength={0.13} inner={0.55} color="#5a4a32" />}
     </div>
   );
 };

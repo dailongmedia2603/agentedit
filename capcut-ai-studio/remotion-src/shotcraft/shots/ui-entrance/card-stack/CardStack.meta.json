@@ -6,25 +6,92 @@
  "duration": 150,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.25],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.25
+ ],
  "hold": 124,
  "slots": [
-  {"id": "kicker", "role": "kicker", "sample": "THƯ VIỆN MẪU", "max": 28, "optional": true, "note": "nhãn chuyên mục ngắn góc trái trên, in hoa"},
-  {"id": "title", "role": "title", "sample": "Bắt đầu từ một mẫu có sẵn.", "max": 48, "note": "câu chốt hiện khi thẻ giữa được rút ra"},
-  {"id": "subtitle", "role": "subtitle", "sample": "Tám mẫu dựng sẵn, chọn là dùng ngay.", "max": 70, "optional": true},
-  {"id": "featured", "role": "name", "sample": "Mẫu nổi bật", "max": 24, "note": "tên lựa chọn chính / sản phẩm chủ lực — in trên thẻ giữa màu đậm được rút lên"},
-  {"id": "items", "role": "item", "sample": "Lộ trình dự án|Báo cáo doanh thu|Tăng trưởng kênh|Mục tiêu tuần|Danh sách việc|Lịch đăng bài|Bảng công việc|Doanh thu quý", "max": 22, "list": {"min": 4, "max": 8}, "note": "tên các thẻ hai bên (các lựa chọn / mẫu / gói / tính năng); 2–4 từ mỗi mục; số chẵn đẹp nhất"}
+  {
+   "id": "kicker",
+   "role": "kicker",
+   "sample": "THƯ VIỆN MẪU",
+   "max": 28,
+   "optional": true,
+   "note": "nhãn chuyên mục ngắn góc trái trên, in hoa"
+  },
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Bắt đầu từ một mẫu có sẵn.",
+   "max": 48,
+   "note": "câu chốt hiện khi thẻ giữa được rút ra"
+  },
+  {
+   "id": "subtitle",
+   "role": "subtitle",
+   "sample": "Tám mẫu dựng sẵn, chọn là dùng ngay.",
+   "max": 70,
+   "optional": true
+  },
+  {
+   "id": "featured",
+   "role": "name",
+   "sample": "Mẫu nổi bật",
+   "max": 24,
+   "note": "tên lựa chọn chính / sản phẩm chủ lực — in trên thẻ giữa màu đậm được rút lên"
+  },
+  {
+   "id": "items",
+   "role": "item",
+   "sample": "Lộ trình dự án|Báo cáo doanh thu|Tăng trưởng kênh|Mục tiêu tuần|Danh sách việc|Lịch đăng bài|Bảng công việc|Doanh thu quý",
+   "max": 22,
+   "list": {
+    "min": 4,
+    "max": 8
+   },
+   "note": "tên các thẻ hai bên (các lựa chọn / mẫu / gói / tính năng); 2–4 từ mỗi mục; số chẵn đẹp nhất"
+  }
  ],
  "images": [],
  "brand": "optional",
- "sfx": [{"at": 4, "type": "pop"}, {"at": 30, "type": "pop"}, {"at": 68, "type": "swoosh"}, {"at": 102, "type": "ding"}],
+ "sfx": [
+  {
+   "at": 4,
+   "type": "pop"
+  },
+  {
+   "at": 30,
+   "type": "pop"
+  },
+  {
+   "at": 68,
+   "type": "swoosh"
+  },
+  {
+   "at": 102,
+   "type": "ding"
+  }
+ ],
  "vi": {
   "ten": "Chồng thẻ xòe quạt — rút thẻ chủ lực",
   "mo_ta": "Nền trắng sáng kiểu giao diện app: 5–9 thẻ mẫu (mỗi thẻ có hình biểu đồ / bảng / lịch nhỏ và tên) lần lượt bật từ dưới lên, càng lúc càng nhanh, chồng thành một xấp; rồi cả xấp xòe ra như tay cầm bài, thẻ giữa màu xanh đậm được rút lên có viền sáng, tiêu đề chạy lên phía trên và câu phụ hiện bên dưới.",
   "hop_khi": "Nói về \"chúng tôi có cả một bộ / nhiều lựa chọn\": thư viện mẫu, các gói dịch vụ, bộ tính năng của app, danh sách khóa học, nhiều sản phẩm — rồi chốt vào lựa chọn nổi bật nhất; giới thiệu kho template, bộ công cụ, menu sản phẩm.",
   "tranh_khi": "Chỉ có 1–2 thứ để nói; nội dung cảm xúc / đời thường không liên quan sản phẩm; cần nền tối; tên mục dài cả câu.",
   "nang_luong": "vua",
-  "chu_de": ["danh sách", "bộ sưu tập", "thư viện mẫu", "gói dịch vụ", "tính năng", "app", "sản phẩm", "lựa chọn"]
- }
+  "chu_de": [
+   "danh sách",
+   "bộ sưu tập",
+   "thư viện mẫu",
+   "gói dịch vụ",
+   "tính năng",
+   "app",
+   "sản phẩm",
+   "lựa chọn"
+  ]
+ },
+ "backdrop": true
 }

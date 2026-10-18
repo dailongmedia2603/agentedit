@@ -11,7 +11,7 @@
 // o chu name (ten san pham / kenh / thuong hieu; bo trong -> ten thuong hieu cua video). Khong co ca hai -> chi con
 // dau hieu trung tinh o giua (khong co chu). Do be ngang ten that de can giua ca cum logo + ten.
 // Khung doc (portrait.mode = 'native'): cum logo xep DOC (logo dich len, ten hien ben duoi), logo + chu to hon.
-import { useCurrentFrame, useVideoConfig, useBrand, useShotFonts, useText, fitSize, measureText } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useBrand, useShotFonts, useText, fitSize, measureText } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, interpolate, Easing, spring } from 'remotion';
 import { G } from '../../../fixtures/Fixtures';
@@ -116,13 +116,15 @@ export const IconFlipBloomLogo: React.FC = () => {
   const markY = WORD && portrait ? interpolate(shift, [0, 1], [0, -(fs * 1.25 + GAP) / 2]) : 0;
 
   const showIcon = frame < FLIP_MID;
+  const bd = useBackdrop();
 
   // 拖影帧（翻转期间画 2 个残影）
   const ghosts = frame >= FLIP_START && frame < FLIP_MID ? [0.12, 0.24] : [];
 
   return (
-    <AbsoluteFill style={{ background: G.bg, alignItems: 'center', justifyContent: 'center' }}>
-      <Backdrop tone="light" light={{ x: 0.5, y: 0.36 }} accent={BRAND.amber} />
+    <AbsoluteFill style={{ background: bd ? 'transparent' : G.bg, alignItems: 'center', justifyContent: 'center' }}>
+      {/* [Agent Edit] nen anh AI: khong ve nen sang code */}
+      {!bd && <Backdrop tone="light" light={{ x: 0.5, y: 0.36 }} accent={BRAND.amber} />}
       {/* 接地软影：图标阶段随晃动偏移、翻扁时收窄，绽放后淡去（logo 是平面符号，不需要落地影） */}
       <div style={{
         position: 'absolute', left: 960 + markX - (MARK / 2) * (showIcon ? iconScaleX : markScaleX) + wobble * 2.2, top: cy + MARK / 2,
@@ -191,6 +193,7 @@ export const IconFlipBloomLogo: React.FC = () => {
             fontSize: fs,
             lineHeight: 1.3,
             color: BRAND.ink,
+            textShadow: bd ? (bd.dark ? '0 2px 18px rgba(0,0,0,0.55)' : '0 1px 12px rgba(255,255,255,0.7)') : undefined,
             letterSpacing: '0.03em',
             whiteSpace: 'nowrap',
           }}

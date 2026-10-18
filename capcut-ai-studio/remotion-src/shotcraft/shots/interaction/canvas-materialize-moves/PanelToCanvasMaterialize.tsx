@@ -24,7 +24,7 @@
 // bang ben phai). Chu tren giao dien gia (nut, dem, nhan the, ten nguoi) = tieng Viet trung tinh. Tieu de hang tu thu nho
 // vua be ngang; tieu de the xuong toi da 2 dong. Khung doc (portrait.mode = 'native'): ca canh dung trong he toa do ao
 // 1280 x (H/1.5) phong x1.5 — bang + 3 the o tren, bang chon o duoi, the bay VONG LEN tren; khung ngang giu bo cuc goc.
-import { useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, FONT, SpeedBlur, mix, ramp, softShadow } from '../../../fixtures/Polish';
@@ -217,6 +217,7 @@ export const PanelToCanvasMaterialize: React.FC = () => {
   const fonts = useShotFonts();
   const portrait = SH > 1080 * 1.2;
   const ACC = L.accent; // 赤陶
+  const bd = useBackdrop(); // [Agent Edit] nen anh AI: khong ve nen tu ve, chu dau bang co bong sang nhe
   const title = useText('title', 'Kế hoạch ra mắt');
   const kicker = useText('kicker', 'Bảng kế hoạch');
   const panelTitle = useText('panel', 'Gợi ý từ AI');
@@ -280,20 +281,14 @@ export const PanelToCanvasMaterialize: React.FC = () => {
   const kickerCaps = kicker.length <= 22;
 
   return (
-    <AbsoluteFill style={{ background: L.bg[1], overflow: 'hidden', fontFamily: FONT.sans }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[1], overflow: 'hidden', fontFamily: FONT.sans }}>
       <Stage look={L} keyLight={{ x: 0.3, y: 0.1 }} fill={{ x: 0.9, y: 0.9 }} />
-      {/* 画布点阵（板区） */}
-      <AbsoluteFill style={{
-        backgroundImage: `radial-gradient(${alpha(L.ink, 0.13)} 1.5px, transparent 1.8px)`,
-        backgroundSize: portrait ? '57px 57px' : '38px 38px', backgroundPosition: '10px 14px',
-        WebkitMaskImage: portrait ? 'radial-gradient(ellipse 60% 26% at 50% 34%, #000 30%, transparent 100%)' : 'radial-gradient(ellipse 46% 60% at 30% 56%, #000 30%, transparent 100%)',
-        maskImage: portrait ? 'radial-gradient(ellipse 60% 26% at 50% 34%, #000 30%, transparent 100%)' : 'radial-gradient(ellipse 46% 60% at 30% 56%, #000 30%, transparent 100%)',
-      }} />
+      {/* [Agent Edit] bo luoi cham (canvas dot grid) trang tri theo yeu cau user */}
 
       <div style={{ position: 'absolute', left: 0, top: 0, width: VW, height: VH, transform: portrait ? 'scale(1.5)' : undefined, transformOrigin: '0 0' }}>
       <AbsoluteFill style={{ transform: `scale(${camS.toFixed(4)})`, transformOrigin: portrait ? '50% 40%' : '52% 50%' }}>
         {/* ── 板头 ── */}
-        <div style={{ position: 'absolute', left: g.HEAD_X, top: g.HEAD_Y, width: g.HEAD_W }}>
+        <div style={{ position: 'absolute', left: g.HEAD_X, top: g.HEAD_Y, width: g.HEAD_W, textShadow: bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, opacity: ramp(frame, 2, 12, EASE.out) }}>
             <ShotcraftMark size={34} tone="light" />
             {BRAND.name ? <span style={{ ...type(26, 680), letterSpacing: '0.01em', color: L.ink, whiteSpace: 'nowrap' }}>{BRAND.name}</span> : null}

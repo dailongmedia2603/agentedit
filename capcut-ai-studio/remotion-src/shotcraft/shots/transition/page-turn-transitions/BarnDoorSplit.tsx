@@ -24,8 +24,9 @@
 // (trang MOI, tu cuoi cua new_title to gradient cam) + stat_labels / stat_old / stat_new (0-3 o so lieu, so cu lan toi so moi;
 // chu so trich tu chu that, giu tien to / don vi cua so moi). Hai trang dung CHUNG mot bo cuc tinh tu chu that (dai nhat).
 // Khung doc (native): cua cao bang ca khung (height), khoi noi dung to hon (tieu de 250, so lieu 3 cot rong) dat giua khung.
-import { useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, useBrand, fitSize, wrapLines, measureText } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, useBrand, fitSize, wrapLines, measureText } from '../../../runtime';
 import React from 'react';
+import { Img } from 'remotion';
 
 import { EASE, FONT, SpeedBlur, bezier, mix, ramp, velocity } from '../../../fixtures/Polish';
 import { Dust, LOOKS, Stage, alpha, glow, stagger, type } from '../../../fixtures/Look';
@@ -209,16 +210,24 @@ const Lines: React.FC<{ lines: string[]; top: number; lh: number; style: React.C
 type Txt = { oldK: string; newK: string; oldT: string; newT: string; oldS: string; newS: string; labels: string[]; olds: string[]; news: string[] };
 
 // 旧页（冷灰海报）
-const OldPage: React.FC<{ lay: Lay; t: Txt }> = ({ lay, t }) => (
-  <div style={{ position: 'absolute', inset: 0, fontFamily: FONT.sans, background: `radial-gradient(ellipse 70% 60% at 50% 30%, #25272c 0%, ${OLD.bg0} 45%, ${OLD.bg1} 100%)` }}>
-    {/* 板面的细横纹：拉丝金属的质地（极淡） */}
-    <div style={{ position: 'absolute', inset: 0, opacity: 0.5, background: 'repeating-linear-gradient(180deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 4px)' }} />
+// [Agent Edit] bo van ke ngang trang tri; nen anh AI: mat cua = chinh anh nen ban XAM TOI (cai cu), mo ra la anh mau (cai moi)
+const OldPage: React.FC<{ lay: Lay; t: Txt }> = ({ lay, t }) => {
+  const bd = useBackdrop();
+  return (
+  <div style={{ position: 'absolute', inset: 0, fontFamily: FONT.sans, background: bd ? '#0d0e10' : `radial-gradient(ellipse 70% 60% at 50% 30%, #25272c 0%, ${OLD.bg0} 45%, ${OLD.bg1} 100%)`, textShadow: bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined }}>
+    {bd ? (
+      <>
+        <Img src={bd.src} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.06)', filter: 'grayscale(1) blur(5px) brightness(0.4) contrast(0.92)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(8,9,11,0.45) 0%, rgba(8,9,11,0.3) 45%, rgba(8,9,11,0.55) 100%)' }} />
+      </>
+    ) : null}
     {t.oldK ? <Lines lines={[t.oldK.toUpperCase()]} top={lay.yK} lh={0} style={{ ...type(lay.kSize, 650), letterSpacing: '0.22em', color: OLD.ink3, lineHeight: 1.3 }} /> : null}
     <Lines lines={lay.tLines.old} top={lay.yT} lh={lay.tLH} style={{ ...type(lay.tSize, 760), color: OLD.ink, letterSpacing: '-0.055em', lineHeight: 1.12 }} />
     <Lines lines={lay.sLines.old} top={lay.yS} lh={lay.sLH} style={{ ...type(lay.sSize, 450), color: OLD.ink2, lineHeight: 1.25 }} />
     {lay.n > 0 && <StatRow lay={lay} cells={lay.labels.map((lb, k) => ({ value: t.olds[k] ?? '', label: lb, color: OLD.ink, labelColor: OLD.ink3, line: OLD.line }))} />}
   </div>
-);
+  );
+};
 
 // 新页（余烬舞台上的发布海报）
 const NewPage: React.FC<{ frame: number; lay: Lay; t: Txt; hasBrand: boolean }> = ({ frame, lay, t, hasBrand }) => {
@@ -228,8 +237,9 @@ const NewPage: React.FC<{ frame: number; lay: Lay; t: Txt; hasBrand: boolean }> 
   const subWords = lay.sLines.nw.join(' ').split(/\s+/).filter(Boolean).length;
   const sgap = Math.min(3, 24 / Math.max(1, subWords));
   let wi = 0;
+  const bd = useBackdrop(); // [Agent Edit] chu dat thang tren nen anh: bong toi nhe
   return (
-    <div style={{ position: 'absolute', inset: 0, fontFamily: FONT.sans }}>
+    <div style={{ position: 'absolute', inset: 0, fontFamily: FONT.sans, textShadow: bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined }}>
       {t.newK ? (
         <div style={{ position: 'absolute', left: 0, right: 0, top: lay.yK - (hasBrand ? lay.kSize * 0.25 : 0), display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 18 }}>
           {hasBrand ? <ShotcraftMark size={lay.kSize * 1.47} tone="dark" /> : null}
@@ -248,7 +258,7 @@ const NewPage: React.FC<{ frame: number; lay: Lay; t: Txt; hasBrand: boolean }> 
               {head}
               <span style={{
                 backgroundImage: `linear-gradient(180deg, ${L.accent2} 0%, ${L.accent} 70%, #e0471a 100%)`,
-                WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', padding: '0.2em 0.04em', margin: '-0.2em -0.04em',
+                WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', textShadow: 'none', padding: '0.2em 0.04em', margin: '-0.2em -0.04em',
                 filter: `drop-shadow(0 0 ${(30 * breath).toFixed(1)}px ${alpha(L.accent, 0.55)})`,
               }}>{tail}</span>
             </>
@@ -336,24 +346,26 @@ export const BarnDoorSplit: React.FC = () => {
   const showNew = frame >= GAP;
   // 门面光染：门滑开后随之减弱（门离光源越远越暗）
   const doorLight = seamLight * (1 - ramp(frame, SLIDE, 14, EASE.out) * 0.6);
+  // [Agent Edit] nen anh AI: bo nen toi, bui va quang am sau chu (Stage tu trong suot)
+  const bd = useBackdrop();
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: L.bg[2] }}>
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: bd ? 'transparent' : L.bg[2] }}>
       {/* 新页：只画一个 Stage 做舞台底；门缝一开才挂载 */}
       {showNew && (
         <div style={{ position: 'absolute', inset: 0, transform: `scale(${bScale.toFixed(5)})`, transformOrigin: `50% ${((lay.markCY / SH) * 100).toFixed(1)}%` }}>
           <Stage look={L} keyLight={{ x: 0.5, y: lay.portrait ? lay.yK / SH : 0.12 }} fill={{ x: 0.5, y: 1.08 }} breathe={0.6}>
-            {Array.from({ length: Math.ceil(SH / 1080) }, (_, i) => (
+            {!bd && Array.from({ length: Math.ceil(SH / 1080) }, (_, i) => (
               <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: i * 1080, height: 1080 }}>
                 <Dust look={L} count={28} seed={4 + i * 9} drift={0.35} opacity={0.55} color={L.accent2} />
               </div>
             ))}
           </Stage>
           {/* 字标后的暖光晕 */}
-          <div style={{
+          {!bd && <div style={{
             position: 'absolute', left: 960 - 700, top: lay.markCY - 260, width: 1400, height: 520,
             background: `radial-gradient(ellipse 50% 50% at 50% 50%, ${alpha(L.accent, 0.16)} 0%, ${alpha(L.accent, 0)} 70%)`,
-          }} />
+          }} />}
           <NewPage frame={frame} lay={lay} t={t} hasBrand={hasBrand} />
           {/* 过曝光束：门缝里涌进来的光 */}
           {flash > 0.01 && (

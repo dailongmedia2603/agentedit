@@ -25,7 +25,7 @@
 // subtitle (cau phu hien tung tu). Chu that dai ngan bat ky: HALF (nua khoang cach ngoac) tinh theo be ngang that cua
 // tieu de (do bang font that) -> man van keo het moi lo du chu (dung y "van ban rong vua khoang trong"); tieu de qua dai
 // -> thu nho hoac xuong 2 dong va ngoac phong to theo chieu cao khoi chu. Khung doc (native): chu to hon, ca khoi giua khung.
-import { useCurrentFrame, useVideoConfig, useText, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
+import { useCurrentFrame, useVideoConfig, useText, useShotFonts, useBackdrop, fitSize, wrapLines, measureText } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, FONT, SpeedBlur, mix, ramp } from '../../../fixtures/Polish';
@@ -146,18 +146,14 @@ export const BraceExpand: React.FC = () => {
   const subWordsTotal = subLines.reduce((s, l) => s + l.split(/\s+/).filter(Boolean).length, 0);
   const subGap = Math.min(3, 14 / Math.max(1, subWordsTotal - 1));
   let wi = 0;
+  // [Agent Edit] DOT 2: co nen anh AI -> bo nen code (Stage tu bo gradient); chu nam tren nen -> bong toi nhe
+  const bd = useBackdrop();
+  const halo = bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined;
 
   return (
-    <AbsoluteFill style={{ background: L.bg[1], overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[1], overflow: 'hidden' }}>
       <Stage look={L} keyLight={{ x: 0.5, y: portrait ? 0.2 : 0.02 }} fill={null} horizon={portrait ? (CY + braceHalfH + 120) / SH : 0.66} breathe={0.4}>
-        {/* 编辑器点阵：32px 栅格，中心亮、四周隐去（竖屏铺满整个高度） */}
-        <div style={{
-          position: 'absolute', left: 0, top: 0, width: 1920, height: SH,
-          backgroundImage: `radial-gradient(circle, ${alpha('#a9bcff', 0.16)} 1.4px, transparent 1.8px)`,
-          backgroundSize: '32px 32px', backgroundPosition: '16px 8px',
-          WebkitMaskImage: `radial-gradient(ellipse ${portrait ? '75% 32%' : '60% 55%'} at 50% ${((CY / SH) * 100).toFixed(1)}%, #000 0%, rgba(0,0,0,0.35) 55%, transparent 85%)`,
-          maskImage: `radial-gradient(ellipse ${portrait ? '75% 32%' : '60% 55%'} at 50% ${((CY / SH) * 100).toFixed(1)}%, #000 0%, rgba(0,0,0,0.35) 55%, transparent 85%)`,
-        }} />
+        {/* [Agent Edit] DOT 2: bo luoi cham "trinh soan code" phu nen (ke ca khi khong co nen anh) */}
         {/* 括号下方的冷光反射带（随弹开展宽） */}
         <div style={{
           position: 'absolute', left: 960 - (x + 120), width: 2 * (x + 120), top: CY + braceHalfH, height: 90 * Math.max(1, k),
@@ -169,7 +165,7 @@ export const BraceExpand: React.FC = () => {
         {/* 眉题：等宽注释 */}
         {kicker ? (
           <div style={{
-            position: 'absolute', left: 0, right: 0, top: kickTop - kickSize * 1.3, textAlign: 'center', color: L.accent2, whiteSpace: 'nowrap',
+            position: 'absolute', left: 0, right: 0, top: kickTop - kickSize * 1.3, textAlign: 'center', color: L.accent2, whiteSpace: 'nowrap', textShadow: halo,
             ...type(kickSize, 500, { mono: true }), lineHeight: 1.3, letterSpacing: `${mix(0.5, 0.08, ramp(frame, 44, 20, EASE.snappy)).toFixed(3)}em`,
             opacity: ramp(frame, 44, 14, EASE.out),
           }}>{kicker}</div>
@@ -179,7 +175,7 @@ export const BraceExpand: React.FC = () => {
         {on && (
           <div style={{
             position: 'absolute', left: 960 - clipW / 2, width: clipW, top: CY - clipH / 2, height: clipH, overflow: 'hidden',
-            WebkitMaskImage: mask, maskImage: mask,
+            WebkitMaskImage: mask, maskImage: mask, filter: bd ? 'drop-shadow(0 2px 18px rgba(0,0,0,0.55))' : undefined,
           }}>
             <div style={{
               position: 'absolute', left: clipW / 2, top: clipH / 2, transform: `translate(-50%, -50%) scale(${sc.toFixed(4)})`,
@@ -209,7 +205,7 @@ export const BraceExpand: React.FC = () => {
           const start = 54 + wi * subGap;
           wi += l.split(/\s+/).filter(Boolean).length;
           return (
-            <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: subTop + i * subLineFs * 1.3, textAlign: 'center', color: L.ink2, ...type(subLineFs, 450), lineHeight: 1.3, whiteSpace: 'nowrap' }}>
+            <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: subTop + i * subLineFs * 1.3, textAlign: 'center', color: L.ink2, ...type(subLineFs, 450), lineHeight: 1.3, whiteSpace: 'nowrap', textShadow: halo }}>
               <TextReveal text={l} by="word" variant="blur" start={start} each={16} gap={subGap} />
             </div>
           );

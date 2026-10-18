@@ -3,7 +3,7 @@
 // 柔光渐变背景。全部是 props / frame 的纯函数，确定性渲染（无 Math.random / Date）。
 // 依赖仅 remotion + react；可选共享件——copy demo 时一并带上并改 import 路径。
 import React from 'react';
-import { currentShotFonts, useCurrentFrame } from '../runtime';
+import { currentShotFonts, useCurrentFrame, useShot } from '../runtime';
 
 
 // ───────────────────────── 缓动 ─────────────────────────
@@ -220,6 +220,8 @@ export const Backdrop: React.FC<{
   grain?: number; vignette?: number; drift?: number; style?: React.CSSProperties;
 }> = ({ tone = 'light', light = { x: 0.32, y: 0.18 }, accent, grain, vignette, drift = 0, style }) => {
   const frame = useCurrentFrame();
+  // [Agent Edit] canh co NEN ANH AI: nen code (gradient / quang sang / hat / toi goc) khong ve
+  const hasBackdrop = !!useShot()?.backdrop;
   const dark = tone === 'dark';
   const dx = drift * Math.sin(frame / 90);
   const dy = drift * 0.6 * Math.cos(frame / 110);
@@ -232,6 +234,7 @@ export const Backdrop: React.FC<{
   const tint = accent
     ? `radial-gradient(ellipse 55% 60% at ${(1 - light.x) * 100}% ${(1 - light.y * 0.4) * 100}%, rgba(${rgb(accent)},${dark ? 0.14 : 0.07}) 0%, rgba(${rgb(accent)},0) 70%), `
     : '';
+  if (hasBackdrop) return null;
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: base, ...style }}>
       <div style={{

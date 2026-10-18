@@ -22,7 +22,7 @@
 // vang cua dot song dau). Thuong hieu (neu co): ten + dau hieu tren kicker. Chu dai: moi vế tu xuong toi da 2 dong,
 // khong vuot be ngang man toi giua. Khung doc (native): phim to 1.5x (99px), luoi 11 cot x ~20 hang phu kin chieu cao,
 // 4 dot song chia theo ti le hang, buoc hang thu lai de tong thoi gian quet giu nhu goc.
-import { useCurrentFrame, useVideoConfig, useText, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, mix, ramp } from '../../../fixtures/Polish';
@@ -227,18 +227,20 @@ export const IconFieldColorize: React.FC = () => {
   const litAll = ramp(frame, 66, 34, EASE.out);
   const headIn = ramp(frame, 120, 14, EASE.out);
   const headUp = (1 - ramp(frame, 120, 18, EASE.snappy)) * 12;
+  // [Agent Edit] nen anh AI: bo nen toi + dai sang tran theo hang (nen code ve); giu canh phim / man toi giua / tieu de
+  const bd = !!useBackdrop();
   return (
-    <AbsoluteFill style={{ background: L.bg[2], overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[2], overflow: 'hidden' }}>
       <Stage look={L} keyLight={{ x: 0.5, y: 0.0 }} fill={{ x: 0.5, y: 1.1 }} intensity={0.45 + 0.35 * litAll} grain={0} vignette={0.62} />
       {/* 光溢出：每一行亮起后身后染上同色的横向光带 */}
-      <div style={{ position: 'absolute', inset: 0, transform: `scale(${push})`, transformOrigin: `960px ${SH / 2}px` }}>
+      {!bd && <div style={{ position: 'absolute', inset: 0, transform: `scale(${push})`, transformOrigin: `960px ${SH / 2}px` }}>
         {rowColor.map((c, r) => c && (
           <div key={r} style={{
             position: 'absolute', left: -100, right: -100, top: Y0 + r * CELL_Y + TILE / 2 - CELL_Y * 1.1, height: CELL_Y * 2.2,
             background: `linear-gradient(180deg, ${css(c, 0)} 0%, ${css(c, 0.16 * rowLit[r])} 50%, ${css(c, 0)} 100%)`,
           }} />
         ))}
-      </div>
+      </div>}
       <AbsoluteFill style={{ transform: `scale(${push})`, transformOrigin: `960px ${SH / 2}px`, opacity: 1 - 0.12 * inhale }}>{icons}</AbsoluteFill>
 
       {/* 收尾：中心暗幕 + 标题（暗幕只压中心，四周的光保留） */}

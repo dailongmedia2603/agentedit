@@ -12,7 +12,7 @@
  "slots": [
   {"id": "title", "role": "title", "sample": "Giới thiệu Trợ lý AI", "max": 32, "note": "câu giới thiệu 1 dòng; TỪ ĐẦU TIÊN được phóng to chiếm màn hình nên phải ngắn (vd 'Giới thiệu', 'Chào', 'Đây', 'Gặp')"},
   {"id": "highlight", "role": "name", "sample": "Trợ lý AI", "max": 24, "optional": true, "note": "cụm từ có sẵn trong title (thường là tên sản phẩm) được tô màu nhấn"},
-  {"id": "subtitle", "role": "subtitle", "sample": "Một câu lệnh, một video hoàn chỉnh — gõ, duyệt, xuất bản.", "max": 80, "optional": true}
+  {"id": "subtitle", "role": "subtitle", "sample": "Một câu lệnh, một video hoàn chỉnh: gõ, duyệt, xuất bản.", "max": 80, "optional": true}
  ],
  "images": [],
  "brand": "optional",
@@ -24,5 +24,6 @@
   "tranh_khi": "Câu dài hơn 1 dòng (> 32 ký tự) hoặc từ đầu dài; cần kết thúc yên tĩnh (cảnh tự nhòe đi ở cuối như chuyển cảnh).",
   "nang_luong": "cao",
   "chu_de": ["ra mắt", "giới thiệu", "tên sản phẩm", "tiêu đề", "mở đầu", "tính năng mới"]
- }
+ },
+ "backdrop": true
 }

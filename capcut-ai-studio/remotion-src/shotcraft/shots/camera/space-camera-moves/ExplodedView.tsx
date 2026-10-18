@@ -29,7 +29,7 @@
 // ten tu thu nho, mo ta xuong toi da 2 dong; cot chu thich gian dong theo chieu cao that. Nhip tieu de cuoi nen lai de
 // het chu truoc khung cuoi. Khung doc (native): canh 3D phong to P, lop co huy hieu so tai diem neo, chu thich thanh
 // danh sach so to ben duoi (thay cot trai/phai); tieu de chot o phia tren.
-import { useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, fitSize, wrapLines } from '../../../runtime';
+import { useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, useBackdrop, fitSize, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { LOOKS, Sheen, Stage, TextReveal, alpha, springAt, type } from '../../../fixtures/Look';
@@ -231,6 +231,7 @@ export const ExplodedView: React.FC = () => {
   const thud = since >= 0 ? 8 * Math.exp(-since / 3) * Math.cos(since * 0.9) : 0;
   const spread = ramp(f, EXPLODE, 30, EASE.out) * (1 - ramp(f, ASSEMBLE, CLOSE - ASSEMBLE, EASE.exit));
   const sheen = ramp(f, CLOSE + 4, 24, EASE.swift);
+  const halo = useTextHalo();
 
   return (
     <AbsoluteFill style={{ overflow: 'hidden', fontFamily: FONT.sans }}>
@@ -315,7 +316,7 @@ export const ExplodedView: React.FC = () => {
         let wi = 0;
         const subP = ramp(f, 150, 14, EASE.out);
         return (
-          <div style={{ position: 'absolute', left: portrait ? 120 : 120, right: portrait ? 120 : undefined, top: portrait ? 300 : 104 }}>
+          <div style={{ position: 'absolute', left: portrait ? 120 : 120, right: portrait ? 120 : undefined, top: portrait ? 300 : 104, textShadow: halo }}>
             {BRAND.name ? <div style={{ opacity: ramp(f, 140, 14, EASE.out) }}><ShotcraftWordmark size={30 * (portrait ? 1.6 : 1)} tone="light" markScale={1.6} gap={14} /></div> : null}
             {tLines.map((l, i) => {
               const st = 140 + wi * gap;
@@ -344,6 +345,7 @@ const LegendPortrait: React.FC<{ f: number; cam: Cam; labels: string[]; notes: s
   const rowH = (i: number) => fitSize(labels[i], { family, size: 66, maxWidth: 1460, weight: 760, minSize: 40 }) * 1.3 + (notes[i] ? wrapLines(notes[i], family, 46, 1460, 450, 2).length : 0) * 46 * 1.3 + 56;
   const total = rows.reduce((t, r) => t + rowH(r.i), 0);
   let y = Math.min(top, bottom - total);
+  const halo = useTextHalo();
   return (
     <AbsoluteFill style={{ pointerEvents: 'none' }}>
       {rows.map(({ ly, i }) => {
@@ -369,7 +371,7 @@ const LegendPortrait: React.FC<{ f: number; cam: Cam; labels: string[]; notes: s
               opacity: 1 - out, ...type(30 * Math.min(1, draw * 2), 700, { mono: true }), color: '#fff',
             }}>{ly.label.n}</div>
             <div style={{
-              position: 'absolute', left: 160, right: 120, top: rowY, opacity: rise * (1 - out), display: 'flex', gap: 36,
+              position: 'absolute', left: 160, right: 120, top: rowY, opacity: rise * (1 - out), display: 'flex', gap: 36, textShadow: halo,
               transform: `translateY(${(1 - rise) * 26 + out * -12}px)`,
             }}>
               <div style={{ ...type(40, 700, { mono: true }), color: L.accent, lineHeight: `${tFs * 1.3}px`, flex: 'none' }}>{ly.label.n}</div>
@@ -386,6 +388,8 @@ const LegendPortrait: React.FC<{ f: number; cam: Cam; labels: string[]; notes: s
 };
 
 // 标注分左右两栏：左栏贴层的最左角、右栏贴最右角，引线水平拉出、到栏前一折
+// [Agent Edit] DOT 2: chu nam truc tiep tren nen anh AI -> bong do nhe (nen sang) cho de doc; khong co nen anh: khong bong
+const useTextHalo = (): string | undefined => (useBackdrop() ? '0 1px 12px rgba(255,255,255,0.7)' : undefined);
 const COL = { L: 470, R: 1450 }; // 左栏右对齐线 / 右栏左对齐线
 const Callouts: React.FC<{ f: number; cam: Cam; labels: string[]; notes: string[]; family: string }> = ({ f, cam, labels, notes, family }) => {
   // 实测：标题缩到栏宽内、说明最多两行；栏内行距按真实高度排
@@ -414,6 +418,7 @@ const Callouts: React.FC<{ f: number; cam: Cam; labels: string[]; notes: string[
     const over = (ys[ys.length - 1] ?? 0) - 940;
     col.forEach((it, k) => placed.push({ it, y: ys[k] - Math.max(0, over) }));
   });
+  const halo = useTextHalo();
   return (
     <AbsoluteFill style={{ pointerEvents: 'none' }}>
       {placed.map(({ it, y: ly }) => {
@@ -437,7 +442,7 @@ const Callouts: React.FC<{ f: number; cam: Cam; labels: string[]; notes: string[
               <circle cx={ax} cy={ay} r={9 * Math.min(1, draw * 3)} fill={L.accent} stroke="#fff" strokeWidth={4} />
             </svg>
             <div style={{
-              position: 'absolute', top: ly - 34, opacity: rise * (1 - out),
+              position: 'absolute', top: ly - 34, opacity: rise * (1 - out), textShadow: halo,
               ...(L_ ? { right: 1920 - COL.L, textAlign: 'right' as const } : { left: COL.R }),
               transform: `translateY(${(1 - rise) * 22 + out * -10}px)`,
             }}>

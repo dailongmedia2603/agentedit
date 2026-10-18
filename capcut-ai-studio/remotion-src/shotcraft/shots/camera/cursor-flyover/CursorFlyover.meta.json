@@ -6,22 +6,75 @@
  "duration": 240,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.3],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.3
+ ],
  "hold": 222,
  "slots": [
-  {"id": "items", "role": "label", "sample": "Doanh thu|Lượt truy cập|Tính năng mới|Sản phẩm bán chạy", "max": 24, "list": {"min": 4, "max": 4}, "note": "ĐÚNG 4 tên khu chức năng của app / dashboard, theo thứ tự camera ghé thăm: 1 doanh thu (biểu đồ cột + số lớn), 2 biểu đồ đường, 3 danh sách công tắc bật/tắt, 4 bảng xếp hạng"},
-  {"id": "number", "role": "number", "sample": "7,31 tỷ", "max": 10, "optional": true, "note": "con số lớn ở thẻ 1 sau khi bấm (số + đơn vị ngắn)"}
+  {
+   "id": "items",
+   "role": "label",
+   "sample": "Doanh thu|Lượt truy cập|Tính năng mới|Sản phẩm bán chạy",
+   "max": 24,
+   "list": {
+    "min": 4,
+    "max": 4
+   },
+   "note": "ĐÚNG 4 tên khu chức năng của app / dashboard, theo thứ tự camera ghé thăm: 1 doanh thu (biểu đồ cột + số lớn), 2 biểu đồ đường, 3 danh sách công tắc bật/tắt, 4 bảng xếp hạng"
+  },
+  {
+   "id": "number",
+   "role": "number",
+   "sample": "7,31 tỷ",
+   "max": 10,
+   "optional": true,
+   "note": "con số lớn ở thẻ 1 sau khi bấm (số + đơn vị ngắn)"
+  }
  ],
  "images": [],
  "brand": "optional",
- "sfx": [{"at": 44, "type": "click"}, {"at": 88, "type": "click"}, {"at": 132, "type": "click"}, {"at": 176, "type": "click"}, {"at": 198, "type": "whoosh"}],
+ "sfx": [
+  {
+   "at": 44,
+   "type": "click"
+  },
+  {
+   "at": 88,
+   "type": "click"
+  },
+  {
+   "at": 132,
+   "type": "click"
+  },
+  {
+   "at": 176,
+   "type": "click"
+  },
+  {
+   "at": 198,
+   "type": "whoosh"
+  }
+ ],
  "vi": {
   "ten": "Con trỏ dẫn tour 4 khu của dashboard",
   "mo_ta": "Giao diện web/app sáng (trắng + xanh coban) nhìn toàn cảnh với 4 thẻ chức năng; camera bay lần lượt tới từng thẻ và phóng to, con trỏ chuột đi trước chỉ vào nút rồi BẤM (vòng gợn sóng): đổi 30N→90N làm số lớn và cột nhảy lên, chấm biểu đồ bật chú thích, công tắc bật + thanh tiến độ chạy, một dòng trong bảng được chọn tích. Cuối cùng lùi ra toàn cảnh thấy cả 4 thay đổi.",
   "hop_khi": "Giới thiệu / hướng dẫn một app, phần mềm, website, dashboard quản lý: 'vào đây xem doanh thu, bấm vào đây để bật tính năng...', demo sản phẩm SaaS, tour các tính năng chính, báo cáo số liệu kinh doanh.",
   "tranh_khi": "Nội dung không liên quan phần mềm / số liệu; cần hiện ảnh chụp màn hình thật của sản phẩm (đây là giao diện vẽ minh hoạ); đoạn nói ngắn dưới 5 giây (cảnh dài 8 giây).",
   "nang_luong": "vua",
-  "chu_de": ["app", "dashboard", "phần mềm", "hướng dẫn", "tính năng", "số liệu", "doanh thu", "website"]
- }
+  "chu_de": [
+   "app",
+   "dashboard",
+   "phần mềm",
+   "hướng dẫn",
+   "tính năng",
+   "số liệu",
+   "doanh thu",
+   "website"
+  ]
+ },
+ "backdrop": true
 }

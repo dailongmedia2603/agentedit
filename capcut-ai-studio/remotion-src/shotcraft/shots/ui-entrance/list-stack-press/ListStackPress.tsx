@@ -19,7 +19,7 @@
 // 8f < khoang cach roi; bo dem dung o n. Camera tinh tu chieu cao that cua chong the.
 // Khung doc (portrait.mode = 'native'): the rong gan het khung, chu to (~92px san khau), bo dem nam trong dau trang
 // (khong de len the), camera tu 1.15 lui ve vua ca chong.
-import { useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, measureText, wrapLines, fitSize } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, measureText, wrapLines, fitSize } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, interpolate, Easing } from 'remotion';
 import { FONT, SpeedBlur, bezier, softShadow, velocity } from '../../../fixtures/Polish';
@@ -97,6 +97,9 @@ export const ListStackPress: React.FC = () => {
   const { height: VH } = useVideoConfig();
   const fonts = useShotFonts();
   const portrait = VH > 1080 * 1.2;
+  // nen anh AI: bo nen giay dac; chu dau trang + bo dem nam tren nen them bong sang
+  const bd = !!useBackdrop();
+  const tsh = bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined;
   const title = useText('title', 'Bản tin công nghệ sáng nay');
   const subtitle = useText('subtitle', 'Tự động tổng hợp từ 31 nguồn, chỉ giữ lại những tin liên quan tới bạn.');
   const items = useList('items', [
@@ -243,14 +246,14 @@ export const ListStackPress: React.FC = () => {
   );
 
   return (
-    <AbsoluteFill style={{ backgroundColor: PAPER }}>
+    <AbsoluteFill style={{ backgroundColor: bd ? 'transparent' : PAPER }}>
       {/* 页面层：正视相机（只做纵向跟随 + 推拉） */}
       <div style={{
         position: 'absolute', left: 0, top: 0, width: 1920, height: VH, transformOrigin: '0 0',
         transform: `translate(960px, ${VH / 2}px) scale(${cam.zoom.toFixed(5)}) translate(-960px, ${(-cam.cy).toFixed(2)}px)`,
       }}>
         {/* 页头 */}
-        <div style={{ position: 'absolute', left: cardX, top: headTop, width: cardW }}>
+        <div style={{ position: 'absolute', left: cardX, top: headTop, width: cardW, textShadow: tsh }}>
           <div style={{ height: topRowH, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             {hLines.map((l, k) => (
               <div key={k} style={{ fontFamily: FONT.sans, fontSize: hFit, fontWeight: 700, color: INK, letterSpacing: '-0.02em', lineHeight: `${hFit * 1.22}px`, whiteSpace: 'nowrap' }}>{l}</div>
@@ -350,7 +353,7 @@ export const ListStackPress: React.FC = () => {
       </div>
 
       {/* 横版：屏幕空间计数器，右上——落一张滚一格 */}
-      {!portrait ? <div style={{ position: 'absolute', top: 70, right: 96, pointerEvents: 'none' }}>{counter(1)}</div> : null}
+      {!portrait ? <div style={{ position: 'absolute', top: 70, right: 96, pointerEvents: 'none', textShadow: tsh }}>{counter(1)}</div> : null}
     </AbsoluteFill>
   );
 };

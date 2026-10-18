@@ -6,6 +6,7 @@
  "duration": 174,
  "kind": "insert",
  "dark": false,
+ "backdrop": true,
  "portrait": {"mode": "native"},
  "rate": [0.8, 1.2],
  "hold": 136,

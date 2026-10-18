@@ -6,33 +6,161 @@
  "duration": 90,
  "kind": "insert",
  "dark": true,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
  "hold": 66,
  "slots": [
-  {"id": "labels", "role": "label", "sample": "Trang web|Xuất bản|Thông điệp|Duyệt", "max": 16, "list": {"min": 4, "max": 4}, "optional": true, "note": "nhãn nhỏ ở góc mỗi ô (1–2 từ); ô có ảnh/video thì nhãn là chú thích chính của ô"},
-  {"id": "title", "role": "title", "sample": "Ra mắt hôm nay.", "max": 24, "optional": true, "note": "ô 1 (trang web giả): tiêu đề lớn của trang"},
-  {"id": "subtitle", "role": "subtitle", "sample": "Mọi thứ sẵn sàng chỉ trong một buổi chiều.", "max": 50, "optional": true, "note": "ô 1: dòng phụ dưới tiêu đề"},
-  {"id": "code", "role": "code", "sample": "npm run build", "max": 30, "optional": true, "note": "ô 2 (terminal): lệnh được gõ"},
-  {"id": "done", "role": "label", "sample": "video.mp4 xong", "max": 20, "optional": true, "note": "ô 2: kết quả cuối, được zoom giật mạnh"},
-  {"id": "words", "role": "item", "sample": "Ý tưởng.|Thực hiện.|Ra mắt.", "max": 12, "list": {"min": 2, "max": 3}, "optional": true, "note": "ô 3 (nền cam): 2–3 từ rất lớn rơi đập xuống lần lượt; từ cuối màu kem"},
-  {"id": "card", "role": "label", "sample": "Video ra mắt · bản 3", "max": 26, "optional": true, "note": "ô 4: tên thẻ chờ duyệt (con trỏ bấm Duyệt rồi Đăng)"},
-  {"id": "toast", "role": "label", "sample": "Đã lên sóng", "max": 16, "optional": true, "note": "ô 4: thông báo bật ra cuối (kèm bộ đếm lượt xem)"}
+  {
+   "id": "labels",
+   "role": "label",
+   "sample": "Trang web|Xuất bản|Thông điệp|Duyệt",
+   "max": 16,
+   "list": {
+    "min": 4,
+    "max": 4
+   },
+   "optional": true,
+   "note": "nhãn nhỏ ở góc mỗi ô (1–2 từ); ô có ảnh/video thì nhãn là chú thích chính của ô"
+  },
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Ra mắt hôm nay.",
+   "max": 24,
+   "optional": true,
+   "note": "ô 1 (trang web giả): tiêu đề lớn của trang"
+  },
+  {
+   "id": "subtitle",
+   "role": "subtitle",
+   "sample": "Mọi thứ sẵn sàng chỉ trong một buổi chiều.",
+   "max": 50,
+   "optional": true,
+   "note": "ô 1: dòng phụ dưới tiêu đề"
+  },
+  {
+   "id": "code",
+   "role": "code",
+   "sample": "npm run build",
+   "max": 30,
+   "optional": true,
+   "note": "ô 2 (terminal): lệnh được gõ"
+  },
+  {
+   "id": "done",
+   "role": "label",
+   "sample": "video.mp4 xong",
+   "max": 20,
+   "optional": true,
+   "note": "ô 2: kết quả cuối, được zoom giật mạnh"
+  },
+  {
+   "id": "words",
+   "role": "item",
+   "sample": "Ý tưởng.|Thực hiện.|Ra mắt.",
+   "max": 12,
+   "list": {
+    "min": 2,
+    "max": 3
+   },
+   "optional": true,
+   "note": "ô 3 (nền cam): 2–3 từ rất lớn rơi đập xuống lần lượt; từ cuối màu kem"
+  },
+  {
+   "id": "card",
+   "role": "label",
+   "sample": "Video ra mắt · bản 3",
+   "max": 26,
+   "optional": true,
+   "note": "ô 4: tên thẻ chờ duyệt (con trỏ bấm Duyệt rồi Đăng)"
+  },
+  {
+   "id": "toast",
+   "role": "label",
+   "sample": "Đã lên sóng",
+   "max": 16,
+   "optional": true,
+   "note": "ô 4: thông báo bật ra cuối (kèm bộ đếm lượt xem)"
+  }
  ],
  "images": [
-  {"id": "media1", "role": "photo", "optional": true, "note": "ảnh HOẶC video bất kỳ tỉ lệ; có thì thay ô 1 (cảnh trình duyệt) bằng ảnh/video lấp đầy ô"},
-  {"id": "media2", "role": "photo", "optional": true, "note": "ảnh hoặc video; thay ô 2 (terminal)"},
-  {"id": "media3", "role": "photo", "optional": true, "note": "ảnh hoặc video; thay ô 3 (chữ đập)"},
-  {"id": "media4", "role": "video", "optional": true, "note": "ảnh hoặc video; thay ô 4 (thẻ duyệt + thông báo)"}
+  {
+   "id": "media1",
+   "role": "photo",
+   "optional": true,
+   "note": "ảnh HOẶC video bất kỳ tỉ lệ; có thì thay ô 1 (cảnh trình duyệt) bằng ảnh/video lấp đầy ô"
+  },
+  {
+   "id": "media2",
+   "role": "photo",
+   "optional": true,
+   "note": "ảnh hoặc video; thay ô 2 (terminal)"
+  },
+  {
+   "id": "media3",
+   "role": "photo",
+   "optional": true,
+   "note": "ảnh hoặc video; thay ô 3 (chữ đập)"
+  },
+  {
+   "id": "media4",
+   "role": "video",
+   "optional": true,
+   "note": "ảnh hoặc video; thay ô 4 (thẻ duyệt + thông báo)"
+  }
  ],
  "brand": "optional",
- "sfx": [{"at": 4, "type": "click"}, {"at": 14, "type": "pop"}, {"at": 25, "type": "click"}, {"at": 30, "type": "pop"}, {"at": 37, "type": "whoosh"}, {"at": 49, "type": "pop"}, {"at": 56, "type": "ding"}],
+ "sfx": [
+  {
+   "at": 4,
+   "type": "click"
+  },
+  {
+   "at": 14,
+   "type": "pop"
+  },
+  {
+   "at": 25,
+   "type": "click"
+  },
+  {
+   "at": 30,
+   "type": "pop"
+  },
+  {
+   "at": 37,
+   "type": "whoosh"
+  },
+  {
+   "at": 49,
+   "type": "pop"
+  },
+  {
+   "at": 56,
+   "type": "ding"
+  }
+ ],
  "vi": {
   "ten": "Chia 4 ô — bốn cảnh chạy song song",
   "mo_ta": "Màn hình chia 4 ô bo góc (khung dọc: 4 dải xếp dọc), mỗi ô một cảnh nhỏ chạy cùng lúc, nhịp lệch nhau vài khung: trình duyệt gõ địa chỉ rồi tải trang có tiêu đề lớn; terminal gõ lệnh rồi zoom giật vào dòng kết quả; nền cam với 2–3 từ khổng lồ đập xuống lần lượt; thẻ chờ duyệt có con trỏ bấm 'Duyệt' → 'Đăng ngay' rồi thông báo lượt xem bật lên. Ô nào có ảnh/video thật thì ảnh/video đập vào lấp đầy ô đó.",
   "hop_khi": "Liệt kê nhiều việc / nhiều kênh diễn ra cùng lúc ('vừa làm web, vừa xuất video, vừa duyệt nội dung'); khoe quy trình làm việc / một ngày ra mắt sản phẩm; montage nhiều cảnh B-roll (4 ảnh hoặc clip) cho đoạn nói dồn dập, năng lượng cao.",
   "tranh_khi": "Chỉ có một ý duy nhất cần tập trung; đoạn nói chậm, cảm xúc sâu lắng; nội dung không liên quan công việc số / sản phẩm mà không có ảnh thật để thay.",
   "nang_luong": "cao",
-  "chu_de": ["montage", "song song", "quy trình", "ra mắt", "app", "code", "đa nhiệm", "B-roll"]
- }
+  "chu_de": [
+   "montage",
+   "song song",
+   "quy trình",
+   "ra mắt",
+   "app",
+   "code",
+   "đa nhiệm",
+   "B-roll"
+  ]
+ },
+ "backdrop": false
 }

@@ -358,7 +358,7 @@ const World: React.FC<{ th: Theme; knob: number; icon: number; lights: number; f
               }}>
                 <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 6, background: c.bar, boxShadow: n ? `0 0 12px ${alpha(c.bar, 0.6)}` : 'none' }} />
                 <div style={{ fontSize: evFs, fontWeight: 650, letterSpacing: '-0.015em', color: c.text, whiteSpace: 'nowrap', lineHeight: 1.2 }}>{ev.t}</div>
-                {h > 70 && <div style={{ fontSize: 21, color: c.sub, marginTop: 4, fontVariantNumeric: 'tabular-nums' }}>{fmt(ev.s)} – {fmt(ev.e)}</div>}
+                {h > 70 && <div style={{ fontSize: 21, color: c.sub, marginTop: 4, fontVariantNumeric: 'tabular-nums' }}>{fmt(ev.s)}-{fmt(ev.e)}</div>}
               </div>
             );
           })}
@@ -404,7 +404,7 @@ export const ThemeSweepToggle: React.FC = () => {
   const brand = useBrand();
   const tx: WorldText = {
     name: useText('name', '').trim() || (brand?.name ?? '').trim() || 'Lịch làm việc',
-    title: useText('title', 'Tuần 14 – 18 tháng 9'),
+    title: useText('title', 'Tuần 14-18 tháng 9'),
     kicker: useText('kicker', 'TUẦN 38').trim().toUpperCase(),
     subtitle: useText('subtitle', 'Ra mắt sản phẩm · thứ Sáu').trim(),
     sans: fonts.sans,

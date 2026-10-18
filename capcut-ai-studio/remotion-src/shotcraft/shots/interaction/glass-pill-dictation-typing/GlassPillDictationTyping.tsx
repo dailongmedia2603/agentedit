@@ -25,7 +25,7 @@
 // o nhap cao them (bo goc toi da = nua chieu cao 1 dong); nhip go deu, tu nen theo so ky tu de go xong truoc 64f.
 // Khung doc (native): chu to ~112px, o nhap rong 1720, cau tu xuong dong (toi da 4 dong), ca khoi can giua khung,
 // quang sang phia sau phong to theo chieu cao.
-import { useCurrentFrame, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, ramp, mix } from '../../../fixtures/Polish';
@@ -57,6 +57,8 @@ export const GlassPillDictationTyping: React.FC = () => {
   const { height: SH } = useVideoConfig();
   const fonts = useShotFonts();
   const portrait = SH > 1080 * 1.2;
+  // nen anh AI: bo nen dac + cac dom sang vien canh; giu 'mat troi' am sau vien thuoc (la hieu ung, tat dan khi go chu)
+  const bd = !!useBackdrop();
   const TEXT = useText('prompt', 'Dựng giúp tôi video ra mắt app');
   const caption = useText('caption', 'nói hoặc gõ');
 
@@ -106,7 +108,7 @@ export const GlassPillDictationTyping: React.FC = () => {
   const CAP = portrait ? 2.1 : 1; // 底部小标字号倍率
 
   return (
-    <AbsoluteFill style={{ background: L.bg[1], overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[1], overflow: 'hidden' }}>
       <Stage look={L} keyLight={{ x: 0.36, y: portrait ? 0.3 : 0.12 }} fill={{ x: 0.8, y: 0.9 }} vignette={0.22}>
         {/* 胶囊背后的"太阳"：暖光主体，光心压在胶囊右段正后方，跟胶囊内的光一起退到只剩一点余温 */}
         <div style={{
@@ -114,7 +116,7 @@ export const GlassPillDictationTyping: React.FC = () => {
           background: `radial-gradient(ellipse 50% 50% at 50% 50%, ${alpha(APRICOT, 0.15 + 0.6 * g)} 0%, ${alpha(APRICOT, 0.1 + 0.42 * g)} 18%, ${alpha(WARM, 0.06 + 0.26 * g)} 40%, ${alpha(WARM, 0.02 + 0.08 * g)} 62%, ${alpha(WARM, 0)} 80%)`,
         }} />
         {/* 几团远景柔光（磨砂玻璃后面要有东西可晕） */}
-        {[
+        {!bd && [
           { x: 520, y: -70, r: 220, c: '#fff4e4', a: 0.9 },
           { x: 820, y: 80, r: 160, c: '#e9b08a', a: 0.35 },
           { x: 1460, y: 70, r: 200, c: '#f6d2a8', a: 0.55 },
@@ -201,10 +203,11 @@ export const GlassPillDictationTyping: React.FC = () => {
         <div style={{
           position: 'absolute', left: 80, right: 80, top: portrait ? Math.min(SH - 300, PY + PH + 360) : 1080 - 112 - 40, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 14 * K,
           opacity: ramp(f, 4, 16, EASE.out) * (0.9 + 0.1 * breathe), whiteSpace: 'nowrap',
+          textShadow: bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined,
         }}>
           {BRAND.name ? <ShotcraftMark size={34 * CAP} tone="light" /> : null}
           {BRAND.name ? <span style={{ ...type(30 * CAP, 650), color: L.ink2 }}>{BRAND.name}</span> : null}
-          {caption ? <span style={{ ...type(fitSize(caption, { family: fonts.sans, size: 30 * CAP, maxWidth: 1200, weight: 450 }), 450), color: L.ink3 }}>{BRAND.name ? '· ' : ''}{caption}</span> : null}
+          {caption ? <span style={{ ...type(fitSize(caption, { family: fonts.sans, size: 30 * CAP, maxWidth: 1200, weight: 450 }), 450), color: bd ? L.ink2 : L.ink3 }}>{BRAND.name ? '· ' : ''}{caption}</span> : null}
         </div>
       ) : null}
     </AbsoluteFill>

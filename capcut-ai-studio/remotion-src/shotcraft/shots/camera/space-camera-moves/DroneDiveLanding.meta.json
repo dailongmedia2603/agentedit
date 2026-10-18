@@ -27,5 +27,6 @@
   "tranh_khi": "Không có con số/chỉ số cụ thể; chủ đề đời thường, cảm xúc; video tone tối; dùng nhiều lần trong một video (động tác lớn).",
   "nang_luong": "cao",
   "chu_de": ["số liệu", "dashboard", "doanh thu", "tăng trưởng", "app", "báo cáo", "con số", "3D"]
- }
+ },
+ "backdrop": true
 }

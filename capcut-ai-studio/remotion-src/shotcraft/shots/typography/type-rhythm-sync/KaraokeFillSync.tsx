@@ -12,7 +12,7 @@
 // Mau nhan = LOOKS.porcelain.accent (doi theo mau cua video). Khong in hoa cuong buc (chu hoa tieng Viet rat rong):
 // giu nguyen chu nhu o chu gui.
 // Khung doc (portrait.mode = 'native'): chu to ~240px, toi da 4 dong, song am phong 1.6x, ca khoi can giua khung that.
-import { useCurrentFrame, useShotFonts, useText, useVideoConfig, fitSize, measureText } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useShotFonts, useText, useVideoConfig, fitSize, measureText } from '../../../runtime';
 import React from 'react';
 import { interpolate } from 'remotion';
 import { Backdrop, EASE, FONT, ramp } from '../../../fixtures/Polish';
@@ -37,7 +37,7 @@ const hexRgb = (c: string) => {
 const rgbMix = (a: number[], b: number[], k: number) =>
   `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * k)).join(',')})`;
 
-const KaraokeWord: React.FC<{ word: Word; frame: number; acc: string; ul: number }> = ({ word, frame, acc, ul }) => {
+const KaraokeWord: React.FC<{ word: Word; frame: number; acc: string; ul: number; bd?: boolean }> = ({ word, frame, acc, ul, bd }) => {
   // 词内 linear 填充进度，clamp 保证读完保持（跟语速，不加缓动）
   const p = interpolate(frame, [word.start, word.end], [0, 1], {
     extrapolateLeft: 'clamp',
@@ -53,12 +53,14 @@ const KaraokeWord: React.FC<{ word: Word; frame: number; acc: string; ul: number
   return (
     <span style={{ position: 'relative', display: 'inline-block', whiteSpace: 'nowrap' }}>
       {/* 底层：低透明墨色未读字 */}
-      <span style={{ color: 'rgba(23,24,28,0.13)' }}>{word.text}</span>
+      <span style={{ color: bd ? 'rgba(23,24,28,0.22)' : 'rgba(23,24,28,0.13)' }}>{word.text}</span>
       {/* 上层：按进度从左到右柔边揭开（上下留出叠加符号空间，mask 只控水平） */}
       {p > 0 && (
         <span style={{
           position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, color: fillColor,
           WebkitMaskImage: mask, maskImage: mask,
+          // chu da doc nam tren nen anh AI: bong sang nhe (chu mo chua doc giu nguyen, khong bong -> khong nhoe)
+          textShadow: bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined,
         }}>
           {word.text}
         </span>
@@ -90,6 +92,8 @@ export const KaraokeFillSync: React.FC = () => {
   const { height: SH } = useVideoConfig();
   const fonts = useShotFonts();
   const portrait = SH > 1080 * 1.2;
+  // nen anh AI: bo nen giay code (Backdrop cua Polish); chu nam tren nen them bong sang
+  const bd = !!useBackdrop();
   const text = useText('text', 'Nói ít hơn, làm nhiều hơn.');
   const acc = LOOKS.porcelain.accent;
   const words0 = text.split(/\s+/).filter(Boolean);
@@ -173,7 +177,7 @@ export const KaraokeFillSync: React.FC = () => {
   const playhead = (frame - WAVE_T0) / (WAVE_T1 - WAVE_T0);
   return (
     <div style={{ width: 1920, height: SH, position: 'relative', overflow: 'hidden', fontFamily: FONT.sans }}>
-      <Backdrop tone="light" light={{ x: 0.5, y: 0.22 }} accent={acc} />
+      {!bd && <Backdrop tone="light" light={{ x: 0.5, y: 0.22 }} accent={acc} />}
 
       {/* 标语：居中分行 */}
       <div style={{
@@ -183,7 +187,7 @@ export const KaraokeFillSync: React.FC = () => {
         {rows.map((words, li) => (
           <div key={li} style={{ display: 'flex', gap: GAP_EM * SIZE, height: lineH, whiteSpace: 'nowrap' }}>
             {words.map((w, k) => (
-              <KaraokeWord key={k} word={w} frame={frame} acc={acc} ul={ul} />
+              <KaraokeWord key={k} word={w} frame={frame} acc={acc} ul={ul} bd={bd} />
             ))}
           </div>
         ))}

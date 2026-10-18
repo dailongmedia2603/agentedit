@@ -46,7 +46,8 @@ check("moi mau du mo ta / do dai / bo cuc doc", not bad, bad)
 viet = [m["id"] for m in cat if not re.search(r"[ăâđêôơưáàảãạéèẻẽẹíìỉĩịóòỏõọúùủũụýỳỷỹỵ]", (m.get("vi") or {}).get("mo_ta", "").lower())]
 check("mo ta tieng Viet co dau", not viet, viet)
 block = shot_lib.prompt_block()
-miss = [i for i in ids if ("- %s [" % i) not in block]
+miss = [m["id"] for m in cat if not m.get("hidden") and ("- %s [" % m["id"]) not in block]
+check("mau an khong vao danh muc R4", all(("- %s [" % m["id"]) not in block for m in cat if m.get("hidden")))
 check("prompt_block co MOI mau", not miss, miss)
 check("luat dung noi vao R4", "KHO SHOT" in shot_lib.rules_text() and "FULL-SCREEN" in shot_lib.rules_text())
 check("fingerprint on dinh", shot_lib.fingerprint() == shot_lib.fingerprint())

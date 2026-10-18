@@ -20,7 +20,7 @@
 // chim lan luot 0.4f), the dich truot ve o dau 10f bezier(.35,0,.2,1) noi + bong rong, con tro truot toi, click 58f (2 vong
 // ripple + vien + quang sang), may day vao zoom 2.2 tai 72f. Camera = cung cong thuc PageCam2D (translate + scale).
 // Khung doc (native): trang cao theo khung, luoi 2 cot x 4 hang the lon, chu to hon; zoom go chu 1.6.
-import { useCurrentFrame, useImage, useList, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
+import { useCurrentFrame, useImage, useList, useShotFonts, useText, useVideoConfig, useBackdrop, fitSize, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, Img, interpolate, Easing } from 'remotion';
 import { SpeedBlur, velocity } from '../../../fixtures/Polish';
@@ -171,10 +171,12 @@ export const TypeAndFilter: React.FC = () => {
       </>
     );
   };
+  // [Agent Edit] DOT 2: co nen anh AI -> bo nen giay phu kin man hinh (thanh tren, o tim kiem, the giu nguyen)
+  const bd = useBackdrop();
   const cardShell: React.CSSProperties = { position: 'absolute', borderRadius: 16 * K, overflow: 'hidden', background: '#fffdf9', border: '1px solid rgba(60,45,30,0.08)' };
 
   return (
-    <AbsoluteFill style={{ backgroundColor: PAPER, overflow: 'hidden' }}>
+    <AbsoluteFill style={{ backgroundColor: bd ? 'transparent' : PAPER, overflow: 'hidden' }}>
       <div style={{ position: 'absolute', left: 0, top: 0, width: 1920, height: H, transform: `translate(${(960 - cam.cx * cam.zoom).toFixed(2)}px, ${(H / 2 - cam.cy * cam.zoom).toFixed(2)}px) scale(${cam.zoom.toFixed(4)})`, transformOrigin: '0 0' }}>
         {/* ---- thanh tren ---- */}
         <div style={{ position: 'absolute', left: 0, top: 0, width: 1920, height: TOP_H, borderBottom: '1px solid rgba(60,45,30,0.09)', background: '#fbf8f3', display: 'flex', alignItems: 'center', padding: `0 ${PAD}px`, boxSizing: 'border-box', gap: 16 * K, fontFamily: fonts.sans }}>

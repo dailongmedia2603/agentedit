@@ -6,26 +6,105 @@
  "duration": 120,
  "kind": "insert",
  "dark": true,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.25],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.25
+ ],
  "hold": 82,
  "slots": [
-  {"id": "kicker", "role": "kicker", "sample": "Báo cáo kinh doanh · Quý 3", "max": 32, "optional": true, "note": "nhãn nhỏ phía trên tiêu đề"},
-  {"id": "title", "role": "title", "sample": "Doanh thu tăng", "max": 32, "note": "vế chữ của câu tiêu đề"},
-  {"id": "number", "role": "number", "sample": "38%", "max": 8, "optional": true, "note": "con số đứng cuối tiêu đề, tô màu nhấn"},
-  {"id": "stat_values", "role": "number", "sample": "4,8 tỷ|12.480|99,1%", "max": 9, "list": {"min": 1, "max": 3}, "note": "giá trị lớn trong các ô số liệu"},
-  {"id": "stat_labels", "role": "label", "sample": "Doanh thu|Đơn hàng|Khách hài lòng", "max": 18, "list": {"min": 1, "max": 3}, "note": "nhãn của từng ô, cùng thứ tự với stat_values"},
-  {"id": "stat_deltas", "role": "label", "sample": "+38%|+2.100|+1,4 điểm", "max": 10, "list": {"min": 0, "max": 3}, "optional": true, "note": "mức thay đổi nhỏ cạnh mỗi giá trị"}
+  {
+   "id": "kicker",
+   "role": "kicker",
+   "sample": "Báo cáo kinh doanh · Quý 3",
+   "max": 32,
+   "optional": true,
+   "note": "nhãn nhỏ phía trên tiêu đề"
+  },
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Doanh thu tăng",
+   "max": 32,
+   "note": "vế chữ của câu tiêu đề"
+  },
+  {
+   "id": "number",
+   "role": "number",
+   "sample": "38%",
+   "max": 8,
+   "optional": true,
+   "note": "con số đứng cuối tiêu đề, tô màu nhấn"
+  },
+  {
+   "id": "stat_values",
+   "role": "number",
+   "sample": "4,8 tỷ|12.480|99,1%",
+   "max": 9,
+   "list": {
+    "min": 1,
+    "max": 3
+   },
+   "note": "giá trị lớn trong các ô số liệu"
+  },
+  {
+   "id": "stat_labels",
+   "role": "label",
+   "sample": "Doanh thu|Đơn hàng|Khách hài lòng",
+   "max": 18,
+   "list": {
+    "min": 1,
+    "max": 3
+   },
+   "note": "nhãn của từng ô, cùng thứ tự với stat_values"
+  },
+  {
+   "id": "stat_deltas",
+   "role": "label",
+   "sample": "+38%|+2.100|+1,4 điểm",
+   "max": 10,
+   "list": {
+    "min": 0,
+    "max": 3
+   },
+   "optional": true,
+   "note": "mức thay đổi nhỏ cạnh mỗi giá trị"
+  }
  ],
  "images": [],
  "brand": "optional",
- "sfx": [{"at": 20, "type": "riser"}, {"at": 58, "type": "whoosh"}, {"at": 80, "type": "ding"}],
+ "sfx": [
+  {
+   "at": 20,
+   "type": "riser"
+  },
+  {
+   "at": 58,
+   "type": "whoosh"
+  },
+  {
+   "at": 80,
+   "type": "ding"
+  }
+ ],
  "vi": {
   "ten": "Dashboard nằm ngửa ngóc dậy — máy quay ngẩng lên lộ bảng số liệu",
   "mo_ta": "Nền xanh đêm; mở đầu chỉ thấy một dải sáng mảnh như đường chân trời (mép trên của một trang dashboard đang nằm ngửa). Máy quay ngẩng lên, trang dựng thẳng dậy đầy khung với vệt phản chiếu lướt qua: tiêu đề lớn kèm con số tô màu, biểu đồ vùng phát sáng đi lên được vẽ dần với chấm sáng ở đỉnh, và 1-3 ô số liệu to.",
   "hop_khi": "Nhắc tới kết quả kinh doanh, doanh thu / người dùng / tăng trưởng, báo cáo, KPI, số liệu của app hay dự án; mở đầu phần \"kết quả đạt được\"; video về dữ liệu, SaaS, marketing, tài chính.",
   "tranh_khi": "Số liệu đang GIẢM (biểu đồ luôn đi lên); không có con số cụ thể; tone đời thường, cảm xúc; đã dùng một cảnh mở màn kiểu máy quay lớn khác ngay trước đó.",
   "nang_luong": "vua",
-  "chu_de": ["dashboard", "số liệu", "tăng trưởng", "doanh thu", "báo cáo", "KPI", "biểu đồ", "app"]
- }
+  "chu_de": [
+   "dashboard",
+   "số liệu",
+   "tăng trưởng",
+   "doanh thu",
+   "báo cáo",
+   "KPI",
+   "biểu đồ",
+   "app"
+  ]
+ },
+ "backdrop": true
 }

@@ -27,7 +27,7 @@
 // giu "khep vong y nghia"); khong co -> bieu do du bao ve bang code nhu ban goc. Nhip goc giu nguyen (cho 14f, nhac the
 // 12f, mo cua so 40f bezier(.7,0,.3,1), the gioi 0.42->1 cung t, mat the mo trong 28% dau, 2 lop thi sai 0.08 / 0.3,
 // dung han 74f). Khung doc (native): luoi 2 cot x 3 hang (the to 1.57x), the gioi xep doc (tam kinh cao + 2 the noi).
-import { useCurrentFrame, useImage, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
+import { useCurrentFrame, useImage, useList, useShotFonts, useText, useVideoConfig, useBackdrop, fitSize, measureText, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, Easing, Img, interpolate } from 'remotion';
 import { EASE, FONT, ramp, mix, softShadow } from '../../../fixtures/Polish';
@@ -67,7 +67,8 @@ const Cover: React.FC<{ s: Space; w: number; h: number; src?: string }> = ({ s, 
   let art: React.ReactNode = null;
   if (s.art === 'rings') art = [0, 1, 2, 3, 4].map((k) => <circle key={k} cx={w * 0.78} cy={h * 0.62} r={(30 + k * 34) * (h / 176)} fill="none" stroke={stroke} strokeWidth={2} opacity={1 - k * 0.16} />);
   if (s.art === 'bars') art = Array.from({ length: 9 }, (_, k) => { const bh = h * (0.25 + 0.5 * Math.abs(Math.sin(k * 1.3 + 0.6))); return <rect key={k} x={w * 0.42 + k * 30 * (w / 520)} y={h - bh} width={16 * (w / 520)} height={bh} rx={4} fill="rgba(255,255,255,0.42)" />; });
-  if (s.art === 'dots') art = Array.from({ length: 40 }, (_, k) => <circle key={k} cx={w * 0.46 + (k % 10) * 26 * (w / 520)} cy={h * 0.2 + Math.floor(k / 10) * 32 * (h / 176)} r={(4 + ((k * 7) % 5)) * (h / 176)} fill="rgba(255,255,255,0.45)" />);
+  // [Agent Edit] DOT 2: bia "cham" khong xep luoi -> bong tron rai tu nhien (tat dinh)
+  if (s.art === 'dots') art = Array.from({ length: 14 }, (_, k) => <circle key={k} cx={w * (0.44 + ((k * 37) % 50) / 100)} cy={h * (0.14 + ((k * 53) % 72) / 100)} r={(5 + ((k * 7) % 9) * 1.6) * (h / 176)} fill={`rgba(255,255,255,${(0.28 + ((k * 3) % 4) * 0.08).toFixed(2)})`} />);
   if (s.art === 'stripes') art = Array.from({ length: 12 }, (_, k) => <line key={k} x1={w * 0.3 + k * 34 * (w / 520)} y1={h + 10} x2={w * 0.3 + k * 34 * (w / 520) + 120 * (w / 520)} y2={-10} stroke={stroke} strokeWidth={10} opacity={0.5} />);
   if (s.art === 'arcs') art = [0, 1, 2, 3].map((k) => { const r = (90 + k * 46) * (h / 176); return <path key={k} d={`M ${w * 0.35} ${h + 4} A ${r} ${r} 0 0 1 ${w * 0.35 + 2 * r} ${h + 4}`} fill="none" stroke={stroke} strokeWidth={2.5} />; });
   if (s.art === 'waves') art = [0, 1, 2].map((k) => <path key={k} d={wavePath(w, h, k, 0)} fill="none" stroke={k === 0 ? COBALT.mint : stroke} strokeWidth={k === 0 ? 4 : 2.5} />);
@@ -192,13 +193,25 @@ const World: React.FC<{ spread: number; draw: number; H: number; portrait: boole
   const s2Fs = fitSize(t.stat2, { family: fonts.sans, size: 64 * k, maxWidth: bW - 200 * k, weight: 750, minSize: 30 * k });
   const s2L = fitSize(t.stat2L, { family: fonts.sans, size: 32 * k, maxWidth: bW - 200 * k, weight: 500, minSize: 16 * k });
   const chipBg = 'linear-gradient(180deg, rgba(30,55,160,0.92), rgba(14,30,110,0.92))';
+  // [Agent Edit] DOT 2: co nen anh AI -> "the gioi" ben trong cua so = chinh anh nen (phu toi nhu nen toi) thay cho
+  // khong gian coban + song + quang sang ve bang code; cua so van che kin trang ngoai khi phinh to
+  const bd = useBackdrop();
   return (
-    <AbsoluteFill style={{ background: `radial-gradient(ellipse 80% 70% at 50% 30%, ${COBALT.mid} 0%, #071244 50%, ${COBALT.deep} 100%)` }}>
-      {/* 背景地貌：封面同款三道波形放大成世界的地平线 */}
-      <svg width={1920} height={H} style={{ position: 'absolute', inset: 0, opacity: 0.5 }}>
-        {[0, 1, 2].map((j) => <path key={j} d={wavePath(1920, 1080, j, 0)} transform={`translate(0 ${210 + (H - 1080) / 2})`} fill="none" stroke={j === 0 ? COBALT.mint : COBALT.glow} strokeOpacity={j === 0 ? 0.35 : 0.22} strokeWidth={j === 0 ? 3 : 2} />)}
-      </svg>
-      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 40% 34% at 50% 18%, ${alpha(COBALT.hi, 0.35)} 0%, ${alpha(COBALT.hi, 0)} 100%)` }} />
+    <AbsoluteFill style={{ background: bd ? '#05070c' : `radial-gradient(ellipse 80% 70% at 50% 30%, ${COBALT.mid} 0%, #071244 50%, ${COBALT.deep} 100%)` }}>
+      {bd ? (
+        <>
+          <Img src={bd.src} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.06)', filter: 'blur(5px) brightness(0.5) saturate(0.9)' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(4,6,10,0.55) 0%, rgba(4,6,10,0.38) 45%, rgba(4,6,10,0.62) 100%)' }} />
+        </>
+      ) : (
+        <>
+          {/* 背景地貌：封面同款三道波形放大成世界的地平线 */}
+          <svg width={1920} height={H} style={{ position: 'absolute', inset: 0, opacity: 0.5 }}>
+            {[0, 1, 2].map((j) => <path key={j} d={wavePath(1920, 1080, j, 0)} transform={`translate(0 ${210 + (H - 1080) / 2})`} fill="none" stroke={j === 0 ? COBALT.mint : COBALT.glow} strokeOpacity={j === 0 ? 0.35 : 0.22} strokeWidth={j === 0 ? 3 : 2} />)}
+          </svg>
+          <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 40% 34% at 50% 18%, ${alpha(COBALT.hi, 0.35)} 0%, ${alpha(COBALT.hi, 0)} 100%)` }} />
+        </>
+      )}
       {/* 远景层（系数 0.08） */}
       <div style={{ position: 'absolute', inset: 0, transform: `scale(${(1 + spread * 0.08).toFixed(4)})`, transformOrigin: `960px ${cy}px` }}>
         <ForecastPanel draw={draw} box={panel} k={k} t={t} src={src} />
@@ -287,25 +300,28 @@ export const PortalWipeV2: React.FC = () => {
   const elev = (4 + 18 * hover) * (1 - t) + 56 * Math.sin(Math.PI * Math.min(1, t * 1.1)) * (1 - t);
   const oldDim = 0.26 * ramp(frame, 26, 34, EASE.out);
   const neighbours = 1 - 0.18 * hover;
+  // [Agent Edit] DOT 2: co nen anh AI -> trang ngoai trong suot (Stage tu bo nen); chu tieu de tren nen -> bong sang nhe
+  const bd = useBackdrop();
+  const halo = bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined;
 
   return (
-    <AbsoluteFill style={{ background: L.bg[1], overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[1], overflow: 'hidden' }}>
       {/* 外景：Workspace 主页（穿窗完成后不再渲染） */}
       {t < 1 && (
         <>
           <Stage look={L} keyLight={{ x: 0.35, y: 0.0 }} fill={{ x: 0.9, y: 0.95 }} />
-          <div style={{ position: 'absolute', left: GRID_X, top: headTop, height: 52 * TK, display: 'flex', alignItems: 'center', gap: 24 * TK }}>
+          <div style={{ position: 'absolute', left: GRID_X, top: headTop, height: 52 * TK, display: 'flex', alignItems: 'center', gap: 24 * TK, textShadow: halo }}>
             <ShotcraftWordmark size={30 * TK} tone="light" color={L.ink} markScale={1.7} gap={14 * TK} />
             <span style={{ width: 1.5 * TK, height: 30 * TK, background: L.line }} />
             <span style={{ ...type(30 * TK, 600), color: L.accent, letterSpacing: '0.18em' }}>KHÔNG GIAN LÀM VIỆC</span>
           </div>
-          <div style={{ position: 'absolute', left: GRID_X - 4, top: headTop + 64 * TK }}>
+          <div style={{ position: 'absolute', left: GRID_X - 4, top: headTop + 64 * TK, textShadow: halo }}>
             {tl.map((l, i) => <div key={i} style={{ ...type(tFs, 720), lineHeight: 1.16, color: L.ink, whiteSpace: 'nowrap' }}>{l}</div>)}
           </div>
           {portrait ? (
-            <div style={{ position: 'absolute', left: GRID_X, top: headTop + 64 * TK + tl.length * tFs * 1.16 + 24, ...type(subFs, 500), lineHeight: 1.3, color: L.ink2, whiteSpace: 'nowrap' }}>{subtitle}</div>
+            <div style={{ position: 'absolute', left: GRID_X, top: headTop + 64 * TK + tl.length * tFs * 1.16 + 24, ...type(subFs, 500), lineHeight: 1.3, color: L.ink2, whiteSpace: 'nowrap', textShadow: halo }}>{subtitle}</div>
           ) : (
-            <div style={{ position: 'absolute', right: GRID_X, top: 168 + tFs * 0.62 - subFs * 0.4, ...type(subFs, 500), lineHeight: 1.3, color: L.ink2, whiteSpace: 'nowrap' }}>{subtitle}</div>
+            <div style={{ position: 'absolute', right: GRID_X, top: 168 + tFs * 0.62 - subFs * 0.4, ...type(subFs, 500), lineHeight: 1.3, color: L.ink2, whiteSpace: 'nowrap', textShadow: halo }}>{subtitle}</div>
           )}
           {SPACES.map((s, i) => {
             if (i === TARGET) return null;

@@ -17,7 +17,7 @@
 // [Agent Edit] o chu: title (ten thuong hieu / tu khoa / ten chuong — bo trong = ten thuong hieu cua video).
 // Chu dai: tach dong theo tu (ngang <=2 dong, doc <=3 dong, co chu tu vua); bo trai 3f/ky tu nen lai khi nhieu ky tu
 // (ky tu cuoi van khoa truoc ~f80), nhip "tho" + bong dat tinh theo ky tu cuoi. Khung doc (native): chu ~240px giua khung.
-import { useCurrentFrame, useVideoConfig, useText, useShotFonts, fitSize, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useShotFonts, fitSize, wrapLines } from '../../../runtime';
 import React from 'react';
 import { interpolate, Easing } from 'remotion';
 import { G } from '../../../fixtures/Fixtures';
@@ -74,16 +74,17 @@ export const LetterformDriftAssembly: React.FC = () => {
   const blockH = lines.length * lineH;
   const groundW = Math.min(1700, Math.max(...lines.map((l) => Array.from(l).length)) * FS * 0.62);
   let idx = 0;
+  const bd = useBackdrop(); // [Agent Edit] nen anh AI: bo nen sang code, chu co bong nhe
 
   return (
     <div style={{ width: 1920, height: SH, position: 'relative', overflow: 'hidden' }}>
-      <Backdrop tone="light" light={{ x: 0.5, y: 0.32 }} accent={G.accent} grain={0.05} vignette={0.14} />
+      {!bd && <Backdrop tone="light" light={{ x: 0.5, y: 0.32 }} accent={G.accent} grain={0.05} vignette={0.14} />}
       {/* 落地影：合体后在字面下方出现的极淡椭圆影 */}
       <div style={{
         position: 'absolute', left: 960 - groundW / 2, top: SH / 2 + blockH / 2 - FS * 0.05, width: groundW, height: FS * 0.48, borderRadius: '50%',
         background: 'radial-gradient(ellipse 50% 50% at 50% 50%, rgba(20,22,32,0.13), rgba(20,22,32,0) 70%)', opacity: ground, transform: `scale(${breath})`,
       }} />
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transform: `scale(${breath})` }}>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transform: `scale(${breath})`, textShadow: bd ? (bd.dark ? '0 2px 18px rgba(0,0,0,0.55)' : '0 1px 12px rgba(255,255,255,0.7)') : undefined }}>
         {lines.map((ln, li) => (
           <div key={li} style={{ display: 'flex', height: lineH, alignItems: 'center', whiteSpace: 'pre' }}>
             {Array.from(ln).map((c) => {

@@ -11,7 +11,7 @@
  "hold": 142,
  "slots": [
   {"id": "intro", "role": "title", "sample": "Ba bước\nđể bứt phá.", "max": 30, "note": "câu mở trên nền đen (chương 0); '\\n' = ngắt dòng"},
-  {"id": "intro_sub", "role": "subtitle", "sample": "Làm ít hơn, hiệu quả hơn — bắt đầu từ hôm nay.", "max": 70, "optional": true},
+  {"id": "intro_sub", "role": "subtitle", "sample": "Làm ít hơn, hiệu quả hơn. Bắt đầu từ hôm nay.", "max": 70, "optional": true},
   {"id": "intro_label", "role": "kicker", "sample": "Giới thiệu", "max": 20, "optional": true, "note": "nhãn nhỏ, tự in hoa"},
   {"id": "title1", "role": "title", "sample": "Một kế hoạch.\nCả nhóm rõ.", "max": 32, "note": "ý / bước 1 (nền xanh coban)"},
   {"id": "sub1", "role": "subtitle", "sample": "Mọi việc được chia rõ ràng cho từng người ngay từ đầu.", "max": 80, "optional": true},
@@ -33,5 +33,6 @@
   "tranh_khi": "Chỉ có 1 ý hoặc nhiều hơn 3 ý; nội dung cảm xúc, đời tư, không liên quan công việc / sản phẩm; đoạn nói quá ngắn (< 5 giây) vì cần thời gian đọc 3 chương.",
   "nang_luong": "vua",
   "chu_de": ["danh sách", "3 bước", "quy trình", "tính năng", "app", "làm việc nhóm", "tự động hóa", "năng suất", "chuyển chương"]
- }
+ },
+ "backdrop": false
 }

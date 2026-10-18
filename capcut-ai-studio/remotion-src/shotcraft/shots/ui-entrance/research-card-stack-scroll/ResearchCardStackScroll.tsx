@@ -1,7 +1,7 @@
 // research-card-stack-scroll — Research Stack 论文卡叠压滚流（motion-lab 定稿转原生 Remotion）
 // 深色论文卡沿微微向右下的轴线连续飞入并叠压在中心：入场是 translateY(-40)+scale 0.94→1
 // 的 6 帧短促 spring，落位带 1 帧压缩；只有最上一张全清晰渲染标题+作者+摘要，
-// 下方卡按 depth 递增 blur/变暗只露顶部标题条，背景浅灰横向 grid 同步移动做速度参照。
+// 下方卡按 depth 递增 blur/变暗只露顶部标题条，[Agent Edit] luoi ke ngang nen da bo (DOT 2).
 // 设计坐标 480×270（DesignStage 等比放大），参数表数值以此坐标系标定。
 //
 // [Agent Edit] o chu: items (tieu de tai lieu, 5-11 the — 已知坑: 12f/the thi <= 11 the moi co khung cuoi sach),
@@ -11,7 +11,7 @@
 // the cao theo so dong that.
 // Khung doc (portrait.mode = 'native'): DesignStage cao theo khung that (480 x height/4), the phong 1.5x, chu to hon.
 import React from 'react';
-import { useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, wrapLines, fitSize } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, wrapLines, fitSize } from '../../../runtime';
 import { DesignStage, E, lerp, rand, seg } from '../../../fixtures/Motion';
 import { BRAND } from '../../../fixtures/Brand';
 
@@ -42,6 +42,9 @@ export const ResearchCardStackScroll: React.FC = () => {
   const { height: SH } = useVideoConfig();
   const fonts = useShotFonts();
   const portrait = SH > 1080 * 1.2;
+  // nen anh AI: bo nen xam dac; chu dau trang nam tren nen them bong sang
+  const bd = !!useBackdrop();
+  const tsh = bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined;
   const items = useList('items', SAMPLE).slice(0, 11);
   const details = useList('details', []);
   const kicker = useText('kicker', 'Đang đọc tài liệu');
@@ -89,25 +92,16 @@ export const ResearchCardStackScroll: React.FC = () => {
   const kSize = kicker ? fitSize(kicker.toUpperCase(), { family: fam, size: kBase * 4, maxWidth: kAvail * 4, weight: 600, letterSpacingEm: 0.12, minSize: kBase * 4 * 0.55 }) / 4 : kBase;
 
   return (
-    <DesignStage bg="#FAFAFA" w={DW} h={DH}>
-      {/* 背景横向 grid：随滚流同步下移做速度参照（末张落定后与卡堆一起停） */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: -40,
-          backgroundImage: 'linear-gradient(rgba(0,0,0,.055) 1px,transparent 1px)',
-          backgroundSize: '100% 24px',
-          transform: `translateY(${((f / PER) * GAP * S) % 24}px)`,
-        }}
-      />
+    <DesignStage bg={bd ? 'transparent' : '#FAFAFA'} w={DW} h={DH}>
+      {/* [Agent Edit] DOT 2: bo luoi ke ngang trang tri cua nen (khong dung luoi ke o) */}
       {portrait ? (
         // 竖版页头：大号计数（每落一张跳一格、轻弹）+ 眉题，填满上方空间
-        <div style={{ position: 'absolute', left: DW / 2 - (CW / 2) * S, width: CW * S, top: kickY - 112, opacity: seg(frame, 0, 8, E.outCubic) }}>
+        <div style={{ position: 'absolute', left: DW / 2 - (CW / 2) * S, width: CW * S, top: kickY - 112, opacity: seg(frame, 0, 8, E.outCubic), textShadow: tsh }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, fontFamily: fam, fontVariantNumeric: 'tabular-nums', lineHeight: 1.1 }}>
             <span style={{ fontSize: 76, fontWeight: 700, color: INK, letterSpacing: '-0.04em', display: 'inline-block', transformOrigin: '0 80%', transform: `scale(${(1 + 0.06 * (1 - seg(frame - (landed - 1) * PER, 0, 6, E.outCubic))).toFixed(4)})` }}>
               {String(landed).padStart(2, '0')}
             </span>
-            <span style={{ fontSize: 30, fontWeight: 500, color: '#9a9a9a' }}>/ {String(N).padStart(2, '0')}</span>
+            <span style={{ fontSize: 30, fontWeight: 500, color: bd ? '#5a5a5a' : '#9a9a9a' }}>/ {String(N).padStart(2, '0')}</span>
           </div>
           {kicker ? (
             <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 7, fontFamily: fam, fontSize: kSize, fontWeight: 600, letterSpacing: '0.12em', color: '#3a3a3a', lineHeight: 1.35, whiteSpace: 'nowrap' }}>
@@ -120,7 +114,7 @@ export const ResearchCardStackScroll: React.FC = () => {
         <div style={{
           position: 'absolute', left: DW / 2 - (CW / 2) * S, width: CW * S, top: kickY, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
           fontFamily: fam, fontSize: kSize, lineHeight: 1.35, color: '#3a3a3a', fontWeight: 600, letterSpacing: '0.12em', whiteSpace: 'nowrap',
-          opacity: seg(frame, 0, 8, E.outCubic),
+          opacity: seg(frame, 0, 8, E.outCubic), textShadow: tsh,
         }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <span style={{ width: 4.5, height: 4.5, borderRadius: 4, background: BRAND.amber, display: 'inline-block', opacity: 0.55 + 0.45 * Math.abs(Math.sin(frame / 6)) }} />

@@ -15,7 +15,7 @@
 // mat dat rieng); nhip roi tinh tren TONG so ky tu, giu khung 4 -> 40 cua ban goc. Quang roi = tu mep tren khung xuong
 // mat dat (khung doc cao hon -> roi tu xa hon), bat nay giu ti le 30% / 9%.
 // Khung doc (portrait.mode = 'native'): chu to (~280px san khau), khoi chu + cau phu can giua theo chieu doc.
-import { useCurrentFrame, useShotFonts, useText, useVideoConfig, measureText, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useShotFonts, useText, useVideoConfig, measureText, wrapLines } from '../../../runtime';
 import React from 'react';
 
 import { G } from '../../../fixtures/Fixtures';
@@ -152,16 +152,19 @@ export const LetterDropPhysics: React.FC = () => {
   const pulse = 0.06 * inhale * (1 - snap);
   // 副标题：回正后浮出
   const sub = ramp(frame, SNAP + 4, 18, EASE.out);
+  // [Agent Edit] nen anh AI: bo nen sang, mat ban mo va hat (giu vach mat dat cho chu dung); chu co bong sang
+  const bd = useBackdrop();
+  const TSH = bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined;
 
   return (
     <div style={{ width: 1920, height: SH, overflow: 'hidden', position: 'relative', fontFamily: FAM }}>
-      <Backdrop tone="light" light={{ x: 0.5, y: 0.16 }} grain={0} vignette={0.16} />
+      {!bd && <Backdrop tone="light" light={{ x: 0.5, y: 0.16 }} grain={0} vignette={0.16} />}
 
       {/* 地面：最后一行地平线以下一块向下渐深的台面 + 每行一条两端淡出的发丝地平线 */}
-      <div style={{
+      {!bd && <div style={{
         position: 'absolute', left: 0, right: 0, top: lastFloor, bottom: 0,
         background: 'linear-gradient(180deg, rgba(40,42,52,0.035) 0%, rgba(40,42,52,0.012) 30%, rgba(40,42,52,0) 64%)',
-      }} />
+      }} />}
       {floors.map((fy, r) => (
         <React.Fragment key={r}>
           <div style={{
@@ -216,7 +219,7 @@ export const LetterDropPhysics: React.FC = () => {
               <SpeedBlur vx={0} vy={vy * (720 / DROP)} amount={t < T_FALL ? 0.26 : 0.12} max={16}>
                 <div style={{
                   position: 'absolute', left: PAD, right: PAD, top: PAD, bottom: PAD, textAlign: 'center',
-                  fontSize: SIZE, fontWeight: WEIGHT, lineHeight: 1, color: G.ink1, whiteSpace: 'pre',
+                  fontSize: SIZE, fontWeight: WEIGHT, lineHeight: 1, color: G.ink1, whiteSpace: 'pre', textShadow: TSH,
                   transform: `rotate(${rot.toFixed(3)}deg) scale(${sx.toFixed(4)}, ${sy.toFixed(4)})`,
                   transformOrigin: `50% ${((BASE / SIZE) * 100).toFixed(1)}%`,
                 }}>
@@ -232,14 +235,14 @@ export const LetterDropPhysics: React.FC = () => {
       {subLines.map((l, k) => (
         <div key={k} style={{
           position: 'absolute', left: 0, right: 0, top: lastFloor + subGap + k * SUB * 1.3, textAlign: 'center',
-          fontSize: SUB, fontWeight: 500, letterSpacing: tracking(SUB), color: G.ink2, lineHeight: 1.3,
+          fontSize: SUB, fontWeight: 500, letterSpacing: tracking(SUB), color: G.ink2, lineHeight: 1.3, textShadow: TSH,
           opacity: sub, transform: `translateY(${((1 - sub) * 10).toFixed(2)}px)`,
         }}>
           {l}
         </div>
       ))}
 
-      <Grain opacity={0.05} />
+      {!bd && <Grain opacity={0.05} />}
     </div>
   );
 };

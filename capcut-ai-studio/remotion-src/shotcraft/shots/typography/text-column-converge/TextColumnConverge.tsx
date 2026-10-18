@@ -19,7 +19,7 @@
 // Le trai = le phai (luon doi xung): khung ngang giu 618px goc va co 42px (tu dai -> le thu lai, toi thieu 240px roi moi
 // thu nho chu); khung doc (native) le 90px, co chu lon (toi da 120px) vua tu dai nhat -> doc ro tren dien thoai.
 // Nhip doi tu giu mau 16/12/9/8/7/8/10/12f (it tu hon -> moi tu o lau hon toi da 1.5x).
-import { useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, measureText, fitSize } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, measureText, fitSize } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, Easing, interpolate } from 'remotion';
 import { FONT, Grain, SpeedBlur, Vignette, ramp, EASE } from '../../../fixtures/Polish';
@@ -158,27 +158,30 @@ export const TextColumnConverge: React.FC = () => {
   // 落定后背后柔光
   const glow = ramp(cvT, CONVERGE_DUR - 6, 24, EASE.out);
   const u = FS / 42;
+  // [Agent Edit] nen anh AI: bo nen toi + quang + vignette + hat; chu co bong toi nhe
+  const bd = useBackdrop();
+  const TSH = bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined;
 
   return (
-    <AbsoluteFill style={{ background: '#08090c', overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : '#08090c', overflow: 'hidden' }}>
       {/* 冷色深底 + 中线上方极淡顶光 */}
-      <AbsoluteFill
+      {!bd && <AbsoluteFill
         style={{
           background:
             'radial-gradient(ellipse 60% 55% at 50% 40%, rgba(120,130,170,0.10), rgba(120,130,170,0) 70%), ' +
             'linear-gradient(180deg, #0d0e12 0%, #08090c 60%, #060709 100%)',
         }}
-      />
+      />}
       {/* 合拢落定后背后柔光微亮 */}
-      <div
+      {!bd && <div
         style={{
           position: 'absolute', left: 960 - 520 * Math.min(1.8, u), top: SH / 2 - 150 * Math.min(2, u), width: 1040 * Math.min(1.8, u), height: 300 * Math.min(2, u),
           background: 'radial-gradient(ellipse 50% 50% at 50% 50%, rgba(170,180,230,0.10), rgba(170,180,230,0) 70%)',
           opacity: glow,
         }}
-      />
+      />}
       {visible && (
-        <div style={{ position: 'absolute', inset: 0 }}>
+        <div style={{ position: 'absolute', inset: 0, textShadow: TSH }}>
           {/* lead：左缘定位（轮换期间钉死在左屏边距处）；随合拢由次级灰提亮 */}
           <SpeedBlur vx={v} amount={0.35} max={4 * Math.max(1, u * 0.7)}>
             <div style={{
@@ -194,7 +197,7 @@ export const TextColumnConverge: React.FC = () => {
             <div style={{
               ...font, position: 'absolute',
               right: 1920 - wordRight, top,
-              color: wordColor, textShadow: wordGlow,
+              color: wordColor, textShadow: wordGlow === 'none' ? TSH : wordGlow + (TSH ? ', ' + TSH : ''),
             }}>
               {cur.word}
             </div>
@@ -217,8 +220,8 @@ export const TextColumnConverge: React.FC = () => {
           ) : null}
         </div>
       )}
-      <Vignette strength={0.5} inner={0.45} color="#000000" />
-      <Grain opacity={0.07} blend="soft-light" />
+      {!bd && <Vignette strength={0.5} inner={0.45} color="#000000" />}
+      {!bd && <Grain opacity={0.07} blend="soft-light" />}
     </AbsoluteFill>
   );
 };

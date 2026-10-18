@@ -28,7 +28,7 @@
 // thanh tren (khong co -> 'Bảng điều khiển'). Khung doc (portrait.mode = 'native'): the giao dien HEP (be ngang thiet ke
 // 700 thay 1120, chu x1.6) xep luoi 2x2; toan canh ~0.77x phu kin be ngang, can canh ~1.6x (the phu ~94% be ngang);
 // bang camera / con tro tinh lai theo the — nhip (chay 16f / camera tre 2f, bay 20f, bam +22f, hop 8%, keo ve 24f) giu nguyen.
-import { useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, FONT, SpeedBlur, bezier, mix, ramp, softShadow } from '../../../fixtures/Polish';
@@ -199,7 +199,7 @@ const Revenue: React.FC<{ f: number; g: Geo; title: string; number: string }> = 
   const sb = segBox(g);
   const pn = parseNum(number);
   const vNew = number;
-  const vOld = pn ? fmtNum(pn, pn.n * 0.34) : '—';
+  const vOld = pn ? fmtNum(pn, pn.n * 0.34) : '0'; // [Agent Edit] khong dung dau gach lam so cho
   const numTop = g.portrait ? 250 : 168;
   const numW = g.portrait ? g.DW - 128 : g.DW - 64 - 64 - 220; // 竖屏：涨幅 chip 挪到分段控件右侧，数字占满宽
   const numSize = Math.min(fitSize(vNew, { family: fonts.sans, size: 150, maxWidth: numW, weight: 720, minSize: 60 }), fitSize(vOld, { family: fonts.sans, size: 150, maxWidth: numW, weight: 720, minSize: 60 }));
@@ -432,8 +432,9 @@ export const CursorFlyover: React.FC = () => {
   const RP = portrait ? 132 : 80; // 涟漪直径
   const TB = portrait ? 1.5 : 1; // 顶栏放大
   const name = BRAND.name || 'Bảng điều khiển';
+  const bd = useBackdrop(); // [Agent Edit] nen anh AI: bo nen dac code (cua so app van giu)
   return (
-    <AbsoluteFill style={{ background: L.bg[1] }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[1] }}>
       <Stage look={L} keyLight={{ x: 0.5, y: -0.1 }} fill={{ x: 0.1, y: 1 }} />
       <SpeedBlur vx={a.x - b.x} vy={a.y - b.y} amount={0.09} max={8}>
         <div style={{

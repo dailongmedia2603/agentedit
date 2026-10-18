@@ -29,5 +29,6 @@
   "tranh_khi": "Nội dung nhẹ nhàng, tâm sự, đời thường; không liên quan app/phần mềm; câu chốt dài; dùng nhiều lần trong một video (chỉ dành cho đỉnh năng lượng).",
   "nang_luong": "cao",
   "chu_de": ["app", "phần mềm", "ra mắt", "tính năng", "dashboard", "cao trào", "khẩu hiệu", "chuyển cảnh"]
- }
+ },
+ "backdrop": true
 }

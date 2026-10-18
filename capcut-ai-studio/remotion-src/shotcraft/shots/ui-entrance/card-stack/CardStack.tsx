@@ -26,7 +26,7 @@
 // Chu dai: tieu de / cau phu tu xuong dong theo be ngang that; ten the tu thu nho / 2 dong trong be ngang the.
 // Khung doc (portrait.mode = 'native'): ca chum the phong 1.3x, tieu de to o tren, cau phu duoi, khoi dat giua khung;
 // diem xuat phat cua the dat duoi mep khung that (van "bay vao tu ngoai khung").
-import { useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, useBrand, wrapLines, fitSize, BrandLogo } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, useBrand, wrapLines, fitSize, BrandLogo } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, FONT, mix, ramp, softShadow } from '../../../fixtures/Polish';
@@ -156,21 +156,24 @@ export const CardStack: React.FC = () => {
   const sheen = ramp(f, 108, 22, EASE.smooth);
   const headSize = portrait ? 38 : 22;
   let wi = 0;
+  // [Agent Edit] NEN ANH AI: bo nen sang (Stage tu bo) + dai phan quang mat ban; chu nam truc tiep tren nen co bong sang
+  const bd = useBackdrop();
+  const ts = bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined;
 
   return (
-    <AbsoluteFill style={{ background: L.bg[1] }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[1] }}>
       <Stage look={L} keyLight={{ x: 0.5, y: 0.12 }} fill={null} />
       {/* 地面：一道极淡的桌面反光带（theo vi tri chum the） */}
-      <div style={{ position: 'absolute', left: 0, right: 0, top: CY + 250 * PS, height: 220 * PS, background: `linear-gradient(180deg, ${alpha('#ffffff', 0)} 0%, ${alpha('#ffffff', 0.5)} 40%, ${alpha('#ffffff', 0)} 100%)` }} />
+      {!bd && <div style={{ position: 'absolute', left: 0, right: 0, top: CY + 250 * PS, height: 220 * PS, background: `linear-gradient(180deg, ${alpha('#ffffff', 0)} 0%, ${alpha('#ffffff', 0.5)} 40%, ${alpha('#ffffff', 0)} 100%)` }} />}
 
       {/* 眉题（画框装饰，不随相机） */}
-      <div style={{ position: 'absolute', left: 120, right: 420, top: headTop, display: 'flex', alignItems: 'center', gap: 14, opacity: ramp(f, 0, 12, EASE.out) }}>
+      <div style={{ position: 'absolute', left: 120, right: 420, top: headTop, display: 'flex', alignItems: 'center', gap: 14, opacity: ramp(f, 0, 12, EASE.out), textShadow: ts }}>
         {brand ? <ShotcraftMark size={headSize * 1.4} tone="light" /> : null}
         <div style={{ fontFamily: FONT.mono, fontSize: headSize, letterSpacing: '0.1em', color: L.ink2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {[brand?.name, kicker].filter(Boolean).join(' · ')}
         </div>
       </div>
-      <div style={{ position: 'absolute', right: 120, top: headTop, fontFamily: FONT.mono, fontSize: headSize, letterSpacing: '0.16em', color: L.ink3, opacity: ramp(f, 4, 12, EASE.out) }}>
+      <div style={{ position: 'absolute', right: 120, top: headTop, fontFamily: FONT.mono, fontSize: headSize, letterSpacing: '0.16em', color: L.ink3, opacity: ramp(f, 4, 12, EASE.out), textShadow: ts }}>
         {`${String(START.filter((s) => f >= s + 6).length).padStart(2, '0')} / ${String(N).padStart(2, '0')}`}
       </div>
 
@@ -180,7 +183,7 @@ export const CardStack: React.FC = () => {
         wi += l.split(/\s+/).filter(Boolean).length;
         return (
           <RiseLine key={i} text={l} start={st} each={18} gap={tGap}
-            style={{ position: 'absolute', left: 0, right: 0, top: titleTop + i * tLH, textAlign: 'center', fontFamily: fonts.sans, fontSize: TS, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.16, color: L.ink }} />
+            style={{ position: 'absolute', left: 0, right: 0, top: titleTop + i * tLH, textAlign: 'center', fontFamily: fonts.sans, fontSize: TS, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.16, color: L.ink, textShadow: ts }} />
         );
       })}
 
@@ -244,7 +247,7 @@ export const CardStack: React.FC = () => {
       {sLines.map((l, i) => (
         <div key={i} style={{
           position: 'absolute', left: 0, right: 0, top: subTop + i * sLH, textAlign: 'center', fontFamily: fonts.sans, fontSize: SSz, fontWeight: 450,
-          letterSpacing: '-0.015em', lineHeight: 1.3, color: L.ink2, whiteSpace: 'nowrap',
+          letterSpacing: '-0.015em', lineHeight: 1.3, color: L.ink2, whiteSpace: 'nowrap', textShadow: ts,
           opacity: ramp(f, 116 + i * 3, 14, EASE.out), transform: `translateY(${(1 - ramp(f, 116 + i * 3, 18, EASE.snappy)) * 16}px)`,
         }}>
           {l}

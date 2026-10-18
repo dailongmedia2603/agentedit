@@ -3,7 +3,7 @@
 //
 // 设计决定
 // - look：lime（石墨暗场 + 荧光黄绿）。和同卡的回弹款（ember · 后仰浏览器窗口 · 编辑式读数）拉开：
-//   这一款是"战术 HUD"语言——真实 projects 页做成一块正视的监视屏，舞台铺淡网格；
+//   这一款是"战术 HUD"语言——真实 projects 页做成一块正视的监视屏，[Agent Edit] luoi nen da bo (DOT 2)；
 //   一只荧光取景框在全景里扫描（card1 → card5 → card4，snappy 跳格），锁定 card4 后才急推。
 // - 撞停的重量：到位帧一记"冲击帧"——卡外整片先被荧光黄绿占满（1f），3f 内压成近黑（重物砸地扬起的
 //   一闪，而不是暖色曝光）；两道荧光冲击波环从卡缘向外扩散；震屏 14px·e^(−t/1.8)，首拍沿冲击方向下沉。
@@ -12,7 +12,7 @@
 //   左栏 TARGET / OWNER / STATE 等宽读数，右栏 240px 荧光「P0」+ 说明。尾帧是一张完整海报。
 //
 // 时间表（30fps，126f）
-//   0–4    全景：监视屏已在画面、网格与角标显影，舞台 zoom 极缓推近 2%
+//   0–4    全景：监视屏已在画面、角标显影，舞台 zoom 极缓推近 2%
 //   4–30   扫描：取景框落第 1 格（4f）→ 10f 跳第 2 格 → 20f 跳目标（各 8f snappy），28f 收紧锁定 + 锁定标签
 //   32–40  预备：zoom 回退 ~3%（smooth），取景框外扩一呼吸
 //   40–46  急推 6f：log 空间强 ease-in，目标屏幕位置单调收向落点；只这段做时间采样运动模糊
@@ -31,7 +31,7 @@
 //   - Khung doc (native): muc tieu dap vao nua tren, khoi so lieu (kicker -> so lon -> tieu de -> cau phu -> hang
 //     readouts 3 cot) xep DUOI, chu to.
 //   - LOOKS do theme doi tai cho -> look tinh TRONG component (khong chep o muc module).
-import { useBrand, useCurrentFrame, useImage, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
+import { useBackdrop, useBrand, useCurrentFrame, useImage, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
 import React, { useEffect, useState } from 'react';
 import { AbsoluteFill, Img, continueRender, delayRender } from 'remotion';
 import { EASE, Grain, Vignette, mix, ramp } from '../../../fixtures/Polish';
@@ -145,7 +145,7 @@ const reticleAt = (g: Geo, f: number): Box => {
 };
 
 // 一个相机姿态下的整个世界（监视屏 + 图片 + 取景框 + 冲击波），给运动模糊子帧复用
-const World: React.FC<{ g: Geo; L: Look; src?: string; f: number; frame: number }> = ({ g, L, src, f, frame }) => {
+const World: React.FC<{ g: Geo; L: Look; src?: string; f: number; frame: number; bd?: boolean }> = ({ g, L, src, f, frame, bd }) => {
   const LIME = L.accent;
   const { zoom, sx, sy } = camAt(g, f);
   const T = g.target;
@@ -165,13 +165,17 @@ const World: React.FC<{ g: Geo; L: Look; src?: string; f: number; frame: number 
   const crush = t >= 0;
   const impact = t < 0 ? 0 : t < 1 ? 0.8 : t < 2 ? 0.22 : 0;
   const [ar, ag, ab] = rgbOf(LIME).split(',').map(Number);
-  const scrimColor = `rgb(${Math.round(mix(11, ar, impact))},${Math.round(mix(12, ag, impact))},${Math.round(mix(9, ab, impact))})`;
+  // [Agent Edit] nen anh AI: sau cu dap, man hinh ngoai muc tieu tat han (de lo anh nen), lop ep toi chi con 1 lop mong
+  const scrimColor = bd
+    ? `rgba(${Math.round(mix(11, ar, impact))},${Math.round(mix(12, ag, impact))},${Math.round(mix(9, ab, impact))},${(impact > 0 ? impact : 0.12).toFixed(3)})`
+    : `rgb(${Math.round(mix(11, ar, impact))},${Math.round(mix(12, ag, impact))},${Math.round(mix(9, ab, impact))})`;
+  const screenOp = bd && crush ? (t < 1 ? 0.6 : 0) : 1;
   const tall = g.FW / g.FH < 0.5;
   return (
     <div style={{ position: 'absolute', left: 0, top: 0, width: 10, height: 10, transformOrigin: '0 0', transform: `translate(${tx.toFixed(2)}px, ${ty.toFixed(2)}px) scale(${zoom.toFixed(5)})` }}>
       {/* 监视屏 = 整张图 */}
       <div style={{
-        position: 'absolute', left: 0, top: 0, width: g.FW, height: g.FH, borderRadius: SCREEN_R, overflow: 'hidden', background: '#1a1d16',
+        position: 'absolute', left: 0, top: 0, width: g.FW, height: g.FH, borderRadius: SCREEN_R, overflow: 'hidden', background: '#1a1d16', opacity: screenOp,
         boxShadow: `0 0 0 ${px(1.5)}px ${alpha(LIME, 0.35)}, 0 ${px(40)}px ${px(110)}px ${px(-10)}px rgba(0,0,0,0.85)`,
       }}>
         {src ? <Img src={src} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: tall ? '50% 0%' : '50% 50%' }} /> : null}
@@ -186,7 +190,7 @@ const World: React.FC<{ g: Geo; L: Look; src?: string; f: number; frame: number 
         <div style={{ position: 'absolute', left: cx0, top: cy0, width: T.w, height: T.h, borderRadius: CARD_R, boxShadow: `0 0 0 ${px(9000).toFixed(1)}px ${scrimColor}` }} />
       )}
       {/* 压暗后的"桌面"：目标后一片极淡的冷灰光池（不是光晕——目标本身不发光） */}
-      {crush && (
+      {crush && !bd && (
         <div style={{
           position: 'absolute', left: cx0 - T.w * 1.6, top: cy0 - T.h * 1.3, width: T.w * 4.2, height: T.h * 3.6, pointerEvents: 'none',
           background: `radial-gradient(ellipse 50% 50% at 50% 46%, ${alpha('#c9d4b8', 0.09 * (1 - impact))}, ${alpha('#c9d4b8', 0)} 70%)`,
@@ -281,6 +285,10 @@ export const CrashImpactReal: React.FC = () => {
   const fonts = useShotFonts();
   const brand = useBrand();
   const portrait = SH > 1080 * 1.2;
+  const backdrop = useBackdrop();
+  const bd = !!backdrop;
+  // chu nam truc tiep tren nen anh: bong do nhe cho doc ro (chi khi co nen anh)
+  const tsh = bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined;
   // lime 的主光换成偏冷的灰绿：舞台光不抢荧光强调色（LOOKS 由 theme 原地改色 → 每次渲染取）
   const L: Look = { ...LOOKS.lime, light: '#9aa58a' };
   const LIME = L.accent;
@@ -392,38 +400,30 @@ export const CrashImpactReal: React.FC = () => {
   };
 
   return (
-    <AbsoluteFill style={{ background: L.bg[2], overflow: 'hidden' }}>
-      <Stage look={L} keyLight={{ x: 0.5, y: -0.1 }} fill={{ x: 0.5, y: 1.1 }} intensity={0.6} breathe={0.4} vignette={0.2}>
-        {/* 舞台网格：跟随相机 30% 的缩放做视差，急推后隐入暗场 */}
-        <div style={{
-          position: 'absolute', inset: -400, opacity: 0.55 * wide + 0.1,
-          transform: `scale(${(1 + (cam.zoom / g.zWide - 1) * 0.3).toFixed(4)})`,
-          backgroundImage: `linear-gradient(${alpha(LIME, 0.07)} 1.5px, transparent 1.5px), linear-gradient(90deg, ${alpha(LIME, 0.07)} 1.5px, transparent 1.5px)`,
-          backgroundSize: '64px 64px', backgroundPosition: '400px 400px',
-          WebkitMaskImage: 'radial-gradient(ellipse 60% 60% at 50% 50%, #000 30%, transparent 80%)',
-        }} />
-      </Stage>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[2], overflow: 'hidden' }}>
+      {/* [Agent Edit] bo luoi ke o trang tri cua san khau (DOT 2); nen anh AI -> Stage tu bo gradient */}
+      <Stage look={L} keyLight={{ x: 0.5, y: -0.1 }} fill={{ x: 0.5, y: 1.1 }} intensity={0.6} breathe={0.4} vignette={0.2} />
 
       {/* 震屏层：整图 + 遮罩 + 冲击波一起抖 */}
       <AbsoluteFill style={{ transform: `translate(${sx.toFixed(2)}px, ${sy.toFixed(2)}px) rotate(${rot.toFixed(4)}deg)` }}>
         {n > 1 ? (
           Array.from({ length: n }, (_, i) => (
             <AbsoluteFill key={i} style={{ opacity: 1 / (i + 1), filter: smear > 0.3 ? `blur(${smear.toFixed(2)}px)` : undefined }}>
-              <World g={g} L={L} src={src} f={frame - (SHUTTER * i) / (n - 1)} frame={frame} />
+              <World g={g} L={L} src={src} f={frame - (SHUTTER * i) / (n - 1)} frame={frame} bd={bd} />
             </AbsoluteFill>
           ))
         ) : (
-          <World g={g} L={L} src={src} f={frame} frame={frame} />
+          <World g={g} L={L} src={src} f={frame} frame={frame} bd={bd} />
         )}
       </AbsoluteFill>
 
       {/* 全景 HUD：监视屏上沿两角的等宽标签 + 取景框标签 */}
       <AbsoluteFill style={{ opacity: wide, pointerEvents: 'none' }}>
-        <div style={{ position: 'absolute', left: scrL, top: scrT - hudS * 2.3, display: 'flex', gap: liveSize * 0.6, alignItems: 'center', ...type(liveSize, 600, { mono: true }), lineHeight: 1.4, letterSpacing: '0.18em', color: L.ink2, whiteSpace: 'nowrap', opacity: ramp(frame, 0, 8, EASE.out) }}>
+        <div style={{ position: 'absolute', left: scrL, top: scrT - hudS * 2.3, display: 'flex', gap: liveSize * 0.6, alignItems: 'center', ...type(liveSize, 600, { mono: true }), lineHeight: 1.4, letterSpacing: '0.18em', color: L.ink2, whiteSpace: 'nowrap', opacity: ramp(frame, 0, 8, EASE.out), textShadow: tsh }}>
           <span style={{ width: liveSize * 0.45, height: liveSize * 0.45, borderRadius: liveSize, background: LIME, boxShadow: `0 0 12px ${alpha(LIME, 0.8)}`, flex: 'none' }} />
           {live}
         </div>
-        <div style={{ position: 'absolute', right: 1920 - scrR, top: scrT - hudS * 2.3, ...type(hudS, 600, { mono: true }), lineHeight: 1.4, letterSpacing: '0.18em', color: L.ink3, whiteSpace: 'nowrap' }}>
+        <div style={{ position: 'absolute', right: 1920 - scrR, top: scrT - hudS * 2.3, ...type(hudS, 600, { mono: true }), lineHeight: 1.4, letterSpacing: '0.18em', color: bd ? L.ink2 : L.ink3, whiteSpace: 'nowrap', textShadow: tsh }}>
           {lock > 0.5 ? 'ĐÃ KHOÁ' : 'ĐANG QUÉT'}
         </div>
         {frame >= 4 && (
@@ -442,7 +442,7 @@ export const CrashImpactReal: React.FC = () => {
       {frame >= 52 && (
         <AbsoluteFill style={{ pointerEvents: 'none', transform: `translate(${(sx * 0.4).toFixed(2)}px, ${(sy * 0.4).toFixed(2)}px)` }}>
           {!portrait && rows.length > 0 && (
-            <div style={{ position: 'absolute', left: leftX, top: Math.max(70, 540 - rows.length * 75), width: leftW }}>
+            <div style={{ position: 'absolute', left: leftX, top: Math.max(70, 540 - rows.length * 75), width: leftW, textShadow: tsh }}>
               {rows.map((row, i) => (
                 <Readout key={i} L={L} frame={frame} at={54 + i * 4} label={row.label} labelSize={rLabel} mb={44}>
                   {valueEl(i)}
@@ -450,13 +450,13 @@ export const CrashImpactReal: React.FC = () => {
               ))}
             </div>
           )}
-          <div style={{ position: 'absolute', left: rightX, top: rightY, width: colW, color: L.ink }}>
+          <div style={{ position: 'absolute', left: rightX, top: rightY, width: colW, color: L.ink, textShadow: tsh }}>
             {kicker ? (
               <div style={{ ...type(kSize, 700, { mono: true }), lineHeight: 1.4, letterSpacing: '0.2em', color: LIME, whiteSpace: 'nowrap', marginBottom: portrait ? 18 : 14, opacity: ramp(frame, 58, 10, EASE.out) }}>
                 {kicker.toUpperCase()}
               </div>
             ) : null}
-            <div style={{ ...type(nSize, 700, { mono: true }), lineHeight: 1.12, letterSpacing: '-0.04em', color: LIME, marginLeft: -nSize * 0.04, whiteSpace: 'nowrap', textShadow: `0 0 60px ${alpha(LIME, 0.35)}` }}>
+            <div style={{ ...type(nSize, 700, { mono: true }), lineHeight: 1.12, letterSpacing: '-0.04em', color: LIME, marginLeft: -nSize * 0.04, whiteSpace: 'nowrap', textShadow: `0 0 60px ${alpha(LIME, 0.35)}${tsh ? ', ' + tsh : ''}` }}>
               <TextReveal text={number} by="char" variant="rise" start={60} each={16} gap={nGap} />
             </div>
             <div style={{ height: 2, width: Math.min(colW, portrait ? 900 : 360), marginTop: ruleM, marginBottom: ruleM, background: alpha(L.ink, 0.2), transform: `scaleX(${ramp(frame, 68, 18, EASE.snappy).toFixed(4)})`, transformOrigin: '0 50%' }} />
@@ -500,8 +500,8 @@ export const CrashImpactReal: React.FC = () => {
           </div>
         </AbsoluteFill>
       )}
-      <Vignette strength={vig} inner={0.4} color={L.shadow} cy={0.5} />
-      <Grain opacity={0.07} blend="soft-light" />
+      <Vignette strength={bd ? vig * 0.45 : vig} inner={0.4} color={L.shadow} cy={0.5} />
+      {!bd && <Grain opacity={0.07} blend="soft-light" />}
     </AbsoluteFill>
   );
 };

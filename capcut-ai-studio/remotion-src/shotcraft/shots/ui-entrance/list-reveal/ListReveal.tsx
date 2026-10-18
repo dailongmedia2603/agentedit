@@ -25,7 +25,7 @@
 // So muc thay doi -> chieu cao hang + nhip vao tu tinh lai (muc cuoi van vao truoc khung 86). Khung doc (native): danh
 // sach rong 1700 xep tren, tieu de ben duoi (vao sau khi danh sach trai duoc nua — nhu goc), chu to 1.8x, ca khoi
 // can giua; lop troi cham ca khoi giu nguyen (khong ve vi tri o khung cuoi — dung the goc).
-import { useCurrentFrame, useVideoConfig, useText, useList, useShot, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useShot, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, bezier, ramp } from '../../../fixtures/Polish';
@@ -87,7 +87,7 @@ export const ListReveal: React.FC = () => {
   const badge = useText('badge', realItems ? '' : '3');
   const kicker = useText('kicker', 'BÀN LÀM VIỆC');
   const title = useText('title', 'Mọi cảnh quay, trong tầm tay.');
-  const subtitle = useText('subtitle', 'Công thức, bản dựng và kịch bản — chỉ cách một phím bấm.');
+  const subtitle = useText('subtitle', 'Công thức, bản dựng và kịch bản, chỉ cách một phím bấm.');
   const N = Math.max(1, items.length);
   // 末项分隔线（"退出"类收尾项）：只在示例侧栏里出现
   const lastSep = !realItems && N >= 4;
@@ -144,10 +144,14 @@ export const ListReveal: React.FC = () => {
   const labelRoom = ROW_W - (30 + 56 + 26 + 34) * RK - (keyW ? keyW + 20 * RK : 0);
   const labelSz = Math.min(...items.map((it, i) => fitSize(it, { family: fonts.sans, size: 46 * RK, maxWidth: labelRoom, weight: i === 0 ? 680 : 560, minSize: 20 })));
 
+  // [Agent Edit] nen anh AI: bo nen toi + bui sang (Stage tu bo gradient); chu tieu de nam tren nen -> bong do nhe
+  const bd = useBackdrop();
+  const bdShadow = bd ? (bd.dark ? '0 2px 18px rgba(0,0,0,0.55)' : '0 1px 12px rgba(255,255,255,0.7)') : undefined;
+
   return (
-    <AbsoluteFill style={{ background: L.bg[2], overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[2], overflow: 'hidden' }}>
       <Stage look={L} keyLight={{ x: 0.26, y: 0.02 }} fill={{ x: 0.85, y: 0.9 }} intensity={0.5} breathe={0.5} grain={0.09} vignette={0.6}>
-        <Dust look={L} count={22} seed={7} drift={0.12} opacity={0.3} />
+        {!bd && <Dust look={L} count={22} seed={7} drift={0.12} opacity={0.3} />}
       </Stage>
 
       {/* 列表：整体漂移层 */}
@@ -211,7 +215,7 @@ export const ListReveal: React.FC = () => {
       </div>
 
       {/* 标题：列表铺到一半才进（横向在右侧；纵向在列表下方） */}
-      <div style={{ position: 'absolute', left: titleLeft, top: titleTop, width: tW }}>
+      <div style={{ position: 'absolute', left: titleLeft, top: titleTop, width: tW, textShadow: bdShadow }}>
         {kicker ? (
           <div style={{ ...type(kSz, 600), lineHeight: 1.3, letterSpacing: '0.16em', color: L.accent2, whiteSpace: 'nowrap', opacity: ramp(frame, 40, 16, EASE.out) }}>
             {kicker}

@@ -26,7 +26,7 @@
 // Tieu de dai: co chu tu thu nho (ngang toi da 2 dong, doc 3 dong); nhip go nen lai de go xong truoc ~104f.
 // Khung doc (native): the giua rong gan het be ngang, ghi chu xep 2 hang tren / duoi the, con tro / ten to hon;
 // vi tri bay vao / lang vang / tu lai tinh theo hinh chu nhat cua the (khong con so cung 1920x1080).
-import { useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize, wrapLines, useShot } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize, wrapLines, useShot } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, ramp, mix } from '../../../fixtures/Polish';
@@ -198,7 +198,6 @@ export const CursorCastEnsemble: React.FC = () => {
 
   // 推镜：全程极缓，焦点在卡片中心偏上
   const cam = mix(1, 1.045, ramp(f, 0, 156, EASE.swift));
-  const camFar = mix(1, 1.02, ramp(f, 0, 156, EASE.swift));
 
   const gatherT = ramp(f, 98, 28, EASE.smooth);
   const typed = TYPE_AT.filter((t) => f >= t).length;
@@ -233,18 +232,15 @@ export const CursorCastEnsemble: React.FC = () => {
   ];
   const caretOn = typed < TITLE.length || Math.floor(f / 9) % 2 === 0;
 
+  // [Agent Edit] NEN ANH AI: bo nen sang (Stage tu bo gradient); ten bang nam truc tiep tren nen co bong sang
+  const bd = useBackdrop();
+  const ts = bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined;
   const avatarPop = (i: number) => springAt(f, ACTORS[i].delay + 8, { damping: 15, stiffness: 190 });
 
   return (
-    <AbsoluteFill style={{ background: L.bg[1], overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[1], overflow: 'hidden' }}>
       <Stage look={L} keyLight={{ x: 0.5, y: 0.36 }} fill={{ x: 0.9, y: 0.95 }} vignette={0.2} />
-      {/* 点阵画布（远层，视差最小）——放在 Stage 外，竖版时铺满整个高度 */}
-      <div style={{
-        position: 'absolute', inset: -60, transform: `scale(${camFar})`, transformOrigin: '50% 50%',
-        backgroundImage: `radial-gradient(${alpha(L.ink, 0.13)} 1.6px, transparent 1.9px)`, backgroundSize: '40px 40px',
-        WebkitMaskImage: 'radial-gradient(ellipse 75% 75% at 50% 50%, #000 45%, transparent 100%)',
-        maskImage: 'radial-gradient(ellipse 75% 75% at 50% 50%, #000 45%, transparent 100%)',
-      }} />
+      {/* [Agent Edit] bo luoi cham (点阵画布) trang tri theo yeu cau: khong luoi ke o / luoi cham */}
 
       {/* 画布层（便签 + 简报卡 + 光标）随推镜缩放 */}
       <div style={{ position: 'absolute', inset: 0, transform: `scale(${cam})`, transformOrigin: '50% 48%' }}>
@@ -332,8 +328,8 @@ export const CursorCastEnsemble: React.FC = () => {
         <span style={{ width: 48 * K, height: 48 * K, borderRadius: 14 * K, background: L.ink, display: 'grid', placeItems: 'center', flex: 'none' }}>
           <ShotcraftMark size={34 * K} tone="dark" />
         </span>
-        <span style={{ ...type(boardFs, 700), lineHeight: 1.3, color: L.ink, whiteSpace: 'nowrap' }}>{board}</span>
-        {!P && BRAND.name ? <span style={{ ...type(26, 500), lineHeight: 1.3, color: L.ink3, whiteSpace: 'nowrap' }}>{BRAND.name}</span> : null}
+        <span style={{ ...type(boardFs, 700), lineHeight: 1.3, color: L.ink, whiteSpace: 'nowrap', textShadow: ts }}>{board}</span>
+        {!P && BRAND.name ? <span style={{ ...type(26, 500), lineHeight: 1.3, color: L.ink3, whiteSpace: 'nowrap', textShadow: ts }}>{BRAND.name}</span> : null}
       </div>
       <div style={{ position: 'absolute', right: 64, top: P ? 106 : 46, display: 'flex', alignItems: 'center', gap: 18 * K, transform: `scale(${K})`, transformOrigin: '100% 0' }}>
         <span style={{ display: 'flex' }}>

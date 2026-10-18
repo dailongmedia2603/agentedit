@@ -23,7 +23,7 @@
 // Chu Nhat (3コマ打ち) va chu tieng Anh tren giay dong hoat da doi sang tieng Viet trung tinh.
 // Khung doc (portrait.mode = 'native'): the phong 1.5x, quang duong ngang 940px (15 buoc ~63px >= 30px — menh de cua the),
 // nhan tren, bang nhip hinh duoi, ca khoi giua khung; giay ve + khung chi chi phu het chieu cao.
-import { useCurrentFrame, useVideoConfig, useText, useBrand, useShotFonts, fitSize } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useBrand, useShotFonts, fitSize } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, Easing, interpolate } from 'remotion';
 import { EASE, mix, ramp } from '../../../fixtures/Polish';
@@ -203,20 +203,24 @@ export const SakugaTimingShift: React.FC = () => {
   const lineColor = inkBg ? L.bg[0] : L.ink;
   const tex: React.CSSProperties = { fontFamily: fonts.mono, fontSize: 26 * (portrait ? 1.3 : 1), fontWeight: 600, letterSpacing: '0.12em', lineHeight: 1.3 };
   const fgH = portrait ? SH - 220 : 860;
+  // [Agent Edit] NEN ANH AI: bo nen giay (Stage tu bo), lo dinh vi + khung chi xanh (van giay); khung xung kich (2 khung
+  // muc den) giu vi la hieu ung; chu nam truc tiep tren nen co bong sang
+  const bd = useBackdrop();
+  const ts = bd && !inkBg ? '0 1px 12px rgba(255,255,255,0.7)' : undefined;
 
   return (
-    <AbsoluteFill style={{ overflow: 'hidden', fontFamily: fonts.sans, background: L.bg[1] }}>
+    <AbsoluteFill style={{ overflow: 'hidden', fontFamily: fonts.sans, background: bd ? 'transparent' : L.bg[1] }}>
       <div style={{ position: 'absolute', inset: 0, transform: `scale(${cam.toFixed(5)})`, transformOrigin: '50% 46%' }}>
         <Stage look={L} keyLight={{ x: 0.45, y: 0.2 }} fill={null} grain={0.06} />
         {/* 动画纸：定位孔 */}
-        {[-1, 0, 1].map((k) => (
+        {!bd && [-1, 0, 1].map((k) => (
           <div key={k} style={{
             position: 'absolute', top: 34, left: 960 + k * 330 - (k === 0 ? 50 : 17), width: k === 0 ? 100 : 34, height: 34, borderRadius: 17,
             background: alpha(L.shadow, 0.13), boxShadow: `inset 0 3px 5px ${alpha(L.shadow, 0.22)}`,
           }} />
         ))}
         {/* 淡蓝铅笔 field guide：安全框 + 十字 + 刻度（phu het chieu cao that） */}
-        <svg width={1920} height={SH} style={{ position: 'absolute', inset: 0 }}>
+        {!bd && <svg width={1920} height={SH} style={{ position: 'absolute', inset: 0 }}>
           <g stroke={alpha(PENCIL, 0.22)} strokeWidth={1.5} fill="none">
             <rect x={110} y={110} width={1700} height={fgH} rx={4} />
             <rect x={260} y={110 + fgH * 0.093} width={1400} height={fgH * 0.814} strokeDasharray="10 8" />
@@ -225,7 +229,7 @@ export const SakugaTimingShift: React.FC = () => {
             {Array.from({ length: 17 }, (_, i) => <line key={i} x1={110 + i * 106.25} x2={110 + i * 106.25} y1={110} y2={124} />)}
           </g>
           <text x={1800} y={100} textAnchor="end" fill={alpha(PENCIL, 0.45)} fontSize={22} fontFamily={fonts.sans}>KHUNG 12</text>
-        </svg>
+        </svg>}
 
         {/* 冲击帧：墨底 + 集中线 */}
         {inkBg && (
@@ -269,7 +273,7 @@ export const SakugaTimingShift: React.FC = () => {
         </div>
 
         {/* 角标：nhip 3 / nhip 1（手绘沸腾） */}
-        <div style={{ position: 'absolute', left: portrait ? 110 : 150, top: LAB_Y, opacity: labelIn, transform: `translateY(${mix(16, 0, labelIn)}px)` }}>
+        <div style={{ position: 'absolute', left: portrait ? 110 : 150, top: LAB_Y, opacity: labelIn, textShadow: ts, transform: `translateY(${mix(16, 0, labelIn)}px)` }}>
           <div style={{ transform: `translate(${bx}px, ${by}px) rotate(${brot}deg) scale(${pop})`, transformOrigin: '0% 60%', display: 'inline-block' }}>
             <div style={{ fontFamily: fonts.sans, fontSize: labSz, fontWeight: 900, fontStyle: 'italic', color: onThrees ? lineColor : L.accent, letterSpacing: '-0.04em', lineHeight: portrait ? 1.25 : 1.12, whiteSpace: 'nowrap' }}>
               {onThrees ? before : after}
@@ -287,7 +291,7 @@ export const SakugaTimingShift: React.FC = () => {
         </div>
 
         {/* 右上：摄影表抬头（纹理字） */}
-        <div style={{ position: 'absolute', right: portrait ? 110 : 150, top: portrait ? 150 : 146, textAlign: 'right', opacity: labelIn }}>
+        <div style={{ position: 'absolute', right: portrait ? 110 : 150, top: portrait ? 150 : 146, textAlign: 'right', opacity: labelIn, textShadow: ts }}>
           <div style={{ ...tex, color: inkBg ? L.bg[2] : L.ink3 }}>CẢNH 012 · CẮT 04</div>
           <div style={{ ...tex, color: inkBg ? L.bg[2] : L.ink3, marginTop: 8 }}>
             {onThrees ? `A${String(drawing + 1).padStart(2, '0')} · 16 hình` : `B${String(Math.min(f - SWITCH, SETTLE - SWITCH) + 1).padStart(2, '0')} · ${SETTLE - SWITCH + 1} hình`}
@@ -321,7 +325,7 @@ export const SakugaTimingShift: React.FC = () => {
                 </div>
               );
             })}
-            <div style={{ position: 'absolute', left: 0, top: 92, width: STRIP_W, display: 'flex', justifyContent: 'space-between', fontFamily: fonts.sans, fontSize: 32, fontWeight: 500, lineHeight: 1.3, color: L.ink3 }}>
+            <div style={{ position: 'absolute', left: 0, top: 92, width: STRIP_W, display: 'flex', justifyContent: 'space-between', fontFamily: fonts.sans, fontSize: 32, fontWeight: 500, lineHeight: 1.3, color: L.ink3, textShadow: ts }}>
               <span>Bảng nhịp hình</span>
               <span style={{ fontSize: 28 }}>1 giây · 30 khung</span>
             </div>

@@ -31,7 +31,7 @@
 // camera (xoay rz + ti le + dich) nen van "dat" vao canh tong ket nhu ban goc.
 // Khung doc (portrait.mode = 'native'): the to hon (1560x1400), cac tram xep zic-zac theo chieu doc, ban tong ket xep
 // the o nua tren + chu o nua duoi; bui 3D phu kin chieu cao that.
-import { useCurrentFrame, useVideoConfig, useText, useBrand, useShotFonts, wrapLines, fitSize } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useBrand, useShotFonts, wrapLines, fitSize } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, FONT, bezier, mix, ramp } from '../../../fixtures/Polish';
@@ -277,9 +277,11 @@ const OverviewPlate: React.FC<{ frame: number; geo: Geo; kicker: string; title: 
   const g = Math.min(5, 16 / Math.max(1, nWords));
   const lhT = T.size * 1.14;
   const eyebrow = brand || kicker;
+  // [Agent Edit] nen anh AI: chu lac ban nam thang tren anh -> bong toi nhe de doc ro
+  const tsh: React.CSSProperties = useBackdrop() ? { textShadow: '0 2px 18px rgba(0,0,0,0.55)' } : {};
   let wi = 0;
   const block = (
-    <>
+    <div style={tsh}>
       {eyebrow ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, ...type(P ? 34 : 24, 600, { mono: true }), letterSpacing: `${mix(0.6, 0.16, kick).toFixed(3)}em`, color: GOLD, opacity: kick, whiteSpace: 'nowrap' }}>
           {brand ? <ShotcraftMark size={P ? 54 : 40} tone="dark" /> : null}
@@ -303,7 +305,7 @@ const OverviewPlate: React.FC<{ frame: number; geo: Geo; kicker: string; title: 
           {subLines.map((l, li) => <div key={li} style={{ whiteSpace: 'nowrap' }}>{l}</div>)}
         </div>
       ) : null}
-    </>
+    </div>
   );
   return (
     <div style={{ position: 'absolute', left: -960, top: -geo.SH / 2, width: 1920, height: geo.SH, pointerEvents: 'none' }}>
@@ -385,8 +387,9 @@ export const Basic3DScene: React.FC = () => {
   const { cam } = camAt(frame, geo.POSES);
   const O = geo.POSES[3];
   const plateT = `rotate(${(-cam.rz).toFixed(4)}deg) scale(${(1 / cam.s).toFixed(5)}) translate(${(O.x - cam.x).toFixed(2)}px,${(O.y - cam.y).toFixed(2)}px) scale(${O.s})`;
+  const bd = useBackdrop(); // [Agent Edit] nen anh AI: bo nen dac code
   return (
-    <AbsoluteFill style={{ background: L.bg[2] }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[2] }}>
       <Stage look={L} keyLight={{ x: 0.5, y: -0.08 }} fill={{ x: 0.85, y: 1.05 }} breathe={0.6} intensity={0.55} />
       <AbsoluteFill style={{ overflow: 'hidden' }}>
         {Array.from({ length: n }, (_, i) => (

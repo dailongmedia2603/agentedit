@@ -6,24 +6,93 @@
  "duration": 170,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
  "hold": 162,
  "slots": [
-  {"id": "items", "role": "label", "sample": "Điều hướng|Phân tích|Trợ lý AI|Số liệu trực tiếp|Thanh lệnh", "max": 22, "list": {"min": 3, "max": 5}, "note": "tên chú thích cho các lớp theo thứ tự: menu bên / biểu đồ / trợ lý AI / thẻ số liệu / thanh tìm kiếm"},
-  {"id": "notes", "role": "subtitle", "sample": "Mọi thứ chỉ cách một cú nhấp|Doanh thu, tiến độ, xu hướng|Gợi ý việc cần làm tiếp theo|Cập nhật từng giây|Thêm việc chỉ bằng một dòng", "max": 40, "list": {"min": 3, "max": 5}, "optional": true, "note": "mô tả ngắn dưới từng chú thích"},
-  {"id": "title", "role": "title", "sample": "Xây dựng từng lớp.", "max": 32, "note": "câu chốt hiện cuối cảnh"},
-  {"id": "subtitle", "role": "subtitle", "sample": "Mọi thứ bạn cần, gói gọn trong một nơi.", "max": 60, "optional": true}
+  {
+   "id": "items",
+   "role": "label",
+   "sample": "Điều hướng|Phân tích|Trợ lý AI|Số liệu trực tiếp|Thanh lệnh",
+   "max": 22,
+   "list": {
+    "min": 3,
+    "max": 5
+   },
+   "note": "tên chú thích cho các lớp theo thứ tự: menu bên / biểu đồ / trợ lý AI / thẻ số liệu / thanh tìm kiếm"
+  },
+  {
+   "id": "notes",
+   "role": "subtitle",
+   "sample": "Mọi thứ chỉ cách một cú nhấp|Doanh thu, tiến độ, xu hướng|Gợi ý việc cần làm tiếp theo|Cập nhật từng giây|Thêm việc chỉ bằng một dòng",
+   "max": 40,
+   "list": {
+    "min": 3,
+    "max": 5
+   },
+   "optional": true,
+   "note": "mô tả ngắn dưới từng chú thích"
+  },
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Xây dựng từng lớp.",
+   "max": 32,
+   "note": "câu chốt hiện cuối cảnh"
+  },
+  {
+   "id": "subtitle",
+   "role": "subtitle",
+   "sample": "Mọi thứ bạn cần, gói gọn trong một nơi.",
+   "max": 60,
+   "optional": true
+  }
  ],
  "images": [],
  "brand": "optional",
- "sfx": [{"at": 24, "type": "whoosh"}, {"at": 52, "type": "click"}, {"at": 108, "type": "swoosh"}, {"at": 134, "type": "boom"}, {"at": 140, "type": "pop"}],
+ "sfx": [
+  {
+   "at": 24,
+   "type": "whoosh"
+  },
+  {
+   "at": 52,
+   "type": "click"
+  },
+  {
+   "at": 108,
+   "type": "swoosh"
+  },
+  {
+   "at": 134,
+   "type": "boom"
+  },
+  {
+   "at": 140,
+   "type": "pop"
+  }
+ ],
  "vi": {
   "ten": "Bung tách lớp 3D giao diện (exploded view) có chú thích",
   "mo_ta": "Nền trắng xanh sạch, một bảng điều khiển phần mềm nằm nghiêng 3D như bo mạch trên bàn; 5 thành phần (menu, biểu đồ doanh thu, trợ lý AI, thẻ số liệu, thanh tìm kiếm) lần lượt bật lên cao tách lớp có bóng đổ, máy quay xoay chậm, các đường chú thích đánh số kéo ra kèm tên + mô tả; sau đó các lớp sập lại khớp vào nhau 'cạch', ánh sáng lướt qua và câu chốt lớn hiện ở góc.",
   "hop_khi": "Giải thích một sản phẩm/app/hệ thống GỒM NHỮNG PHẦN NÀO (cấu trúc, các module, kiến trúc); \"bên trong có gì\", \"gồm 5 phần chính\"; video công nghệ, SaaS, giới thiệu tính năng kiểu Apple.",
   "tranh_khi": "Không nói về phần mềm/sản phẩm số; chỉ có 1 ý; cần nhịp nhanh (cảnh dài ~5,7 giây, nhiều chữ nhỏ); video tone tối.",
   "nang_luong": "cao",
-  "chu_de": ["app", "phần mềm", "dashboard", "cấu trúc", "tính năng", "kiến trúc", "danh sách", "3D"]
- }
+  "chu_de": [
+   "app",
+   "phần mềm",
+   "dashboard",
+   "cấu trúc",
+   "tính năng",
+   "kiến trúc",
+   "danh sách",
+   "3D"
+  ]
+ },
+ "backdrop": true
 }

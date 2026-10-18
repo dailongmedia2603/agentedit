@@ -29,7 +29,7 @@
 // man hinh that phu kin tung the (cover, canh tren) — khong co thi ve giao dien gia (chu tieng Viet trung tinh).
 // Chu lon: do be ngang that, qua dai -> thu nho / 2 dong. Khung doc (native): ca cum (the, vong khoi, chu) phong to P
 // lan quanh tam khung, tuong chu nen phu kin chieu cao.
-import { useCurrentFrame, useVideoConfig, useText, useList, useImage, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
+import { useCurrentFrame, useVideoConfig, useText, useList, useImage, useShotFonts, useBackdrop, fitSize, wrapLines, measureText } from '../../../runtime';
 import React, { useId } from 'react';
 import { AbsoluteFill, interpolate, Easing } from 'remotion';
 import { EASE, FONT, Grain, Vignette, ramp, mix } from '../../../fixtures/Polish';
@@ -440,10 +440,14 @@ export const CardFlockTumble: React.FC = () => {
   const tracking = mix(0.06, -0.025, slam);
   const kickTop = cy - Math.max(bigH / 2 + kickSize * 1.4 + 40 * P, portrait ? 300 : 262) - kickSize * 0.6;
   const subTop = cy + Math.max(bigH / 2 + 40, portrait ? 270 : 200 - CY_OFF);
+  // [Agent Edit] DOT 2: co nen anh AI -> bo nen code (gradient cuc quang, tuong chu vien, quang sang, toi goc, hat);
+  // chu nam truc tiep tren anh -> bong toi nhe
+  const bd = useBackdrop();
+  const halo = bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined;
 
   return (
-    <AbsoluteFill style={{ background: L.bg[2] }}>
-      <Backdrop frame={frame} word={title.trim() || 'ĐỘT PHÁ'} SH={SH} cy={cy} />
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[2] }}>
+      {!bd && <Backdrop frame={frame} word={title.trim() || 'ĐỘT PHÁ'} SH={SH} cy={cy} />}
 
       {/* 卡片群（全程清晰：无 blur） */}
       {frame < CARD_OUT[1] + 2 && (
@@ -491,7 +495,7 @@ export const CardFlockTumble: React.FC = () => {
 
       {/* 巨字锁版：眉题 / 实心巨字 / 标语 */}
       {st >= 0 && (
-        <AbsoluteFill>
+        <AbsoluteFill style={{ textShadow: halo }}>
           {kicker.trim() || brandOn ? (
             <div style={{ position: 'absolute', top: kickTop, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 18 * P, whiteSpace: 'nowrap' }}>
               {brandOn ? <ShotcraftMark size={50 * P} tone="dark" frameProgress={ramp(frame, TEXT_T0 + 8, 12, EASE.out)} cutProgress={ramp(frame, TEXT_T0 + 14, 10, EASE.out)} /> : null}
@@ -503,14 +507,14 @@ export const CardFlockTumble: React.FC = () => {
           <div style={{
             position: 'absolute', left: 0, right: 0, top: cy - bigH / 2, display: 'flex', flexDirection: 'column', alignItems: 'center',
             opacity: textOp, transform: `scale(${textScale.toFixed(4)})`, transformOrigin: `50% ${bigH / 2}px`,
-            filter: `drop-shadow(0 0 ${(18 * glowK).toFixed(1)}px ${alpha(L.accent2, 0.55 * glowK)}) drop-shadow(0 0 ${(60 * glowK).toFixed(1)}px ${alpha(L.light, 0.5 * glowK)})`,
+            filter: `${bd ? 'drop-shadow(0 2px 18px rgba(0,0,0,0.55)) ' : ''}drop-shadow(0 0 ${(18 * glowK).toFixed(1)}px ${alpha(L.accent2, 0.55 * glowK)}) drop-shadow(0 0 ${(60 * glowK).toFixed(1)}px ${alpha(L.light, 0.5 * glowK)})`,
           }}>
             {bigLines.map((l, i) => (
               <div key={i} style={{
                 fontFamily: fonts.sans, fontWeight: 900, fontStyle: 'italic', fontSize: bigFs, lineHeight: `${bigLH}px`, whiteSpace: 'nowrap',
                 letterSpacing: `${tracking.toFixed(4)}em`,
                 backgroundImage: 'linear-gradient(180deg, #ffffff 0%, #fbf3ff 38%, #d8c2ff 72%, #b693ff 100%)',
-                WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent',
+                WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', textShadow: 'none', // bong o filter (text-shadow de len chu clip)
                 // background-clip:text 只画在元素盒内：上下留出越南语叠加声调（Ấ Ầ）的空间，再用负 margin 抵消
                 padding: '0.3em 0.08em 0.14em', margin: '-0.3em 0 -0.14em',
               }}>{l}</div>
@@ -523,8 +527,8 @@ export const CardFlockTumble: React.FC = () => {
           ))}
         </AbsoluteFill>
       )}
-      <Vignette strength={0.5} inner={0.48} color={L.shadow} />
-      <Grain opacity={0.08} blend="soft-light" />
+      {!bd && <Vignette strength={0.5} inner={0.48} color={L.shadow} />}
+      {!bd && <Grain opacity={0.08} blend="soft-light" />}
     </AbsoluteFill>
   );
 };

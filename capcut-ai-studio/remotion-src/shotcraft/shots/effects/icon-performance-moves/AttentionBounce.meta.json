@@ -6,27 +6,114 @@
  "duration": 156,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.25],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.25
+ ],
  "hold": 132,
  "slots": [
-  {"id": "kicker", "role": "kicker", "sample": "TÍNH NĂNG MỚI", "max": 28, "optional": true, "note": "nhãn đầu panel, in hoa; bỏ trống = 'MỚI TRÊN <thương hiệu>'"},
-  {"id": "title", "role": "title", "sample": "Dựng video nhanh gấp đôi.", "max": 40, "note": "tiêu đề panel (lợi ích chính của tính năng / bản cập nhật)"},
-  {"id": "items", "role": "item", "sample": "Tự cắt theo nhịp nhạc|Phụ đề tiếng Việt chuẩn|Hiệu ứng logo một chạm", "max": 32, "list": {"min": 2, "max": 4}, "note": "các điểm mới / tính năng con"},
-  {"id": "metas", "role": "label", "sample": "12 cảnh|AI|+ âm thanh", "max": 12, "list": {"min": 0, "max": 4}, "optional": true, "note": "nhãn nhỏ bên phải từng dòng (cùng thứ tự items)"},
-  {"id": "badge", "role": "number", "sample": "1", "max": 3, "optional": true, "note": "số trên chấm đỏ thông báo (vd 1, 3, 99+)"}
+  {
+   "id": "kicker",
+   "role": "kicker",
+   "sample": "TÍNH NĂNG MỚI",
+   "max": 28,
+   "optional": true,
+   "note": "nhãn đầu panel, in hoa; bỏ trống = 'MỚI TRÊN <thương hiệu>'"
+  },
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Dựng video nhanh gấp đôi.",
+   "max": 40,
+   "note": "tiêu đề panel (lợi ích chính của tính năng / bản cập nhật)"
+  },
+  {
+   "id": "items",
+   "role": "item",
+   "sample": "Tự cắt theo nhịp nhạc|Phụ đề tiếng Việt chuẩn|Hiệu ứng logo một chạm",
+   "max": 32,
+   "list": {
+    "min": 2,
+    "max": 4
+   },
+   "note": "các điểm mới / tính năng con"
+  },
+  {
+   "id": "metas",
+   "role": "label",
+   "sample": "12 cảnh|AI|+ âm thanh",
+   "max": 12,
+   "list": {
+    "min": 0,
+    "max": 4
+   },
+   "optional": true,
+   "note": "nhãn nhỏ bên phải từng dòng (cùng thứ tự items)"
+  },
+  {
+   "id": "badge",
+   "role": "number",
+   "sample": "1",
+   "max": 3,
+   "optional": true,
+   "note": "số trên chấm đỏ thông báo (vd 1, 3, 99+)"
+  }
  ],
  "images": [
-  {"id": "icon", "role": "product", "aspect": "1:1", "optional": true, "note": "icon app / logo sản phẩm vuông làm nhân vật nhảy; không có = logo thương hiệu video"}
+  {
+   "id": "icon",
+   "role": "product",
+   "aspect": "1:1",
+   "optional": true,
+   "note": "icon app / logo sản phẩm vuông làm nhân vật nhảy; không có = logo thương hiệu video"
+  }
  ],
  "brand": "optional",
- "sfx": [{"at": 26, "type": "pop"}, {"at": 46, "type": "pop"}, {"at": 70, "type": "pop"}, {"at": 98, "type": "boom"}, {"at": 100, "type": "ding"}, {"at": 106, "type": "swoosh"}],
+ "sfx": [
+  {
+   "at": 26,
+   "type": "pop"
+  },
+  {
+   "at": 46,
+   "type": "pop"
+  },
+  {
+   "at": 70,
+   "type": "pop"
+  },
+  {
+   "at": 98,
+   "type": "boom"
+  },
+  {
+   "at": 100,
+   "type": "ding"
+  },
+  {
+   "at": 106,
+   "type": "swoosh"
+  }
+ ],
  "vi": {
   "ten": "Icon app nhảy đòi chú ý — bật panel tính năng mới",
   "mo_ta": "Tường màu cát có nắng chiều qua rèm, thanh Dock kiểu macOS chạy ngang: icon app chính nhảy tại chỗ 4 lần mỗi lần cao hơn, chạm đất bị ép dẹt, tóe gợn sóng; các icon bên cạnh mờ dần, máy quay đẩy lại gần ở cú nhảy cao nhất. Đáp xong bật chấm đỏ thông báo, rồi một panel trắng bung ra với nhãn, tiêu đề và 2-4 dòng tính năng mới.",
   "hop_khi": "Giới thiệu tính năng mới / bản cập nhật của app, phần mềm, sản phẩm số: 'app vừa ra tính năng…', 'bản cập nhật mới có gì', có thông báo mới, khoe điểm mới của sản phẩm; tone vui, tò mò, mở màn một phần giới thiệu.",
   "tranh_khi": "Nội dung không liên quan app/sản phẩm số; số liệu nặng; tone nghiêm túc / tin buồn.",
   "nang_luong": "vua",
-  "chu_de": ["app", "tính năng mới", "cập nhật", "thông báo", "điện thoại", "máy tính", "ra mắt", "phần mềm"]
- }
+  "chu_de": [
+   "app",
+   "tính năng mới",
+   "cập nhật",
+   "thông báo",
+   "điện thoại",
+   "máy tính",
+   "ra mắt",
+   "phần mềm"
+  ]
+ },
+ "backdrop": true
 }

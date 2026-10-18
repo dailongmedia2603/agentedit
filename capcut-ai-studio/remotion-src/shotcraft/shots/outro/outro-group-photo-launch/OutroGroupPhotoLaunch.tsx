@@ -11,7 +11,7 @@
 //   - `bg` (tuy chon): nen mo phia sau; khong co -> nen giay am.
 //   - Chu: `name` (ten thuong hieu / kenh / san pham; bo trong = ten thuong hieu cua video) + `tagline` (cau chao cuoi).
 //   - Khung doc (native): cac manh xep thanh 2 cum tren / duoi, ten thuong hieu to giua khung (logo phia tren ten).
-import { useCurrentFrame, useVideoConfig, useText, useImage, useShot, useShotFonts, useBrand, fitSize, wrapLines, staticFile } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useImage, useShot, useShotFonts, useBrand, fitSize, wrapLines, staticFile } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, Img, interpolate, Easing } from 'remotion';
 import { EASE, Grain, SpeedBlur, ramp, velocity } from '../../../fixtures/Polish';
@@ -215,17 +215,19 @@ export const OutroGroupPhotoLaunch: React.FC = () => {
   })();
 
   const bgH = SH;
+  // [Agent Edit] nen anh AI: bo nen giay / anh nen mo / lop phu am / hat -> anh nen hien ra; cuoi canh van "tat den" (lop toi phu len)
+  const bd = useBackdrop();
   return (
-    <AbsoluteFill style={{ background: '#0f0d0a' }}>
-    <AbsoluteFill style={{ opacity: fadeOut, background: '#f3eee6' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : '#0f0d0a' }}>
+    <AbsoluteFill style={{ opacity: fadeOut, background: bd ? 'transparent' : '#f3eee6' }}>
       {/* group-photo layer under a slow crane-in camera */}
       <AbsoluteFill style={{ transform: `perspective(1400px) rotateX(${camTilt}deg) scale(${camScale})`, transformOrigin: '50% 45%' }}>
         {/* 背景：tuy chon anh nen that, blur hoa canh sau (chi lop nen bi mo, cac manh bay vao ro net) */}
-        <div style={{ position: 'absolute', left: -60, top: -60, width: 2040, height: bgH + 120, background: 'linear-gradient(180deg, #f6f1e8, #ece4d6)', filter: bgSrc ? `blur(${blur.toFixed(2)}px)` : undefined }}>
+        {!bd && <div style={{ position: 'absolute', left: -60, top: -60, width: 2040, height: bgH + 120, background: 'linear-gradient(180deg, #f6f1e8, #ece4d6)', filter: bgSrc ? `blur(${blur.toFixed(2)}px)` : undefined }}>
           {bgSrc ? <Img src={bgSrc} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
-        </div>
+        </div>}
         {/* warm scrim under the flying elements */}
-        <AbsoluteFill style={{ background: `radial-gradient(1200px ${portrait ? 2000 : 800}px at 50% 48%, rgba(250,247,242,0.82), rgba(250,247,242,0.55) 60%, rgba(250,247,242,0.35))`, pointerEvents: 'none' }} />
+        {!bd && <AbsoluteFill style={{ background: `radial-gradient(1200px ${portrait ? 2000 : 800}px at 50% 48%, rgba(250,247,242,0.82), rgba(250,247,242,0.55) 60%, rgba(250,247,242,0.35))`, pointerEvents: 'none' }} />}
 
         {/* group photo: elements fly in from all sides and settle around the wordmark */}
         <AbsoluteFill style={{ pointerEvents: 'none' }}>
@@ -334,7 +336,7 @@ export const OutroGroupPhotoLaunch: React.FC = () => {
             fontFamily: BRAND.font, fontSize: nameSize || 118, fontWeight: 700, lineHeight: 1.25, color: BRAND.ink, letterSpacing: `${0.03 + wordSpacing}em`, display: 'flex',
             flexDirection: portrait ? 'column' : 'row', alignItems: 'center', justifyContent: 'center', whiteSpace: 'nowrap',
             // letterpress：下沿 1px 纸面高光 + 一层极软的环境影，让字标"压"在合影之上而不是浮在纸上
-            textShadow: '0 1px 0 rgba(255,253,248,0.75), 0 14px 36px rgba(60,44,24,0.14)',
+            textShadow: bd ? '0 1px 12px rgba(255,255,255,0.7), 0 1px 0 rgba(255,253,248,0.75)' : '0 1px 0 rgba(255,253,248,0.75), 0 14px 36px rgba(60,44,24,0.14)',
           }}>
             {hasMark ? markEl : null}
             {NAME ? (
@@ -362,7 +364,7 @@ export const OutroGroupPhotoLaunch: React.FC = () => {
           </div>
           {tagLines.length ? (
             <div style={{
-              fontFamily: fonts.sans, fontSize: tagFs, fontWeight: 500, lineHeight: 1.35, letterSpacing: '0.1em', color: 'oklch(42% 0.008 82)', marginTop: portrait ? 44 : 30,
+              fontFamily: fonts.sans, fontSize: tagFs, fontWeight: 500, lineHeight: 1.35, letterSpacing: '0.1em', color: 'oklch(42% 0.008 82)', marginTop: portrait ? 44 : 30, textShadow: bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined,
               opacity: tag, transform: `translateY(${(1 - tag) * 6}px)`,
             }}>
               {tagLines.map((l, j) => <div key={j} style={{ whiteSpace: 'nowrap' }}>{l}</div>)}
@@ -371,8 +373,9 @@ export const OutroGroupPhotoLaunch: React.FC = () => {
         </div>
       </AbsoluteFill>
       {/* 极弱胶片颗粒：大面积奶白纸面防色带 */}
-      <Grain opacity={0.045} />
+      {!bd && <Grain opacity={0.045} />}
     </AbsoluteFill>
+    {bd && fadeOut < 1 ? <AbsoluteFill style={{ background: '#0f0d0a', opacity: 1 - fadeOut }} /> : null}
     </AbsoluteFill>
   );
 };

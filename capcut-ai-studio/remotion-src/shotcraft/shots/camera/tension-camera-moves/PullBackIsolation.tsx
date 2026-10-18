@@ -15,7 +15,7 @@
 // Viet trung tinh (Card cua fixtures con chu tieng Anh). Chu that dai ngan bat ky: tu thu nho vua be ngang the.
 // Khung doc (portrait.mode = 'native'): 14 the anh em xep phu ca chieu cao, camera bat dau 3.2x (the chinh gan kin be
 // ngang) va keo lui ve 1.3x (the chinh van doc ro tren dien thoai); khung ngang giu nguyen 2.2x -> 0.62x.
-import { useCurrentFrame, useShotFonts, useText, useVideoConfig, fitSize, measureText } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useShotFonts, useText, useVideoConfig, fitSize, measureText } from '../../../runtime';
 import React from 'react';
 import { interpolate, Easing, AbsoluteFill } from 'remotion';
 import { G } from '../../../fixtures/Fixtures';
@@ -159,6 +159,7 @@ export const PullBackIsolation: React.FC = () => {
   const frame = useCurrentFrame();
   const { height: SH } = useVideoConfig();
   const portrait = SH > 1080 * 1.2;
+  const bd = useBackdrop(); // [Agent Edit] nen anh AI: bo nen code, canh 'chim vao bong toi' = lop toi ban trong suot tren anh
   const numText = useText('number', '99,9%').trim();
   const label = useText('label', 'Tỉ lệ khách hài lòng');
   const badge = useText('badge', '90 ngày');
@@ -198,11 +199,17 @@ export const PullBackIsolation: React.FC = () => {
   const glow = interpolate(frame, [60, 100], [0, 1], { easing: Easing.inOut(Easing.quad), ...clamp });
 
   return (
-    <AbsoluteFill style={{ background: G.dark, overflow: 'hidden' }}>
-      <Backdrop tone="light" light={{ x: 0.5, y: 0.3 }} grain={0} />
-      <AbsoluteFill style={{ opacity: bgT }}>
-        <Backdrop tone="dark" light={{ x: 0.5, y: 0.5 }} accent="#5b63d3" grain={0} vignette={0.6} />
-      </AbsoluteFill>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : G.dark, overflow: 'hidden' }}>
+      {bd ? (
+        <AbsoluteFill style={{ background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(4,5,10,0.3) 0%, rgba(4,5,10,0.62) 100%)', opacity: bgT }} />
+      ) : (
+        <>
+          <Backdrop tone="light" light={{ x: 0.5, y: 0.3 }} grain={0} />
+          <AbsoluteFill style={{ opacity: bgT }}>
+            <Backdrop tone="dark" light={{ x: 0.5, y: 0.5 }} accent="#5b63d3" grain={0} vignette={0.6} />
+          </AbsoluteFill>
+        </>
+      )}
 
       {/* 相机容器：按 Z 倍布局，再以主卡中心（画面中心）为原点 scale(scale/Z) */}
       <div
@@ -261,7 +268,7 @@ export const PullBackIsolation: React.FC = () => {
           </div>
         </div>
       </div>
-      <Grain opacity={mix(0.05, 0.09, bgT)} blend={bgT > 0.5 ? 'soft-light' : 'overlay'} />
+      {!bd && <Grain opacity={mix(0.05, 0.09, bgT)} blend={bgT > 0.5 ? 'soft-light' : 'overlay'} />}
     </AbsoluteFill>
   );
 };

@@ -215,7 +215,17 @@ const ShotScene: React.FC<{ s: RSScene; base?: string; theme?: RenderSpec['shotT
   const images: Record<string, string> = {}
   for (const [k, v] of Object.entries(sh.images || {})) if (v) images[k] = mediaUrl(base, v)
   return (
-    <ShotPlayer id={sh.id} texts={sh.texts} images={images} rate={sh.rate} width={W} height={H} theme={theme || null} brand={sh.brand || null} />
+    <ShotPlayer
+      id={sh.id}
+      texts={sh.texts}
+      images={images}
+      rate={sh.rate}
+      width={W}
+      height={H}
+      theme={theme || null}
+      brand={sh.brand || null}
+      backdrop={sh.backdrop ? mediaUrl(base, sh.backdrop) : null}
+    />
   )
 }
 

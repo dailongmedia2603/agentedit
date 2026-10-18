@@ -24,7 +24,7 @@
 // Chu dai ngan bat ky: nhan / so tu thu nho vua be ngang the; mo ta tu xuong dong (2 dong, dai hon -> co nho, 3 dong).
 // Khung doc (portrait.mode = 'native'): 3 the xep DOC tren mat ban nghieng (the nam ngang 1400x640), camera theo the
 // duoc diem ten theo truc doc; khung ngang giu bo cuc goc (3 the 420x600 thanh hang).
-import { useCurrentFrame, useShotFonts, useList, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useShotFonts, useList, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, ramp } from '../../../fixtures/Polish';
@@ -219,12 +219,14 @@ export const ContactShadowLift: React.FC = () => {
   let wi = 0;
   const tGap = Math.min(4, 28 / Math.max(1, title.split(/\s+/).filter(Boolean).length)); // 词间隔按词数压密
 
+  // [Agent Edit] nen anh AI: bo nen dac (Stage tu bo gradient); tieu de tren nen co bong nhe
+  const bd = useBackdrop();
   return (
-    <AbsoluteFill style={{ background: L.bg[1], overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[1], overflow: 'hidden' }}>
       <Stage look={L} keyLight={{ x: 0.3, y: 0.05 }} fill={null} grain={0.045} vignette={0.2} />
 
       {/* 标题（屏幕空间，不进 3D） */}
-      <div style={{ position: 'absolute', top: titleTop, left: 0, right: 0, textAlign: 'center' }}>
+      <div style={{ position: 'absolute', top: titleTop, left: 0, right: 0, textAlign: 'center', textShadow: bd ? (bd.dark ? '0 2px 18px rgba(0,0,0,0.55)' : '0 1px 12px rgba(255,255,255,0.7)') : undefined }}>
         {kicker ? (
           <div style={{ ...type(kSize, 600, { mono: true }), letterSpacing: '0.16em', color: L.ink3, opacity: ramp(frame, 0, 14, EASE.out), lineHeight: 1.3 }}>
             {kicker}
@@ -247,13 +249,7 @@ export const ContactShadowLift: React.FC = () => {
           transform: `${portrait ? `translateY(${follow.toFixed(2)}px)` : `translateX(${follow.toFixed(2)}px)`} scale(${push.toFixed(5)}) rotateX(${tilt.toFixed(3)}deg)`,
           transformOrigin: '50% 60%',
         }}>
-          {/* 桌面点阵：让"桌面"这个平面在斜俯拍下有实在的透视（远疏近密），四周渐隐 */}
-          <div style={{
-            position: 'absolute', left: -700, top: -520, width: DESK_W + 1400, height: DESK_H + 1000,
-            backgroundImage: `radial-gradient(circle, ${alpha(L.ink, 0.13)} 1.6px, transparent 2.2px)`, backgroundSize: '44px 44px',
-            backgroundPosition: '-6px 14px',
-            WebkitMaskImage: 'radial-gradient(ellipse 50% 50% at 50% 52%, #000 30%, transparent 78%)',
-          }} />
+          {/* [Agent Edit] bo luoi cham mat ban (khong luoi cham trang tri) */}
           {CARDS.map((d, i) => {
             const { lift, s } = motions[i];
             const l = Math.max(0, lift);

@@ -6,30 +6,119 @@
  "duration": 190,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
  "hold": 166,
  "slots": [
-  {"id": "kicker_a", "role": "kicker", "sample": "CHUẨN BỊ", "max": 16, "optional": true, "note": "nhãn chặng 1 (đi kèm số 01), in hoa ngắn"},
-  {"id": "task", "role": "label", "sample": "Khóa học mới", "max": 28, "note": "việc đang được hoàn thành trên thẻ tiến độ"},
-  {"id": "task_sub", "role": "label", "sample": "12 bài học · 4 giờ video", "max": 34, "optional": true},
-  {"id": "status", "role": "label", "sample": "Sẵn sàng ra mắt", "max": 24, "note": "trạng thái khi thanh tiến độ đầy 100%"},
-  {"id": "kicker_b", "role": "kicker", "sample": "RA MẮT", "max": 16, "optional": true, "note": "nhãn chặng 2 (số 02)"},
-  {"id": "title", "role": "title", "sample": "Chính thức lên sóng.", "max": 40, "note": "câu chốt bên cạnh khung tranh ở cảnh sau"},
-  {"id": "subtitle", "role": "subtitle", "sample": "Học mọi lúc, ngay trên điện thoại", "max": 60, "optional": true},
-  {"id": "poster", "role": "label", "sample": "BẮT ĐẦU NGAY", "max": 22, "optional": true, "note": "chữ to trên tranh phẳng trong khung (1–3 từ); bỏ qua khi có ảnh"}
+  {
+   "id": "kicker_a",
+   "role": "kicker",
+   "sample": "CHUẨN BỊ",
+   "max": 16,
+   "optional": true,
+   "note": "nhãn chặng 1 (đi kèm số 01), in hoa ngắn"
+  },
+  {
+   "id": "task",
+   "role": "label",
+   "sample": "Khóa học mới",
+   "max": 28,
+   "note": "việc đang được hoàn thành trên thẻ tiến độ"
+  },
+  {
+   "id": "task_sub",
+   "role": "label",
+   "sample": "12 bài học · 4 giờ video",
+   "max": 34,
+   "optional": true
+  },
+  {
+   "id": "status",
+   "role": "label",
+   "sample": "Sẵn sàng ra mắt",
+   "max": 24,
+   "note": "trạng thái khi thanh tiến độ đầy 100%"
+  },
+  {
+   "id": "kicker_b",
+   "role": "kicker",
+   "sample": "RA MẮT",
+   "max": 16,
+   "optional": true,
+   "note": "nhãn chặng 2 (số 02)"
+  },
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Chính thức lên sóng.",
+   "max": 40,
+   "note": "câu chốt bên cạnh khung tranh ở cảnh sau"
+  },
+  {
+   "id": "subtitle",
+   "role": "subtitle",
+   "sample": "Học mọi lúc, ngay trên điện thoại",
+   "max": 60,
+   "optional": true
+  },
+  {
+   "id": "poster",
+   "role": "label",
+   "sample": "BẮT ĐẦU NGAY",
+   "max": 22,
+   "optional": true,
+   "note": "chữ to trên tranh phẳng trong khung (1–3 từ); bỏ qua khi có ảnh"
+  }
  ],
  "images": [
-  {"id": "photo", "role": "photo", "aspect": "16:10", "optional": true, "note": "ảnh kết quả / sản phẩm hiện trong khung khi khung khép lại; không có → tranh phẳng mặt trời + đồi kiểu Saul Bass"}
+  {
+   "id": "photo",
+   "role": "photo",
+   "aspect": "16:10",
+   "optional": true,
+   "note": "ảnh kết quả / sản phẩm hiện trong khung khi khung khép lại; không có → tranh phẳng mặt trời + đồi kiểu Saul Bass"
+  }
  ],
  "brand": "none",
- "sfx": [{"at": 4, "type": "riser"}, {"at": 40, "type": "ding"}, {"at": 46, "type": "whoosh"}, {"at": 136, "type": "click"}],
+ "sfx": [
+  {
+   "at": 4,
+   "type": "riser"
+  },
+  {
+   "at": 40,
+   "type": "ding"
+  },
+  {
+   "at": 46,
+   "type": "whoosh"
+  },
+  {
+   "at": 136,
+   "type": "click"
+  }
+ ],
  "vi": {
   "ten": "Đường kẻ dẫn đường — từ tiến độ 100% sang thành quả",
   "mo_ta": "Nền giấy màu cát. Thẻ tiến độ: thanh mực đen chạy 0→100% (số % to đếm theo), đầy thì hiện dấu tích + trạng thái; ngay đó đầu bút cam kéo thanh mực vươn ra khỏi thẻ, máy quay lia ngang theo đường kẻ sang cảnh mới; đường kẻ rẽ vuông góc vẽ thành một khung tranh, khung khép lại thì ảnh / tranh phẳng (mặt trời, đồi) hiện ra, bên cạnh là tiêu đề chạy lên. Một đường liền, không có cú cắt.",
   "hop_khi": "Chuyển từ \"đang làm / chuẩn bị\" sang \"kết quả / ra mắt\": hoàn thành dự án, khóa học lên sóng, sản phẩm ra mắt, trước-sau, từ kế hoạch tới thành quả; chuyển cảnh chủ đạo duy nhất của video.",
   "tranh_khi": "Dùng hơn 1 lần trong video; nội dung không có ý \"hoàn thành → kết quả\"; video tông tối; cần cảnh ngắn dưới 5 giây.",
   "nang_luong": "vua",
-  "chu_de": ["chuyển cảnh", "tiến độ", "hoàn thành", "ra mắt", "kết quả", "trước sau", "dự án", "khóa học"]
- }
+  "chu_de": [
+   "chuyển cảnh",
+   "tiến độ",
+   "hoàn thành",
+   "ra mắt",
+   "kết quả",
+   "trước sau",
+   "dự án",
+   "khóa học"
+  ]
+ },
+ "backdrop": true
 }

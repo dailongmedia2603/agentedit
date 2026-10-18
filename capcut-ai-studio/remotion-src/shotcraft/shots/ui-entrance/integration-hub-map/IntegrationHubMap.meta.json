@@ -21,10 +21,11 @@
  "sfx": [{"at": 14, "type": "whoosh"}, {"at": 21, "type": "boom"}, {"at": 52, "type": "pop"}, {"at": 62, "type": "riser"}],
  "vi": {
   "ten": "Lật trang cũ thành trung tâm — 5 ứng dụng nối ống sáng",
-  "mo_ta": "Nền tối tím neon, cận cảnh một trang tài liệu 'cách làm cũ'; trang lật nhanh 180° (chớp sáng ở cạnh) thành trang quản lý mới và lùi máy ra. Năm biểu tượng ứng dụng (web, giỏ hàng, email, tin nhắn, biểu đồ) cùng bật lên quanh trang, rồi năm ống sáng cầu vồng cùng lúc nối vào, các chấm sáng chạy liên tục theo ống vào trang như đang truyền dữ liệu. Khung dọc: trang to giữa, 3 biểu tượng trên, 2 dưới.",
+  "mo_ta": "Trên ảnh nền chủ đề (hoặc nền tối tím neon), cận cảnh một trang tài liệu 'cách làm cũ'; trang lật nhanh 180° (chớp sáng ở cạnh) thành trang quản lý mới và lùi máy ra. Năm biểu tượng ứng dụng (web, giỏ hàng, email, tin nhắn, biểu đồ) cùng bật lên quanh trang, rồi năm ống sáng cầu vồng cùng lúc nối vào, các chấm sáng chạy liên tục theo ống vào trang như đang truyền dữ liệu. Khung dọc: trang to giữa, 3 biểu tượng trên, 2 dưới.",
   "hop_khi": "Nói về TÍCH HỢP / kết nối mọi công cụ về một nơi (\"quản lý tất cả trong một app\", \"đồng bộ Shopee, Zalo, website\"), chuyển từ cách làm thủ công sang hệ thống mới, ra mắt phiên bản mới, tự động hoá, AI gom dữ liệu.",
   "tranh_khi": "Không nói về phần mềm / công cụ / quy trình; cần hiện logo thật của các ứng dụng (đây là icon chung); video tone sáng nhẹ nhàng.",
   "nang_luong": "cao",
   "chu_de": ["tích hợp", "kết nối", "app", "phần mềm", "tự động hoá", "chuyển đổi số", "dashboard", "AI", "phiên bản mới"]
- }
+ },
+ "backdrop": true
 }

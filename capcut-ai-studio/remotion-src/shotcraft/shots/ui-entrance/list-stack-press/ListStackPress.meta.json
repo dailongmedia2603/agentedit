@@ -28,5 +28,6 @@
   "tranh_khi": "Các mục cần so sánh với nhau hoặc có số liệu biểu đồ; chỉ 1-2 mục; nội dung cảm xúc / con người; câu mục quá dài (> 60 ký tự).",
   "nang_luong": "vua",
   "chu_de": ["danh sách", "bản tin", "tin tức", "hộp thư", "tổng hợp", "đếm số", "tích lũy", "app", "feed"]
- }
+ },
+ "backdrop": true
 }

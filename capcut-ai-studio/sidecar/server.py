@@ -1453,6 +1453,17 @@ def _remotion_autoplan(b):
         for _c in _thu_tu:
             logger.info("B1 thu tu: %s", _c)
             run_log.emit("note", "B1: %s" % _c, step="B1-select", level="warn")
+        # NGAP NGUNG / LAP CHU Claude chi ra (cat_vap) -> kiem bang code, dung cho than video + ban sao hook
+        import speech_cut
+        _vap_doi = []
+        stutter_cuts = speech_cut.normalize_stutter_cuts(
+            selection.get("cat_vap"),
+            speech_cut.words_by_source({"asr_words": {src.get("id"): src["asr_words"] for src in brief.get("sources") or []
+                                                      if isinstance(src, dict) and src.get("asr_words")}}), _vap_doi)
+        if stutter_cuts:
+            run_log.emit("note", "B1: Claude chỉ ra %d chỗ nói vấp / lặp chữ cần cắt: %s" % (
+                len(stutter_cuts), " | ".join("%.1fs \"%s\"" % (c["start"], c["bo"]) for c in stutter_cuts[:15])),
+                step="B1-select", output=stutter_cuts)
         _bo = providers.cau_bi_bo(transcript_data, selection["selections"])
         if _bo:
             run_log.emit("note", "B1 bỏ %d câu (chỉ nên là tiếng đệm / câu nói lặp): %s" % (
@@ -1510,6 +1521,7 @@ def _remotion_autoplan(b):
             _lim = speech_cut.pause_limit(story)
             _segs = speech_cut.tighten_pauses(_asr_plan, _segs, _lim, _doi)
             _segs = speech_cut.cut_restarts(_asr_plan, _segs, _doi)
+            _segs = speech_cut.cut_stutters(_asr_plan, _segs, stutter_cuts, _doi)
             speech_cut.fix_segment_cuts(_asr_plan, _segs, _doi)
             # cat an toan co the noi lai khoang lang (noi cho het cau / noi lien) -> siet lai lan cuoi + KIEM LAI
             _segs, _ = plan_guard.chuan_hoa_segments(_segs, _doi)
@@ -1659,6 +1671,10 @@ def _remotion_autoplan(b):
 
         # Tai nguyen hinh: anh AI (Codex, song song) + khung cat tu video nguon (+ tach nen) + tu lieu nguoi dung.
         # Chay NEN: R5 / chu anh / FX / B6 / B7 khong dung file anh -> khong phai cho Codex (~1-4 phut).
+        # KHO SHOT: canh shot ho tro nen anh ma R4 chua khai anh nen -> tu khai anh nen AI theo chu de (2026-10-18)
+        _bg_n = shot_lib.ensure_backdrops(design, story)
+        if _bg_n:
+            run_log.emit("note", "Cảnh shot: thêm %d ảnh nền AI theo chủ đề video" % _bg_n, step="R4-design")
         assets = motion_design.normalize_assets(design.get("assets"), source_videos,
                                                 user_assets=user_media.as_assets(um_items))
         if um_items:
@@ -1701,6 +1717,14 @@ def _remotion_autoplan(b):
             layers=layer_texts, subtitle_style=(kit or {}).get("subtitle") if layer_texts else None,
             log=logger.info, brand=brand), optional=True) or {}
 
+        # KHONG DAU GACH trong chu hien thi (user 2026-10-18) — truoc khi tao chu anh AI / Kho Text
+        _gach = plan_guard.lam_sach_dau_gach(design, label="R4") + plan_guard.lam_sach_dau_gach(captions, label="R5")
+        if isinstance(hook_info, dict) and hook_info.get("caption"):
+            _hc = plan_guard.bo_dau_gach(hook_info["caption"])
+            _gach += int(_hc != hook_info["caption"])
+            hook_info["caption"] = _hc
+        if _gach:
+            run_log.emit("note", "Bỏ dấu gạch ở %d chỗ chữ hiển thị" % _gach, step="R5-captions")
         # HIEU UNG TU VIET: AI tu de xuat theo BOI CANH tung khoanh khac + tu viet code (kiem trong hop cach ly)
         art_future, art_res = None, None
         # CHU ANH AI (chay nen, song song voi FX / B6 / B7: mot ben Codex tao anh, mot ben Claude viet code)
@@ -1954,6 +1978,8 @@ def _remotion_autoplan(b):
             "voice_boost": voice,
             # khoang lang dai nhat duoc giu (luat cung 2026-10-01) — build_spec siet + kiem lai theo dung muc nay
             "pause_limit": speech_cut.pause_limit(story),
+            # cho noi vap / lap chu Claude chi ra (B1 cat_vap, code da kiem) — build_spec + ban sao hook cat theo
+            "stutter_cuts": stutter_cuts,
             # Brand Guideline cua du an (build_spec ep font + ma mau thuong hieu, ke ca khi AI quen)
             "brand_guide": brand,
             # hieu ung tu viet (code da kiem + boi canh / muc tieu / ly do) — chi nam trong plan nay

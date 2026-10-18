@@ -23,5 +23,6 @@
   "tranh_khi": "Không có cấu trúc liệt kê (chỉ 1 ý); các mục quá dài hoặc chênh lệch độ dài lớn; khoảnh khắc cần năng lượng cao, giật mạnh; video tone tối.",
   "nang_luong": "vua",
   "chu_de": ["khẩu hiệu", "liệt kê", "đối tượng khách hàng", "công dụng", "giới thiệu sản phẩm", "app"]
- }
+ },
+ "backdrop": true
 }

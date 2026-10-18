@@ -22,7 +22,7 @@
 // Mat truoc giu 3 hinh giao dien gia (go lenh / quy trinh / tim kiem) voi chu tieng Viet trung tinh. Bo thanh doi chieu
 // "truoc / sau" cua ban goc (ti le co dinh se mau thuan voi con so that). Khung doc (native): cac the xep DOC, the nam ngang
 // (giao dien ben phai, ten ben trai), con so to; chi the cuoi co mat san phan chieu.
-import { useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, fitSize, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, fitSize, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, FONT, bezier, mix, ramp } from '../../../fixtures/Polish';
@@ -297,18 +297,20 @@ export const CardFlipReveal: React.FC = () => {
   }
   const titleX = portrait ? M : xs[0];
   const lastY = ys[n - 1] + geo.h;
+  // [Agent Edit] nen anh AI: Stage tu bo nen; bo them dai mat san phan chieu; tieu de co bong nhe
+  const bd = useBackdrop();
   return (
     <AbsoluteFill style={{ overflow: 'hidden' }}>
       <Stage look={L} keyLight={{ x: 0.5, y: -0.05 }} fill={{ x: 0.5, y: 1.1 }} horizon={portrait ? lastY / SH : 0.88} intensity={0.9} />
       {/* 镜面地板：地平线以下略亮的反射面 */}
-      <div style={{
+      {!bd && <div style={{
         position: 'absolute', left: 0, right: 0, top: lastY, height: SH - lastY,
         background: `linear-gradient(180deg, ${alpha('#ffffff', 0.035)} 0%, ${alpha('#ffffff', 0)} 60%)`,
         borderTop: `1px solid ${alpha('#ffffff', 0.06)}`,
-      }} />
+      }} />}
       <AbsoluteFill style={{ transform: `scale(${push.toFixed(4)})`, transformOrigin: '50% 60%' }}>
         {/* 标题 */}
-        <div style={{ position: 'absolute', left: titleX, top: titleTop, fontFamily: FONT.sans }}>
+        <div style={{ position: 'absolute', left: titleX, top: titleTop, fontFamily: FONT.sans, textShadow: bd ? (bd.dark ? '0 2px 18px rgba(0,0,0,0.55)' : '0 1px 12px rgba(255,255,255,0.7)') : undefined }}>
           {kickText ? (
             <div style={{ fontFamily: fonts.sans, fontSize: kickSize, fontWeight: 700, color: GOLD, letterSpacing: '0.18em', textTransform: 'uppercase', lineHeight: 1.3 }}>
               <TextReveal text={kickText} by="word" variant="blur" start={0} each={14} gap={2} />

@@ -30,7 +30,7 @@
 // feature_title / feature_note (chu thich anh chinh o trang thai B), title1 / title2 (tieu de lon trang thai C; title2
 // nghieng mau nhan), subtitle. Khung doc (native): luoi 3x4 -> mosaic 4x7 (anh chinh rong het 4 cot) -> chuoi xoe cheo
 // o nua tren, tieu de lon o phan duoi; cong tac bo cuc xuong hang rieng duoi dau trang.
-import { useCurrentFrame, useVideoConfig, useText, useList, useImage, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useImage, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
 import React from 'react';
 import { Img } from 'remotion';
 
@@ -360,11 +360,15 @@ export const MosaicReframe: React.FC = () => {
 
   const segW = (168 * 3 + SEG_PAD * 2) * K;
 
+  // [Agent Edit] nen anh AI: Stage tu bo nen cat; bo hat; chu nam tren nen -> bong do nhe de doc ro tren anh
+  const bd = useBackdrop();
+  const bdShadow = bd ? (bd.dark ? '0 2px 18px rgba(0,0,0,0.55)' : '0 1px 12px rgba(255,255,255,0.7)') : undefined;
+
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', fontFamily: FONT.sans }}>
       <Stage look={L} keyLight={{ x: 0.28, y: 0.02 }} fill={{ x: 0.9, y: 0.95 }} />
 
-      <div style={{ position: 'absolute', inset: 0, transform: `scale(${cam.toFixed(5)})`, transformOrigin: '50% 46%' }}>
+      <div style={{ position: 'absolute', inset: 0, transform: `scale(${cam.toFixed(5)})`, transformOrigin: '50% 46%', textShadow: bdShadow }}>
         {/* 页眉：视频品牌标志 + 字标 + 版面名 */}
         <div style={{ position: 'absolute', left: 96, top: portrait ? 190 : 92, height: 72 * K, display: 'flex', alignItems: 'center', gap: 18 * K, color: L.ink, whiteSpace: 'nowrap' }}>
           <ShotcraftMark size={50 * K} tone="light" />
@@ -411,7 +415,7 @@ export const MosaicReframe: React.FC = () => {
               position: 'absolute', left: cx - w / 2, top: cy - h / 2 + (1 - inP) * 40 * K, width: w, height: h,
               transform: `rotate(${rot.toFixed(3)}deg) scale(${scale.toFixed(4)})`,
               opacity: inP, zIndex: z(i), borderRadius: radius,
-              background: L.surface, boxShadow: softShadow(elev, { color: L.shadow, strength: 0.9 + 0.5 * pBC }),
+              background: L.surface, boxShadow: softShadow(elev, { color: L.shadow, strength: 0.9 + 0.5 * pBC }), textShadow: 'none',
             }}>
               <div style={{ position: 'absolute', inset: pad, borderRadius: Math.max(2, radius - pad * 0.7), overflow: 'hidden' }}>
                 {src ? <Img src={src} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <Photo i={i} />}
@@ -449,7 +453,7 @@ export const MosaicReframe: React.FC = () => {
           );
         })}
       </div>
-      <Grain opacity={0.05} blend="overlay" />
+      {!bd && <Grain opacity={0.05} blend="overlay" />}
     </div>
   );
 };

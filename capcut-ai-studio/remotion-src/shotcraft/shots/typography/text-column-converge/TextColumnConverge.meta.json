@@ -6,6 +6,7 @@
  "duration": 180,
  "kind": "insert",
  "dark": true,
+ "backdrop": true,
  "portrait": {"mode": "native"},
  "rate": [0.85, 1.2],
  "hold": 150,
@@ -19,7 +20,7 @@
  "brand": "optional",
  "sfx": [{"at": 8, "type": "typing"}, {"at": 108, "type": "swoosh"}, {"at": 162, "type": "click"}],
  "vi": {
-  "ten": "Hai từ đối xứng rồi ghép lại — công bố tên sản phẩm",
+  "ten": "Hai từ đối xứng rồi ghép lại, công bố tên sản phẩm",
   "mo_ta": "Nền đen lạnh, chữ đơn cách nhỏ kiểu bảng thông số: từ 'RA MẮT' đứng yên bên trái, bên phải các từ khóa tính năng thay nhau cắt cứng theo nhịp máy (mỗi lần đổi chớp sáng 1 khung), hai bên cách mép đúng bằng nhau. Đến từ cuối (tên sản phẩm) thì dừng một nhịp, rồi hai từ trượt êm vào giữa ghép thành một cụm 'RA MẮT PHIÊN BẢN 2.0', dòng nghiêng nhỏ hiện ngay bên dưới.",
   "hop_khi": "Đoạn tổng kết liệt kê tính năng rồi chốt bằng tên sản phẩm / phiên bản / ngày ra mắt: 'có phụ đề tự động, xuất 4K, nhạc AI... tất cả trong phiên bản 2.0'; kết video kiểu sự kiện ra mắt, tone công nghệ tối giản.",
   "tranh_khi": "Cần chữ to đập mạnh; không có tên / thông điệp chốt cuối; nội dung cảm xúc đời thường; video tone sáng.",

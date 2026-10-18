@@ -6,22 +6,59 @@
  "duration": 100,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.8, 1.25],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.8,
+  1.25
+ ],
  "hold": 74,
  "slots": [
-  {"id": "prompt", "role": "quote", "sample": "Dựng giúp tôi video ra mắt app", "max": 80, "note": "câu ra lệnh / câu hỏi gõ vào ô chat AI hoặc ô tìm kiếm, lấy từ lời nói (nên ≤ 40 ký tự cho đẹp nhất)"},
-  {"id": "caption", "role": "label", "sample": "nói hoặc gõ", "max": 30, "optional": true, "note": "dòng nhỏ phía dưới, cạnh tên thương hiệu"}
+  {
+   "id": "prompt",
+   "role": "quote",
+   "sample": "Dựng giúp tôi video ra mắt app",
+   "max": 80,
+   "note": "câu ra lệnh / câu hỏi gõ vào ô chat AI hoặc ô tìm kiếm, lấy từ lời nói (nên ≤ 40 ký tự cho đẹp nhất)"
+  },
+  {
+   "id": "caption",
+   "role": "label",
+   "sample": "nói hoặc gõ",
+   "max": 30,
+   "optional": true,
+   "note": "dòng nhỏ phía dưới, cạnh tên thương hiệu"
+  }
  ],
  "images": [],
  "brand": "optional",
- "sfx": [{"at": 0, "type": "pop"}, {"at": 8, "type": "typing"}],
+ "sfx": [
+  {
+   "at": 0,
+   "type": "pop"
+  },
+  {
+   "at": 8,
+   "type": "typing"
+  }
+ ],
  "vi": {
   "ten": "Ô nhập AI kính mờ — gõ câu lệnh",
   "mo_ta": "Nền be ánh nắng ấm; một ô nhập dạng viên thuốc bằng kính mờ hiện ra hơi to rồi hạ xuống đúng chỗ, bên trong phát ánh cam ấm, nút sóng âm ở bên phải. Con trỏ nhấp nháy rồi câu lệnh được gõ ra đều từng ký tự; ánh sáng trong ô tắt dần theo nhịp gõ, cuối cùng còn một thanh kính trung tính với câu đã gõ xong. Rất nhẹ nhàng, yên tĩnh.",
   "hop_khi": "Người nói kể mình ra lệnh cho AI / ChatGPT / trợ lý ảo, hoặc gõ tìm kiếm: 'tôi chỉ cần gõ: viết giúp tôi kịch bản…', 'bạn hỏi AI là…', 'cứ nói với nó…'; minh hoạ một câu prompt, một câu hỏi khách hàng hay gõ; nhịp lặng chuyển đoạn giữa hai đoạn sôi động.",
   "tranh_khi": "Câu dài hơn ~2 dòng; khoảnh khắc cần năng lượng cao, giật mạnh; nội dung không liên quan đến việc nhập / hỏi / ra lệnh.",
   "nang_luong": "thap",
-  "chu_de": ["AI", "chatbot", "prompt", "tìm kiếm", "giọng nói", "app", "trợ lý ảo", "câu hỏi"]
- }
+  "chu_de": [
+   "AI",
+   "chatbot",
+   "prompt",
+   "tìm kiếm",
+   "giọng nói",
+   "app",
+   "trợ lý ảo",
+   "câu hỏi"
+  ]
+ },
+ "backdrop": true
 }

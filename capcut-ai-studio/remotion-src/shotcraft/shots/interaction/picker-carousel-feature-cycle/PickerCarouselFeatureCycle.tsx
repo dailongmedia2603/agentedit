@@ -17,7 +17,7 @@ import React from 'react';
 import { DesignStage, E, lerp, seg, useT } from '../../../fixtures/Motion';
 import { FONT, Grain, SpeedBlur, Vignette } from '../../../fixtures/Polish';
 import { ShotcraftMark } from '../../../fixtures/Brand';
-import { fitSize, measureText, useList, useShotFonts, useText, useVideoConfig } from '../../../runtime';
+import { fitSize, measureText, useBackdrop, useList, useShotFonts, useText, useVideoConfig } from '../../../runtime';
 
 export const PICKER_CAROUSEL_FEATURE_CYCLE_DURATION = 108; // 3600ms @30fps
 
@@ -41,6 +41,9 @@ export const PickerCarouselFeatureCycle: React.FC = () => {
   const { height: SH } = useVideoConfig();
   const fonts = useShotFonts();
   const portrait = SH > 1080 * 1.2;
+  // nen anh AI: bo nen giay + vet sang + toi goc/hat; chu nam tren nen them bong sang
+  const bd = !!useBackdrop();
+  const tsh = bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined;
   const ITEMS = useList('items', [
     'Tự động cắt ghép',
     'Phụ đề tiếng Việt',
@@ -95,14 +98,14 @@ export const PickerCarouselFeatureCycle: React.FC = () => {
   const iconX = portrait ? CX - iconSz / 2 : CX - VW / 2 - 36;
 
   return (
-    <DesignStage bg={PAPER} raster="zoom" h={DH}>
+    <DesignStage bg={bd ? 'transparent' : PAPER} raster="zoom" h={DH}>
       {/* 纸面底 —— 与原采集页 paper() 容器一致 */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
           overflow: 'hidden',
-          background: `radial-gradient(ellipse 70% 80% at 46% 30%, #f8f8f6 0%, rgba(248,248,246,0) 70%), linear-gradient(180deg, #f4f4f2 0%, ${PAPER} 55%, #eeeeeb 100%)`,
+          background: bd ? 'transparent' : `radial-gradient(ellipse 70% 80% at 46% 30%, #f8f8f6 0%, rgba(248,248,246,0) 70%), linear-gradient(180deg, #f4f4f2 0%, ${PAPER} 55%, #eeeeeb 100%)`,
           fontFamily: FONT.sans,
         }}
       >
@@ -115,14 +118,14 @@ export const PickerCarouselFeatureCycle: React.FC = () => {
             width: 380 * S,
             height: 80 * S,
             background: 'radial-gradient(ellipse 50% 50% at 50% 50%, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 70%)',
-            opacity: seg(t, 0, 0.05),
+            opacity: bd ? 0 : seg(t, 0, 0.05),
           }}
         />
         {title ? (
           <div
             style={{
               position: 'absolute', left: 0, right: 0, top: titleY - titleSize * 1.3, height: titleSize * 1.3, textAlign: 'center',
-              fontSize: titleSize, lineHeight: 1.3, fontWeight: 650, letterSpacing: '0.18em', color: MID, whiteSpace: 'nowrap',
+              fontSize: titleSize, lineHeight: 1.3, fontWeight: 650, letterSpacing: '0.18em', color: MID, whiteSpace: 'nowrap', textShadow: tsh,
               opacity: seg(t, 0.01, 0.08),
             }}
           >
@@ -190,8 +193,9 @@ export const PickerCarouselFeatureCycle: React.FC = () => {
                       lineHeight: 1,
                       letterSpacing: '-0.01em',
                       whiteSpace: 'nowrap',
-                      color: d < 0.5 ? INK : d < 1.5 ? MID : '#B9B9BE',
+                      color: d < 0.5 ? INK : d < 1.5 ? MID : bd ? '#8E8E94' : '#B9B9BE',
                       opacity: o,
+                      textShadow: tsh,
                     }}
                   >
                     {/* 图标仅在贴近焦点时浮现（d<0.625 内可见），焦点行用唯一强调色 */}
@@ -224,8 +228,8 @@ export const PickerCarouselFeatureCycle: React.FC = () => {
         >
           <ShotcraftMark size={iconSz * 0.66} tone="dark" />
         </div>
-        <Vignette strength={0.12} inner={0.5} color="#2a2c36" />
-        <Grain opacity={0.045} scale={0.25} />
+        {!bd && <Vignette strength={0.12} inner={0.5} color="#2a2c36" />}
+        {!bd && <Grain opacity={0.045} scale={0.25} />}
       </div>
     </DesignStage>
   );

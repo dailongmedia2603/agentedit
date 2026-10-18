@@ -13,7 +13,7 @@
   {"id": "cta", "role": "cta", "sample": "Xuất bản", "max": 16, "note": "chữ trên nút được bấm — động từ kết thúc: Xuất bản, Đăng ngay, Hoàn tất, Ra mắt"},
   {"id": "project", "role": "label", "sample": "Video ra mắt", "max": 24, "optional": true, "note": "tên dự án nhỏ trên thanh công cụ"},
   {"id": "name", "role": "name", "sample": "", "max": 22, "optional": true, "note": "tên sản phẩm / kênh ở màn kết cạnh logo; để trống -> dùng tên thương hiệu của video"},
-  {"id": "tagline", "role": "subtitle", "sample": "Một chạm — mọi thứ đã sẵn sàng.", "max": 44, "optional": true, "note": "dòng chốt dưới tên (không có tên/thương hiệu thì thành chữ chính)"}
+  {"id": "tagline", "role": "subtitle", "sample": "Một chạm, mọi thứ đã sẵn sàng.", "max": 44, "optional": true, "note": "dòng chốt dưới tên (không có tên/thương hiệu thì thành chữ chính)"}
  ],
  "images": [
   {"id": "screen", "role": "screen", "aspect": "any", "optional": true, "note": "ảnh chụp màn hình app / web / thiết kế đang nói tới; hiện trong khung trình duyệt, vỡ thành 4 mảnh khi bốc hơi; không có -> 4 thẻ số liệu giả"}
@@ -22,10 +22,11 @@
  "sfx": [{"at": 34, "type": "click"}, {"at": 38, "type": "whoosh"}, {"at": 58, "type": "swoosh"}, {"at": 96, "type": "ding"}],
  "vi": {
   "ten": "Bấm 'Xuất bản' — giao diện bốc hơi, còn logo",
-  "mo_ta": "Màn hình phần mềm chỉnh sửa sáng (thanh lớp bên trái, bảng thuộc tính, khung trình duyệt có thẻ số liệu hoặc ảnh chụp app). Con trỏ di tới bấm nút màu nhấn; ngay sau đó từng mảng giao diện lần lượt bay ra ngoài và mờ tan từ ngoài vào trong, nền chuyển đen, chỉ còn nút trượt về giữa phóng to phát sáng, rồi nhường chỗ cho logo + tên và dòng chốt. Khung dọc: giao diện xếp dọc, logo to giữa màn hình.",
+  "mo_ta": "Màn hình phần mềm chỉnh sửa sáng (thanh lớp bên trái, bảng thuộc tính, khung trình duyệt có thẻ số liệu hoặc ảnh chụp app). Con trỏ di tới bấm nút màu nhấn; ngay sau đó từng mảng giao diện lần lượt bay ra ngoài và mờ tan từ ngoài vào trong, lộ ra ảnh nền chủ đề (hoặc nền đen), chỉ còn nút trượt về giữa phóng to phát sáng, rồi nhường chỗ cho logo + tên và dòng chốt. Khung dọc: giao diện xếp dọc, logo to giữa màn hình.",
   "hop_khi": "Kết video / kết phần với ý 'xong rồi, chỉ một cú bấm': đăng tải, xuất bản, ra mắt, hoàn tất đơn, gửi đi; giới thiệu phần mềm / app / công cụ AI làm thay mọi thứ phức tạp; outro có tên kênh / sản phẩm.",
   "tranh_khi": "Không liên quan phần mềm / thao tác số; giữa video (đây là cảnh kết); đã có một cảnh outro khác.",
   "nang_luong": "vua",
   "chu_de": ["outro", "kết thúc", "app", "phần mềm", "xuất bản", "ra mắt", "logo", "AI"]
- }
+ },
+ "backdrop": true
 }

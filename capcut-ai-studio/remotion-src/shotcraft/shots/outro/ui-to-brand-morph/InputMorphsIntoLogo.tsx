@@ -1,7 +1,7 @@
 // input-morphs-into-logo —— slack-promo 40–41s · B 式 input-morph-assemble
 //
 // 第二轮重设计（「字标构造图」· 瑞士网格亮场）：
-// - look = custom「signal」：带一点灰绿的冷纸白底 + 12 栏淡网格（瑞士平面设计的构造感），
+// - look = custom「signal」：带一点灰绿的冷纸白底（[Agent Edit] 已去掉 12 栏淡网格），
 //   墨黑 + 钴蓝 #2446ff + 一粒琥珀。品牌轮：终点 logo = video-shotcraft「镜刻」标志（开口取景框 + 琥珀斜切）。
 // - 主角是一只为镜头设计的大号消息输入框（1040×132，44px 文案，钴蓝焦点环 + 圆形发送键），上方是
 //   频道名与两条最近消息（34px，发送即退场）。
@@ -32,7 +32,7 @@
 // o chu: message (tin nhan dang go trong o nhap) / name (ten hien canh logo; bo trong -> ten thuong hieu cua video) /
 // tagline (khau hieu duoi) / channel (ten kenh chat phia tren). Chu that dai ngan bat ky: tu thu nho vua be ngang.
 // Khung doc (portrait.mode = 'native'): o nhap + tin nhan to hon; luc chot logo dich LEN, ten + khau hieu xep duoi.
-import { useCurrentFrame, useBrand, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useBrand, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, FONT, bezier, mix, ramp } from '../../../fixtures/Polish';
@@ -187,8 +187,10 @@ export const InputMorphsIntoLogo: React.FC = () => {
   // 输入框 UI 元素（随 morph 尽早退场，不在中途叠动画）
   const uiOut = Math.min(1, m * 3);
 
-  // 构造网格 & 十字线：拼装期出现，让位时退场
-  const gridA = 0.55 * ramp(f, MORPH + 10, 20, EASE.out) * (1 - ramp(f, SHIFT, 18, EASE.out)) + 0.25;
+  // 构造十字线：拼装期出现，让位时退场
+  // [Agent Edit] nen anh AI: chu nam truc tiep tren nen co bong nhe
+  const bd = useBackdrop();
+  const tsh = bd ? (bd.dark ? '0 2px 18px rgba(0,0,0,0.55)' : '0 1px 12px rgba(255,255,255,0.7)') : undefined;
   const constrA = ramp(f, DROPS[0] - 14, 16, EASE.out) * (1 - ramp(f, SHIFT - 4, 16, EASE.out));
 
   // 第四拍：核心弹入框心（过冲 spring）
@@ -203,13 +205,7 @@ export const InputMorphsIntoLogo: React.FC = () => {
   return (
     <AbsoluteFill style={{ overflow: 'hidden', fontFamily: FONT.sans }}>
       <Stage look={L} keyLight={{ x: 0.42, y: 0.2 }} fill={{ x: 0.9, y: 0.95 }} grain={0.05} vignette={0.2}>
-        {/* 12 栏淡网格 + 基线：瑞士式构造底 */}
-        <svg width={1920} height={SH} style={{ position: 'absolute', left: 0, top: 0, opacity: gridA }}>
-          {Array.from({ length: 13 }, (_, i) => (
-            <line key={i} x1={96 + i * 144} y1={0} x2={96 + i * 144} y2={SH} stroke={alpha(L.ink, 0.06)} strokeWidth={1} />
-          ))}
-          {[MY0 - 312, MY0, MY0 + 312].map((y) => <line key={y} x1={0} y1={y} x2={1920} y2={y} stroke={alpha(L.ink, 0.05)} strokeWidth={1} />)}
-        </svg>
+        {/* [Agent Edit] bo luoi 12 cot trang tri (khong luoi ke o tren nen) */}
       </Stage>
 
       <div style={{ position: 'absolute', inset: 0, transform: `scale(${push.toFixed(5)})`, transformOrigin: `960px ${cyPush}px` }}>
@@ -227,7 +223,7 @@ export const InputMorphsIntoLogo: React.FC = () => {
         <div style={{
           position: 'absolute', left: BOX.x - BOX.w / 2 + 8, top: BOX.y - BOX.h / 2 - 410 * K, width: BOX.w - 16,
           opacity: 1 - ramp(f, FLY + 1, 10, EASE.out), transform: `translateY(${(-24 * ramp(f, FLY + 1, 10, EASE.exit)).toFixed(2)}px)`,
-          filter: f > FLY + 1 ? `blur(${(6 * ramp(f, FLY + 1, 10, EASE.linear)).toFixed(2)}px)` : undefined,
+          filter: f > FLY + 1 ? `blur(${(6 * ramp(f, FLY + 1, 10, EASE.linear)).toFixed(2)}px)` : undefined, textShadow: tsh,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 * K, ...type(34 * K, 650), lineHeight: 1.3, color: L.ink, paddingBottom: 22 * K, borderBottom: `1px solid ${alpha(L.ink, 0.08)}`, whiteSpace: 'nowrap' }}>
             <span style={{ color: COBALT, fontWeight: 800 }}>#</span>
@@ -348,7 +344,7 @@ export const InputMorphsIntoLogo: React.FC = () => {
         {/* 字标 + 口号 */}
         {name ? (
           <div style={{
-            position: 'absolute', whiteSpace: 'nowrap', fontFamily: BRAND.font, fontSize: wfs, fontWeight: 700, lineHeight: 1.3, letterSpacing: '0.03em', color: MARK_INK,
+            position: 'absolute', whiteSpace: 'nowrap', fontFamily: BRAND.font, fontSize: wfs, fontWeight: 700, lineHeight: 1.3, letterSpacing: '0.03em', color: MARK_INK, textShadow: tsh,
             ...(P
               ? { left: 960 - wordW / 2, top: MY + markW / 2 + 80 }
               : { left: MX + 48 * U * S + 60, top: MY - 4, transform: 'translateY(-50%)' }),
@@ -358,7 +354,7 @@ export const InputMorphsIntoLogo: React.FC = () => {
         ) : null}
         {tLines.length ? (
           <div style={{
-            position: 'absolute', left: 0, right: 0, textAlign: 'center', ...type(P ? tfs : tfsL, 450), lineHeight: 1.3, color: L.ink2,
+            position: 'absolute', left: 0, right: 0, textAlign: 'center', ...type(P ? tfs : tfsL, 450), lineHeight: 1.3, color: L.ink2, textShadow: tsh,
             top: P ? MY + markW / 2 + (name ? 80 + wfs * 1.25 : 0) + 50 : MY + 190,
           }}>
             {tLines.map((l, i) => (

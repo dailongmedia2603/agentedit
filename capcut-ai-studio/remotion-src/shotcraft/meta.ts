@@ -59,6 +59,12 @@ export interface ShotMeta {
   /** khung doc 9:16: native = mau tu bo cuc theo chieu cao that (useVideoConfig().height);
    *  band = giu khoi 1920x1080, phong to `zoom` (>=1, cat bot hai mep), dat tam doc tai focusY (0..1) */
   portrait: { mode: 'native' | 'band'; zoom?: number; focusY?: number }
+  /** an khoi danh muc lap ke hoach (R4 khong thay / khong duoc chon) — code van giu trong kho */
+  hidden?: boolean
+  hidden_reason?: string
+  /** mau ho tro NEN ANH AI (sidecar tao anh nen theo chu de; mau bo nen code, de trong suot). false = nen la chinh
+   *  hieu ung cua mau (vd doi theme, chop sang) -> giu nen goc */
+  backdrop?: boolean
   /** mau nen phu phan tren / duoi (khung doc, mau KHONG dung <Stage>) */
   bleed?: [string, string]
   /** khoang toc do cho phep de vua do dai canh [cham, nhanh] (mac dinh [0.8, 1.25]) */

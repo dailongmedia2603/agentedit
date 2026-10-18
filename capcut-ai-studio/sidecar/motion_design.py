@@ -210,6 +210,8 @@ LOP DO HOA (layers: chu nhan, to hop chu, huy hieu, mui ten, vong, anh, the tric
    (chu viet tay nhin chi ~0.6 lan co khai bao); toi da 3 tang, toi da 2 font / to hop; cac tang can thang hang
    (cung align), khoang cach deu; co chu toi thieu: tang chinh >= 90px, tang phu >= 40px. Moi thoi diem chi
    MOT khoi chu nhan noi bat tren man hinh.
+8. KHONG DAU GACH: chu hien thi khong dung "—", "–" hay " - " lam dau noi / trang tri (nhin tho) — dung dau phay, hai
+   cham hoac tach tang / xuong dong. Khoang so "3-4" duoc giu.
 
 # RANG BUOC
 - Chi dung truong / gia tri co trong TAI LIEU NGON NGU DUNG ben duoi. Font chi cac id trong tai lieu.
@@ -479,18 +481,28 @@ def normalize_assets(assets, source_videos, user_assets=None):
     user_assets (user_media.as_assets): tu lieu cua nguoi dung — dang ky TRUOC, R4 khong ghi de duoc; ai_image
     "ref_media" chi giu id anh cua nguoi dung (anh mau gui kem cho AI tao anh)."""
     srcs = {s.get("id"): s for s in source_videos or []}
-    out, seen, n_ai = [dict(u) for u in user_assets or []], {u["id"] for u in user_assets or []}, 0
+    out, seen, n_ai, n_bg = [dict(u) for u in user_assets or []], {u["id"] for u in user_assets or []}, 0, 0
     user_imgs = {u["id"] for u in user_assets or [] if u.get("kind") == "user_image"}
     for a in assets or []:
         if not isinstance(a, dict) or not a.get("id") or a["id"] in seen:
             continue
         kind = a.get("kind")
         if kind == "ai_image":
-            if n_ai >= MAX_AI_IMAGES or not (a.get("prompt") or "").strip():
+            if not (a.get("prompt") or "").strip():
                 continue
-            n_ai += 1
+            if a.get("role") == "shot_bg":
+                # anh nen canh shot (kho shot, 2026-10-18): tran rieng, khong tru vao tran anh minh hoa
+                if n_bg >= shot_lib.MAX_SHOT_BG:
+                    continue
+                n_bg += 1
+            elif n_ai >= MAX_AI_IMAGES:
+                continue
+            else:
+                n_ai += 1
             asp = a.get("aspect") if a.get("aspect") in ("9:16", "1:1", "3:4", "4:3", "16:9", "2:3", "3:2") else CV.aspect_default()
             row = {"id": a["id"], "kind": kind, "prompt": a["prompt"].strip(), "aspect": asp, "cutout": bool(a.get("cutout"))}
+            if a.get("role") == "shot_bg":
+                row["role"], row["cutout"] = "shot_bg", False
             refs = [m for m in a.get("ref_media") or [] if m in user_imgs][:3] if isinstance(a.get("ref_media"), list) else []
             if refs:
                 row["ref_media"] = refs
@@ -530,6 +542,8 @@ def asset_contexts(design, transcript_data=None, story=None, sources=None, user_
             for v in (sc["shot"].get("images") or {}).values():
                 if isinstance(v, str) and v:
                     uses.setdefault(v, []).append(("broll", sc))
+            if isinstance(sc["shot"].get("bg_asset"), str):
+                uses.setdefault(sc["shot"]["bg_asset"], []).append(("bg", sc))
     import asset_gen
     texts = [L for L in design.get("layers") or [] if isinstance(L, dict) and L.get("type") in ("text", "counter", "badge")]
     story = story if isinstance(story, dict) else {}
@@ -681,7 +695,7 @@ def _bg(raw, kit, assets_by_id, video_cols=None):
         if path:
             out = {"kind": "image", "path": path, "blur": _num(raw.get("blur"), 0, 0, 40),
                    "grade": raw.get("grade") if raw.get("grade") in RP._by_id("grades") else None,
-                   "pattern": raw.get("pattern") if raw.get("pattern") in PATTERNS else "none"}
+                   "pattern": "none"}
             if (assets_by_id.get(raw["asset"]) or {}).get("user_media"):
                 out["um"] = raw["asset"]
             return out
@@ -692,7 +706,8 @@ def _bg(raw, kit, assets_by_id, video_cols=None):
         cols = pal.get("bg_gradient") or video_cols or ["#2A2A2E", "#121214"]
     pat = (raw or {}).get("pattern") if isinstance(raw, dict) else None
     return {"kind": "gradient", "colors": cols, "angle": _num((raw or {}).get("angle") if isinstance(raw, dict) else None, 165, 0, 360),
-            "pattern": pat if pat in PATTERNS else "none", "patternColor": "rgba(255,255,255,0.3)"}
+            # user 2026-10-18: KHONG nen ke o / luoi cham / hoa van code ve ("nhin rat AI") -> luon "none"
+            "pattern": "none", "patternColor": "rgba(255,255,255,0.3)"}
 
 
 def scenes_to_spec(p, duration, kit, assets_by_id, changes):

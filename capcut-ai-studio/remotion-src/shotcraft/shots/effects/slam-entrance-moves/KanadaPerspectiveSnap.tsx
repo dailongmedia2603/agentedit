@@ -23,7 +23,7 @@
 // nho) / cta (nut) / caption (dong chu duoi the, + ten thuong hieu neu co). O anh `cover` (optional): anh minh hoa nua trai
 // the (khung doc: nua tren), objectFit cover; khong co -> giu tranh ve hoang hon thanh pho. Khung doc (native): the doc
 // 1300 rong (anh tren, chu duoi), chu to, ca khoi can giua; quang duong bay / phoi canh nhan theo co the.
-import { useCurrentFrame, useImage, useShotFonts, useText, useVideoConfig, fitSize, measureText } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useImage, useShotFonts, useText, useVideoConfig, fitSize, measureText } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, Img } from 'remotion';
 import { EASE, FONT, SpeedBlur, bezier, mix, ramp } from '../../../fixtures/Polish';
@@ -140,6 +140,7 @@ export const KanadaPerspectiveSnap: React.FC = () => {
   const { height: SH } = useVideoConfig();
   const fonts = useShotFonts();
   const portrait = SH > 1080 * 1.2;
+  const bd = !!useBackdrop(); // nen anh AI: Stage tu bo gradient, bo dai chu nen mo; chu tren nen them bong
   const badge = useText('badge', 'RA MẮT');
   const title = useText('title', 'Phiên bản mới');
   const sub = useText('subtitle', 'Nhanh hơn, gọn hơn, thông minh hơn.');
@@ -236,13 +237,13 @@ export const KanadaPerspectiveSnap: React.FC = () => {
       <Stage look={L} keyLight={{ x: 0.5, y: portrait ? 0.3 : 0.18 }} fill={{ x: 0.14, y: 0.92 }} horizon={portrait ? undefined : 0.83} />
       <div style={{ position: 'absolute', inset: 0, transform: `translate(${shakeX.toFixed(2)}px, ${shakeY.toFixed(2)}px) scale(${push.toFixed(5)})` }}>
         {/* 顶部低透明实心大字带（标题重复）：海报主视觉式跑马，画框两端裁切 */}
-        <div style={{
+        {!bd && <div style={{
           position: 'absolute', left: -400, top: bandTop, transform: `translateX(${bgX.toFixed(1)}px)`,
           font: `900 ${bandSize}px ${sans}`, letterSpacing: '-0.035em', lineHeight: 1.25, color: alpha('#c9b6ff', 0.085), whiteSpace: 'nowrap',
           opacity: ramp(frame, 0, 10, EASE.out),
         }}>
           {band} <span style={{ color: alpha(PINK, 0.22) }}>✦</span> {band} <span style={{ color: alpha(PINK, 0.22) }}>✦</span> {band}
-        </div>
+        </div>}
 
         {/* 集中线 */}
         {focusOn && (
@@ -345,7 +346,7 @@ export const KanadaPerspectiveSnap: React.FC = () => {
           const head = brandAt >= 0 && i === capLines.length - 1 ? l.slice(0, brandAt) : l;
           const tail = brandAt >= 0 && i === capLines.length - 1 ? l.slice(brandAt) : '';
           return (
-            <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: CY + CH + capGap + i * capSize * 1.3, textAlign: 'center', font: `600 ${capSize}px ${sans}`, letterSpacing: '-0.02em', color: L.ink, lineHeight: 1.3, whiteSpace: 'pre' }}>
+            <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: CY + CH + capGap + i * capSize * 1.3, textAlign: 'center', font: `600 ${capSize}px ${sans}`, letterSpacing: '-0.02em', color: L.ink, lineHeight: 1.3, textShadow: bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined, whiteSpace: 'pre' }}>
               <TextReveal text={head} by="word" variant="rise" start={34 + i * 6} each={16} gap={Math.min(4, 14 / Math.max(1, head.split(' ').length))} />
               {tail ? (
                 <span style={{ color: PINK }}>

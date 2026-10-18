@@ -6,25 +6,99 @@
  "duration": 150,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.25],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.25
+ ],
  "hold": 112,
  "slots": [
-  {"id": "kicker", "role": "kicker", "sample": "SO SÁNH 3 LỰA CHỌN", "max": 30, "optional": true, "note": "nhãn nhỏ phía trên tiêu đề, in hoa"},
-  {"id": "title", "role": "title", "sample": "Chọn gói phù hợp.", "max": 40, "note": "câu dẫn ngắn: lựa chọn nào / phương án nào"},
-  {"id": "labels", "role": "label", "sample": "CƠ BẢN|NÂNG CAO|CHUYÊN NGHIỆP", "max": 16, "list": {"min": 3, "max": 3}, "note": "tên 3 lựa chọn, in hoa ngắn; mục THỨ 3 là lựa chọn được chốt"},
-  {"id": "values", "role": "number", "sample": "99K|199K|399K", "max": 7, "list": {"min": 3, "max": 3}, "note": "con số lớn trên mỗi thẻ (giá, %, thời gian, điểm...) — chỉ số + đơn vị ngắn"},
-  {"id": "notes", "role": "item", "sample": "Đủ dùng cho người mới bắt đầu.|Thêm báo cáo và tự động hoá.|Toàn bộ tính năng, hỗ trợ riêng.", "max": 60, "list": {"min": 3, "max": 3}, "note": "mô tả 1 câu cho mỗi thẻ"}
+  {
+   "id": "kicker",
+   "role": "kicker",
+   "sample": "SO SÁNH 3 LỰA CHỌN",
+   "max": 30,
+   "optional": true,
+   "note": "nhãn nhỏ phía trên tiêu đề, in hoa"
+  },
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Chọn gói phù hợp.",
+   "max": 40,
+   "note": "câu dẫn ngắn: lựa chọn nào / phương án nào"
+  },
+  {
+   "id": "labels",
+   "role": "label",
+   "sample": "CƠ BẢN|NÂNG CAO|CHUYÊN NGHIỆP",
+   "max": 16,
+   "list": {
+    "min": 3,
+    "max": 3
+   },
+   "note": "tên 3 lựa chọn, in hoa ngắn; mục THỨ 3 là lựa chọn được chốt"
+  },
+  {
+   "id": "values",
+   "role": "number",
+   "sample": "99K|199K|399K",
+   "max": 7,
+   "list": {
+    "min": 3,
+    "max": 3
+   },
+   "note": "con số lớn trên mỗi thẻ (giá, %, thời gian, điểm...) — chỉ số + đơn vị ngắn"
+  },
+  {
+   "id": "notes",
+   "role": "item",
+   "sample": "Đủ dùng cho người mới bắt đầu.|Thêm báo cáo và tự động hoá.|Toàn bộ tính năng, hỗ trợ riêng.",
+   "max": 60,
+   "list": {
+    "min": 3,
+    "max": 3
+   },
+   "note": "mô tả 1 câu cho mỗi thẻ"
+  }
  ],
  "images": [],
  "brand": "none",
- "sfx": [{"at": 16, "type": "pop"}, {"at": 50, "type": "pop"}, {"at": 86, "type": "swoosh"}, {"at": 100, "type": "ding"}],
+ "sfx": [
+  {
+   "at": 16,
+   "type": "pop"
+  },
+  {
+   "at": 50,
+   "type": "pop"
+  },
+  {
+   "at": 86,
+   "type": "swoosh"
+  },
+  {
+   "at": 100,
+   "type": "ding"
+  }
+ ],
  "vi": {
   "ten": "3 thẻ trên bàn — nhấc lên điểm danh, chốt thẻ thứ 3",
   "mo_ta": "Mặt bàn trắng nhìn chéo từ trên xuống, 3 thẻ trắng (nhãn, con số lớn, câu mô tả) nằm phẳng; tiêu đề hiện từng từ phía trên. Thẻ 1 rồi thẻ 2 lần lượt nhấc khỏi bàn (bóng đổ to ra, nhạt dần) rồi đặt xuống; thẻ 3 nhấc cao hơn, nảy nhẹ và lơ lửng lại, viền xanh + dấu tick bật ra — lựa chọn được chốt. Khung dọc: 3 thẻ nằm ngang xếp dọc.",
   "hop_khi": "So sánh 3 gói giá / 3 phương án / 3 mức (cơ bản–nâng cao–cao cấp) rồi chốt cái tốt nhất; 'có 3 lựa chọn, mình khuyên chọn cái thứ ba'; giới thiệu 3 tính năng, 3 con số và nhấn mạnh cái cuối.",
   "tranh_khi": "Không có đúng 3 mục để so; nội dung không có lựa chọn nổi bật; cần năng lượng mạnh / tone tối.",
   "nang_luong": "thap",
-  "chu_de": ["so sánh", "bảng giá", "lựa chọn", "gói dịch vụ", "danh sách", "app", "con số"]
- }
+  "chu_de": [
+   "so sánh",
+   "bảng giá",
+   "lựa chọn",
+   "gói dịch vụ",
+   "danh sách",
+   "app",
+   "con số"
+  ]
+ },
+ "backdrop": true
 }

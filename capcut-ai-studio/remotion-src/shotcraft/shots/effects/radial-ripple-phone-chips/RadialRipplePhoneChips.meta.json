@@ -6,27 +6,97 @@
  "duration": 168,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.8, 1.3],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.8,
+  1.3
+ ],
  "hold": 112,
  "slots": [
-  {"id": "chip1", "role": "label", "sample": "Gợi ý bằng AI", "max": 24, "note": "tính năng / lợi ích thứ nhất, 2–4 từ"},
-  {"id": "chip2", "role": "label", "sample": "Xuất bản một chạm", "max": 24, "note": "tính năng / lợi ích thứ hai, 2–4 từ"},
-  {"id": "name", "role": "name", "sample": "", "max": 24, "optional": true, "note": "tên app / sản phẩm; chỉ dùng khi video không có thương hiệu (có thương hiệu thì tự hiện tên thương hiệu)"},
-  {"id": "tagline", "role": "subtitle", "sample": "Mọi thứ bạn cần, trong một ứng dụng.", "max": 60, "optional": true, "note": "câu khẩu hiệu / thông điệp chốt"},
-  {"id": "screen_title", "role": "label", "sample": "Khám phá", "max": 16, "optional": true, "note": "tiêu đề trong màn hình giả (chỉ khi không có ảnh màn hình)"}
+  {
+   "id": "chip1",
+   "role": "label",
+   "sample": "Gợi ý bằng AI",
+   "max": 24,
+   "note": "tính năng / lợi ích thứ nhất, 2–4 từ"
+  },
+  {
+   "id": "chip2",
+   "role": "label",
+   "sample": "Xuất bản một chạm",
+   "max": 24,
+   "note": "tính năng / lợi ích thứ hai, 2–4 từ"
+  },
+  {
+   "id": "name",
+   "role": "name",
+   "sample": "",
+   "max": 24,
+   "optional": true,
+   "note": "tên app / sản phẩm; chỉ dùng khi video không có thương hiệu (có thương hiệu thì tự hiện tên thương hiệu)"
+  },
+  {
+   "id": "tagline",
+   "role": "subtitle",
+   "sample": "Mọi thứ bạn cần, trong một ứng dụng.",
+   "max": 60,
+   "optional": true,
+   "note": "câu khẩu hiệu / thông điệp chốt"
+  },
+  {
+   "id": "screen_title",
+   "role": "label",
+   "sample": "Khám phá",
+   "max": 16,
+   "optional": true,
+   "note": "tiêu đề trong màn hình giả (chỉ khi không có ảnh màn hình)"
+  }
  ],
  "images": [
-  {"id": "screen", "role": "screen", "aspect": "9:19.5", "optional": true, "note": "ảnh chụp màn hình điện thoại THẬT của app (dọc); ảnh dài sẽ tự cuộn; không có thì hiện giao diện feed giả trung tính"}
+  {
+   "id": "screen",
+   "role": "screen",
+   "aspect": "9:19.5",
+   "optional": true,
+   "note": "ảnh chụp màn hình điện thoại THẬT của app (dọc); ảnh dài sẽ tự cuộn; không có thì hiện giao diện feed giả trung tính"
+  }
  ],
  "brand": "optional",
- "sfx": [{"at": 2, "type": "whoosh"}, {"at": 37, "type": "pop"}, {"at": 67, "type": "pop"}, {"at": 90, "type": "swoosh"}],
+ "sfx": [
+  {
+   "at": 2,
+   "type": "whoosh"
+  },
+  {
+   "at": 37,
+   "type": "pop"
+  },
+  {
+   "at": 67,
+   "type": "pop"
+  },
+  {
+   "at": 90,
+   "type": "swoosh"
+  }
+ ],
  "vi": {
   "ten": "Điện thoại giữa vòng sóng + 2 nhãn tính năng",
   "mo_ta": "Nền be ấm với bốn vòng tròn đồng tâm phập phồng lệch nhịp như gợn sóng; một chiếc điện thoại viền titan nổi lên giữa màn hình, màn hình tự cuộn chậm (ảnh app thật hoặc feed giả). Hai nhãn trắng dạng viên thuốc có biểu tượng lần lượt bật ra hai bên điện thoại rồi lơ lửng; cuối cảnh tên thương hiệu/app và câu khẩu hiệu hiện lên. Yên tĩnh, sang, kiểu poster sản phẩm.",
   "hop_khi": "Giới thiệu một app / sản phẩm trên điện thoại và 2 điểm mạnh của nó: 'app này có AI gợi ý và đăng bài một chạm'; mở đầu hoặc kết phần giới thiệu sản phẩm di động; khoe giao diện app thật (đưa ảnh chụp màn hình).",
   "tranh_khi": "Nội dung không liên quan điện thoại / app; cần năng lượng cao; có nhiều hơn 2 tính năng cần kể (dùng mẫu danh sách); nhãn dài hơn ~4 từ.",
   "nang_luong": "thap",
-  "chu_de": ["điện thoại", "app", "sản phẩm", "tính năng", "ra mắt", "giới thiệu", "logo"]
- }
+  "chu_de": [
+   "điện thoại",
+   "app",
+   "sản phẩm",
+   "tính năng",
+   "ra mắt",
+   "giới thiệu",
+   "logo"
+  ]
+ },
+ "backdrop": true
 }

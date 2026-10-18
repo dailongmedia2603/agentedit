@@ -6,6 +6,7 @@
  "duration": 150,
  "kind": "insert",
  "dark": false,
+ "backdrop": true,
  "portrait": {"mode": "native"},
  "rate": [0.85, 1.2],
  "hold": 75,
@@ -22,7 +23,7 @@
  "brand": "optional",
  "sfx": [{"at": 12, "type": "riser"}, {"at": 59, "type": "boom"}, {"at": 59, "type": "click"}, {"at": 63, "type": "pop"}],
  "vi": {
-  "ten": "Danh sách phanh gấp — khung ngắm khóa mục tiêu",
+  "ten": "Danh sách phanh gấp, khung ngắm khóa mục tiêu",
   "mo_ta": "Nền sáng kiểu giao diện app: một danh sách thẻ dài (icon loại, tên, mô tả, mã phiên bản, ngày) tăng tốc cuộn lên đến nhòe, giảm tốc mạnh vượt quá một chút rồi bật lại dừng; ĐÚNG khoảnh khắc phanh, bốn góc ngắm chữ L màu nhấn bay từ ngoài vào kẹp chặt thẻ ở giữa (nảy nhẹ), thẻ sáng viền, các thẻ khác mờ đi, một nhãn đen 'Vừa ra mắt' bật ra cạnh thẻ.",
   "hop_khi": "Nhấn mạnh MỘT mục giữa danh sách dài với lực mạnh: 'trong hàng trăm tính năng, đây là cái đáng giá nhất', công bố cập nhật mới của app, chọn ra sản phẩm / việc quan trọng nhất, 'tìm thấy rồi'; video công nghệ, phần mềm, năng suất.",
   "tranh_khi": "Không có mục chính rõ ràng; video tone tối hoặc cảm xúc nhẹ nhàng; đã dùng mẫu nhật ký cập nhật phanh gấp gần đó (cùng họ chuyển động).",

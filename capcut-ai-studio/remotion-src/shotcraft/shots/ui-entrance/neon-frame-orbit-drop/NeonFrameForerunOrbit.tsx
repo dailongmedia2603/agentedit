@@ -13,7 +13,7 @@
 // can lam tu loi noi). O anh tuy chon `screen`: anh chup man hinh that thay toan bo trang ve (cover, canh tren) — roi xuong
 // nhu mot tam (cung nhip, cung bong mem). Thuong hieu o goc trang = thuong hieu video (khong co -> chu trung tinh).
 // Khung doc (native): nen ong neon phu kin chieu cao, bang giao dien phong to P quanh tam khung.
-import { useCurrentFrame, useVideoConfig, useText, useList, useImage } from '../../../runtime';
+import { useCurrentFrame, useVideoConfig, useText, useList, useImage, useBackdrop } from '../../../runtime';
 import React, { useId } from 'react';
 import { AbsoluteFill, interpolate, Easing } from 'remotion';
 import { FONT, Grain, Vignette } from '../../../fixtures/Polish';
@@ -283,10 +283,13 @@ export const NeonFrameForerunOrbit: React.FC = () => {
     extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
   });
 
+  // [Agent Edit] DOT 2: co nen anh AI -> bo nen den + dam khung ong neon trang tri phu nen + toi goc + hat
+  // (khung neon chinh quanh bang giao dien giu nguyen)
+  const bd = useBackdrop();
   return (
-    <AbsoluteFill style={{ background: '#060509', overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : '#060509', overflow: 'hidden' }}>
       {/* 背景霓虹管框群（同款） */}
-      <svg width={1920} height={SH} style={{ position: 'absolute' }}>
+      {!bd && <svg width={1920} height={SH} style={{ position: 'absolute' }}>
         <defs>
           <filter id={`obgblur-${uid}`} x="-60%" y="-60%" width="220%" height="220%">
             <feGaussianBlur stdDeviation={7} />
@@ -304,7 +307,7 @@ export const NeonFrameForerunOrbit: React.FC = () => {
             </g>
           );
         })}
-      </svg>
+      </svg>}
       {/* 主体：视角弧线旋转中的框+面板 */}
       <div style={{ position: 'absolute', left: 0, top: SH / 2 - 540, width: 1920, height: 1080, transform: `scale(${P})`, transformOrigin: '50% 50%' }}>
       <div style={{ position: 'absolute', inset: 0, perspective: 1500, perspectiveOrigin: `${pOrigin}% 44%` }}>
@@ -382,8 +385,8 @@ export const NeonFrameForerunOrbit: React.FC = () => {
         </div>
       </div>
       </div>
-      <Vignette strength={0.5} inner={0.45} color="#030206" />
-      <Grain opacity={0.07} blend="soft-light" />
+      {!bd && <Vignette strength={0.5} inner={0.45} color="#030206" />}
+      {!bd && <Grain opacity={0.07} blend="soft-light" />}
     </AbsoluteFill>
   );
 };

@@ -16,7 +16,7 @@
 // neo trai dat sao cho pill dai nhat nam giua. Mau nhan = mau nhan cua video (LOOKS.porcelain.accent).
 // Khung doc (native): than cau o dong tren (to, toi da 2 dong), pill / ve chot o dong duoi, ca hai neo trai co dinh khi
 // lan pill; khi chot xong moi dong truot ve giua.
-import { useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, measureText } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, measureText } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, interpolate, Easing } from 'remotion';
 import { G } from '../../../fixtures/Fixtures';
@@ -139,6 +139,8 @@ export const PillSlotCycle: React.FC = () => {
   const { height: SH } = useVideoConfig();
   const fonts = useShotFonts();
   const portrait = SH > 1080 * 1.2;
+  // [Agent Edit] nen anh AI: bo nen sang + hat (Backdrop cua Polish khong tu an); cau chu co bong sang
+  const bd = useBackdrop();
   const stem = useText('stem', 'Chỉ một app để');
   const items = useList('items', ['Lên kịch bản', 'Quay sản phẩm', 'Dựng video', 'Chèn nhạc nền', 'Làm phụ đề', 'Đăng lên mạng']).slice(0, 6);
   const ending = useText('ending', 'làm tất cả.');
@@ -215,6 +217,7 @@ export const PillSlotCycle: React.FC = () => {
   const shiftX = centerT * ((1920 - finalW) / 2 - STEM_LEFT);
 
   const stemStyle: React.CSSProperties = {
+    textShadow: bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined,
     fontFamily: PFONT.sans,
     fontWeight: 800,
     fontSize: 96 * k,
@@ -331,7 +334,7 @@ export const PillSlotCycle: React.FC = () => {
     const lineShift = (w: number) => centerT * ((1920 - w) / 2 - STEM_LEFT);
     return (
       <AbsoluteFill style={{ overflow: 'hidden' }}>
-        <Backdrop tone="light" light={{ x: 0.4, y: 0.3 }} accent={L.accent} grain={0.045} vignette={0.14} />
+        {!bd && <Backdrop tone="light" light={{ x: 0.4, y: 0.3 }} accent={L.accent} grain={0.045} vignette={0.14} />}
         {stemLines.map((l, i) => (
           <div key={i} style={{ position: 'absolute', left: STEM_LEFT, top: top + i * lh, transform: `translate(${lineShift(measureText(l, fam, 96 * k, 800) * 0.97).toFixed(2)}px, ${((1 - stemT) * 50).toFixed(2)}px)`, ...enter }}>
             <span style={stemStyle}>{l}</span>
@@ -346,7 +349,7 @@ export const PillSlotCycle: React.FC = () => {
 
   return (
     <AbsoluteFill style={{ overflow: 'hidden' }}>
-      <Backdrop tone="light" light={{ x: 0.4, y: 0.3 }} accent={L.accent} grain={0.045} vignette={0.14} />
+      {!bd && <Backdrop tone="light" light={{ x: 0.4, y: 0.3 }} accent={L.accent} grain={0.045} vignette={0.14} />}
       {/* 句干固定不动：整行左端锚死，不随 pill 宽度居中重排（收束落位后才整体居中） */}
       <div
         style={{

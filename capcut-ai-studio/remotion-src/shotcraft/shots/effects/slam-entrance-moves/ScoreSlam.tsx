@@ -25,7 +25,7 @@
 // mau vang), subtitle (cau binh luan). Huy hieu: ben trai = dau hieu thuong hieu (khong co -> chu viet tat ten), ben phai =
 // chu viet tat vien rong. Ben trai la ben "thang" (gach chan vang). Khung doc (native): the phong 1.45 lan, tieu de / cau
 // phu to va tu xuong dong, ca khoi can giua; vong xung kich / manh vo nhan theo.
-import { useCurrentFrame, useShotFonts, useText, useVideoConfig, fitSize, measureText, useBrand } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useShotFonts, useText, useVideoConfig, fitSize, measureText, useBrand } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, bezier, mix, ramp } from '../../../fixtures/Polish';
@@ -102,6 +102,9 @@ export const ScoreSlam: React.FC = () => {
   const mono = fonts.mono;
   const brand = useBrand();
   const portrait = SH > 1080 * 1.2;
+  // nen anh AI: Stage tu bo gradient; bo khan dai (bui sang) + den pha code ve; chu tren nen them bong
+  const bd = !!useBackdrop();
+  const tsh = bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined;
   const leftName = useText('left_name', brand?.name || 'Chúng tôi');
   const rightName = useText('right_name', 'Đối thủ');
   const leftScore = useText('left_score', '3');
@@ -199,10 +202,10 @@ export const ScoreSlam: React.FC = () => {
     <AbsoluteFill style={{ overflow: 'hidden' }}>
       <Stage look={L} keyLight={{ x: 0.5, y: -0.05 }} fill={null} intensity={0.8} horizon={portrait ? undefined : 0.8}>
         {/* 远处看台：虚化暖色光点 */}
-        <div style={{ position: 'absolute', left: 0, right: 0, top: portrait ? SH * 0.62 : 640, height: 440, filter: 'blur(3px)' }}>
+        {!bd && <div style={{ position: 'absolute', left: 0, right: 0, top: portrait ? SH * 0.62 : 640, height: 440, filter: 'blur(3px)' }}>
           <Dust look={L} count={60} seed={7} drift={0.08} opacity={0.55} color="#f2d9a8" />
-        </div>
-        {portrait ? (
+        </div>}
+        {portrait && !bd ? (
           <div style={{ position: 'absolute', left: 0, right: 0, top: SH * 0.62 + 440, height: 440, filter: 'blur(3px)' }}>
             <Dust look={L} count={50} seed={11} drift={0.08} opacity={0.4} color="#f2d9a8" />
           </div>
@@ -210,7 +213,7 @@ export const ScoreSlam: React.FC = () => {
       </Stage>
 
       {/* 泛光灯：0–7f 依次亮起（亮 → 闪暗 → 亮），下射光锥 + 雾 */}
-      {LIGHTS.map((x, i) => {
+      {!bd && LIGHTS.map((x, i) => {
         const t0 = i * 2;
         const on = frame < t0 ? 0 : frame < t0 + 1 ? 1 : frame < t0 + 2 ? 0.35 : 1;
         const o = on * breathe;
@@ -332,7 +335,7 @@ export const ScoreSlam: React.FC = () => {
             const s0 = 36 + wi * tGap;
             wi += words.length;
             return (
-              <div key={li} style={{ position: 'absolute', left: 0, right: 0, top: titleTop + li * tt.size * 1.15, textAlign: 'center', font: `800 ${tt.size.toFixed(1)}px ${sans}`, letterSpacing: '-0.04em', color: L.ink, lineHeight: 1.15, whiteSpace: 'pre' }}>
+              <div key={li} style={{ position: 'absolute', left: 0, right: 0, top: titleTop + li * tt.size * 1.15, textAlign: 'center', font: `800 ${tt.size.toFixed(1)}px ${sans}`, letterSpacing: '-0.04em', color: L.ink, lineHeight: 1.15, textShadow: tsh, whiteSpace: 'pre' }}>
                 {headW ? <TextReveal text={headW + (tail ? ' ' : '')} by="word" variant="rise" start={s0} each={16} gap={tGap} /> : null}
                 {tail ? (
                   <span style={{ color: GOLD }}>
@@ -343,7 +346,7 @@ export const ScoreSlam: React.FC = () => {
             );
           })}
           {ss.lines.map((l, i) => (
-            <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: titleTop + tH + gap2 + i * ss.size * 1.35, textAlign: 'center', font: `500 ${ss.size.toFixed(1)}px ${sans}`, color: L.ink2, letterSpacing: '-0.01em', lineHeight: 1.35, whiteSpace: 'nowrap', opacity: ramp(frame, 52, 14, EASE.out), transform: `translateY(${mix(12, 0, ramp(frame, 52, 16, EASE.out)).toFixed(2)}px)` }}>
+            <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: titleTop + tH + gap2 + i * ss.size * 1.35, textAlign: 'center', font: `500 ${ss.size.toFixed(1)}px ${sans}`, color: L.ink2, letterSpacing: '-0.01em', textShadow: tsh, lineHeight: 1.35, whiteSpace: 'nowrap', opacity: ramp(frame, 52, 14, EASE.out), transform: `translateY(${mix(12, 0, ramp(frame, 52, 16, EASE.out)).toFixed(2)}px)` }}>
               {l}
             </div>
           ))}

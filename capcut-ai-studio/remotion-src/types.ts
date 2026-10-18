@@ -124,6 +124,8 @@ export interface RSShot {
   brand?: { name: string } | null
   /** an phu de trong canh (mau co chu) */
   hideSubs?: boolean
+  /** anh nen AI cua canh (duong dan file) — mau ho tro nen anh thi bo nen code */
+  backdrop?: string | null
 }
 
 // ---------------------------------------------------------------------------

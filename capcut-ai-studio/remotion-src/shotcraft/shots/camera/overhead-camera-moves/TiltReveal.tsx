@@ -27,7 +27,7 @@
 // Khung doc (native): trang dashboard cao theo khung (PH ~ 0.95 chieu cao), tieu de to xuong dong, bieu do cao hon,
 // o so lieu xep doc; phep chieu 3D (ban le canh duoi, 86° -> -2.2° -> 0°, phoi canh / diem nhin / ti le cung mot tien do)
 // giu nguyen, chi thay 1080 bang chieu cao trang / khung that.
-import { useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize, wrapLines, useShot } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize, wrapLines, useShot } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { Dust, LOOKS, Stage, alpha, type } from '../../../fixtures/Look';
@@ -291,6 +291,8 @@ export const TiltReveal: React.FC = () => {
   const zFar = -Hs * Math.sin((rEq * Math.PI) / 180);
   const farY = eye + (botY - Hs * Math.cos((rEq * Math.PI) / 180) - eye) * (persp / (persp - zFar));
   const glowUp = ramp(f, 0, 26, EASE.out); // 开场背光由暗到亮
+  // [Agent Edit] NEN ANH AI: bo nen toi / bui sang / quang sau trang / anh phan chieu dat (anh nen hien ra)
+  const bd = useBackdrop();
   // 背景视差：相机抬头 → 舞台光池 / 浮尘相对下移
   const bgShift = mix(-150, 0, p);
   // 镜面反光带：随俯角从上沿扫到下沿（裁进页面圆角）
@@ -305,29 +307,29 @@ export const TiltReveal: React.FC = () => {
   rows[1] = 1;
 
   return (
-    <AbsoluteFill style={{ overflow: 'hidden', background: L.bg[2] }}>
+    <AbsoluteFill style={{ overflow: 'hidden', background: bd ? 'transparent' : L.bg[2] }}>
       <Stage look={L} keyLight={{ x: 0.5, y: 0.0 }} fill={{ x: 0.82, y: 0.95 }} intensity={0.75 + 0.25 * glowUp} breathe={0.6}
         style={{ transform: `translateY(${bgShift}px)`, inset: '-160px 0 -160px 0' }}>
-        <Dust look={L} count={34} seed={7} drift={0.18} opacity={0.5} />
+        {!bd && <Dust look={L} count={34} seed={7} drift={0.18} opacity={0.5} />}
       </Stage>
       {/* 竖版：Stage 的子层只铺上方 1080，下方补几层浮尘（同样随相机视差） */}
-      {portrait && Array.from({ length: Math.ceil(SH / 1080) - 1 }, (_, i) => (
+      {portrait && !bd && Array.from({ length: Math.ceil(SH / 1080) - 1 }, (_, i) => (
         <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: 1080 * (i + 1) + bgShift, height: 1080, pointerEvents: 'none' }}>
           <Dust look={L} count={30} seed={11 + i * 5} drift={0.18} opacity={0.45} />
         </div>
       ))}
 
       {/* 页面背后的背光：平躺时是一条贴着窄带的蓝色辉光，抬起后成为页面四周的轮廓光 */}
-      <div style={{
+      {!bd && <div style={{
         position: 'absolute', left: 960 - 900, width: 1800, top: mix(farY - 90, farY - 40, p), height: mix(180, 1000, p),
         background: `radial-gradient(ellipse 50% 50% at 50% 50%, ${alpha(L.light, 0.55 * glowUp)} 0%, ${alpha(L.light, 0)} 70%)`,
         filter: 'blur(30px)', opacity: 0.9,
-      }} />
+      }} />}
       {/* 地面反光：页面脚下一片蓝色光晕 */}
-      <div style={{
+      {!bd && <div style={{
         position: 'absolute', left: 160, right: 160, top: SH - 150, height: 260, opacity: p,
         background: `radial-gradient(ellipse 50% 40% at 50% 30%, ${alpha(L.accent, 0.4)} 0%, ${alpha(L.accent, 0.08)} 55%, ${alpha(L.accent, 0)} 75%)`,
-      }} />
+      }} />}
 
       <SpeedBlur vx={0} vy={vy} amount={0.2} max={9}>
         <div style={{ position: 'absolute', inset: 0, perspective: persp, perspectiveOrigin: `50% ${(eye / SH) * 100}%` }}>

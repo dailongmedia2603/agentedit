@@ -17,10 +17,11 @@
  "sfx": [{"at": 16, "type": "riser"}, {"at": 68, "type": "ding"}],
  "vi": {
   "ten": "Chữ kết tinh — nét mảnh tự viết trên mặt hồ hoàng hôn",
-  "mo_ta": "Phong cảnh hồ lúc chạng vạng (trời tím hồng, dải núi, mặt nước lấp lánh, chậm rãi tiến gần). Một dòng chữ thường giãn rộng, nét đơn mảnh phát sáng tự VIẾT ra: mọi chữ cái (kể cả dấu tiếng Việt) cùng bắt đầu và cùng hoàn thành một lúc, rồi lóe sáng nhẹ; bóng chữ in mờ dưới mặt nước. Tĩnh lặng, sang trọng.",
+  "mo_ta": "Trên ảnh nền theo chủ đề (không có ảnh nền: phong cảnh hồ lúc chạng vạng, trời tím hồng, dải núi, mặt nước lấp lánh, chậm rãi tiến gần). Một dòng chữ thường giãn rộng, nét đơn mảnh phát sáng tự VIẾT ra: mọi chữ cái (kể cả dấu tiếng Việt) cùng bắt đầu và cùng hoàn thành một lúc, rồi lóe sáng nhẹ (cảnh hồ: bóng chữ in mờ dưới mặt nước). Tĩnh lặng, sang trọng.",
   "hop_khi": "Mở đầu / kết video bằng tên thương hiệu, tên kênh, tên sản phẩm; chốt một từ khóa cảm xúc (vd 'bình yên', 'khởi đầu mới'); khoảnh khắc chậm, truyền cảm hứng, du lịch, lifestyle, chữa lành.",
   "tranh_khi": "Câu dài (hơn ~4 từ), số liệu, danh sách; nhịp nhanh / năng lượng cao; nội dung kỹ thuật cần đọc kỹ.",
   "nang_luong": "thap",
   "chu_de": ["logo", "tên thương hiệu", "mở đầu", "kết thúc", "chữ viết tay", "thiên nhiên", "cảm hứng", "lifestyle"]
- }
+ },
+ "backdrop": true
 }

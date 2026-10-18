@@ -13,7 +13,7 @@
 // Icon trung tinh: mat "bình thường" (doan cu) -> mat cuoi mau nhan (doan moi, giu "phan thuong"). Mau nhan = LOOKS (theo video).
 // Nhan dai: co chu chung 2 doan tu thu nho vua be ngang doan. Khung doc (native): control phong to x1.66, ca khoi
 // (title + control) can giua theo chieu doc; toa do con tro / diem nhan tinh tu hinh hoc control (khong con so cung).
-import { useCurrentFrame, useShotFonts, useText, useVideoConfig, fitSize, wrapLines, useShot } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useShotFonts, useText, useVideoConfig, fitSize, wrapLines, useShot } from '../../../runtime';
 import { LOOKS, alpha } from '../../../fixtures/Look';
 import React from 'react';
 import { AbsoluteFill, interpolate, Easing, spring } from 'remotion';
@@ -211,12 +211,14 @@ export const SegmentedThumbHero: React.FC = () => {
   // 旧图标 width 与 scale 同步归零（文字回流）
   const oldW = oldScale < 0.05 ? 0 : ICON * oldScale;
   const newW = newScale < 0.05 ? 0 : ICON * Math.min(1, newScale);
+  // [Agent Edit] NEN ANH AI: bo nen giay sang + vung sang duoi control; tieu de nam truc tiep tren nen co bong sang
+  const bd = useBackdrop();
 
   return (
     <AbsoluteFill>
-      <Backdrop tone="light" light={{ x: 0.5, y: portrait ? 0.4 : 0.3 }} accent={ACC} />
+      {!bd && <Backdrop tone="light" light={{ x: 0.5, y: portrait ? 0.4 : 0.3 }} accent={ACC} />}
       {/* 控件身下的接触光池：浮入落定后把控件"放"在台面上 */}
-      <div
+      {!bd && <div
         style={{
           position: 'absolute',
           left: 960 - 700 * K,
@@ -226,12 +228,12 @@ export const SegmentedThumbHero: React.FC = () => {
           background: 'radial-gradient(ellipse 50% 50% at 50% 50%, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0) 70%)',
           opacity: floatT,
         }}
-      />
+      />}
       {tLines.length ? (
         <div
           style={{
             position: 'absolute', left: 0, right: 0, top: top0, textAlign: 'center',
-            fontFamily: fonts.sans, fontWeight: 700, fontSize: TSIZE, lineHeight: `${tLH}px`, letterSpacing: '-0.02em', color: INK,
+            fontFamily: fonts.sans, fontWeight: 700, fontSize: TSIZE, lineHeight: `${tLH}px`, letterSpacing: '-0.02em', color: INK, textShadow: bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined,
             opacity: titleP, transform: `translateY(${((1 - titleP) * 30 * K).toFixed(2)}px)`,
           }}
         >

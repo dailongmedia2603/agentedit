@@ -27,7 +27,7 @@
 // duoc quet anh kim) + subs (3 cau phu duoi tu, optional). Chu dai -> thu nho / xuong 2 dong (font tinh cua shot, khong
 // dung Helvetica); dem dau / chan duoi o mat na tang len cho dau tieng Viet. Khung doc (native): tu to ~260px, hinh hoc
 // phong 1.5 lan, ca khoi can giua; dem / thuong hieu / thanh tien do bam theo mep khung that.
-import { useCurrentFrame, useList, useShotFonts, useVideoConfig, fitSize, measureText } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useList, useShotFonts, useVideoConfig, fitSize, measureText } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, mix, ramp } from '../../../fixtures/Polish';
@@ -156,7 +156,7 @@ const TighterGeo: React.FC<{ f: number; fade: number; outF: number | null; cy: n
 };
 
 // ───────────── 词组（描边 / 填充 / sheen 三层） ─────────────
-const Word: React.FC<{ f: number; slot: Slot; idx: number; lines: string[]; size: number; cy: number; family: string }> = ({ f, slot, idx, lines, size, cy, family }) => {
+const Word: React.FC<{ f: number; slot: Slot; idx: number; lines: string[]; size: number; cy: number; family: string; tsh?: string }> = ({ f, slot, idx, lines, size, cy, family, tsh }) => {
   const { tin, tout } = envelope(f, slot);
   const last = idx === 2;
   const scale = mix(1.06, 1, tin) * mix(1, 0.86, tout);
@@ -208,12 +208,12 @@ const Word: React.FC<{ f: number; slot: Slot; idx: number; lines: string[]; size
             }}>{text}</div>
             <div style={{
               ...base, position: 'absolute', inset: 0, color: L.ink, opacity: white,
-              textShadow: `0 0 ${(30 * bloom).toFixed(1)}px ${alpha('#ffffff', 0.35 * bloom)}, 0 0 ${(90 * bloom).toFixed(1)}px ${alpha('#ffffff', 0.22 * bloom)}`,
+              textShadow: `0 0 ${(30 * bloom).toFixed(1)}px ${alpha('#ffffff', 0.35 * bloom)}, 0 0 ${(90 * bloom).toFixed(1)}px ${alpha('#ffffff', 0.22 * bloom)}${tsh ? ', ' + tsh : ''}`,
             }}>{text}</div>
           </>
         ) : (
           fillp > 0 && (
-            <div style={{ ...base, position: 'absolute', inset: 0, color: L.ink, WebkitMaskImage: mask, maskImage: mask }}>{text}</div>
+            <div style={{ ...base, position: 'absolute', inset: 0, color: L.ink, WebkitMaskImage: mask, maskImage: mask, textShadow: tsh }}>{text}</div>
           )
         )}
       </div>
@@ -226,6 +226,9 @@ export const WordRelayGeometry: React.FC = () => {
   const { height: SH } = useVideoConfig();
   const fonts = useShotFonts();
   const portrait = SH > 1080 * 1.2;
+  // nen anh AI: bo nen dac + bui sang (Stage tu bo gradient); hinh hoc + chu giu; chu tren nen them bong
+  const bd = !!useBackdrop();
+  const tsh = bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined;
   const words = useList('words', ['Nhanh hơn', 'Chặt hơn', 'Mạnh hơn']);
   const subs = useList('subs', ['Một câu lệnh, ra ngay video hoàn chỉnh.', 'Mọi đoạn cắt đều khớp nhịp nhạc.', 'Thành phẩm như studio chuyên nghiệp làm.']);
   const SLOTS: Slot[] = TIMES.map(([in0, out0], i) => ({ word: (words[i] ?? words[words.length - 1] ?? '').trim(), sub: (subs[i] ?? '').trim(), in0, out0 }));
@@ -250,9 +253,9 @@ export const WordRelayGeometry: React.FC = () => {
   const botY = portrait ? 240 : 96;
 
   return (
-    <AbsoluteFill style={{ background: L.bg[2] }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[2] }}>
       <Stage look={L} keyLight={{ x: 0.5, y: CY / SH - 0.12 }} fill={{ x: 0.5, y: 1.05 }} intensity={0.62 + flare * 0.3} breathe={0.4}>
-        {Array.from({ length: Math.ceil(SH / 1080) }, (_, i) => (
+        {!bd && Array.from({ length: Math.ceil(SH / 1080) }, (_, i) => (
           <div key={i} style={{ position: 'absolute', left: 0, top: i * 1080, width: 1920, height: 1080 }}>
             <Dust look={L} count={26} seed={7 + i} drift={0.18} opacity={0.35} />
           </div>
@@ -277,7 +280,7 @@ export const WordRelayGeometry: React.FC = () => {
           boxShadow: `0 0 24px ${alpha('#ffffff', 0.4)}`,
         }} />
 
-        {SLOTS.map((s, i) => (e[i].alive ? <Word key={i} f={f} slot={s} idx={i} lines={fit[i].lines} size={fit[i].size} cy={CY} family={fonts.sans} /> : null))}
+        {SLOTS.map((s, i) => (e[i].alive ? <Word key={i} f={f} slot={s} idx={i} lines={fit[i].lines} size={fit[i].size} cy={CY} family={fonts.sans} tsh={tsh} /> : null))}
 
         {/* 副句：词落定后从线下升起，随词一起退场；Tighter 让出三圆下沿 */}
         {SLOTS.map((s, i) => {
@@ -289,7 +292,7 @@ export const WordRelayGeometry: React.FC = () => {
           return (
             <div key={`sub${i}`} style={{
               position: 'absolute', left: 0, right: 0, top, textAlign: 'center',
-              ...type(sf.size, 450), lineHeight: 1.3, color: L.ink2, opacity: 1 - e[i].tout,
+              ...type(sf.size, 450), lineHeight: 1.3, color: L.ink2, opacity: 1 - e[i].tout, textShadow: tsh,
               filter: e[i].tout > 0.02 ? `blur(${(e[i].tout * 6).toFixed(2)}px)` : undefined,
             }}>
               {sf.lines.map((l, li) => {
@@ -307,12 +310,12 @@ export const WordRelayGeometry: React.FC = () => {
       </AbsoluteFill>
 
       {/* 画框装饰（不随相机）：左上计数、底部三段进度——label 级纹理字 */}
-      <div style={{ position: 'absolute', left: M, top: topY, fontFamily: fonts.mono, fontSize: lab, letterSpacing: '0.18em', color: L.ink3, opacity: ramp(f, 0, 14, EASE.out) }}>
+      <div style={{ position: 'absolute', left: M, top: topY, fontFamily: fonts.mono, fontSize: lab, letterSpacing: '0.18em', color: bd ? L.ink2 : L.ink3, opacity: ramp(f, 0, 14, EASE.out), textShadow: tsh }}>
         <span style={{ color: L.ink }}>{`0${active + 1}`}</span> / 03
       </div>
       {/* 右上品牌签：品牌标志 + 名字（label 级，不抢词；无品牌则不显示） */}
       {BRAND.name ? (
-        <div style={{ position: 'absolute', right: M, top: topY - 6, display: 'flex', alignItems: 'center', gap: 12, fontFamily: fonts.mono, fontSize: lab, letterSpacing: '0.1em', color: L.ink3, opacity: ramp(f, 4, 14, EASE.out), whiteSpace: 'nowrap' }}>
+        <div style={{ position: 'absolute', right: M, top: topY - 6, display: 'flex', alignItems: 'center', gap: 12, fontFamily: fonts.mono, fontSize: lab, letterSpacing: '0.1em', color: bd ? L.ink2 : L.ink3, opacity: ramp(f, 4, 14, EASE.out), whiteSpace: 'nowrap', textShadow: tsh }}>
           <ShotcraftMark size={lab * 1.55} tone="dark" />
           {BRAND.name}
         </div>
@@ -331,7 +334,7 @@ export const WordRelayGeometry: React.FC = () => {
               <div style={{ height: 2, background: alpha('#ffffff', 0.1), position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', inset: 0, background: on ? L.ink : alpha('#ffffff', 0.45), transform: `scaleX(${p})`, transformOrigin: 'left' }} />
               </div>
-              <div style={{ marginTop: 16, fontFamily: fonts.mono, fontSize: ls, letterSpacing: '0.18em', color: on ? L.ink : L.ink3, whiteSpace: 'pre', lineHeight: 1.4 }}>
+              <div style={{ marginTop: 16, fontFamily: fonts.mono, fontSize: ls, letterSpacing: '0.18em', color: on ? L.ink : bd ? L.ink2 : L.ink3, whiteSpace: 'pre', lineHeight: 1.4, textShadow: tsh }}>
                 {label}
               </div>
             </div>

@@ -26,7 +26,7 @@
 // = y con chia cho nhanh 1 roi nhanh 2). Nhip go nen lai khi prompt dai (van nop ~50f); tieu de the tu thu nho / xuong
 // 2 dong. Khung doc (portrait.mode = 'native'): cay doi thanh DAN DONG thut le (goc -> nhanh -> y con xep doc, duong noi
 // gap khuc tu ray trai), the rong ~1400-1600px chu to; camera van day sat o prompt roi keo ra; khung ngang giu cay goc.
-import { useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, fitSize, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, fitSize, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, FONT, mix, ramp, softShadow } from '../../../fixtures/Polish';
@@ -172,6 +172,7 @@ export const DiagramCascadeBuild: React.FC = () => {
   const portrait = SH > 1080 * 1.2;
   const A1 = L.accent; // 紫
   const A2 = L.accent2; // 粉（点缀：渐变另一端）
+  const bd = useBackdrop(); // [Agent Edit] nen anh AI: khong ve nen / cuc quang / bui tu ve
   const PROMPT = useText('prompt', 'Lập kế hoạch mở quán cà phê đầu tiên').normalize('NFC');
   const names = useList('nodes', ['Quán cà phê', 'Vốn & chi phí', 'Khách hàng', 'Mặt bằng', 'Thiết bị', 'Thực đơn', 'Kênh online']).slice(0, 7);
   while (names.length < 3) names.push('…');
@@ -306,24 +307,17 @@ export const DiagramCascadeBuild: React.FC = () => {
   const caretLine = Math.max(0, typedLines.findIndex((t, i) => t.length < Array.from(pLines[i]).length) === -1 ? pLines.length - 1 : typedLines.findIndex((t, i) => t.length < Array.from(pLines[i]).length));
 
   return (
-    <AbsoluteFill style={{ background: L.bg[1], overflow: 'hidden', fontFamily: FONT.sans }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[1], overflow: 'hidden', fontFamily: FONT.sans }}>
       <Stage look={L} keyLight={{ x: 0.5, y: 0.05 }} fill={{ x: 0.82, y: 0.95 }} breathe={0.5}>
         {/* 树后的极光：随生成逐渐亮起，成树时再亮一档 */}
-        <div style={{
+        {!bd && <div style={{
           position: 'absolute', left: portrait ? 60 : 260, right: portrait ? 60 : 260,
           top: portrait ? treeC.y - 900 : 380, height: portrait ? 1800 : 640,
           background: `radial-gradient(ellipse 50% 50% at 35% 55%, ${alpha(A1, 0.1 + 0.12 * auroraUp)} 0%, transparent 70%), radial-gradient(ellipse 45% 45% at 70% 60%, ${alpha(A2, 0.05 + 0.08 * auroraUp)} 0%, transparent 70%)`,
           opacity: ramp(frame, SUBMIT, 60, EASE.out),
-        }} />
-        {/* 画布点阵 */}
-        <div style={{
-          position: 'absolute', left: 0, top: 0, width: 1920, height: SH,
-          backgroundImage: `radial-gradient(${alpha(L.ink, 0.12)} 1.4px, transparent 1.7px)`,
-          backgroundSize: portrait ? '56px 56px' : '40px 40px', backgroundPosition: '0 16px',
-          WebkitMaskImage: 'radial-gradient(ellipse 60% 62% at 50% 58%, #000 25%, transparent 100%)',
-          maskImage: 'radial-gradient(ellipse 60% 62% at 50% 58%, #000 25%, transparent 100%)',
-        }} />
-        {Array.from({ length: Math.ceil(SH / 1080) }, (_, i) => (
+        }} />}
+        {/* [Agent Edit] bo luoi cham (canvas dot grid) trang tri theo yeu cau user */}
+        {!bd && Array.from({ length: Math.ceil(SH / 1080) }, (_, i) => (
           <div key={i} style={{ position: 'absolute', left: 0, top: i * 1080, width: 1920, height: 1080 }}>
             <Dust look={L} count={22} seed={5 + i} drift={0.18} opacity={0.35} />
           </div>

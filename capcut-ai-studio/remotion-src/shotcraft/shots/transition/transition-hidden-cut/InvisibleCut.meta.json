@@ -6,35 +6,153 @@
  "duration": 110,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
  "hold": 70,
  "slots": [
-  {"id": "badge", "role": "label", "sample": "Đà Lạt · Bình minh", "max": 26, "optional": true, "note": "nhãn nhỏ góc ảnh"},
-  {"id": "kicker_a", "role": "kicker", "sample": "Chuyến đi cuối tuần", "max": 28, "optional": true},
-  {"id": "title_a", "role": "title", "sample": "Đi thật xa,\nnghỉ thật sâu.", "max": 40, "note": "tiêu đề trang 'trước khi bấm'; từ cuối in nghiêng màu nhấn"},
-  {"id": "stats", "role": "label", "sample": "Thời gian: 3 ngày 2 đêm|Khởi hành: Thứ Sáu", "max": 30, "list": {"min": 1, "max": 2}, "note": "dạng 'Nhãn: giá trị'"},
-  {"id": "value", "role": "number", "sample": "2,4 triệu", "max": 12, "note": "con số lớn (giá, số lượng)"},
-  {"id": "value_note", "role": "label", "sample": "đã gồm vé và khách sạn", "max": 30, "optional": true},
-  {"id": "button", "role": "cta", "sample": "Đặt ngay", "max": 20, "note": "nút được bấm"},
-  {"id": "button_busy", "role": "label", "sample": "Đang xử lý…", "max": 20, "optional": true},
-  {"id": "kicker_b", "role": "kicker", "sample": "Đặt chỗ thành công", "max": 28, "optional": true},
-  {"id": "title_b", "role": "title", "sample": "Xong rồi,\nlên đường!", "max": 32, "note": "kết quả sau khi bấm; từ cuối in nghiêng màu nhấn"},
-  {"id": "subtitle_b", "role": "subtitle", "sample": "Chuyến đi đã được xác nhận và gửi vào email của bạn.", "max": 90, "optional": true},
-  {"id": "note_b", "role": "subtitle", "sample": "Vé điện tử đã lưu sẵn trong ứng dụng", "max": 60, "optional": true},
-  {"id": "code", "role": "code", "sample": "VN-4821", "max": 14, "note": "mã xác nhận trên vé"}
+  {
+   "id": "badge",
+   "role": "label",
+   "sample": "Đà Lạt · Bình minh",
+   "max": 26,
+   "optional": true,
+   "note": "nhãn nhỏ góc ảnh"
+  },
+  {
+   "id": "kicker_a",
+   "role": "kicker",
+   "sample": "Chuyến đi cuối tuần",
+   "max": 28,
+   "optional": true
+  },
+  {
+   "id": "title_a",
+   "role": "title",
+   "sample": "Đi thật xa,\nnghỉ thật sâu.",
+   "max": 40,
+   "note": "tiêu đề trang 'trước khi bấm'; từ cuối in nghiêng màu nhấn"
+  },
+  {
+   "id": "stats",
+   "role": "label",
+   "sample": "Thời gian: 3 ngày 2 đêm|Khởi hành: Thứ Sáu",
+   "max": 30,
+   "list": {
+    "min": 1,
+    "max": 2
+   },
+   "note": "dạng 'Nhãn: giá trị'"
+  },
+  {
+   "id": "value",
+   "role": "number",
+   "sample": "2,4 triệu",
+   "max": 12,
+   "note": "con số lớn (giá, số lượng)"
+  },
+  {
+   "id": "value_note",
+   "role": "label",
+   "sample": "đã gồm vé và khách sạn",
+   "max": 30,
+   "optional": true
+  },
+  {
+   "id": "button",
+   "role": "cta",
+   "sample": "Đặt ngay",
+   "max": 20,
+   "note": "nút được bấm"
+  },
+  {
+   "id": "button_busy",
+   "role": "label",
+   "sample": "Đang xử lý…",
+   "max": 20,
+   "optional": true
+  },
+  {
+   "id": "kicker_b",
+   "role": "kicker",
+   "sample": "Đặt chỗ thành công",
+   "max": 28,
+   "optional": true
+  },
+  {
+   "id": "title_b",
+   "role": "title",
+   "sample": "Xong rồi,\nlên đường!",
+   "max": 32,
+   "note": "kết quả sau khi bấm; từ cuối in nghiêng màu nhấn"
+  },
+  {
+   "id": "subtitle_b",
+   "role": "subtitle",
+   "sample": "Chuyến đi đã được xác nhận và gửi vào email của bạn.",
+   "max": 90,
+   "optional": true
+  },
+  {
+   "id": "note_b",
+   "role": "subtitle",
+   "sample": "Vé điện tử đã lưu sẵn trong ứng dụng",
+   "max": 60,
+   "optional": true
+  },
+  {
+   "id": "code",
+   "role": "code",
+   "sample": "VN-4821",
+   "max": 14,
+   "note": "mã xác nhận trên vé"
+  }
  ],
  "images": [
-  {"id": "photo", "role": "photo", "aspect": "4:3", "optional": true, "note": "ảnh chủ đề (điểm đến, sản phẩm, dịch vụ); không có thì vẽ đồi cát hoàng hôn"}
+  {
+   "id": "photo",
+   "role": "photo",
+   "aspect": "4:3",
+   "optional": true,
+   "note": "ảnh chủ đề (điểm đến, sản phẩm, dịch vụ); không có thì vẽ đồi cát hoàng hôn"
+  }
  ],
  "brand": "optional",
- "sfx": [{"at": 24, "type": "click"}, {"at": 32, "type": "whoosh"}, {"at": 46, "type": "pop"}],
+ "sfx": [
+  {
+   "at": 24,
+   "type": "click"
+  },
+  {
+   "at": 32,
+   "type": "whoosh"
+  },
+  {
+   "at": 46,
+   "type": "pop"
+  }
+ ],
  "vi": {
   "ten": "Bấm nút — vật che quét qua — xong ngay",
   "mo_ta": "Trang sáng tông cát ấm: ảnh lớn + tiêu đề serif + 2 thông số + giá + nút màu đất nung; nút bị bấm xuống, hiện vòng xoay 'đang xử lý', rồi một mảng tối mờ như vật đi ngang sát ống kính quét qua toàn màn hình và khi nó đi khỏi thì đã là trang kết quả: tiêu đề lớn 'Xong rồi…', vé xác nhận có ảnh, mã số và con dấu tích bật xuống. Liền mạch như một cú máy.",
   "hop_khi": "Người nói kể quy trình 'chỉ cần bấm một cái là xong' — đặt vé, đặt lịch, thanh toán, đăng ký, mua hàng online, gửi đơn; khoe app làm mọi thứ nhanh gọn; trước/sau của một thao tác.",
   "tranh_khi": "Không có hành động 'bấm → kết quả'; nội dung tối, gắt, công nghệ lạnh; cần hiện số liệu nhiều; người nói đang kể chuyện cảm xúc.",
   "nang_luong": "vua",
-  "chu_de": ["đặt vé", "đặt lịch", "thanh toán", "app", "mua hàng", "du lịch", "chuyển cảnh", "trước sau", "thao tác nhanh"]
- }
+  "chu_de": [
+   "đặt vé",
+   "đặt lịch",
+   "thanh toán",
+   "app",
+   "mua hàng",
+   "du lịch",
+   "chuyển cảnh",
+   "trước sau",
+   "thao tác nhanh"
+  ]
+ },
+ "backdrop": true
 }

@@ -15,7 +15,7 @@
 // cao 290x430 (don vi thiet ke, x6.2), chu bang to hon, ngoac goc 44; khung ngang giu kich thuoc goc 300x178 (x4).
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
-import { useImage, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
+import { useBackdrop, useImage, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
 import { E, lerp, seg, useT } from '../../../fixtures/Motion';
 import { Backdrop, EASE, Grain, softShadow } from '../../../fixtures/Polish';
 import { G } from '../../../fixtures/Fixtures';
@@ -65,6 +65,7 @@ export const ScanBracketSweep: React.FC = () => {
   const fonts = useShotFonts();
   const portrait = SH > 1080 * 1.2;
   const SCAN = rgbStr(G.accent); // 扫描光（rgb 分量，便于拼 alpha）
+  const bd = useBackdrop();
   const title = useText('title', 'Báo cáo chi phí quý 3');
   const meta = useText('meta', 'Phòng Kế toán · Bản rà soát · 07/2025');
   const items = useList('items', ['Quảng cáo Facebook', 'Thuê văn phòng', 'Lương nhân sự', 'Phần mềm & công cụ', 'Vận chuyển', 'Sự kiện ra mắt', 'Chi phí khác']).slice(0, 7);
@@ -176,7 +177,8 @@ export const ScanBracketSweep: React.FC = () => {
 
   return (
     <AbsoluteFill>
-      <Backdrop tone="light" light={{ x: 0.5, y: 0.3 }} accent={G.accent} grain={0} vignette={0.16} />
+      {/* [Agent Edit] nen anh AI (useBackdrop): bo nen sang + hat tu ve, tai lieu noi tren anh */}
+      {!bd && <Backdrop tone="light" light={{ x: 0.5, y: 0.3 }} accent={G.accent} grain={0} vignette={0.16} />}
       <div style={{ position: 'absolute', left: 0, top: 0, width: CWd, height: CHd, zoom: D.S, overflow: 'hidden' }}>
         {/* holder：文档 + 光带 + 括号共用的定位容器 */}
         <div style={{ position: 'absolute', left: DX, top: DY, width: DW, height: DH }}>
@@ -292,7 +294,7 @@ export const ScanBracketSweep: React.FC = () => {
           })}
         </div>
       </div>
-      <Grain opacity={0.045} />
+      {!bd && <Grain opacity={0.045} />}
     </AbsoluteFill>
   );
 };

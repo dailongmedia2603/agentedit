@@ -6,33 +6,151 @@
  "duration": 105,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
  "hold": 72,
  "slots": [
-  {"id": "question", "role": "title", "sample": "Làm một video quảng cáo mất bao lâu?", "max": 50, "note": "câu hỏi mở đầu trước cú va chạm"},
-  {"id": "question_kicker", "role": "kicker", "sample": "Video ra mắt sản phẩm", "max": 28, "optional": true},
-  {"id": "left_label", "role": "label", "sample": "Cách cũ", "max": 22, "note": "tên phe 1 (cũ / trước / đối thủ)"},
-  {"id": "left_number", "role": "number", "sample": "14", "max": 6, "note": "chỉ con số"},
-  {"id": "left_unit", "role": "label", "sample": "ngày", "max": 12, "optional": true, "note": "đơn vị của số"},
-  {"id": "left_caption", "role": "subtitle", "sample": "Viết kịch bản, quay dựng và ba vòng sửa đi sửa lại.", "max": 70, "optional": true},
-  {"id": "left_items", "role": "item", "sample": "Kịch bản|Quay|Dựng|Sửa lại", "max": 16, "list": {"min": 0, "max": 4}, "optional": true, "note": "các bước cũ, hiện gạch ngang"},
-  {"id": "right_label", "role": "label", "sample": "Cách mới", "max": 22, "note": "tên phe 2 (mới / sau / sản phẩm của mình)"},
-  {"id": "right_number", "role": "number", "sample": "1", "max": 6},
-  {"id": "right_unit", "role": "label", "sample": "buổi chiều", "max": 12, "optional": true},
-  {"id": "right_caption", "role": "subtitle", "sample": "AI lên kịch bản, dựng cảnh và ghép nhạc đúng nhịp.", "max": 70, "optional": true},
-  {"id": "right_items", "role": "item", "sample": "Tự chọn cảnh|Khớp nhịp nhạc", "max": 16, "list": {"min": 0, "max": 4}, "optional": true, "note": "ưu điểm, hiện dấu tích"},
-  {"id": "verdict", "role": "cta", "sample": "Bạn chỉ cần ý tưởng, phần còn lại để AI lo.", "max": 50, "optional": true, "note": "thanh kết luận ở dưới"}
+  {
+   "id": "question",
+   "role": "title",
+   "sample": "Làm một video quảng cáo mất bao lâu?",
+   "max": 50,
+   "note": "câu hỏi mở đầu trước cú va chạm"
+  },
+  {
+   "id": "question_kicker",
+   "role": "kicker",
+   "sample": "Video ra mắt sản phẩm",
+   "max": 28,
+   "optional": true
+  },
+  {
+   "id": "left_label",
+   "role": "label",
+   "sample": "Cách cũ",
+   "max": 22,
+   "note": "tên phe 1 (cũ / trước / đối thủ)"
+  },
+  {
+   "id": "left_number",
+   "role": "number",
+   "sample": "14",
+   "max": 6,
+   "note": "chỉ con số"
+  },
+  {
+   "id": "left_unit",
+   "role": "label",
+   "sample": "ngày",
+   "max": 12,
+   "optional": true,
+   "note": "đơn vị của số"
+  },
+  {
+   "id": "left_caption",
+   "role": "subtitle",
+   "sample": "Viết kịch bản, quay dựng và ba vòng sửa đi sửa lại.",
+   "max": 70,
+   "optional": true
+  },
+  {
+   "id": "left_items",
+   "role": "item",
+   "sample": "Kịch bản|Quay|Dựng|Sửa lại",
+   "max": 16,
+   "list": {
+    "min": 0,
+    "max": 4
+   },
+   "optional": true,
+   "note": "các bước cũ, hiện gạch ngang"
+  },
+  {
+   "id": "right_label",
+   "role": "label",
+   "sample": "Cách mới",
+   "max": 22,
+   "note": "tên phe 2 (mới / sau / sản phẩm của mình)"
+  },
+  {
+   "id": "right_number",
+   "role": "number",
+   "sample": "1",
+   "max": 6
+  },
+  {
+   "id": "right_unit",
+   "role": "label",
+   "sample": "buổi chiều",
+   "max": 12,
+   "optional": true
+  },
+  {
+   "id": "right_caption",
+   "role": "subtitle",
+   "sample": "AI lên kịch bản, dựng cảnh và ghép nhạc đúng nhịp.",
+   "max": 70,
+   "optional": true
+  },
+  {
+   "id": "right_items",
+   "role": "item",
+   "sample": "Tự chọn cảnh|Khớp nhịp nhạc",
+   "max": 16,
+   "list": {
+    "min": 0,
+    "max": 4
+   },
+   "optional": true,
+   "note": "ưu điểm, hiện dấu tích"
+  },
+  {
+   "id": "verdict",
+   "role": "cta",
+   "sample": "Bạn chỉ cần ý tưởng, phần còn lại để AI lo.",
+   "max": 50,
+   "optional": true,
+   "note": "thanh kết luận ở dưới"
+  }
  ],
  "images": [],
  "brand": "optional",
- "sfx": [{"at": 18, "type": "whoosh"}, {"at": 28, "type": "boom"}, {"at": 54, "type": "pop"}],
+ "sfx": [
+  {
+   "at": 18,
+   "type": "whoosh"
+  },
+  {
+   "at": 28,
+   "type": "boom"
+  },
+  {
+   "at": 54,
+   "type": "pop"
+  }
+ ],
  "vi": {
   "ten": "Hai poster đối đầu lao vào nhau — VS",
   "mo_ta": "Mở bằng câu hỏi chữ đen lớn trên nền giấy, một đường mực xéo mọc ra; rồi hai nửa màn hình (đen 'cách cũ' và màu nhấn 'cách mới') tăng tốc lao vào nhau theo đường cắt xéo, va chạm: chớp trắng, rung màn hình, con dấu tròn 'VS' đóng xuống, vòng sóng xung kích. Mỗi bên có con số rất lớn + đơn vị, câu mô tả và các mục (bên cũ gạch ngang, bên mới dấu tích); cuối hiện thanh kết luận. Khung dọc: hai nửa trên/dưới đập vào nhau.",
   "hop_khi": "Người nói SO SÁNH hai phương án có số liệu: trước/sau, cũ/mới, mình/đối thủ, thủ công/tự động, tốn kém/tiết kiệm (\"trước đây mất 14 ngày, giờ chỉ 1 buổi\"); mở đầu phần so sánh, đập tan một quan niệm cũ.",
   "tranh_khi": "Không có hai phe đối lập rõ ràng (chữ VS sẽ vô nghĩa); không có con số; tone nhẹ nhàng, cảm xúc sâu lắng.",
   "nang_luong": "cao",
-  "chu_de": ["so sánh", "trước sau", "đối đầu", "VS", "số liệu", "cũ mới", "tiết kiệm", "AI", "năng suất"]
- }
+  "chu_de": [
+   "so sánh",
+   "trước sau",
+   "đối đầu",
+   "VS",
+   "số liệu",
+   "cũ mới",
+   "tiết kiệm",
+   "AI",
+   "năng suất"
+  ]
+ },
+ "backdrop": false
 }

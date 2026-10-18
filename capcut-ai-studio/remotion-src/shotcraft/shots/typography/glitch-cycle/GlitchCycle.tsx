@@ -23,7 +23,7 @@
 // tuy chon). So o ky tu (MAXCH) + co chu tinh tu buoc dai nhat (do vua be ngang that); nhip moi buoc chia deu theo so buoc
 // (4 buoc = 38f nhu ban goc). Chu "do dac" (DANG XU LY / HOAN TAT / BUOC n/N) doi sang tieng Viet trung tinh.
 // Dong ky ten cuoi = thuong hieu cua video (khong co -> an). Khung doc (native): chu to hon, ca khoi giua khung.
-import { useCurrentFrame, useVideoConfig, useList, useText, useShotFonts, fitSize } from '../../../runtime';
+import { useCurrentFrame, useVideoConfig, useList, useText, useShotFonts, useBackdrop, fitSize } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, FONT, ramp } from '../../../fixtures/Polish';
@@ -57,6 +57,9 @@ export const GlitchCycle: React.FC = () => {
   const fonts = useShotFonts();
   const portrait = SH > 1080 * 1.2;
   const u = portrait ? 1.5 : 1; // 竖屏 chrome 放大
+  // [Agent Edit] DOT 2: co nen anh AI -> bo dai sang + vach quet phu nen (Stage tu bo gradient); chu tren nen -> bong toi nhe
+  const bd = useBackdrop();
+  const halo = '0 2px 18px rgba(0,0,0,0.55)';
   const raw = useList('steps', ['LÊN KỊCH BẢN', 'KHỚP NHỊP NHẠC', 'DỰNG KHUNG HÌNH', 'SẴN SÀNG ĐĂNG']);
   const PHRASES = raw.map((x) => x.trim().toUpperCase()).filter(Boolean).slice(0, 5);
   if (!PHRASES.length) PHRASES.push('SẴN SÀNG');
@@ -103,7 +106,7 @@ export const GlitchCycle: React.FC = () => {
       transform: `translateX(${dx.toFixed(1)}px)`, clipPath: clip,
       textShadow: g > 0.04
         ? `${split.toFixed(1)}px 0 ${alpha(SPLIT_A, 0.8 * Math.min(1, g * 1.4))}, ${(-split).toFixed(1)}px 0 ${alpha(SPLIT_B, 0.8 * Math.min(1, g * 1.4))}`
-        : `0 0 ${(20 + 40 * bloom).toFixed(0)}px ${alpha(L.accent, 0.25 + 0.45 * bloom)}`,
+        : `0 0 ${(20 + 40 * bloom).toFixed(0)}px ${alpha(L.accent, 0.25 + 0.45 * bloom)}${bd ? `, ${halo}` : ''}`,
     }}>
       {Array.from({ length: MAXCH }, (_, i) => {
         const ch = text[i];
@@ -140,6 +143,7 @@ export const GlitchCycle: React.FC = () => {
   return (
     <AbsoluteFill>
       <Stage look={L} keyLight={{ x: 0.5, y: 0.45 }} fill={{ x: 0.82, y: 0.12 }} breathe={0.4} vignette={0.65}>
+        {!bd && (<>
         {/* 信号带：短语背后一条横向柔光 */}
         <div style={{
           position: 'absolute', left: 0, right: 0, top: SH / 2 - 160 * u, height: 300 * u,
@@ -150,9 +154,10 @@ export const GlitchCycle: React.FC = () => {
           position: 'absolute', left: 0, top: 0, width: 1920, height: SH, opacity: 0.5,
           background: `repeating-linear-gradient(180deg, ${alpha('#000000', 0)} 0px, ${alpha('#000000', 0)} 3px, ${alpha('#000000', 0.22)} 4px)`,
         }} />
+        </>)}
       </Stage>
 
-      <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center' }}>
+      <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center', textShadow: bd ? halo : undefined }}>
         <div style={{ position: 'relative', width: boxW, opacity: intro }}>
           {/* 状态行 */}
           <div style={{

@@ -24,7 +24,7 @@
 // do dong khung toan cuc giu nguyen. Chu dai: ten the <= 2 dong, mo ta <= 2 dong, the tu cao them (khung ngang) hoac
 // rong ca khung (khung doc). Khung doc (portrait.mode = 'native'): 3 the xep doc rong ca khung, roi tu tren xuong vao
 // tung o; bo dem COMBO goc phai tren; cau chot to o duoi; ca khoi can giua chieu cao that.
-import { useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, FONT, Grain, SpeedBlur, Vignette, bezier, mix, ramp } from '../../../fixtures/Polish';
@@ -221,28 +221,27 @@ export const HitCounter: React.FC = () => {
   const wGap = Math.min(3, 36 / Math.max(1, nW));
   const tStart = HITS_REAL[2] + 14;
   let wi = 0;
+  // [Agent Edit] nen anh AI: bo nen gradient + quang + soc cheo; chu nam thang tren anh -> bong toi nhe.
+  // Luoi cham (网点) trang tri da bo han (ke ca khi khong co nen anh).
+  const bd = useBackdrop();
+  const tsh = bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined;
 
   return (
-    <AbsoluteFill style={{ overflow: 'hidden', fontFamily: FONT.sans, background: `linear-gradient(170deg, ${C.bg0} 0%, ${C.bg1} 55%, ${C.bg2} 100%)` }}>
-      {/* 背景：主光 + 斜纹（速度线的静态版）+ 网点 */}
-      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 60% ${portrait ? 35 : 55}% at 38% 30%, ${alpha('#6f8dff', 0.45)} 0%, ${alpha('#6f8dff', 0)} 70%)` }} />
-      <div
-        style={{
-          position: 'absolute', inset: -200, opacity: 0.1,
-          backgroundImage: 'repeating-linear-gradient(-58deg, #ffffff 0px, #ffffff 2px, transparent 2px, transparent 46px)',
-          transform: `translateX(${(stripeShift % 54.2).toFixed(2)}px)`,
-        }}
-      />
-      <div
-        style={{
-          position: 'absolute', inset: 0, opacity: 0.14,
-          backgroundImage: `radial-gradient(circle, ${C.deep} 1.4px, transparent 1.6px)`, backgroundSize: '18px 18px',
-          WebkitMaskImage: 'linear-gradient(180deg, transparent 40%, #000 100%)', maskImage: 'linear-gradient(180deg, transparent 40%, #000 100%)',
-        }}
-      />
+    <AbsoluteFill style={{ overflow: 'hidden', fontFamily: FONT.sans, background: bd ? 'transparent' : `linear-gradient(170deg, ${C.bg0} 0%, ${C.bg1} 55%, ${C.bg2} 100%)` }}>
+      {/* 背景：主光 + 斜纹（速度线的静态版） */}
+      {!bd && <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 60% ${portrait ? 35 : 55}% at 38% 30%, ${alpha('#6f8dff', 0.45)} 0%, ${alpha('#6f8dff', 0)} 70%)` }} />}
+      {!bd && (
+        <div
+          style={{
+            position: 'absolute', inset: -200, opacity: 0.1,
+            backgroundImage: 'repeating-linear-gradient(-58deg, #ffffff 0px, #ffffff 2px, transparent 2px, transparent 46px)',
+            transform: `translateX(${(stripeShift % 54.2).toFixed(2)}px)`,
+          }}
+        />
+      )}
 
       {/* 眉题：视频品牌 + 标签 */}
-      <div style={{ position: 'absolute', left: 120, top: headY, display: 'flex', alignItems: 'center', gap: 18 * k, opacity: ramp(frame, 0, 14, EASE.out), maxWidth: portrait ? 1100 : 1000 }}>
+      <div style={{ position: 'absolute', left: 120, top: headY, display: 'flex', alignItems: 'center', gap: 18 * k, opacity: ramp(frame, 0, 14, EASE.out), maxWidth: portrait ? 1100 : 1000, textShadow: tsh }}>
         <ShotcraftMark size={52 * k} tone="dark" />
         {BRAND.name ? <div style={{ ...type(34 * k, 760), color: '#fff', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>{BRAND.name}</div> : null}
         <div style={{ ...type(fitSize(kicker, { family: fonts.sans, size: 26 * k, maxWidth: portrait ? 1050 : 700, weight: 700, minSize: 16 * k, letterSpacingEm: 0.2 }), 700), color: alpha('#ffffff', 0.72), letterSpacing: '0.2em', marginLeft: 8, whiteSpace: 'nowrap' }}>{kicker.toUpperCase()}</div>
@@ -384,11 +383,11 @@ export const HitCounter: React.FC = () => {
           display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
         }}
       >
-        <div style={{ ...type(26 * ck, 800, { caps: true }), letterSpacing: '0.3em', color: count ? '#ffffff' : alpha('#ffffff', 0.4), fontStyle: 'italic' }}>Combo</div>
+        <div style={{ ...type(26 * ck, 800, { caps: true }), letterSpacing: '0.3em', color: count ? '#ffffff' : alpha('#ffffff', 0.4), fontStyle: 'italic', textShadow: tsh }}>Combo</div>
         <div
           style={{
             ...type(cSize * ck, 900), fontStyle: 'italic', letterSpacing: '-0.05em', lineHeight: 0.9, whiteSpace: 'nowrap',
-            color: count ? C.hit : alpha('#ffffff', 0.22), textShadow: count ? `7px 7px 0 ${C.deep}` : 'none',
+            color: count ? C.hit : alpha('#ffffff', bd ? 0.5 : 0.22), textShadow: count ? `7px 7px 0 ${C.deep}` : tsh ?? 'none',
             transform: `translateY(${(-stamp * 0.14 * cSize * ck).toFixed(1)}px) skewX(-6deg)`, marginTop: 6,
           }}
         >
@@ -402,7 +401,7 @@ export const HitCounter: React.FC = () => {
       </div>
 
       {/* 收尾：真实收益（逐词升起；遮罩上下留足越南语声调符号的空间） */}
-      <div style={{ position: 'absolute', left: 0, right: 0, top: titleY, textAlign: 'center', ...type(tSize, 760), letterSpacing: '-0.025em', lineHeight: `${tLH}px`, color: '#ffffff' }}>
+      <div style={{ position: 'absolute', left: 0, right: 0, top: titleY, textAlign: 'center', ...type(tSize, 760), letterSpacing: '-0.025em', lineHeight: `${tLH}px`, color: '#ffffff', textShadow: tsh }}>
         {tLines.map((ln, li) => (
           <div key={li} style={{ whiteSpace: 'nowrap' }}>
             {ln.split(/\s+/).filter(Boolean).map((w, j, arr) => {
@@ -422,7 +421,7 @@ export const HitCounter: React.FC = () => {
         ))}
       </div>
 
-      <Vignette strength={0.42} inner={0.45} color={C.deep} />
+      <Vignette strength={0.42} inner={0.45} color={bd ? '#000000' : C.deep} />
       <Grain opacity={0.07} blend="soft-light" />
     </AbsoluteFill>
   );

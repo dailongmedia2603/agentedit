@@ -6,28 +6,106 @@
  "duration": 135,
  "kind": "insert",
  "dark": true,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.25],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.25
+ ],
  "hold": 66,
  "slots": [
-  {"id": "left_name", "role": "name", "sample": "Chúng tôi", "max": 16, "note": "bên THẮNG / bên được nhấn (mình, năm nay, sau khi áp dụng…); 1–2 từ"},
-  {"id": "right_name", "role": "name", "sample": "Đối thủ", "max": 16, "note": "bên còn lại (đối thủ, năm ngoái, trước đây…); 1–2 từ"},
-  {"id": "left_score", "role": "number", "sample": "3", "max": 5, "note": "con số bên trái (ngắn: 3, 98%, 12k)"},
-  {"id": "right_score", "role": "number", "sample": "2", "max": 5, "note": "con số bên phải"},
-  {"id": "tag", "role": "label", "sample": "KẾT QUẢ CHUNG CUỘC", "max": 26, "optional": true, "note": "nhãn vàng in hoa trên thẻ"},
-  {"id": "info", "role": "label", "sample": "TRẬN CHUNG KẾT · MÙA GIẢI 2025", "max": 40, "optional": true, "note": "dòng nhỏ in hoa dưới tỉ số"},
-  {"id": "title", "role": "title", "sample": "Đội mình vô địch rồi!", "max": 50, "note": "câu chốt; TỪ CUỐI tô vàng"},
-  {"id": "subtitle", "role": "quote", "sample": "Một trận đấu không ai muốn rời mắt.", "max": 70, "optional": true, "note": "câu bình luận / cảm nhận"}
+  {
+   "id": "left_name",
+   "role": "name",
+   "sample": "Chúng tôi",
+   "max": 16,
+   "note": "bên THẮNG / bên được nhấn (mình, năm nay, sau khi áp dụng…); 1–2 từ"
+  },
+  {
+   "id": "right_name",
+   "role": "name",
+   "sample": "Đối thủ",
+   "max": 16,
+   "note": "bên còn lại (đối thủ, năm ngoái, trước đây…); 1–2 từ"
+  },
+  {
+   "id": "left_score",
+   "role": "number",
+   "sample": "3",
+   "max": 5,
+   "note": "con số bên trái (ngắn: 3, 98%, 12k)"
+  },
+  {
+   "id": "right_score",
+   "role": "number",
+   "sample": "2",
+   "max": 5,
+   "note": "con số bên phải"
+  },
+  {
+   "id": "tag",
+   "role": "label",
+   "sample": "KẾT QUẢ CHUNG CUỘC",
+   "max": 26,
+   "optional": true,
+   "note": "nhãn vàng in hoa trên thẻ"
+  },
+  {
+   "id": "info",
+   "role": "label",
+   "sample": "TRẬN CHUNG KẾT · MÙA GIẢI 2025",
+   "max": 40,
+   "optional": true,
+   "note": "dòng nhỏ in hoa dưới tỉ số"
+  },
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Đội mình vô địch rồi!",
+   "max": 50,
+   "note": "câu chốt; TỪ CUỐI tô vàng"
+  },
+  {
+   "id": "subtitle",
+   "role": "quote",
+   "sample": "Một trận đấu không ai muốn rời mắt.",
+   "max": 70,
+   "optional": true,
+   "note": "câu bình luận / cảm nhận"
+  }
  ],
  "images": [],
  "brand": "optional",
- "sfx": [{"at": 0, "type": "riser"}, {"at": 15, "type": "boom"}, {"at": 36, "type": "swoosh"}],
+ "sfx": [
+  {
+   "at": 0,
+   "type": "riser"
+  },
+  {
+   "at": 15,
+   "type": "boom"
+  },
+  {
+   "at": 36,
+   "type": "swoosh"
+  }
+ ],
  "vi": {
   "ten": "Bảng tỉ số đập xuống — so sánh hai bên",
   "mo_ta": "Sân vận động đêm, bốn đèn pha bật 'tạch tạch'; một bảng tỉ số tối (huy hiệu + tên hai bên, hai con số rất to) treo mờ sát ống kính rồi ĐẬP mạnh xuống giữa màn hình: vòng sóng xung kích trắng-vàng, mảnh kính/vàng lá bắn ra, tia lửa, rung màn hình, chớp sáng. Hai con số nảy lần hai, gạch chân vàng dưới số bên thắng, nhãn vàng trượt ra; tiêu đề hiện từng từ (từ cuối màu vàng) và câu bình luận bên dưới.",
   "hop_khi": "So sánh kết quả hai bên bằng con số kiểu tỉ số: mình vs đối thủ, trước vs sau, năm ngoái vs năm nay ('doanh thu 12 tỷ so với 4 tỷ', 'thắng 3–2'); công bố người thắng, kết quả cuộc thi, khoảnh khắc chiến thắng cực mạnh.",
   "tranh_khi": "Chỉ có một con số (dùng mẫu số lớn khác); con số dài (> 5 ký tự); tone nhẹ nhàng; đã có cảnh đập/rung khác gần đó (tối đa 2 lần mỗi video).",
   "nang_luong": "cao",
-  "chu_de": ["so sánh", "số liệu", "kết quả", "chiến thắng", "thể thao", "trước sau", "đối thủ"]
- }
+  "chu_de": [
+   "so sánh",
+   "số liệu",
+   "kết quả",
+   "chiến thắng",
+   "thể thao",
+   "trước sau",
+   "đối thủ"
+  ]
+ },
+ "backdrop": true
 }

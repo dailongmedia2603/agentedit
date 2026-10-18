@@ -18,6 +18,7 @@ Chay duoc bang stdlib thuan. Cac con so chinh duoc trong menu "Prompt & quy tac"
 import os
 import copy
 import json
+import re
 import unicodedata
 
 # ---------------------------------------------------------------------------
@@ -608,6 +609,8 @@ def apply_structure(plan, changes):
         try:
             import speech_cut
             pieces = speech_cut.split_quiet(plan, hook_seg, speech_cut.plan_pause_limit(plan), changes) or [hook_seg]
+            # cho noi vap / lap chu Claude chi ra cung bi cat trong ban sao hook (hook la 3-6s dau, lo nhat)
+            pieces = speech_cut.cut_stutters(plan, pieces, plan.get("stutter_cuts"), changes, label="hook") or pieces
             # kiem lai mep cat cua hook: duoi am chu cuoi bi cup -> keo toi khi tieng tat han
             speech_cut.audit_cuts(plan, pieces, speech_cut.plan_pause_limit(plan), changes, label="hook")
         except Exception as ex:  # loi do am thanh khong duoc lam hong hook
@@ -1246,3 +1249,74 @@ def apply_overrides(force=False):
 
 
 apply_overrides()
+
+
+# ----------------------------------------------------------------------------
+# KHONG DAU GACH trong chu hien tren video (user 2026-10-18: "cac phan dau gach nay kha tho, khong dep")
+# ----------------------------------------------------------------------------
+_DASH_SPACED = re.compile(r"\s+[—–‒―-]{1,2}\s+")         # " — ", " – ", " - ", " -- "
+_DASH_EDGE = re.compile(r"(^\s*[—–‒―-]+\s*)|(\s*[—–‒―-]+\s*$)", re.M)
+_DASH_WORD = re.compile(r"(?<=[^\W\d_])[—–‒―](?=[^\W\d_])")  # chu—chu (khong cach)
+
+
+def bo_dau_gach(text):
+    """Dau gach noi / trang tri (— – -) trong chu hien thi -> dau phay / khoang trang. Giu dau gach trong khoang so
+    ("3-4", "24-7") va trong tu ghep viet lien (vd "e-commerce")."""
+    if not isinstance(text, str) or not text:
+        return text
+    t = _DASH_SPACED.sub(", ", text)
+    t = _DASH_EDGE.sub("", t)
+    t = _DASH_WORD.sub(" ", t)
+    t = re.sub(r"(?<=\d)[—–](?=\d)", "-", t)
+    t = re.sub(r"\s*,\s*,+", ",", t)
+    t = re.sub(r"[ \t]{2,}", " ", t)
+    t = re.sub(r"\s+,", ",", t).strip()
+    t = re.sub(r"^[,;:]\s*|[,;]\s*$", "", t).strip()
+    return t or text.strip()
+
+
+def lam_sach_dau_gach(obj, changes=None, label="chu"):
+    """Duyet plan / spec / thiet ke: moi chu HIEN THI (caption text + chu tung tu, spans cua lop, chu o shot, chu hook)
+    bo dau gach. Tra so cho da sua. Ham thuan, chay lai khong doi."""
+    n = [0]
+
+    def fix(d, k):
+        v = d.get(k)
+        if isinstance(v, str):
+            nv = bo_dau_gach(v)
+            if nv != v:
+                d[k] = nv
+                n[0] += 1
+        elif isinstance(v, list):
+            for i, x in enumerate(v):
+                if isinstance(x, str):
+                    nx = bo_dau_gach(x)
+                    if nx != x:
+                        v[i] = nx
+                        n[0] += 1
+
+    if not isinstance(obj, dict):
+        return 0
+    if isinstance(obj.get("hook"), dict):
+        fix(obj["hook"], "caption")
+    for c in obj.get("captions") or []:
+        if isinstance(c, dict):
+            fix(c, "text")
+            for w in c.get("words") or c.get("_words") or []:
+                if isinstance(w, dict):
+                    fix(w, "text")
+    for L in obj.get("layers") or []:
+        if not isinstance(L, dict):
+            continue
+        fix(L, "text")
+        for sp in L.get("spans") or []:
+            if isinstance(sp, dict):
+                fix(sp, "text")
+    for sc in obj.get("scenes") or []:
+        sh = sc.get("shot") if isinstance(sc, dict) else None
+        if isinstance(sh, dict) and isinstance(sh.get("texts"), dict):
+            for k in list(sh["texts"].keys()):
+                fix(sh["texts"], k)
+    if n[0] and changes is not None:
+        changes.append("%s: bo dau gach o %d cho chu hien thi" % (label, n[0]))
+    return n[0]

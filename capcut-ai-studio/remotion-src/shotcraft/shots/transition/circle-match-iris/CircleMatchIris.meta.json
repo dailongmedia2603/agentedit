@@ -6,33 +6,166 @@
  "duration": 165,
  "kind": "insert",
  "dark": true,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
  "hold": 144,
  "slots": [
-  {"id": "board_label", "role": "label", "sample": "Bảng xếp hạng", "max": 24, "optional": true, "note": "nhãn nhỏ đầu bảng (tự in hoa)"},
-  {"id": "board_title", "role": "title", "sample": "Tuần 41", "max": 24, "note": "tiêu đề bảng xếp hạng"},
-  {"id": "metric", "role": "label", "sample": "Video đã đăng", "max": 22, "optional": true, "note": "tên chỉ số của cột số bên phải"},
-  {"id": "rows", "role": "item", "sample": "Minh Quân|Thu Hà|Bạn|Đức Anh|Lan Phương", "max": 22, "list": {"min": 3, "max": 5}, "note": "tên người / sản phẩm theo thứ hạng; DÒNG GIỮA (mục thứ 3 khi có 5) là nhân vật chính được làm nổi và mở ra thành vòng tròn"},
-  {"id": "values", "role": "number", "sample": "61|53|47|44|39", "max": 6, "list": {"min": 3, "max": 5}, "optional": true, "note": "số của từng dòng, cùng thứ tự với rows"},
-  {"id": "details", "role": "label", "sample": "Hà Nội · 7 video|Đà Nẵng · 6 video|TP.HCM · 6 video|Cần Thơ · 5 video|Huế · 4 video", "max": 28, "list": {"min": 3, "max": 5}, "optional": true, "note": "dòng phụ nhỏ dưới mỗi tên"},
-  {"id": "percent", "role": "number", "sample": "87", "max": 4, "note": "CHỈ SỐ phần trăm 1-100: vòng tròn chạy tới mức này, số giữa đếm lên"},
-  {"id": "goal_label", "role": "label", "sample": "mục tiêu 54 video", "max": 24, "optional": true, "note": "chú thích nhỏ dưới số %"},
-  {"id": "kicker", "role": "kicker", "sample": "Tuần của bạn", "max": 26, "optional": true},
-  {"id": "title", "role": "title", "sample": "Sắp về đích.", "max": 32, "note": "kết luận ngắn về con số"},
-  {"id": "subtitle", "role": "subtitle", "sample": "Chỉ còn 7 video nữa là hoàn thành.", "max": 60, "optional": true},
-  {"id": "stats", "role": "item", "sample": "47 video — Đã đăng|6 tuần — Liên tục|4:52 phút — Thời lượng TB", "max": 30, "list": {"min": 0, "max": 3}, "optional": true, "note": "mỗi mục dạng 'số đơn vị — nhãn' (cách nhau bằng ' — ')"},
-  {"id": "pill", "role": "label", "sample": "Còn 6 video nữa để vượt lên hạng 2", "max": 44, "optional": true, "note": "câu chốt trong viên nhãn cuối"}
+  {
+   "id": "board_label",
+   "role": "label",
+   "sample": "Bảng xếp hạng",
+   "max": 24,
+   "optional": true,
+   "note": "nhãn nhỏ đầu bảng (tự in hoa)"
+  },
+  {
+   "id": "board_title",
+   "role": "title",
+   "sample": "Tuần 41",
+   "max": 24,
+   "note": "tiêu đề bảng xếp hạng"
+  },
+  {
+   "id": "metric",
+   "role": "label",
+   "sample": "Video đã đăng",
+   "max": 22,
+   "optional": true,
+   "note": "tên chỉ số của cột số bên phải"
+  },
+  {
+   "id": "rows",
+   "role": "item",
+   "sample": "Minh Quân|Thu Hà|Bạn|Đức Anh|Lan Phương",
+   "max": 22,
+   "list": {
+    "min": 3,
+    "max": 5
+   },
+   "note": "tên người / sản phẩm theo thứ hạng; DÒNG GIỮA (mục thứ 3 khi có 5) là nhân vật chính được làm nổi và mở ra thành vòng tròn"
+  },
+  {
+   "id": "values",
+   "role": "number",
+   "sample": "61|53|47|44|39",
+   "max": 6,
+   "list": {
+    "min": 3,
+    "max": 5
+   },
+   "optional": true,
+   "note": "số của từng dòng, cùng thứ tự với rows"
+  },
+  {
+   "id": "details",
+   "role": "label",
+   "sample": "Hà Nội · 7 video|Đà Nẵng · 6 video|TP.HCM · 6 video|Cần Thơ · 5 video|Huế · 4 video",
+   "max": 28,
+   "list": {
+    "min": 3,
+    "max": 5
+   },
+   "optional": true,
+   "note": "dòng phụ nhỏ dưới mỗi tên"
+  },
+  {
+   "id": "percent",
+   "role": "number",
+   "sample": "87",
+   "max": 4,
+   "note": "CHỈ SỐ phần trăm 1-100: vòng tròn chạy tới mức này, số giữa đếm lên"
+  },
+  {
+   "id": "goal_label",
+   "role": "label",
+   "sample": "mục tiêu 54 video",
+   "max": 24,
+   "optional": true,
+   "note": "chú thích nhỏ dưới số %"
+  },
+  {
+   "id": "kicker",
+   "role": "kicker",
+   "sample": "Tuần của bạn",
+   "max": 26,
+   "optional": true
+  },
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Sắp về đích.",
+   "max": 32,
+   "note": "kết luận ngắn về con số"
+  },
+  {
+   "id": "subtitle",
+   "role": "subtitle",
+   "sample": "Chỉ còn 7 video nữa là hoàn thành.",
+   "max": 60,
+   "optional": true
+  },
+  {
+   "id": "stats",
+   "role": "item",
+   "sample": "47 video · Đã đăng|6 tuần · Liên tục|4:52 phút · Thời lượng TB",
+   "max": 30,
+   "list": {
+    "min": 0,
+    "max": 3
+   },
+   "optional": true,
+   "note": "mỗi mục dạng 'số đơn vị · nhãn' (cách nhau bằng ' · ')"
+  },
+  {
+   "id": "pill",
+   "role": "label",
+   "sample": "Còn 6 video nữa để vượt lên hạng 2",
+   "max": 44,
+   "optional": true,
+   "note": "câu chốt trong viên nhãn cuối"
+  }
  ],
  "images": [],
  "brand": "optional",
- "sfx": [{"at": 18, "type": "pop"}, {"at": 47, "type": "whoosh"}, {"at": 60, "type": "riser"}, {"at": 118, "type": "ding"}],
+ "sfx": [
+  {
+   "at": 18,
+   "type": "pop"
+  },
+  {
+   "at": 47,
+   "type": "whoosh"
+  },
+  {
+   "at": 60,
+   "type": "riser"
+  },
+  {
+   "at": 118,
+   "type": "ding"
+  }
+ ],
  "vi": {
   "ten": "Bảng xếp hạng mở vòng tròn thành biểu đồ % (chuyển cảnh khớp hình)",
   "mo_ta": "Nền tối xanh chanh: bảng xếp hạng 5 dòng (thứ hạng, avatar tròn, tên, số liệu) hiện lên, các dòng khác tối đi, avatar xanh dạ quang của dòng giữa đập 2 nhịp; rồi chính avatar đó nở ra thành vòng tròn và mở toang màn hình sang cảnh mới: một vòng tiến độ có mặt đồng hồ chạy tới X%, số ở giữa đếm lên, bên cạnh hiện tiêu đề kết luận, 3 chỉ số và viên nhãn chốt.",
   "hop_khi": "Nói về thứ hạng / bảng xếp hạng rồi đi sâu vào số liệu của một người hay sản phẩm: tiến độ mục tiêu, KPI, % hoàn thành, thành tích tuần / tháng, 'mình đang đứng thứ 3 và đã đạt 87% mục tiêu'; dashboard, app theo dõi, thống kê kênh.",
   "tranh_khi": "Không có số liệu phần trăm / tiến độ; nội dung cảm xúc, câu chuyện không liên quan dữ liệu; video tone sáng nhẹ nhàng.",
   "nang_luong": "cao",
-  "chu_de": ["bảng xếp hạng", "số liệu", "tiến độ", "phần trăm", "mục tiêu", "dashboard", "KPI", "chuyển cảnh"]
- }
+  "chu_de": [
+   "bảng xếp hạng",
+   "số liệu",
+   "tiến độ",
+   "phần trăm",
+   "mục tiêu",
+   "dashboard",
+   "KPI",
+   "chuyển cảnh"
+  ]
+ },
+ "backdrop": true
 }

@@ -27,7 +27,7 @@
 // Chu that dai ngan bat ky: tieu de tu xuong dong <= 3 dong + thu nho; dong phu xuong dong theo be ngang that.
 // Khung doc (portrait.mode = 'native'): A = the anh lon tren + cot chu duoi; B = tieu de lon tren + ve phong 1.55x duoi;
 // ca khoi can giua theo chieu doc. Vat che quet ngang van phu kin (loi 2600px > 1920, cao theo khung that).
-import { useBrand, useCurrentFrame, useImage, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
+import { useBackdrop, useBrand, useCurrentFrame, useImage, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, Img } from 'remotion';
 import { EASE, FONT, bezier, mix, ramp } from '../../../fixtures/Polish';
@@ -349,6 +349,8 @@ export const InvisibleCut: React.FC = () => {
   const frame = useCurrentFrame();
   const { height: SH } = useVideoConfig();
   const portrait = SH > 1080 * 1.2;
+  // nen anh AI: bo nen dac (Stage tu bo gradient); chu nam tren nen them bong sang. Vat che quet ngang = hieu ung, giu.
+  const bd = !!useBackdrop();
   const statsRaw = useList('stats', ['Thời gian: 3 ngày 2 đêm', 'Khởi hành: Thứ Sáu']).slice(0, 2);
   const stats = statsRaw.map((x) => {
     const k = x.indexOf(':');
@@ -381,9 +383,9 @@ export const InvisibleCut: React.FC = () => {
   const lead = x;
 
   return (
-    <AbsoluteFill style={{ background: S.bg[1], overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : S.bg[1], overflow: 'hidden' }}>
       <Stage look={S} keyLight={{ x: 0.3, y: 0.05 }} fill={{ x: 0.9, y: 0.95 }} vignette={0.2} grain={0.05} />
-      <div style={{ position: 'absolute', inset: 0, transform: `translateX(${(pan + shove).toFixed(2)}px)` }}>
+      <div style={{ position: 'absolute', inset: 0, transform: `translateX(${(pan + shove).toFixed(2)}px)`, textShadow: bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined }}>
         {frame < CUT ? <PageA f={frame} t={t} portrait={portrait} SH={SH} /> : <div style={{ position: 'absolute', inset: 0, left: B_SHIFT }}><PageB f={frame} t={t} portrait={portrait} SH={SH} /></div>}
       </div>
 

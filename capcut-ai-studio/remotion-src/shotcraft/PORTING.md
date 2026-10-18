@@ -95,3 +95,25 @@ Mau tham khao DA PORT: `shots/typography/blur-slide/BlurSlide.tsx` + `BlurSlide.
 
 ## Bao cao cuoi (ngan)
 Moi mau: id, portrait mode, so o chu / o anh, van de con lai (neu co), file runtime/fixture can sua (neu co).
+
+## DOT 2 (2026-10-18): NEN ANH AI + KHONG LUOI KE O + KHONG DAU GACH
+User: canh Full-screen B-roll KHONG dung nen do code ve (gradient toi + quang sang, LUOI KE O / luoi cham) — "nhin rat AI".
+App se tao ANH NEN AI hop chu de cho tung canh shot va ve no DUOI mau (ShotStage: anh cover, mo nhe + lop toi khi
+meta.dark, lop sang khi nen sang -> chu luon noi). Mau phai DE TRONG SUOT cho anh hien ra:
+- `useBackdrop()` (runtime) tra `{src, dark}` khi canh co nen anh, null khi khong. `<Stage>` tu bo gradient/quang sang,
+  `<GridFloor>` tu an. MOI lop nen PHU KIN man hinh khac do mau tu ve (div / AbsoluteFill co background dac, gradient,
+  luoi ke o, luoi cham, hoa van, giay, nhieu hat day, anh mau trang tri) -> khi co backdrop: KHONG ve (hoac trong suot).
+  Giu nguyen NOI DUNG (the, panel, giao dien, chu, bieu do, dien thoai...) — do la chu the, khong phai nen.
+- Chu nam TRUC TIEP tren nen (khong co the/panel lot) phai DOC RO tren anh that: dung mau theo meta.dark (nen toi ->
+  chu sang; nen sang -> chu toi) va them bong do nhe (`textShadow: 0 2px 18px rgba(0,0,0,0.55)` khi toi;
+  `0 1px 12px rgba(255,255,255,0.7)` khi sang) CHI khi co backdrop.
+- Nen la CHINH hieu ung cua mau (doi theme sang/toi, nen chop sang, nen la vat lieu dang bien doi, overlay chop sang)
+  -> meta `"backdrop": false` (giu nen goc). Con lai `"backdrop": true` (mau dung Stage da duoc dat san true — van
+  phai kiem: lop dac phu kin nao khac thi xu ly nhu tren, hoac dat false neu nen dac la hieu ung).
+- KHONG LUOI KE O: ke ca khi KHONG co backdrop, bo moi luoi ke o / luoi cham trang tri phu nen (giu luoi neu no la
+  NOI DUNG: truc bieu do, o lich, ban phim...).
+- KHONG DAU GACH: chu mau (sample) va chu co dinh trong code KHONG dung "—" "–" hay " - " lam dau noi / trang tri
+  (vd 'SỐ 07 — THÁNG 10' -> 'SỐ 07 · THÁNG 10' hoac tach 2 dong). Dau gach noi trong khoang so ("3-4") giu duoc.
+- Kiem: `node scripts/shot-still.mjs <file.tsx> --props p.json` voi `"backdrop": "samples/bg_dark.png"` (anh toi) va
+  `"samples/bg_tech.png"`, `"preview": false`, khung doc + ngang: thay ro ANH NEN, chu ro, khong con nen code / luoi.
+  Them 1 lan KHONG backdrop: mau van dep nhu cu (khong luoi ke o).

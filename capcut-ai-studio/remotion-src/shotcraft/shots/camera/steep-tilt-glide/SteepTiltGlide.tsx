@@ -17,7 +17,7 @@
 // trang ben phai) / items (2-5 dong viec trong danh sach). Chu giao dien nho (menu, tab, the) = tieng Viet trung tinh.
 // o anh screen (tuy chon): anh chup man hinh / trang dai THAT — thay toan bo mat trang (cover), truot giong het.
 // Logo / ten thuong hieu = thuong hieu cua video (khong co -> dau hieu trung tinh). Khung doc (native): ca bo may quay phong to 1.5x dat giua-tren, nen phu kin chieu cao.
-import { useBrand, useCurrentFrame, useImage, useList, useText, useVideoConfig, fitSize } from '../../../runtime';
+import { useBackdrop, useBrand, useCurrentFrame, useImage, useList, useText, useVideoConfig, fitSize } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, Img, interpolate, Easing } from 'remotion';
 import { FONT as PFONT, Grain } from '../../../fixtures/Polish';
@@ -380,14 +380,16 @@ export const SteepTiltGlide: React.FC = () => {
   const drop = interpolate(frame, [4, 100], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   // 紫晕随亮度浮现
   const glow = interpolate(frame, [14, 70], [0.15, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  // [Agent Edit] nen anh AI: bo nen toi / quang tim / suong / toi goc / hat do code ve -> chi con trang giao dien
+  const bd = !!useBackdrop();
 
   return (
-    <AbsoluteFill style={{ background: '#060409' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : '#060409' }}>
       {/* 左侧紫晕 */}
-      <AbsoluteFill style={{
+      {!bd && <AbsoluteFill style={{
         opacity: glow,
         background: 'radial-gradient(ellipse 40% 50% at 20% 66%, rgba(118,58,190,0.30), transparent 70%)',
-      }} />
+      }} />}
       <div style={{ position: 'absolute', left: 0, top: rigTop, width: 1920, height: 1080, transform: K !== 1 ? `scale(${K})` : undefined, transformOrigin: '50% 50%' }}>
         {/* 重影（先画，垫在本体后面；位置=过去时刻的页面局部位移） */}
         {g3 > 0.02 && <PanelLayer lx={lxAt(frame - 4.8)} shade={shade} opacity={g3} t={drop} tx={tx} />}
@@ -397,16 +399,16 @@ export const SteepTiltGlide: React.FC = () => {
         <PanelLayer lx={lx} shade={shade} opacity={1} t={drop} tx={tx} />
       </div>
       {/* 景深雾（屏幕空间）：斜墙远端（画面左侧）沉进暗场，近端保持亮 */}
-      <AbsoluteFill style={{
+      {!bd && <AbsoluteFill style={{
         background: 'linear-gradient(100deg, rgba(6,4,10,0.62) 0%, rgba(6,4,10,0.28) 18%, rgba(6,4,10,0) 40%)',
         pointerEvents: 'none',
-      }} />
+      }} />}
       {/* 暗角 */}
-      <AbsoluteFill style={{
+      {!bd && <AbsoluteFill style={{
         background: 'radial-gradient(ellipse 105% 95% at 55% 42%, transparent 60%, rgba(3,2,8,0.25) 85%, rgba(2,1,6,0.5) 100%)',
         pointerEvents: 'none',
-      }} />
-      <Grain opacity={0.07} blend="soft-light" />
+      }} />}
+      {!bd && <Grain opacity={0.07} blend="soft-light" />}
     </AbsoluteFill>
   );
 };

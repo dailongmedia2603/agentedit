@@ -29,9 +29,9 @@
 // Tieu de dai ngan bat ky: thu co chu lon nhat de <= 3 dong vua khoi. Khung doc (portrait.mode = 'native'): trang
 // xep doc (tieu de to, con so, bieu do rong, 18 o thanh 2 hang x 9, log / chi so) can giua chieu cao that; 16 dai xe
 // chia theo chieu cao that (giu ti le khong deu, nang luong, bien do ±70px, bong mau ±12px).
-import { useCurrentFrame, useShotFonts, useText, useVideoConfig, fitSize, wrapLines, measureText } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useShotFonts, useText, useVideoConfig, fitSize, wrapLines, measureText } from '../../../runtime';
 import React from 'react';
-import { AbsoluteFill } from 'remotion';
+import { AbsoluteFill, Img } from 'remotion';
 import { EASE, FONT, Grain, Vignette, ramp } from '../../../fixtures/Polish';
 import { LOOKS, alpha, glow, type } from '../../../fixtures/Look';
 import { BRAND, ShotcraftMark } from '../../../fixtures/Brand';
@@ -163,8 +163,20 @@ const fmtNum = (p: NonNullable<ReturnType<typeof parseNum>>, v: number) => {
   return s;
 };
 
+// [Agent Edit] NEN ANH AI: trang phai DAC (cac dai xe ve lai ca trang, trong suot thi lo chu trang goc ben duoi) ->
+// trang ve lai chinh anh nen (cung cach ShotStage ve: cover, mo + toi + lop toi) thay cho gradient / quang code;
+// dai xe keo ca anh theo -> anh nen cung bi "xe" nhu tin hieu nhay.
+const BackdropPlate: React.FC<{ src: string }> = ({ src }) => (
+  <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#000' }}>
+    <Img src={src} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.06)', filter: 'blur(5px) brightness(0.5) saturate(0.9)' }} />
+    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(4,6,10,0.55) 0%, rgba(4,6,10,0.38) 45%, rgba(4,6,10,0.62) 100%)' }} />
+    <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 75% 60% at 50% 50%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.45) 100%)' }} />
+  </div>
+);
+
 const Page: React.FC<{ s: 'A' | 'B'; f: number; tint?: string; L: Lay }> = ({ s, f, tint, L }) => {
   const T = toneOf(tint);
+  const bd = useBackdrop();
   const live = s === 'B';
   const { PAD, k } = L;
   // A：进度 86 → 99（ease-out 越走越慢，卡在 99）
@@ -179,8 +191,9 @@ const Page: React.FC<{ s: 'A' | 'B'; f: number; tint?: string; L: Lay }> = ({ s,
   const numSmall = Math.round(L.numSize * 0.43);
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-      {T.bg && (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', textShadow: bd && T.bg ? '0 2px 18px rgba(0,0,0,0.55)' : undefined }}>
+      {T.bg && bd && <BackdropPlate src={bd.src} />}
+      {T.bg && !bd && (
         <>
           <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(180deg, ${M.bg[0]} 0%, ${M.bg[1]} 55%, ${M.bg[2]} 100%)` }} />
           {/* 主光：A 冷灰蓝、B 电光蓝通电 */}
@@ -189,12 +202,7 @@ const Page: React.FC<{ s: 'A' | 'B'; f: number; tint?: string; L: Lay }> = ({ s,
             background: `radial-gradient(ellipse 62% ${L.portrait ? 40 : 70}% at 22% 18%, ${alpha(live ? M.light : '#3a4a72', live ? 0.42 : 0.3)} 0%, ${alpha(M.light, 0)} 70%), ` +
               `radial-gradient(ellipse 60% ${L.portrait ? 20 : 34}% at 70% 104%, ${alpha(live ? M.accent2 : '#2a3a60', live ? 0.2 : 0.14)} 0%, rgba(0,0,0,0) 72%)`,
           }} />
-          {/* 点阵：静止的背景纹理，条带错位时连背景也读得出撕裂 */}
-          <div style={{
-            position: 'absolute', inset: 0, opacity: 0.55,
-            backgroundImage: `radial-gradient(circle, ${alpha(M.ink2, 0.16)} ${1.4 * k}px, rgba(0,0,0,0) ${1.8 * k}px)`,
-            backgroundSize: `${40 * k}px ${40 * k}px`, backgroundPosition: `${20 * k}px ${20 * k}px`,
-          }} />
+          {/* [Agent Edit] luoi cham trang tri (点阵) da bo */}
         </>
       )}
 
@@ -346,6 +354,7 @@ export const GlitchDisplace: React.FC = () => {
   const frame = useCurrentFrame();
   const { height: SH } = useVideoConfig();
   const fonts = useShotFonts();
+  const bd = useBackdrop();
   const titleA = useText('title_a', 'Đang chuẩn bị ra mắt');
   const titleB = useText('title_b', 'Chính thức lên sóng.');
   const kickerA = useText('kicker_a', 'PHIÊN BẢN 4.0 · ĐANG CẬP NHẬT');
@@ -456,7 +465,7 @@ export const GlitchDisplace: React.FC = () => {
     : [];
 
   return (
-    <AbsoluteFill style={{ background: M.bg[2], overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? '#000' : M.bg[2], overflow: 'hidden' }}>
       <div style={{
         position: 'absolute', inset: 0, transform: `scale(${zoom.toFixed(5)})`,
         filter: exposure > 1 ? `brightness(${exposure})` : undefined,

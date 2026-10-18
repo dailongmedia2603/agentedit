@@ -6,28 +6,97 @@
  "duration": 150,
  "kind": "insert",
  "dark": true,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.25],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.25
+ ],
  "hold": 76,
  "slots": [
-  {"id": "line1", "role": "subtitle", "sample": "Mọi công cụ bạn cần,", "max": 34, "note": "dòng trên (xám, nhỏ hơn) — vế đầu của câu"},
-  {"id": "highlight", "role": "title", "sample": "trong một ứng dụng", "max": 22, "note": "dòng chính rất to, được tô bút dạ quang xanh — vế chốt / từ khóa, 1 dòng, càng ngắn càng to"},
-  {"id": "tag", "role": "label", "sample": "BỘ CÔNG CỤ SÁNG TẠO", "max": 30, "optional": true, "note": "nhãn nhỏ in hoa cạnh tên thương hiệu ở dưới cùng (tên sản phẩm / chuyên mục)"}
+  {
+   "id": "line1",
+   "role": "subtitle",
+   "sample": "Mọi công cụ bạn cần,",
+   "max": 34,
+   "note": "dòng trên (xám, nhỏ hơn) — vế đầu của câu"
+  },
+  {
+   "id": "highlight",
+   "role": "title",
+   "sample": "trong một ứng dụng",
+   "max": 22,
+   "note": "dòng chính rất to, được tô bút dạ quang xanh — vế chốt / từ khóa, 1 dòng, càng ngắn càng to"
+  },
+  {
+   "id": "tag",
+   "role": "label",
+   "sample": "BỘ CÔNG CỤ SÁNG TẠO",
+   "max": 30,
+   "optional": true,
+   "note": "nhãn nhỏ in hoa cạnh tên thương hiệu ở dưới cùng (tên sản phẩm / chuyên mục)"
+  }
  ],
  "images": [
-  {"id": "img1", "role": "screen", "aspect": "16:9", "optional": true, "note": "ảnh thay 1 trong 8 thẻ quay quanh (ảnh chụp màn hình / B-roll), cắt vừa thẻ 16:9; thiếu thì dùng thẻ giao diện có sẵn"},
-  {"id": "img2", "role": "screen", "aspect": "16:9", "optional": true},
-  {"id": "img3", "role": "screen", "aspect": "16:9", "optional": true},
-  {"id": "img4", "role": "screen", "aspect": "16:9", "optional": true}
+  {
+   "id": "img1",
+   "role": "screen",
+   "aspect": "16:9",
+   "optional": true,
+   "note": "ảnh thay 1 trong 8 thẻ quay quanh (ảnh chụp màn hình / B-roll), cắt vừa thẻ 16:9; thiếu thì dùng thẻ giao diện có sẵn"
+  },
+  {
+   "id": "img2",
+   "role": "screen",
+   "aspect": "16:9",
+   "optional": true
+  },
+  {
+   "id": "img3",
+   "role": "screen",
+   "aspect": "16:9",
+   "optional": true
+  },
+  {
+   "id": "img4",
+   "role": "screen",
+   "aspect": "16:9",
+   "optional": true
+  }
  ],
  "brand": "optional",
- "sfx": [{"at": 0, "type": "riser"}, {"at": 18, "type": "whoosh"}, {"at": 50, "type": "swoosh"}],
+ "sfx": [
+  {
+   "at": 0,
+   "type": "riser"
+  },
+  {
+   "at": 18,
+   "type": "whoosh"
+  },
+  {
+   "at": 50,
+   "type": "swoosh"
+  }
+ ],
  "vi": {
   "ten": "Vòng thẻ quay quanh tiêu đề — tô bút dạ quang",
   "mo_ta": "Nền tối than chì: 8 thẻ giao diện app nhỏ (biểu đồ tăng, danh sách tích, bản đồ lộ trình, cửa sổ lệnh, chữ RA MẮT…) bung ra thành một vòng elip rồi quay chậm quanh tâm, thẻ gần to và sáng, thẻ xa mờ. Ở giữa, dòng chữ nhỏ rồi dòng chữ rất to hiện dần từ mờ; một vệt bút dạ quang xanh lá quét ngang tô kín dòng to (chữ đổi màu đen), cuối cùng hiện tên thương hiệu + nhãn nhỏ. Khung dọc: vòng elip đứng bao quanh tiêu đề.",
   "hop_khi": "Mở đầu video / mở đầu một phần lớn: giới thiệu sản phẩm, app, nền tảng “tất cả trong một”, bộ công cụ, khóa học; câu tuyên ngôn ngắn của kênh; ra mắt tính năng mới. Hợp tone công nghệ, AI, phần mềm.",
   "tranh_khi": "Giữa mạch kể chuyện cá nhân, cảm xúc; video tone sáng ấm; câu chốt dài (dòng chính > 3–4 từ sẽ nhỏ đi).",
   "nang_luong": "vua",
-  "chu_de": ["mở đầu", "giới thiệu", "app", "sản phẩm", "tất cả trong một", "công nghệ", "AI", "ra mắt", "tiêu đề"]
- }
+  "chu_de": [
+   "mở đầu",
+   "giới thiệu",
+   "app",
+   "sản phẩm",
+   "tất cả trong một",
+   "công nghệ",
+   "AI",
+   "ra mắt",
+   "tiêu đề"
+  ]
+ },
+ "backdrop": true
 }

@@ -143,6 +143,8 @@ export const Stage: React.FC<{
 }> = ({ look, keyLight = { x: 0.5, y: 0.08 }, fill = { x: 0.85, y: 0.9 }, horizon, intensity = 1, breathe = 0, grain, vignette, children, style }) => {
   const frame = useCurrentFrame();
   const shot = useShot();
+  // [Agent Edit] canh co NEN ANH AI: Stage chi giu toi goc + hat, khong ve nen gradient / quang sang code
+  const backdrop = !!shot?.backdrop;
   const bleed = shot?.bleed ?? { top: 0, bottom: 0 };
   const shotH = shot?.height ?? 1080; // native khung doc: con cua Stage phu het chieu cao that
   const b = 1 + breathe * 0.12 * Math.sin(frame / 38);
@@ -151,15 +153,15 @@ export const Stage: React.FC<{
   const f = look.dark ? 0.22 * intensity : 0.1 * intensity;
   return (
     // [Agent Edit] khung doc (mode 'band'): nen + den + toi goc phu ca phan bleed tren/duoi; children giu he toa do 1920x1080
-    <div style={{ position: 'absolute', left: 0, right: 0, top: -bleed.top, bottom: -bleed.bottom, overflow: 'hidden', background: `linear-gradient(180deg, ${t} 0%, ${m} 52%, ${btm} 100%)`, ...style }}>
-      <div style={{
+    <div style={{ position: 'absolute', left: 0, right: 0, top: -bleed.top, bottom: -bleed.bottom, overflow: 'hidden', background: backdrop ? 'transparent' : `linear-gradient(180deg, ${t} 0%, ${m} 52%, ${btm} 100%)`, ...style, ...(backdrop ? { background: 'transparent' } : null) }}>
+      {!backdrop && <div style={{
         position: 'absolute', inset: 0,
         background:
           `radial-gradient(ellipse 58% 62% at ${keyLight.x * 100}% ${keyLight.y * 100}%, ${alpha(look.light, Math.min(1, k))} 0%, ${alpha(look.light, 0)} 70%)` +
           (fill ? `, radial-gradient(ellipse 50% 46% at ${fill.x * 100}% ${fill.y * 100}%, ${alpha(look.accent2, f)} 0%, ${alpha(look.accent2, 0)} 72%)` : ''),
         mixBlendMode: look.dark ? 'screen' : 'normal',
-      }} />
-      {horizon !== undefined && (
+      }} />}
+      {horizon !== undefined && !backdrop && (
         <div style={{
           position: 'absolute', left: '-10%', right: '-10%', top: `${horizon * 100 - 9}%`, height: '18%',
           background: `radial-gradient(ellipse 50% 50% at 50% 50%, ${alpha(look.light, look.dark ? 0.28 * intensity : 0.5)} 0%, ${alpha(look.light, 0)} 70%)`,
@@ -180,6 +182,7 @@ export const Stage: React.FC<{
 export const GridFloor: React.FC<{ look: Look; horizon?: number; cell?: number; scroll?: number; opacity?: number; color?: string }> = ({
   look, horizon = 0.62, cell = 1, scroll = 0, opacity = 0.5, color,
 }) => {
+  const hideGrid = !!useShot()?.backdrop; // [Agent Edit] nen anh AI: khong ve luoi ke o
   const W = 1920, H = 1080, hy = horizon * H, cam = (H - hy) * 1.1, focal = 1;
   const c = color ?? (look.dark ? look.accent : look.ink);
   const rows: number[] = [];
@@ -190,6 +193,7 @@ export const GridFloor: React.FC<{ look: Look; horizon?: number; cell?: number; 
   }
   const cols = Array.from({ length: 41 }, (_, i) => (i - 20) * cell);
   const id = React.useId().replace(/[^a-zA-Z0-9]/g, '');
+  if (hideGrid) return null;
   return (
     <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ position: 'absolute', inset: 0, opacity, pointerEvents: 'none' }}>
       <defs>

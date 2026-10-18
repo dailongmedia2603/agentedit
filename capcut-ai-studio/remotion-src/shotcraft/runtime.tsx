@@ -49,6 +49,9 @@ export interface ShotRuntimeData {
   /** xem thu kho (scripts/shot-still.mjs): o anh thieu -> anh mau trong public. Trong app = false: anh mau KHONG ton tai
    *  trong bundle -> o anh thieu tra undefined / anh trong suot (mau tu ve ban thay the) */
   preview?: boolean
+  /** NEN ANH AI cua canh (sidecar tao theo chu de video): co -> mau KHONG ve nen code (gradient / luoi / den) ma de
+   *  trong suot cho anh nen hien ra; ShotStage da phu lop toi / sang cho chu noi (dark = mau nen toi). */
+  backdrop?: { src: string; dark: boolean } | null
 }
 
 const Ctx = createContext<ShotRuntimeData | null>(null)
@@ -126,6 +129,11 @@ export function useImage(id: string, sample?: string): string | undefined {
   if (d?.images[id]) return resolveUrl(d.images[id])
   if (d && !d.preview) return undefined // app khong gui anh cho o nay -> mau ve ban thay the cua no
   return sample ? staticFile(sample) : undefined
+}
+
+/** Nen anh AI cua canh (null = mau tu ve nen nhu goc). Mau co nen rieng: co backdrop -> bo nen code, de trong suot. */
+export function useBackdrop(): { src: string; dark: boolean } | null {
+  return useContext(Ctx)?.backdrop ?? null
 }
 
 /** Thuong hieu cua video (Brand Guideline). null = khong co -> mau ve dau hieu trung tinh / an. */

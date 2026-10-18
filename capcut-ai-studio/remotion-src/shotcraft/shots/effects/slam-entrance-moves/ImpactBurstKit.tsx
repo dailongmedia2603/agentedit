@@ -24,7 +24,7 @@
 // cua the giua), cta (nut the giua), badge (nhan tren the giua). The hai ben: ten / mo ta / so + 3 thanh khung xam trung
 // tinh thay danh sach tinh nang (khong bịa noi dung). Chu dai -> thu nho vua be ngang the. Khung doc (native): ca hang the
 // phong 1.9 lan quanh the giua (2 the ben lo ra mot phan o 2 mep), tieu de to o tren, ca khoi can giua.
-import { useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, SpeedBlur, bezier, mix, ramp, softShadow } from '../../../fixtures/Polish';
@@ -155,6 +155,7 @@ export const ImpactBurstKit: React.FC = () => {
   const sans = fonts.sans;
   const mono = fonts.mono;
   const portrait = SH > 1080 * 1.2;
+  const bd = !!useBackdrop(); // nen anh AI: Stage tu bo gradient; chu tren nen them bong sang
   const kicker = useText('kicker', 'BẢNG GIÁ');
   const title = useText('title', 'Chọn gói phù hợp với bạn.');
   const names = useList('names', ['Cơ bản', 'Chuyên nghiệp', 'Doanh nghiệp']);
@@ -236,7 +237,7 @@ export const ImpactBurstKit: React.FC = () => {
       <Stage look={L} keyLight={{ x: 0.5, y: portrait ? 0.3 : 0.12 }} fill={{ x: 0.5, y: 1.0 }} />
       <div style={{ position: 'absolute', inset: 0, transform: `translate(${shakeX.toFixed(2)}px, ${shakeY.toFixed(2)}px) scale(${push.toFixed(5)})`, transformOrigin: `50% ${CY}px` }}>
         {/* 页眉：本来就在（竖屏居中） */}
-        <div style={{ position: 'absolute', left: portrait ? 140 : X0, right: portrait ? 140 : undefined, top: headTop, fontFamily: sans, color: L.ink, textAlign: portrait ? 'center' : 'left' }}>
+        <div style={{ position: 'absolute', left: portrait ? 140 : X0, right: portrait ? 140 : undefined, top: headTop, fontFamily: sans, color: L.ink, textAlign: portrait ? 'center' : 'left', textShadow: bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined }}>
           {kicker || BRAND.name ? (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: portrait ? 'center' : 'flex-start', gap: kSize * 0.6, font: `700 ${kSize}px ${mono}`, letterSpacing: '0.06em', color: L.accent, lineHeight: 1.5, whiteSpace: 'nowrap' }}>
               {BRAND.name ? <ShotcraftMark size={kSize * 1.42} tone="light" /> : null}

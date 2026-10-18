@@ -23,7 +23,7 @@
 // event (nhan su kien o dinh), stat1_label/stat1 + stat2_label/stat2 (2 so phu, gia tri tai dinh; luc thuong ~1/3).
 // Bien do song / truc y tu tinh tu value & peak -> dinh nhon dung bang so nguoi noi. Khung doc (native): chu to,
 // xep doc (thuong hieu + LIVE -> nhan -> so lon -> 2 so phu -> man song cao), ca khoi can giua.
-import { useCurrentFrame, useVideoConfig, useText, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, FONT, mix, ramp } from '../../../fixtures/Polish';
@@ -239,16 +239,19 @@ export const OscilloscopeStreamV2: React.FC = () => {
       <span style={{ ...type(32 * R, 700), fontFamily: BRAND.font, letterSpacing: '0.03em', color: L.ink, whiteSpace: 'nowrap' }}>{brandName}</span>
     </span>
   ) : null;
+  // [Agent Edit] nen anh AI: bo nen dac (Stage tu bo gradient); chu nam tren nen -> bong do nhe de doc ro tren anh
+  const bd = useBackdrop();
+  const bdShadow = bd ? (bd.dark ? '0 2px 18px rgba(0,0,0,0.55)' : '0 1px 12px rgba(255,255,255,0.7)') : undefined;
   const stats = [
     { k: s1Label, v: s1Now, hotK: hot },
     { k: s2Label, v: s2Now, hotK: hot * 0.8 },
   ].filter((s) => s.k || s.v);
 
   return (
-    <AbsoluteFill style={{ background: L.bg[1], overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[1], overflow: 'hidden' }}>
       <Stage look={L} keyLight={{ x: 0.62, y: portrait ? 0.62 : 0.55 }} fill={{ x: 0.08, y: 0.1 }} intensity={0.8} breathe={0.4} />
 
-      <div style={{ position: 'absolute', inset: 0, transform: `scale(${cam.toFixed(5)})`, transformOrigin: `${camOX}px ${camOY}px` }}>
+      <div style={{ position: 'absolute', inset: 0, transform: `scale(${cam.toFixed(5)})`, transformOrigin: `${camOX}px ${camOY}px`, textShadow: bdShadow }}>
         {/* 眉题 + LIVE */}
         {portrait ? (
           <>
@@ -275,7 +278,7 @@ export const OscilloscopeStreamV2: React.FC = () => {
         }}>
           <span style={{
             ...type(readSize, 700), color: hexMix('#f2f5ff', HOT, hot),
-            textShadow: hot > 0.02 ? `0 0 40px ${alpha(HOT, 0.35 * hot)}` : undefined,
+            textShadow: hot > 0.02 ? `0 0 40px ${alpha(HOT, 0.35 * hot)}${bdShadow ? `, ${bdShadow}` : ''}` : bdShadow,
           }}>{fmtV(mix(valueOf(held), recentMax, hot))}</span>
           {unit ? <span style={{ ...type(readSize * unitRatio, 500), color: hexMix('#a9b4d0', HOT, hot) }}>{unit}</span> : null}
         </div>

@@ -11,7 +11,7 @@
 // rieng, van dung nhip so le 3f); khong co -> 4 the so lieu tieng Viet tu ve (the Card cua fixtures con chu tieng Anh).
 // Khung doc (native): bien tap vien xep lai trong khung ao 1280 x (cao/1.5) roi phong 1.5x — lop ben trai, canvas tren,
 // bang thuoc tinh duoi; nut bay ve giua, logo + ten to.
-import { useCurrentFrame, useImage, useShotFonts, useText, useVideoConfig, fitSize, measureText } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useImage, useShotFonts, useText, useVideoConfig, fitSize, measureText } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, interpolate, spring, Easing } from 'remotion';
 import { G } from '../../../fixtures/Fixtures';
@@ -91,10 +91,10 @@ const LAYERS: [string, string, number, boolean?][] = [
   ['textL', 'Tiêu đề', 2],
   ['textL', 'Phụ đề', 2],
   ['group', 'Cảnh tính năng', 1, true],
-  ['layer', 'Cảnh — Zoom nhanh', 2],
-  ['layer', 'Cảnh — Đẩy máy', 2],
-  ['layer', 'Cảnh — Lia nhanh', 2],
-  ['layer', 'Cảnh — Cắt theo nhịp', 2],
+  ['layer', 'Cảnh zoom nhanh', 2],
+  ['layer', 'Cảnh đẩy máy', 2],
+  ['layer', 'Cảnh lia nhanh', 2],
+  ['layer', 'Cảnh cắt theo nhịp', 2],
   ['layer', 'Logo kết', 1],
 ];
 
@@ -157,12 +157,15 @@ export const UiStripAwayOutro: React.FC = () => {
   const { fps, height: SH } = useVideoConfig();
   const fonts = useShotFonts();
   const P = SH > 1080 * 1.2;
+  // [Agent Edit] nen anh AI: giao dien boc hoi lo ra ANH NEN (thay cho man den + quang + toi goc + hat tu ve)
+  const bd = useBackdrop();
+  const onBg = bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined;
   const ACCENT = LOOKS.porcelain.accent; // Publish 的品牌高亮色（随视频强调色）
 
   const cta = useText('cta', 'Xuất bản');
   const project = useText('project', 'Video ra mắt');
   const nameText = useText('name', '');
-  const tagline = useText('tagline', 'Một chạm — mọi thứ đã sẵn sàng.');
+  const tagline = useText('tagline', 'Một chạm, mọi thứ đã sẵn sàng.');
   const screen = useImage('screen');
   const name = (nameText || BRAND.name || '').trim();
 
@@ -265,19 +268,17 @@ export const UiStripAwayOutro: React.FC = () => {
   const url = name ? `${name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/[^a-z0-9]+/g, '')}.vn` : 'xem-truoc.app';
 
   return (
-    <AbsoluteFill style={{ background: INK, overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : INK, overflow: 'hidden' }}>
       {/* 黑场：中心极弱冷光（随压黑亮起） */}
-      <AbsoluteFill style={{
+      {!bd && <AbsoluteFill style={{
         opacity: bgDark,
         background: `radial-gradient(ellipse 50% 45% at 50% 50%, ${rgba(ACCENT, 0.1)} 0%, ${rgba(ACCENT, 0.03)} 50%, rgba(0,0,0,0) 75%)`,
-      }} />
+      }} />}
 
-      {/* 编辑器底（点阵画布，作为一层可蒸发的背景） */}
+      {/* 编辑器底（画布，作为一层可蒸发的背景）— [Agent Edit] bo luoi cham trang tri, giu mat phang giao dien */}
       <AbsoluteFill style={{
         opacity: 1 - bgDark,
         backgroundColor: '#ececea',
-        backgroundImage: 'radial-gradient(rgba(20,22,28,0.10) 1px, transparent 1.2px)',
-        backgroundSize: `${24 * K}px ${24 * K}px`,
       }} />
 
       <div style={{ position: 'absolute', left: 0, top: 0, width: VW, height: VH, transform: `scale(${K})`, transformOrigin: '0 0' }}>
@@ -447,7 +448,7 @@ export const UiStripAwayOutro: React.FC = () => {
                   <div style={{
                     opacity: Math.min(1, wordP * 1.4), transform: `translateX(${((1 - wordP) * -16).toFixed(2)}px)`,
                     filter: wordP < 0.995 ? `blur(${((1 - wordP) * 9).toFixed(2)}px)` : undefined,
-                    fontFamily: BRAND.font, fontWeight: 700, fontSize: nameS, lineHeight: 1.25, letterSpacing: '0.03em', color: BRAND.paper, paddingBottom: 4, whiteSpace: 'nowrap',
+                    fontFamily: BRAND.font, fontWeight: 700, fontSize: nameS, lineHeight: 1.25, letterSpacing: '0.03em', color: BRAND.paper, paddingBottom: 4, whiteSpace: 'nowrap', textShadow: onBg,
                   }}>
                     {name}
                   </div>
@@ -458,7 +459,7 @@ export const UiStripAwayOutro: React.FC = () => {
               <div style={{
                 opacity: Math.min(1, (name ? tagP : logoP) * 1.3), transform: `translateY(${((1 - (name ? tagP : logoP)) * 14).toFixed(2)}px) scale(${name ? 1 : 0.9 + 0.1 * logoP})`,
                 filter: (name ? tagP : logoP) < 0.995 ? `blur(${((1 - (name ? tagP : logoP)) * 8).toFixed(2)}px)` : undefined,
-                fontFamily: fonts.sans, fontWeight: name ? 500 : 650, fontSize: tagS, lineHeight: 1.3, color: name ? 'rgba(245,243,238,0.66)' : BRAND.paper, whiteSpace: 'nowrap',
+                fontFamily: fonts.sans, fontWeight: name ? 500 : 650, fontSize: tagS, lineHeight: 1.3, color: name ? (bd ? 'rgba(245,243,238,0.86)' : 'rgba(245,243,238,0.66)') : BRAND.paper, whiteSpace: 'nowrap', textShadow: onBg,
               }}>
                 {tagline}
               </div>
@@ -476,8 +477,8 @@ export const UiStripAwayOutro: React.FC = () => {
       </div>
 
       {/* 暗角 + 颗粒：随压黑加深（亮场时几乎不压） */}
-      <Vignette strength={0.12 + 0.45 * bgDark} inner={0.42} color="#000000" />
-      <Grain opacity={0.05 + 0.03 * bgDark} blend="soft-light" />
+      {!bd && <Vignette strength={0.12 + 0.45 * bgDark} inner={0.42} color="#000000" />}
+      {!bd && <Grain opacity={0.05 + 0.03 * bgDark} blend="soft-light" />}
     </AbsoluteFill>
   );
 };

@@ -23,5 +23,6 @@
   "tranh_khi": "Nội dung không có ý 'nhiều thành một'; cần năng lượng cao / sốc; có hơn 5 nguồn cần kể tên.",
   "nang_luong": "vua",
   "chu_de": ["tích hợp", "hợp nhất", "dữ liệu", "đa kênh", "nền tảng", "app", "tự động hóa", "CRM"]
- }
+ },
+ "backdrop": true
 }

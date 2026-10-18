@@ -14,7 +14,7 @@
 // tu chuoi cuoi (wrapLines) -> ky tu moi chi noi them ben phai, khong dong nao dich (dung tinh than "左缘锚定").
 // Nhip 3 toc do giu ti le 2 : 1.5 : 1.5 (chu dai -> ca 3 cung nhanh len theo cung he so), het go truoc f95, giu tinh >= 50f.
 // Khung doc (portrait.mode = 'native'): chu to hon, xuong toi da 4 dong, ca khoi can giua theo chieu doc.
-import { useCurrentFrame, useShot, useShotFonts, useText, useVideoConfig, measureText, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useShot, useShotFonts, useText, useVideoConfig, measureText, wrapLines } from '../../../runtime';
 import React from 'react';
 
 import { G } from '../../../fixtures/Fixtures';
@@ -135,10 +135,13 @@ export const TypewriterErrorRetype: React.FC = () => {
   const showKicker = !!kicker && (!!brandName || kickerGiven || !shot);
   const KS = portrait ? 56 : 34;
   const kickerTop = blockTop - (portrait ? 150 : 104);
+  // [Agent Edit] nen anh AI: bo nen sang + hat (Backdrop cua Polish); chu co bong sang
+  const bd = useBackdrop();
+  const TSH = bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined;
 
   return (
     <div style={{ width: 1920, height: SH, position: 'relative', overflow: 'hidden' }}>
-      <Backdrop tone="light" light={{ x: 0.42, y: 0.3 }} accent={ACC} />
+      {!bd && <Backdrop tone="light" light={{ x: 0.42, y: 0.3 }} accent={ACC} />}
       {/* 马克笔底色：只铺在宣言词下半身，左→右 */}
       {hl > 0 &&
         segs.map((s) => {
@@ -162,7 +165,7 @@ export const TypewriterErrorRetype: React.FC = () => {
         <div style={{
           position: 'absolute', left: LEFT + 6, top: kickerTop, right: 120,
           display: 'flex', alignItems: 'center', gap: KS * 0.36,
-          fontFamily: FAM, fontSize: KS, fontWeight: 500, letterSpacing: '0.01em', color: G.ink3, lineHeight: 1.3,
+          fontFamily: FAM, fontSize: KS, fontWeight: 500, letterSpacing: '0.01em', color: G.ink3, lineHeight: 1.3, textShadow: TSH,
           opacity: ramp(f, 0, 10, EASE.out), whiteSpace: 'nowrap',
         }}>
           <ShotcraftMark size={KS * 1.18} tone="light" style={{ marginTop: -2 }} />
@@ -183,7 +186,7 @@ export const TypewriterErrorRetype: React.FC = () => {
             style={{
               position: 'absolute', left: LEFT, top: blockTop + i * lineH, height: lineH,
               display: 'flex', alignItems: 'center', whiteSpace: 'pre',
-              fontFamily: FAM, fontSize: SIZE, fontWeight: WEIGHT, color: G.ink1, lineHeight: 1,
+              fontFamily: FAM, fontSize: SIZE, fontWeight: WEIGHT, color: G.ink1, lineHeight: 1, textShadow: TSH,
             }}
           >
             {line.slice(0, cnt)}

@@ -6,30 +6,126 @@
  "duration": 168,
  "kind": "insert",
  "dark": true,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
  "hold": 134,
  "slots": [
-  {"id": "kicker", "role": "kicker", "sample": "TRỢ LÝ AI · DỰNG VIDEO TỰ ĐỘNG", "max": 34, "optional": true, "note": "nhãn nhỏ màu vàng trên tiêu đề, in hoa"},
-  {"id": "line1", "role": "title", "sample": "Ý tưởng thành hình.", "max": 22, "note": "dòng 1 tiêu đề lớn"},
-  {"id": "line2", "role": "title", "sample": "Dựng thành video.", "max": 22, "note": "dòng 2 tiêu đề; TỪ CUỐI nhấn vàng nghiêng"},
-  {"id": "subtitle", "role": "subtitle", "sample": "Video sản phẩm chuẩn điện ảnh, trợ lý AI dựng giúp bạn.", "max": 80, "optional": true},
-  {"id": "cta", "role": "cta", "sample": "Dùng thử ngay", "max": 18, "note": "nút chính (sáng vàng ở cuối)"},
-  {"id": "cta2", "role": "cta", "sample": "Xem video mẫu", "max": 18, "optional": true, "note": "nút phụ viền"},
-  {"id": "stats", "role": "number", "sample": "1 câu lệnh|4K|30 giây", "max": 10, "list": {"min": 3, "max": 3}, "note": "đúng 3 chỉ số ngắn (số + đơn vị)"},
-  {"id": "stat_labels", "role": "label", "sample": "RA VIDEO HOÀN CHỈNH|CHẤT LƯỢNG XUẤT|MỖI VIDEO", "max": 20, "list": {"min": 3, "max": 3}, "note": "nhãn nhỏ dưới mỗi chỉ số, in hoa"}
+  {
+   "id": "kicker",
+   "role": "kicker",
+   "sample": "TRỢ LÝ AI · DỰNG VIDEO TỰ ĐỘNG",
+   "max": 34,
+   "optional": true,
+   "note": "nhãn nhỏ màu vàng trên tiêu đề, in hoa"
+  },
+  {
+   "id": "line1",
+   "role": "title",
+   "sample": "Ý tưởng thành hình.",
+   "max": 22,
+   "note": "dòng 1 tiêu đề lớn"
+  },
+  {
+   "id": "line2",
+   "role": "title",
+   "sample": "Dựng thành video.",
+   "max": 22,
+   "note": "dòng 2 tiêu đề; TỪ CUỐI nhấn vàng nghiêng"
+  },
+  {
+   "id": "subtitle",
+   "role": "subtitle",
+   "sample": "Video sản phẩm chuẩn điện ảnh, trợ lý AI dựng giúp bạn.",
+   "max": 80,
+   "optional": true
+  },
+  {
+   "id": "cta",
+   "role": "cta",
+   "sample": "Dùng thử ngay",
+   "max": 18,
+   "note": "nút chính (sáng vàng ở cuối)"
+  },
+  {
+   "id": "cta2",
+   "role": "cta",
+   "sample": "Xem video mẫu",
+   "max": 18,
+   "optional": true,
+   "note": "nút phụ viền"
+  },
+  {
+   "id": "stats",
+   "role": "number",
+   "sample": "1 câu lệnh|4K|30 giây",
+   "max": 10,
+   "list": {
+    "min": 3,
+    "max": 3
+   },
+   "note": "đúng 3 chỉ số ngắn (số + đơn vị)"
+  },
+  {
+   "id": "stat_labels",
+   "role": "label",
+   "sample": "RA VIDEO HOÀN CHỈNH|CHẤT LƯỢNG XUẤT|MỖI VIDEO",
+   "max": 20,
+   "list": {
+    "min": 3,
+    "max": 3
+   },
+   "note": "nhãn nhỏ dưới mỗi chỉ số, in hoa"
+  }
  ],
  "images": [
-  {"id": "photo", "role": "photo", "aspect": "any", "optional": true, "note": "khung hình/ảnh sản phẩm trong thẻ bên phải (khung dọc: thẻ lớn giữa trang); hiện xám nhạt rồi được 'chỉnh màu' thành ảnh màu thật"}
+  {
+   "id": "photo",
+   "role": "photo",
+   "aspect": "any",
+   "optional": true,
+   "note": "khung hình/ảnh sản phẩm trong thẻ bên phải (khung dọc: thẻ lớn giữa trang); hiện xám nhạt rồi được 'chỉnh màu' thành ảnh màu thật"
+  }
  ],
  "brand": "optional",
- "sfx": [{"at": 6, "type": "whoosh"}, {"at": 27, "type": "swoosh"}, {"at": 58, "type": "riser"}, {"at": 118, "type": "ding"}],
+ "sfx": [
+  {
+   "at": 6,
+   "type": "whoosh"
+  },
+  {
+   "at": 27,
+   "type": "swoosh"
+  },
+  {
+   "at": 58,
+   "type": "riser"
+  },
+  {
+   "at": 118,
+   "type": "ding"
+  }
+ ],
  "vi": {
   "ten": "Trang web tự lắp ráp — khung bay vào, chữ xoay 3D rơi vào chỗ",
-  "mo_ta": "Nền tối có lưới căn chỉnh: các khung trống (thanh menu, thẻ ảnh, nút, 3 ô chỉ số, bánh xe màu) bay từ bốn phía vào khớp chỗ; rồi từng ký tự xoay lộn 3D từ xa bay tới rơi đúng vị trí — tiêu đề lớn trước, nút và chỉ số sau. Cuối cùng nút chính sáng vàng và ảnh trong thẻ được quét 'chỉnh màu' từ xám sang màu thật. Khung dọc: trang xếp dọc, tiêu đề to giữa màn hình.",
+  "mo_ta": "Trên nền ảnh chủ đề (hoặc nền tối): các khung trống (thanh menu, thẻ ảnh, nút, 3 ô chỉ số, bánh xe màu) bay từ bốn phía vào khớp chỗ; rồi từng ký tự xoay lộn 3D từ xa bay tới rơi đúng vị trí — tiêu đề lớn trước, nút và chỉ số sau. Cuối cùng nút chính sáng vàng và ảnh trong thẻ được quét 'chỉnh màu' từ xám sang màu thật. Khung dọc: trang xếp dọc, tiêu đề to giữa màn hình.",
   "hop_khi": "Giới thiệu ra mắt sản phẩm / app / website / landing page; nói về việc AI hay công cụ 'tự dựng' trang, video, thiết kế; khoe 3 con số nổi bật kèm câu chốt và lời kêu gọi dùng thử.",
   "tranh_khi": "Chủ đề đời thường, cảm xúc, không liên quan sản phẩm/công nghệ; cảnh cần ngắn dưới 4 giây; video tone sáng nhẹ nhàng.",
   "nang_luong": "cao",
-  "chu_de": ["ra mắt", "website", "app", "landing page", "AI", "thiết kế", "số liệu", "giới thiệu sản phẩm"]
- }
+  "chu_de": [
+   "ra mắt",
+   "website",
+   "app",
+   "landing page",
+   "AI",
+   "thiết kế",
+   "số liệu",
+   "giới thiệu sản phẩm"
+  ]
+ },
+ "backdrop": true
 }

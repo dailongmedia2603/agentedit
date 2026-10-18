@@ -20,5 +20,6 @@
   "tranh_khi": "Dùng liên tục ở mọi điểm cắt (rẻ tiền, mỏi mắt); chồng lên một hiệu ứng chuyển cảnh khác cùng chỗ; cảnh tối, trầm lắng cần cắt nhẹ.",
   "nang_luong": "vua",
   "chu_de": ["chuyển cảnh", "cắt", "chớp sáng", "nhịp nhanh", "nối cảnh"]
- }
+ },
+ "backdrop": false
 }

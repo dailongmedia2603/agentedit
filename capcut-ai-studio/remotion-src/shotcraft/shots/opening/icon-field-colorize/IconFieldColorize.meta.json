@@ -6,23 +6,79 @@
  "duration": 170,
  "kind": "insert",
  "dark": true,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.25],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.25
+ ],
  "hold": 140,
  "slots": [
-  {"id": "kicker", "role": "kicker", "sample": "HƠN 400 TÍCH HỢP", "max": 30, "optional": true, "note": "nhãn ngắn trên tiêu đề, in hoa (thường là con số quy mô)"},
-  {"id": "line1", "role": "title", "sample": "Mọi tính năng,", "max": 30, "note": "vế 1 câu chốt (chữ trắng)"},
-  {"id": "line2", "role": "title", "sample": "chung một nơi.", "max": 30, "optional": true, "note": "vế 2 (chữ vàng ấm)"}
+  {
+   "id": "kicker",
+   "role": "kicker",
+   "sample": "HƠN 400 TÍCH HỢP",
+   "max": 30,
+   "optional": true,
+   "note": "nhãn ngắn trên tiêu đề, in hoa (thường là con số quy mô)"
+  },
+  {
+   "id": "line1",
+   "role": "title",
+   "sample": "Mọi tính năng,",
+   "max": 30,
+   "note": "vế 1 câu chốt (chữ trắng)"
+  },
+  {
+   "id": "line2",
+   "role": "title",
+   "sample": "chung một nơi.",
+   "max": 30,
+   "optional": true,
+   "note": "vế 2 (chữ vàng ấm)"
+  }
  ],
  "images": [],
  "brand": "optional",
- "sfx": [{"at": 4, "type": "pop"}, {"at": 58, "type": "riser"}, {"at": 66, "type": "whoosh"}, {"at": 84, "type": "ding"}, {"at": 124, "type": "swoosh"}],
+ "sfx": [
+  {
+   "at": 4,
+   "type": "pop"
+  },
+  {
+   "at": 58,
+   "type": "riser"
+  },
+  {
+   "at": 66,
+   "type": "whoosh"
+  },
+  {
+   "at": 84,
+   "type": "ding"
+  },
+  {
+   "at": 124,
+   "type": "swoosh"
+  }
+ ],
  "vi": {
   "ten": "Cánh đồng icon bừng sáng — sóng màu quét",
   "mo_ta": "Nền tối ấm: hàng trăm phím icon nhỏ màu xám (tim, sao, tia sét, máy ảnh, nhà, quà, tên lửa…) lần lượt nổi lên từ giữa ra phủ kín khung như bàn phím chưa bật điện; khựng một nhịp, rồi 4 đợt sóng màu vàng → cam → đỏ san hô quét từ trên xuống làm từng phím 'cắm điện' bừng sáng, lóe trắng và tỏa quầng; cuối cùng giữa khung tối lại, hiện nhãn + tiêu đề hai vế chữ lớn.",
   "hop_khi": "Mở đầu / chốt khi nói về sự ĐẦY ĐỦ, hệ sinh thái: 'mọi tính năng trong một app', hàng trăm tích hợp / công cụ / tiện ích, kho mẫu khổng lồ, nền tảng tất-cả-trong-một, giới thiệu sản phẩm phần mềm, trước logo.",
   "tranh_khi": "Nội dung về một tính năng cụ thể duy nhất; tone nhẹ nhàng / sáng; cần hiển thị ảnh thật hay số liệu chi tiết.",
   "nang_luong": "cao",
-  "chu_de": ["hệ sinh thái", "tính năng", "app", "tích hợp", "tất cả trong một", "mở đầu", "ra mắt", "phần mềm"]
- }
+  "chu_de": [
+   "hệ sinh thái",
+   "tính năng",
+   "app",
+   "tích hợp",
+   "tất cả trong một",
+   "mở đầu",
+   "ra mắt",
+   "phần mềm"
+  ]
+ },
+ "backdrop": true
 }

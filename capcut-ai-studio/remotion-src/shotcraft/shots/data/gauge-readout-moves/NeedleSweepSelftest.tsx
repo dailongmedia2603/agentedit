@@ -16,7 +16,7 @@
 // So dong ho = so muc labels (1-3); goc that = value/100 * 270 (gioi han 4..262 de con thay vach). Chu dai tu thu nho.
 // Khung doc (native): the cao giua khung, moi dong ho mot hang (mat dong ho to ben trai + so lon ben phai);
 // 1 dong ho -> mat dong ho rat to, so ben duoi. Nhip goc giu nguyen (vung 270 do, lech 4f, qua da 8 do).
-import { useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
+import { useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, useBackdrop, fitSize, measureText, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, spring } from 'remotion';
 import { Backdrop, EASE, FONT, Grain, mix, ramp, softShadow, tracking } from '../../../fixtures/Polish';
@@ -269,6 +269,7 @@ export const NeedleSweepSelftest: React.FC = () => {
   const frame = useCurrentFrame();
   const { height: SH } = useVideoConfig();
   const fonts = useShotFonts();
+  const bd = useBackdrop(); // [Agent Edit] DOT 2: co nen anh AI -> khong ve nen code / hat nhieu (the dong ho giu nguyen)
   const portrait = SH > 1080 * 1.2;
   const title = useText('title', 'Sức khỏe hệ thống');
   const subtitle = useText('subtitle', 'máy chủ 02 · 3 cảm biến');
@@ -373,8 +374,8 @@ export const NeedleSweepSelftest: React.FC = () => {
   );
 
   return (
-    <AbsoluteFill style={{ background: '#0c0d11', overflow: 'hidden', fontFamily: FONT.sans }}>
-      <Backdrop tone="dark" light={{ x: 0.5, y: portrait ? 0.35 : 0.25 }} grain={0} />
+    <AbsoluteFill style={{ background: bd ? 'transparent' : '#0c0d11', overflow: 'hidden', fontFamily: FONT.sans }}>
+      {!bd && <Backdrop tone="dark" light={{ x: 0.5, y: portrait ? 0.35 : 0.25 }} grain={0} />}
       <div
         style={{
           position: 'absolute',
@@ -417,7 +418,7 @@ export const NeedleSweepSelftest: React.FC = () => {
           ))}
         </div>
       </div>
-      <Grain opacity={0.07} blend="soft-light" />
+      {!bd && <Grain opacity={0.07} blend="soft-light" />}
     </AbsoluteFill>
   );
 };

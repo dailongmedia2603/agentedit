@@ -23,5 +23,6 @@
   "tranh_khi": "Câu không có hai vế đối lập; cần hiển thị số liệu, danh sách hay ảnh; nhịp edit quá nhanh (cảnh cần ≥ 4 giây mới có tác dụng).",
   "nang_luong": "vua",
   "chu_de": ["bước ngoặt", "trước và sau", "tiết lộ", "giải pháp", "ra mắt", "AI", "thông điệp"]
- }
+ },
+ "backdrop": false
 }

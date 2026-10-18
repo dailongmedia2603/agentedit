@@ -26,7 +26,7 @@
 // thu am), sent (dong "da gui" sau khi gui). Chu that dai ngan bat ky: tu xuong dong theo be ngang that + thu nho
 // (<= 3 dong ngang / 5 dong doc), bong chat bao theo khoi chu that. Thuong hieu (neu co) vao nhan / dong da gui.
 // Khung doc (portrait.mode = 'native'): chu to ~150px o 1/3 tren, vien thu am phong 1.45x o ~64% chieu cao that.
-import { useBrand, useCurrentFrame, useShotFonts, useText, useVideoConfig, measureText, fitSize } from '../../../runtime';
+import { useBackdrop, useBrand, useCurrentFrame, useShotFonts, useText, useVideoConfig, measureText, fitSize } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, interpolate } from 'remotion';
 import { EASE, FONT, mix, ramp } from '../../../fixtures/Polish';
@@ -76,6 +76,9 @@ export const VoiceWaveformLive: React.FC = () => {
   const fonts = useShotFonts();
   const brand = useBrand();
   const portrait = SH > 1080 * 1.2;
+  // nen anh AI: bo nen dac + vet sang duoi vien thuoc; chu nam tren nen them bong sang
+  const bd = !!useBackdrop();
+  const tsh = bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined;
   const line1 = useText('line1', 'Đặt giúp mình một bàn tối thứ Sáu,');
   const line2 = useText('line2', 'cho bốn người, gần cửa sổ nhé.');
   const hint = useText('hint', 'Bạn cần giúp gì?…');
@@ -190,14 +193,14 @@ export const VoiceWaveformLive: React.FC = () => {
   };
 
   return (
-    <AbsoluteFill style={{ background: L.bg[1], overflow: 'hidden', fontFamily: FONT.sans }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[1], overflow: 'hidden', fontFamily: FONT.sans }}>
       <Stage look={L} keyLight={{ x: 0.3, y: 0.0 }} fill={{ x: 0.78, y: 0.9 }} breathe={0.4}>
         {/* 胶囊下的地面暖光：随"现在"的音量亮灭 */}
-        <div style={{
+        {!bd && <div style={{
           position: 'absolute', left: 960 - 820 * cs, top: CAPCY - 40 * cs, width: 1640 * cs, height: 420 * cs,
           background: `radial-gradient(ellipse 50% 46% at 50% 40%, ${alpha(L.accent, 0.08 + 0.22 * level)} 0%, ${alpha(L.accent, 0)} 70%)`,
           opacity: inT,
-        }} />
+        }} />}
       </Stage>
 
       {/* ── 实时转写 / 消息气泡 ── */}
@@ -212,7 +215,7 @@ export const VoiceWaveformLive: React.FC = () => {
             borderBottomRightRadius: mix(64, 18, bubbleFill) * (TS / 92),
             boxShadow: `0 30px 70px -26px ${alpha(L.shadow, 0.55 * bubbleFill)}, 0 8px 20px -8px ${alpha(L.shadow, 0.3 * bubbleFill)}`,
           }} />
-          <div style={{ position: 'relative', fontSize: TS, fontWeight: 760, letterSpacing: '-0.035em', lineHeight: `${lineH}px`, textAlign: 'left', whiteSpace: 'nowrap' }}>
+          <div style={{ position: 'relative', fontSize: TS, fontWeight: 760, letterSpacing: '-0.035em', lineHeight: `${lineH}px`, textAlign: 'left', whiteSpace: 'nowrap', textShadow: bubbleFill < 0.5 ? tsh : undefined }}>
             {LINES.map((line, li) => (
               <div key={li} style={{ height: lineH }}>
                 {line.map((w, k) => word(w, k))}
@@ -224,14 +227,14 @@ export const VoiceWaveformLive: React.FC = () => {
 
       {/* 开口前的提示语：首词落下前淡出（开场上半屏不空） */}
       {hintO > 0.01 && hint ? (
-        <div style={{ position: 'absolute', left: 0, right: 0, top: TEXT_CY - TS * 0.6, textAlign: 'center', fontSize: fitSize(hint, { family: fonts.sans, size: TS, maxWidth: maxW, weight: 760, minSize: 30 }), lineHeight: 1.2, fontWeight: 760, letterSpacing: '-0.035em', whiteSpace: 'nowrap', color: alpha(L.ink3, 0.55), opacity: hintO, filter: `blur(${((1 - hintO) * 6).toFixed(2)}px)` }}>
+        <div style={{ position: 'absolute', left: 0, right: 0, top: TEXT_CY - TS * 0.6, textAlign: 'center', fontSize: fitSize(hint, { family: fonts.sans, size: TS, maxWidth: maxW, weight: 760, minSize: 30 }), lineHeight: 1.2, fontWeight: 760, textShadow: tsh, letterSpacing: '-0.035em', whiteSpace: 'nowrap', color: alpha(L.ink3, 0.55), opacity: hintO, filter: `blur(${((1 - hintO) * 6).toFixed(2)}px)` }}>
           {hint}
         </div>
       ) : null}
 
       {/* 已发送 行 */}
       <div style={{
-        position: 'absolute', left: 0, right: 0, top: portrait ? sentTop : Math.max(492, sentTop), textAlign: 'center', fontSize: 32 * (portrait ? 1.5 : 1), fontWeight: 500, lineHeight: 1.3, color: L.ink2, whiteSpace: 'nowrap',
+        position: 'absolute', left: 0, right: 0, top: portrait ? sentTop : Math.max(492, sentTop), textAlign: 'center', fontSize: 32 * (portrait ? 1.5 : 1), fontWeight: 500, lineHeight: 1.3, color: L.ink2, whiteSpace: 'nowrap', textShadow: tsh,
         opacity: sentT, transform: `translateY(${((1 - sentT) * 16).toFixed(2)}px)`,
       }}>
         <span style={{ color: L.accent }}>✓</span>&nbsp; {sentLabel} · {timer}
@@ -243,7 +246,7 @@ export const VoiceWaveformLive: React.FC = () => {
       {label ? (
         <div style={{
           position: 'absolute', left: 24, top: -62, display: 'flex', alignItems: 'center', gap: 14, whiteSpace: 'nowrap',
-          fontSize: 32, fontWeight: 600, lineHeight: 1.3, color: L.ink2, letterSpacing: '-0.01em',
+          fontSize: 32, fontWeight: 600, lineHeight: 1.3, color: L.ink2, letterSpacing: '-0.01em', textShadow: tsh,
           opacity: labelT * (1 - idle), transform: `translateY(${((1 - labelT) * 10).toFixed(2)}px)`,
         }}>
           <span style={{ width: 14, height: 14, borderRadius: 7, background: L.accent, boxShadow: `0 0 0 ${(4 + 6 * nowEnv).toFixed(1)}px ${alpha(L.accent, 0.18)}` }} />

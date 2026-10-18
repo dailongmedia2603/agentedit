@@ -26,7 +26,7 @@
 // bang nhau), gap day cac khoi theo chieu doc, duong do + huy hieu nam ben phai, mo hinh mo theo chieu doc; so doc +
 // thuoc xoay to hon (x2); ca khoi can giua chieu cao that. Moi thong so nhip (du bi 12->6, 34f swift, hold 20f,
 // lo xo damping 9, buoc 2) giu nguyen.
-import { useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, spring } from 'remotion';
 import { EASE, FONT, ramp, softShadow } from '../../../fixtures/Polish';
@@ -230,24 +230,19 @@ export const AutolayoutGapDial: React.FC = () => {
   const numTop = topBlock + 36 * K;
   const rulerTop = topBlock + (36 + 220 + 42) * K;
   const layerName = `Thanh điều hướng`;
+  // [Agent Edit] nen anh AI: bo nen dac + quang code; chu nam thang tren anh -> bong toi nhe.
+  // Luoi cham "canvas" trang tri da bo han (ke ca khi khong co nen anh).
+  const bd = useBackdrop();
+  const tsh = bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined;
 
   return (
-    <AbsoluteFill style={{ background: L.bg[1], overflow: 'hidden', fontFamily: FONT.sans }}>
-      <Stage look={L} keyLight={{ x: 0.5, y: 0.0 }} fill={{ x: 0.5, y: 1.05 }} horizon={portrait ? 0.7 : 0.62} breathe={0.4} style={{ height: SH, bottom: 'auto' }}>
-        {/* 画布点阵：围绕导航条清楚、四周隐去 */}
-        <div style={{
-          position: 'absolute', left: 0, top: 0, width: 1920, height: SH,
-          backgroundImage: `radial-gradient(${alpha(L.ink, 0.13)} 1.4px, transparent 1.7px)`,
-          backgroundSize: '36px 36px', backgroundPosition: '6px 16px',
-          WebkitMaskImage: `radial-gradient(ellipse 52% ${portrait ? 30 : 40}% at 50% ${((stackCY / SH) * 100).toFixed(1)}%, #000 20%, transparent 100%)`,
-          maskImage: `radial-gradient(ellipse 52% ${portrait ? 30 : 40}% at 50% ${((stackCY / SH) * 100).toFixed(1)}%, #000 20%, transparent 100%)`,
-        }} />
-      </Stage>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[1], overflow: 'hidden', fontFamily: FONT.sans }}>
+      <Stage look={L} keyLight={{ x: 0.5, y: 0.0 }} fill={{ x: 0.5, y: 1.05 }} horizon={portrait ? 0.7 : 0.62} breathe={0.4} style={{ height: SH, bottom: 'auto' }} />
       {/* 导航条落脚的光池：条子"站"在画布上 */}
-      <div style={{
+      {!bd && <div style={{
         position: 'absolute', left: 260, right: 260, top: portrait ? stackCY + stackMaxH / 2 - 60 : ROW_Y + 40, height: 200 * K,
         background: `radial-gradient(ellipse 50% 50% at 50% 30%, ${alpha(L.light, 0.1)} 0%, transparent 70%)`,
-      }} />
+      }} />}
 
       <AbsoluteFill style={{ transform: `scale(${cam})`, transformOrigin: `50% ${portrait ? ((stackCY / SH) * 100).toFixed(1) : 52}%` }}>
         {/* ── 读数：眉题 + 超大数值 + 单位 ── */}
@@ -255,7 +250,7 @@ export const AutolayoutGapDial: React.FC = () => {
           <div style={{
             position: 'absolute', left: 0, right: 0, top: eyebrowTop, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 16 * K,
             opacity: eyebrow, letterSpacing: `${(0.28 + (1 - eyebrow) * 0.4).toFixed(3)}em`,
-            ...type(kickSize, 600, { caps: true }), color: L.ink2, whiteSpace: 'nowrap', lineHeight: 1.3,
+            ...type(kickSize, 600, { caps: true }), color: L.ink2, whiteSpace: 'nowrap', lineHeight: 1.3, textShadow: tsh,
           }}>
             <IconAutoLayout c={L.ink2} size={22 * K} vertical={portrait} />
             <span style={{ letterSpacing: 'inherit' }}>{kicker}</span>
@@ -267,17 +262,17 @@ export const AutolayoutGapDial: React.FC = () => {
         }}>
           <div style={{
             display: 'flex', alignItems: 'baseline', gap: 18 * K,
-            transform: `translateY(${((1 - numIn) * 105).toFixed(2)}%)`,
+            transform: `translateY(${((1 - numIn) * 105).toFixed(2)}%)`, textShadow: tsh,
           }}>
             <span style={{
               ...type(196 * K, 300), letterSpacing: '-0.05em', color: numColor, display: 'inline-block',
               minWidth: '1.9em', textAlign: 'right', transform: `scale(${tickPulse})`, transformOrigin: '100% 80%',
-              textShadow: hot > 0.05 ? `0 0 ${(40 * hot).toFixed(1)}px ${alpha(GOLD, 0.35 * hot)}` : undefined,
+              textShadow: hot > 0.05 ? `0 0 ${(40 * hot).toFixed(1)}px ${alpha(GOLD, 0.35 * hot)}${tsh ? `, ${tsh}` : ''}` : tsh,
             }}>{gapShown}</span>
             <span style={{ ...type(60 * K, 500), color: L.ink3, width: '1.9em' }}>px</span>
           </div>
         </div>
-        <Ruler gap={gap} op={rulerIn} hot={hot} top={rulerTop} K={K} gold={GOLD} />
+        <div style={{ textShadow: tsh }}><Ruler gap={gap} op={rulerIn} hot={hot} top={rulerTop} K={K} gold={GOLD} /></div>
 
         {/* ── 块 ── */}
         {R.map((b, i) => {
@@ -323,7 +318,7 @@ export const AutolayoutGapDial: React.FC = () => {
         }}>
           <div style={{
             position: 'absolute', left: -2, top: -54 * K, display: 'flex', alignItems: 'center', gap: 10 * K,
-            ...type(26 * K, 560), color: SEL, whiteSpace: 'nowrap', lineHeight: 1.3,
+            ...type(26 * K, 560), color: SEL, whiteSpace: 'nowrap', lineHeight: 1.3, textShadow: tsh,
           }}>
             <IconAutoLayout c={SEL} size={20 * K} vertical={portrait} />
             {layerName}

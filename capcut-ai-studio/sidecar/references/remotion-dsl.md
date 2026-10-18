@@ -28,8 +28,9 @@ Mỗi scene phủ một khoảng; các scene nối tiếp, không chồng. Kho�
   hoặc trên ảnh `panel` (vd ảnh chụp màn hình). `"popout": true` = đầu trồi ra khỏi vòng tròn.
 - `broll`: B-roll TOÀN KHUNG; tiếng A-roll vẫn chạy bên dưới (L-cut/J-cut).
 - `graphic`: chỉ NỀN + các lớp đồ hoạ (cảnh minh hoạ / cảnh tiêu đề); tiếng A-roll vẫn chạy.
-- `bg`: `{"kind": "gradient", "colors": ["#F7C9A6", "#E0703A"], "angle": 165, "pattern": "curves|grid|dots|rays|none"}`
-  hoặc `{"kind": "image", "asset": "<id>", "blur": 0, "grade": "bw"}`.
+- `bg`: `{"kind": "gradient", "colors": ["#F7C9A6", "#E0703A"], "angle": 165}` (KHÔNG hoạ tiết: cấm lưới kẻ ô / lưới chấm /
+  đường cong trang trí — nền code trông rất "AI"; muốn nền có không khí thì dùng ảnh: `{"kind": "image", "asset": ...}`)
+  hoặc `{"kind": "image", "asset": "<id>", "blur": 0, "grade": "bw"}` (ưu tiên ảnh nền thật hợp chủ đề).
 - `panel`: `{"asset": "<id>", "kenburns": "in|out|left|right|up|none", "grade": "bw|cinematic|...", "blur": 0}`
   hoặc lấy CẢNH KHÁC trong video nguồn làm B-roll: `{"source_id": "source_1", "src_time": 42.0}` (video chạy
   từ giây đó, tắt tiếng) — hợp khi nguồn có cảnh cận sản phẩm / thao tác minh hoạ đúng lời đang nói.

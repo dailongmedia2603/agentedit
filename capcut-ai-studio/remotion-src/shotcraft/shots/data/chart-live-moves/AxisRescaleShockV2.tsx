@@ -27,7 +27,7 @@
 // tren nhan; mac dinh "gấp X lần <ky truoc>"). Truc y cu / moi tu tinh "dep" theo before / value (value ~85% truc moi);
 // nhan truc giu don vi ngan cua value (k, tr, %, $...). Khung doc (native): tieu de to xuong dong, KPI xuong hang rieng
 // ngay tren bieu do (doan bung no van dam vao so KPI), bieu do cao ~1300px, chu truc to.
-import { useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, bezier, mix, ramp } from '../../../fixtures/Polish';
@@ -279,11 +279,15 @@ export const AxisRescaleShockV2: React.FC = () => {
   const kpiLabelSize = fitSize(kpiLabel, { family: fonts.sans, size: 32 * K, maxWidth: portrait ? 1728 : 620, weight: 650, minSize: 20 });
   const titleStep = Math.min(5, 26 / Math.max(1, title.split(/\s+/).length));
 
+  // [Agent Edit] nen anh AI: bo nen dac (Stage tu bo gradient); chu nam tren nen -> bong do nhe de doc ro tren anh
+  const bd = useBackdrop();
+  const bdShadow = bd ? (bd.dark ? '0 2px 18px rgba(0,0,0,0.55)' : '0 1px 12px rgba(255,255,255,0.7)') : undefined;
+
   return (
-    <AbsoluteFill style={{ background: L.bg[1], overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[1], overflow: 'hidden' }}>
       <Stage look={L} keyLight={{ x: 0.3, y: 0.0 }} fill={{ x: 0.95, y: 0.95 }} />
 
-      <div style={{ position: 'absolute', inset: 0, transform: `scale(${cam})`, transformOrigin: `60% ${portrait ? CEIL + PH * 0.3 : SH * 0.45}px` }}>
+      <div style={{ position: 'absolute', inset: 0, transform: `scale(${cam})`, transformOrigin: `60% ${portrait ? CEIL + PH * 0.3 : SH * 0.45}px`, textShadow: bdShadow }}>
         {/* 标题行 */}
         <div style={{ position: 'absolute', left: M, top: headTop, maxWidth: portrait ? 1728 : 1728 - kpiW(kpiSize) - 60, display: 'flex', alignItems: 'center', gap: 12 * K, ...type(32 * K, 650), color: L.ink2, opacity: ramp(frame, 0, 12, EASE.out), whiteSpace: 'nowrap', overflow: 'hidden' }}>
           {BRAND.name ? (
@@ -429,7 +433,7 @@ export const AxisRescaleShockV2: React.FC = () => {
               transform: `scale(${valS.toFixed(4)})`, transformOrigin: '100% 50%', opacity: Math.min(1, valS * 1.6),
             }}>
               <div style={{
-                position: 'absolute', inset: 0, background: ACC, borderRadius: 6 * K, color: L.onAccent, whiteSpace: 'nowrap',
+                position: 'absolute', inset: 0, background: ACC, borderRadius: 6 * K, color: L.onAccent, whiteSpace: 'nowrap', textShadow: 'none',
                 display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingLeft: 30 * K,
                 boxShadow: `0 18px 40px -12px ${alpha(L.shadow, 0.45)}`,
               }}>

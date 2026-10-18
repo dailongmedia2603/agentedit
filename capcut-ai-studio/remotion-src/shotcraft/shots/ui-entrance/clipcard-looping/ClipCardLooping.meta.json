@@ -6,25 +6,80 @@
  "duration": 150,
  "kind": "insert",
  "dark": true,
- "portrait": {"mode": "native"},
- "rate": [0.8, 1.25],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.8,
+  1.25
+ ],
  "hold": 86,
  "slots": [
-  {"id": "kicker", "role": "label", "sample": "CẢNH THỰC TẾ", "max": 24, "optional": true, "note": "nhãn ngắn trên góc thẻ video (tự in hoa), vd 'CẢNH THỰC TẾ', 'HẬU TRƯỜNG', 'KHÁCH HÀNG NÓI'"},
-  {"id": "title", "role": "title", "sample": "Đơn hàng rời kho chỉ sau 2 giờ", "max": 44, "optional": true, "note": "đoạn video này cho thấy điều gì — câu ngắn từ lời nói (khung dọc: dưới thẻ; khung ngang: cột phải)"},
-  {"id": "caption", "role": "subtitle", "sample": "Quay tại kho Bình Dương sáng nay, không dàn dựng.", "max": 80, "optional": true, "note": "chú thích nhỏ: bối cảnh / nơi quay / ai trong cảnh"}
+  {
+   "id": "kicker",
+   "role": "label",
+   "sample": "CẢNH THỰC TẾ",
+   "max": 24,
+   "optional": true,
+   "note": "nhãn ngắn trên góc thẻ video (tự in hoa), vd 'CẢNH THỰC TẾ', 'HẬU TRƯỜNG', 'KHÁCH HÀNG NÓI'"
+  },
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Đơn hàng rời kho chỉ sau 2 giờ",
+   "max": 44,
+   "optional": true,
+   "note": "đoạn video này cho thấy điều gì — câu ngắn từ lời nói (khung dọc: dưới thẻ; khung ngang: cột phải)"
+  },
+  {
+   "id": "caption",
+   "role": "subtitle",
+   "sample": "Quay tại kho Bình Dương sáng nay, không dàn dựng.",
+   "max": 80,
+   "optional": true,
+   "note": "chú thích nhỏ: bối cảnh / nơi quay / ai trong cảnh"
+  }
  ],
  "images": [
-  {"id": "video", "role": "video", "aspect": "any", "note": "đoạn video THẬT (cắt từ video gốc hoặc video người dùng), tỉ lệ bất kỳ 9:16 / 16:9 / vuông; được cắt phủ vào thẻ bo góc, TẮT TIẾNG (giọng người nói vẫn chạy bên dưới); ngắn hơn cảnh thì tự lặp lại bằng hoà tan chéo. Gửi ảnh thì hiện ảnh tĩnh"}
+  {
+   "id": "video",
+   "role": "video",
+   "aspect": "any",
+   "note": "đoạn video THẬT (cắt từ video gốc hoặc video người dùng), tỉ lệ bất kỳ 9:16 / 16:9 / vuông; được cắt phủ vào thẻ bo góc, TẮT TIẾNG (giọng người nói vẫn chạy bên dưới); ngắn hơn cảnh thì tự lặp lại bằng hoà tan chéo. Gửi ảnh thì hiện ảnh tĩnh"
+  }
  ],
  "brand": "none",
- "sfx": [{"at": 4, "type": "whoosh"}, {"at": 28, "type": "pop"}, {"at": 36, "type": "swoosh"}],
+ "sfx": [
+  {
+   "at": 4,
+   "type": "whoosh"
+  },
+  {
+   "at": 28,
+   "type": "pop"
+  },
+  {
+   "at": 36,
+   "type": "swoosh"
+  }
+ ],
  "vi": {
   "ten": "Thẻ video nổi bật — đóng khung một đoạn cảnh thật",
   "mo_ta": "Sân khấu tối dịu, bụi sáng bay: một tấm thẻ bo góc trồi lên từ dưới, ngả về sau rồi dựng thẳng, phóng to vừa khít và hết mờ; đoạn video thật (tắt tiếng) bừng sáng chạy bên trong, một vòng sáng màu nhấn toả ra từ mép thẻ khi thẻ đáp, một vệt sáng lướt qua mặt thẻ. Góc thẻ có nhãn kiểu 'đang phát' với chấm nháy, đáy thẻ có thanh tiến trình + mã thời gian như trình phát video. Sau đó thẻ trôi lơ lửng rất nhẹ và máy đẩy chậm vào; tiêu đề hiện từng từ và chú thích hiện từ mờ (khung dọc: thẻ lớn chiếm phần lớn khung, chữ ở dưới; khung ngang: thẻ bên trái, chữ cột phải).",
   "hop_khi": "Muốn cho người xem THẤY một cảnh thật như bằng chứng / điểm nhấn: 'đây là cảnh thực tế ở xưởng', 'các bạn xem khách hàng phản hồi nè', hậu trường, sản phẩm đang hoạt động, kết quả trước–sau, trích một khoảnh khắc đắt giá từ chính video hoặc đoạn video người dùng đưa vào; đóng khung một đoạn quay để nó nổi bật hơn cắt thẳng.",
   "tranh_khi": "Không có đoạn video / cảnh phù hợp để đóng khung; cảnh cần nghe tiếng gốc (thẻ luôn tắt tiếng); nội dung là con số / danh sách thuần chữ; video tone sáng rực, vui nhộn kiểu hoạt hình.",
   "nang_luong": "vua",
-  "chu_de": ["video thật", "cảnh thực tế", "hậu trường", "bằng chứng", "khách hàng", "sản phẩm", "highlight", "footage", "trích đoạn"]
- }
+  "chu_de": [
+   "video thật",
+   "cảnh thực tế",
+   "hậu trường",
+   "bằng chứng",
+   "khách hàng",
+   "sản phẩm",
+   "highlight",
+   "footage",
+   "trích đoạn"
+  ]
+ },
+ "backdrop": true
 }

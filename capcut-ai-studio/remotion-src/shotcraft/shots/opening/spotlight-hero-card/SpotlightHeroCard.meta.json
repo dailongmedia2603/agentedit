@@ -29,5 +29,6 @@
   "tranh_khi": "Cần so sánh nhiều mục cùng lúc; đoạn nói ngắn dưới 3 giây (cảnh cần ~4–5 giây mới trọn nhịp); tone sáng vui nhộn.",
   "nang_luong": "vua",
   "chu_de": ["giới thiệu sản phẩm", "nổi bật", "ra mắt", "app", "dự án", "case study", "sân khấu"]
- }
+ },
+ "backdrop": false
 }

@@ -28,7 +28,7 @@
 // cuoi phat sang canh nhan HOÀN TẤT). Dong xuat (output) = chu giao dien trung tinh tieng Viet. Lenh dai: co chu tu thu
 // nho vua cua so + nhip go nen lai de go xong truoc khi bay (TYPE_AT / bay / do sau truong anh giu nguyen).
 // Khung doc: mode 'band' (canh 3D), zoom ~1.42 -> cua so lap gan het be ngang dien thoai.
-import { useCurrentFrame, useList, useShot, useShotFonts, useText, fitSize } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useList, useShot, useShotFonts, useText, fitSize } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, FONT, SpeedBlur, mix, ramp } from '../../../fixtures/Polish';
@@ -101,32 +101,7 @@ const toScreen = (q: { x: number; y: number; z: number }) => {
   return { x: 960 + q.x * k, y: 540 + q.y * k, k };
 };
 
-// ───────────── 透视地面（SVG，逐线投影；近处亮、远处隐入暗场） ─────────────
-const Floor: React.FC<{ cam: ReturnType<typeof camAt>; frame: number }> = ({ cam }) => {
-  const segs: React.ReactNode[] = [];
-  const CELL = 240;
-  const near = PERSP - 120;
-  const line = (a: [number, number, number], b: [number, number, number], key: string) => {
-    const N = 8;
-    for (let j = 0; j < N; j++) {
-      const pa = project(cam, [mix(a[0], b[0], j / N), a[1], mix(a[2], b[2], j / N)]);
-      const pb = project(cam, [mix(a[0], b[0], (j + 1) / N), a[1], mix(a[2], b[2], (j + 1) / N)]);
-      if (pa.z > near || pb.z > near) continue;
-      const depth = PERSP - (pa.z + pb.z) / 2; // 到相机的距离
-      const op = Math.max(0, Math.min(1, 1.25 - depth / 4200));
-      if (op < 0.02) continue;
-      const sa = toScreen(pa), sb = toScreen(pb);
-      segs.push(<line key={`${key}${j}`} x1={sa.x} y1={sa.y} x2={sb.x} y2={sb.y} strokeOpacity={op * op} />);
-    }
-  };
-  for (let i = -14; i <= 14; i++) line([i * CELL, FLOOR_Y, -3600], [i * CELL, FLOOR_Y, 2400], `c${i}`);
-  for (let j = -15; j <= 10; j++) line([-3400, FLOOR_Y, j * CELL], [3400, FLOOR_Y, j * CELL], `r${j}`);
-  return (
-    <svg width={1920} height={1080} style={{ position: 'absolute', inset: 0 }}>
-      <g stroke={alpha(L.accent, 0.34)} strokeWidth={1.4}>{segs}</g>
-    </svg>
-  );
-};
+// [Agent Edit] luoi ke o mat dat (SVG phoi canh) da bo theo yeu cau: khong luoi ke o trang tri.
 
 // 焦点窗下方的地面反光（投影到窗口脚下）
 const FloorPool: React.FC<{ cam: ReturnType<typeof camAt>; i: number; on: number }> = ({ cam, i, on }) => {
@@ -251,7 +226,7 @@ const Terminal: React.FC<{ i: number; frame: number; focus: number; w: Win; ty: 
         ))}
         <div style={{ marginLeft: 22, fontSize: 24, fontWeight: 700, color: L.accent, letterSpacing: '0.04em' }}>{w.step}</div>
         <div style={{ fontSize: 24, fontWeight: 500, color: L.ink2, letterSpacing: '0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 560 }}>{w.name}</div>
-        <div style={{ marginLeft: 'auto', fontSize: 22, color: L.ink3 }}>{w.path} — zsh</div>
+        <div style={{ marginLeft: 'auto', fontSize: 22, color: L.ink3 }}>{w.path} · zsh</div>
       </div>
 
       {/* 命令行：常驻提示符 + 已打出字符 + 紧贴的块光标 */}
@@ -360,19 +335,20 @@ export const Terminal3D: React.FC = () => {
   const vx = -(b.pose.x - a.pose.x) * kS;
   const vy = -(b.pose.y - a.pose.y) * kS;
 
+  const bd = useBackdrop();
   const world = `translateZ(${(-cam.pull).toFixed(2)}px) rotateX(${TILT}deg) rotateY(${cam.yaw.toFixed(3)}deg) translate3d(${(-v.x).toFixed(2)}px,${(-v.y).toFixed(2)}px,${(-v.z).toFixed(2)}px)`;
 
   return (
-    <AbsoluteFill style={{ background: L.bg[2] }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[2] }}>
       <Stage look={STAGE} keyLight={{ x: 0.36, y: -0.06 }} fill={{ x: 0.82, y: 1.0 }} horizon={0.47} intensity={1} breathe={0.4}>
-        <Floor cam={cam} frame={frame} />
-        {[0, 1, 2].map((i) => (
+        {/* [Agent Edit] bo luoi ke o mat dat (Floor); co NEN ANH AI -> bo luon quang sau cua so / vung sang mat dat / bui */}
+        {!bd && [0, 1, 2].map((i) => (
           <BackLight key={`b${i}`} cam={cam} i={i} on={Math.max(0, 1 - Math.abs(cam.s - i))} />
         ))}
-        {[0, 1, 2].map((i) => (
+        {!bd && [0, 1, 2].map((i) => (
           <FloorPool key={i} cam={cam} i={i} on={Math.max(0, 1 - Math.abs(cam.s - i))} />
         ))}
-        <Dust look={L} count={36} seed={5} drift={0.35} opacity={0.45} />
+        {!bd && <Dust look={L} count={36} seed={5} drift={0.35} opacity={0.45} />}
       </Stage>
       <SpeedBlur vx={vx} vy={vy} amount={0.14} max={10}>
         <div style={{ position: 'absolute', inset: 0, perspective: PERSP, overflow: 'hidden' }}>

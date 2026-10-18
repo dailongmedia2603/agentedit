@@ -22,5 +22,6 @@
   "tranh_khi": "Câu dài (chỉ hợp 1–3 từ); nội dung gấp gáp nhịp nhanh; video tone tối.",
   "nang_luong": "vua",
   "chu_de": ["tên thương hiệu", "từ khóa", "mở đầu", "logo chữ", "chương mới", "tiêu đề"]
- }
+ },
+ "backdrop": true
 }

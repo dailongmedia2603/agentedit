@@ -6,24 +6,81 @@
  "duration": 100,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
  "hold": 78,
  "slots": [
-  {"id": "number", "role": "number", "sample": "5", "max": 6, "note": "con số chính, là số NHỎ ở cuối thang đếm lùi (thời gian, số bước, giá…); chỉ chữ số (có thể kèm đơn vị ngắn như 24h, 3s)"},
-  {"id": "title", "role": "title", "sample": "phút là cài xong", "max": 30, "note": "phần câu đi SAU con số (đơn vị + ý); từ cuối được tô màu nhấn"},
-  {"id": "subtitle", "role": "subtitle", "sample": "Không cần cấu hình, chỉ một lệnh duy nhất", "max": 52, "optional": true, "note": "một câu bổ sung sự thật"},
-  {"id": "label", "role": "label", "sample": "THỜI GIAN CÀI ĐẶT", "max": 26, "optional": true, "note": "nhãn nhỏ góc trên trái, in hoa"}
+  {
+   "id": "number",
+   "role": "number",
+   "sample": "5",
+   "max": 6,
+   "note": "con số chính, là số NHỎ ở cuối thang đếm lùi (thời gian, số bước, giá…); chỉ chữ số (có thể kèm đơn vị ngắn như 24h, 3s)"
+  },
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "phút là cài xong",
+   "max": 30,
+   "note": "phần câu đi SAU con số (đơn vị + ý); từ cuối được tô màu nhấn"
+  },
+  {
+   "id": "subtitle",
+   "role": "subtitle",
+   "sample": "Không cần cấu hình, chỉ một lệnh duy nhất",
+   "max": 52,
+   "optional": true,
+   "note": "một câu bổ sung sự thật"
+  },
+  {
+   "id": "label",
+   "role": "label",
+   "sample": "THỜI GIAN CÀI ĐẶT",
+   "max": 26,
+   "optional": true,
+   "note": "nhãn nhỏ góc trên trái, in hoa"
+  }
  ],
  "images": [],
  "brand": "optional",
- "sfx": [{"at": 5, "type": "whoosh"}, {"at": 26, "type": "click"}, {"at": 50, "type": "pop"}, {"at": 64, "type": "ding"}],
+ "sfx": [
+  {
+   "at": 5,
+   "type": "whoosh"
+  },
+  {
+   "at": 26,
+   "type": "click"
+  },
+  {
+   "at": 50,
+   "type": "pop"
+  },
+  {
+   "at": 64,
+   "type": "ding"
+  }
+ ],
  "vi": {
   "ten": "Mặt đồng hồ quay rồi dừng ở con số",
   "mo_ta": "Nền giấy trắng ấm kiểu đồng hồ đo: một vòng số lớn xếp theo cung tròn (45, 35, 28… giảm dần) quét nhanh rồi phanh gấp, khựng nhẹ đúng ở con số chính trên đỉnh cung; các số khác nhòe tan, con số chính trượt xuống phóng to thành chữ đầu của câu tiêu đề, các từ còn lại hiện mờ → rõ, từ cuối đổi sang màu nhấn; một dòng phụ trong khung hiện bên dưới.",
   "hop_khi": "Nhấn mạnh một con số NHỎ đáng kinh ngạc: 'chỉ 5 phút là xong', 'giảm còn 3 bước', 'chỉ 99 nghìn', 'ra kết quả trong 10 giây'; khoảnh khắc chốt lợi ích về thời gian / chi phí / công sức.",
   "tranh_khi": "Con số tăng trưởng (số lớn mới là điểm nhấn), không có con số; số quá dài (> 6 ký tự).",
   "nang_luong": "cao",
-  "chu_de": ["số liệu", "con số", "đếm ngược", "thời gian", "tốc độ", "tiết kiệm", "giá"]
- }
+  "chu_de": [
+   "số liệu",
+   "con số",
+   "đếm ngược",
+   "thời gian",
+   "tốc độ",
+   "tiết kiệm",
+   "giá"
+  ]
+ },
+ "backdrop": true
 }

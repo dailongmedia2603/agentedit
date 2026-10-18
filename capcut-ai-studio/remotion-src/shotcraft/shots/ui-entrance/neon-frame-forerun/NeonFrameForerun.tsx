@@ -26,7 +26,7 @@
 // con lai (menu, trang thai) doi sang tieng Viet trung tinh; moi chu do bang font that (fitSize) de khong tran o.
 // Khung doc (portrait.mode = 'native'): bang dung (1500x1660) bo cuc lai — menu thanh hang ngang tren dau, tieu de to 2 dong,
 // 3 the so, danh sach viec chu to; khung neon + duong ham vong lap theo dung kich thuoc bang moi.
-import { useCurrentFrame, useVideoConfig, useText, useList, useBrand, useShotFonts, fitSize, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useBrand, useShotFonts, fitSize, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, FONT, bezier, mix, ramp } from '../../../fixtures/Polish';
@@ -330,8 +330,9 @@ export const NeonFrameForerun: React.FC = () => {
 
   const heads = trace < 1 ? [pointAt(trace * 0.5), pointAt(1 - trace * 0.5)] : [];
 
+  const bd = useBackdrop(); // [Agent Edit] nen anh AI: bo nen dac code (Stage tu bo gradient)
   return (
-    <AbsoluteFill style={{ background: L.bg[2], overflow: 'hidden', fontFamily: FONT.sans }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[2], overflow: 'hidden', fontFamily: FONT.sans }}>
       <Stage look={L} keyLight={{ x: 0.3, y: 0.05 }} fill={{ x: 0.85, y: 0.95 }} intensity={stageI} vignette={0.7} />
 
       <div style={{ position: 'absolute', inset: 0, perspective: PERSP, perspectiveOrigin: '50% 45%' }}>

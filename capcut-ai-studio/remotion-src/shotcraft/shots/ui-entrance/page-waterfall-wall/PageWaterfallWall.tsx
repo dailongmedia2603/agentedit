@@ -15,7 +15,7 @@
 // -> khong lo khoang trong; chu ky lap gian theo so the de giu toc do goc (12/9/14s cho 4/3/3 the). The cao qua (anh doc
 // dai) bi cat tu tren xuong (cover). Khong co anh -> anh mau. o chu (tuy chon): title (chu noi giua khung, kinh mo).
 // Khung doc (native): cot rong hon (500), tuong cao theo khung, phoi canh gian theo chieu cao (giu goc nghieng 20 do).
-import { staticFile, useCurrentFrame, useImage, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
+import { staticFile, useCurrentFrame, useImage, useShotFonts, useText, useVideoConfig, useBackdrop, fitSize, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, Img, interpolate } from 'remotion';
 import { Backdrop, Grain } from '../../../fixtures/Polish';
@@ -74,16 +74,23 @@ export const buildColumns = (loops: [number, number, number], srcs: string[], mi
 const FADE_TOP = 'linear-gradient(to bottom, #111319 0%, rgba(17,19,25,0.85) 10%, rgba(17,19,25,0) 30%)';
 const FADE_BOTTOM = 'linear-gradient(to top, #08090c 0%, rgba(8,9,12,0.8) 8%, rgba(8,9,12,0) 22%)';
 
-const Wall: React.FC<{ columns: TickerColumn[]; zoom: number; H: number; colW: number; persp: number }> = ({ columns, zoom, H, colW, persp }) => (
-  <AbsoluteFill>
+// [Agent Edit] DOT 2: `clear` (co nen anh AI) -> mep tren / duoi cua tuong mo dan bang MAT NA (trong suot ra anh nen)
+// thay cho cac lop phu mau toi dac phu kin khung
+const WALL_MASK = 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.35) 12%, #000 30%, #000 80%, rgba(0,0,0,0.25) 92%, rgba(0,0,0,0) 100%)';
+const Wall: React.FC<{ columns: TickerColumn[]; zoom: number; H: number; colW: number; persp: number; clear?: boolean }> = ({ columns, zoom, H, colW, persp, clear }) => (
+  <AbsoluteFill style={clear ? { WebkitMaskImage: WALL_MASK, maskImage: WALL_MASK } : undefined}>
     {/* zoom 让墙按显示尺寸布局与栅格化；内部 1920/zoom 宽的 css 画布居中排 3 列 */}
     <div style={{ position: 'absolute', left: 0, top: 0, width: 1920 / zoom, height: H / zoom, zoom }}>
       <VerticalTicker columns={columns} backgroundColor="transparent" maskHeight={0} scale={1} columnWidth={colW} gap={26} perspective={persp} />
     </div>
-    {/* 空气透视：墙的远端（画面上部）轻微压暗 */}
-    <AbsoluteFill style={{ background: 'linear-gradient(to bottom, rgba(13,14,19,0.5) 0%, rgba(13,14,19,0) 50%)', pointerEvents: 'none' }} />
-    <AbsoluteFill style={{ background: FADE_TOP, pointerEvents: 'none' }} />
-    <AbsoluteFill style={{ background: FADE_BOTTOM, pointerEvents: 'none' }} />
+    {!clear && (
+      <>
+        {/* 空气透视：墙的远端（画面上部）轻微压暗 */}
+        <AbsoluteFill style={{ background: 'linear-gradient(to bottom, rgba(13,14,19,0.5) 0%, rgba(13,14,19,0) 50%)', pointerEvents: 'none' }} />
+        <AbsoluteFill style={{ background: FADE_TOP, pointerEvents: 'none' }} />
+        <AbsoluteFill style={{ background: FADE_BOTTOM, pointerEvents: 'none' }} />
+      </>
+    )}
   </AbsoluteFill>
 );
 
@@ -114,11 +121,13 @@ export const PageWaterfallWall: React.FC = () => {
   if (tLines.length) tSize = Math.min(tSize, ...tLines.map((l) => fitSize(l, { family: fonts.sans, size: tSize, maxWidth: tW, weight: 700, minSize: tSize0 * 0.35 })));
   const tp = interpolate(frame, [14, 30], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: (t) => 1 - Math.pow(1 - t, 4) });
 
+  // [Agent Edit] DOT 2: co nen anh AI -> bo nen toi + quang sang + toi goc + hat (tuong anh + the tieu de giu nguyen)
+  const bd = useBackdrop();
   return (
-    <AbsoluteFill style={{ backgroundColor: BG }}>
-      <Backdrop tone="dark" light={{ x: 0.5, y: 0.42 }} accent="#5b63d3" grain={0} vignette={0} />
-      <Wall columns={columns} zoom={ZOOM * push} H={H} colW={colW} persp={persp} />
-      <AbsoluteFill style={{ background: 'radial-gradient(ellipse 75% 70% at 50% 50%, rgba(5,6,10,0) 55%, rgba(5,6,10,0.55) 100%)', pointerEvents: 'none' }} />
+    <AbsoluteFill style={{ backgroundColor: bd ? 'transparent' : BG }}>
+      {!bd && <Backdrop tone="dark" light={{ x: 0.5, y: 0.42 }} accent="#5b63d3" grain={0} vignette={0} />}
+      <Wall columns={columns} zoom={ZOOM * push} H={H} colW={colW} persp={persp} clear={!!bd} />
+      {!bd && <AbsoluteFill style={{ background: 'radial-gradient(ellipse 75% 70% at 50% 50%, rgba(5,6,10,0) 55%, rgba(5,6,10,0.55) 100%)', pointerEvents: 'none' }} />}
       {tLines.length ? (
         <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
           <div
@@ -135,7 +144,7 @@ export const PageWaterfallWall: React.FC = () => {
           </div>
         </AbsoluteFill>
       ) : null}
-      <Grain opacity={0.08} blend="soft-light" />
+      {!bd && <Grain opacity={0.08} blend="soft-light" />}
     </AbsoluteFill>
   );
 };

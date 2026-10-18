@@ -6,23 +6,92 @@
  "duration": 246,
  "kind": "insert",
  "dark": true,
- "portrait": {"mode": "band", "zoom": 1.42, "focusY": 0.5},
- "rate": [0.85, 1.3],
+ "portrait": {
+  "mode": "band",
+  "zoom": 1.42,
+  "focusY": 0.5
+ },
+ "rate": [
+  0.85,
+  1.3
+ ],
  "hold": 222,
  "slots": [
-  {"id": "steps", "role": "label", "sample": "khởi tạo|xây dựng|xuất bản", "max": 18, "list": {"min": 3, "max": 3}, "note": "đúng 3 tên bước ngắn, hiện trên thanh tiêu đề mỗi cửa sổ"},
-  {"id": "commands", "role": "code", "sample": "app init cua-hang|app build|app deploy", "max": 28, "list": {"min": 3, "max": 3}, "note": "đúng 3 dòng lệnh ngắn kiểu terminal (không dấu, chữ thường)"},
-  {"id": "result", "role": "name", "sample": "cuahang.vn", "max": 22, "note": "kết quả cuối phát sáng (tên miền / tên file / tên sản phẩm)"}
+  {
+   "id": "steps",
+   "role": "label",
+   "sample": "khởi tạo|xây dựng|xuất bản",
+   "max": 18,
+   "list": {
+    "min": 3,
+    "max": 3
+   },
+   "note": "đúng 3 tên bước ngắn, hiện trên thanh tiêu đề mỗi cửa sổ"
+  },
+  {
+   "id": "commands",
+   "role": "code",
+   "sample": "app init cua-hang|app build|app deploy",
+   "max": 28,
+   "list": {
+    "min": 3,
+    "max": 3
+   },
+   "note": "đúng 3 dòng lệnh ngắn kiểu terminal (không dấu, chữ thường)"
+  },
+  {
+   "id": "result",
+   "role": "name",
+   "sample": "cuahang.vn",
+   "max": 22,
+   "note": "kết quả cuối phát sáng (tên miền / tên file / tên sản phẩm)"
+  }
  ],
  "images": [],
  "brand": "none",
- "sfx": [{"at": 8, "type": "typing"}, {"at": 62, "type": "whoosh"}, {"at": 94, "type": "typing"}, {"at": 152, "type": "whoosh"}, {"at": 184, "type": "typing"}, {"at": 220, "type": "ding"}],
+ "sfx": [
+  {
+   "at": 8,
+   "type": "typing"
+  },
+  {
+   "at": 62,
+   "type": "whoosh"
+  },
+  {
+   "at": 94,
+   "type": "typing"
+  },
+  {
+   "at": 152,
+   "type": "whoosh"
+  },
+  {
+   "at": 184,
+   "type": "typing"
+  },
+  {
+   "at": 220,
+   "type": "ding"
+  }
+ ],
  "vi": {
   "ten": "Ba cửa sổ terminal 3D — máy quay bay qua từng bước lệnh",
   "mo_ta": "Không gian tối có lưới sàn xanh chanh, 3 cửa sổ terminal lơ lửng ở các góc khác nhau với số bước 01/02/03 lớn phía sau. Máy quay dừng ở từng cửa sổ: lệnh được gõ từng ký tự, kết quả in ra từng dòng (biểu tượng xoay → dấu tick, thanh tiến trình chạy), rồi bay lùi ra thấy cả 3 cửa sổ và lao sang cửa sổ kế; cuối cùng nhãn HOÀN TẤT và tên kết quả phát sáng.",
   "hop_khi": "Nói về lập trình, code, phần mềm, quy trình kỹ thuật 3 bước (khởi tạo → xây dựng → triển khai), làm web / app bằng AI, tự động hoá bằng dòng lệnh, đưa sản phẩm lên mạng; video dành cho dân công nghệ, developer.",
   "tranh_khi": "Khán giả phổ thông không quen màn hình code; nội dung không phải quy trình nhiều bước; cảnh cần ngắn (shot dài ~8 giây); tone đời thường, cảm xúc.",
   "nang_luong": "vua",
-  "chu_de": ["code", "lập trình", "terminal", "quy trình", "3 bước", "phần mềm", "triển khai", "AI", "công nghệ"]
- }
+  "chu_de": [
+   "code",
+   "lập trình",
+   "terminal",
+   "quy trình",
+   "3 bước",
+   "phần mềm",
+   "triển khai",
+   "AI",
+   "công nghệ"
+  ]
+ },
+ "backdrop": true
 }

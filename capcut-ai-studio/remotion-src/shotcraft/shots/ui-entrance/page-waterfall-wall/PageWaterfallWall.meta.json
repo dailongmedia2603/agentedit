@@ -93,7 +93,7 @@
  ],
  "vi": {
   "ten": "Bức tường ảnh chảy — 3 cột màn hình cuộn ngược chiều",
-  "mo_ta": "Nền tối, một bức tường nghiêng ra sau (phối cảnh 3D) gồm 3 cột thẻ ảnh chụp màn hình bo góc cuộn liên tục với tốc độ khác nhau, cột giữa cuộn ngược chiều; máy quay chậm rãi tiến gần. Cảm giác 'nhiều đến xem không hết'. Có thể kèm một câu ngắn nổi giữa khung trên nền kính mờ.",
+  "mo_ta": "Trên ảnh nền theo chủ đề (hoặc nền tối), một bức tường nghiêng ra sau (phối cảnh 3D) gồm 3 cột thẻ ảnh chụp màn hình bo góc cuộn liên tục với tốc độ khác nhau, cột giữa cuộn ngược chiều; máy quay chậm rãi tiến gần. Cảm giác 'nhiều đến xem không hết'. Có thể kèm một câu ngắn nổi giữa khung trên nền kính mờ.",
   "hop_khi": "Khoe số lượng / độ phong phú: rất nhiều mẫu, nhiều tính năng, nhiều trang, nhiều sản phẩm, kho template, danh mục khóa học, portfolio nhiều dự án, hàng loạt bài đăng / video đã làm; câu kiểu 'có hàng trăm mẫu', 'tất cả những thứ này đều làm bằng...'.",
   "tranh_khi": "Chỉ có 1-2 ảnh (sẽ lặp lại lộ rõ); cần người xem đọc chi tiết một màn hình; video không có ảnh chụp giao diện / sản phẩm.",
   "nang_luong": "vua",
@@ -108,5 +108,6 @@
    "số lượng",
    "sản phẩm"
   ]
- }
+ },
+ "backdrop": true
 }

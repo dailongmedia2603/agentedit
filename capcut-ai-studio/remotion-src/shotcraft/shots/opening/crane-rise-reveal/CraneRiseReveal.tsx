@@ -23,7 +23,7 @@
 // trung tinh. Khung doc (portrait.mode = 'native'): cua so san pham cao het khung (~29 hang, chu x1.6, bo cot don vi / du kien,
 // KPI xuong dong rieng), camera 3.0x soi hang theo doi o giua khung roi keo len toan bo — cung mot cong thuc
 // translate = tam man hinh - diem ngam x scale voi tam (960, H/2); khung ngang giu nguyen bo cuc goc.
-import { useCurrentFrame, useVideoConfig, useText, fitSize, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, fitSize, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { CameraMotionBlur } from '@remotion/motion-blur';
@@ -324,28 +324,7 @@ const Cam: React.FC<{ G: Geo; frame: number; children: React.ReactNode }> = ({ G
   );
 };
 
-// 舞台背景点阵：按 0.35 视差跟相机（比窗口"更远"）
-const dotsFor = (SH: number) => {
-  const out: { x: number; y: number }[] = [];
-  for (let y = -600; y <= SH + 620; y += 48) for (let x = -900; x <= 2800; x += 48) out.push({ x, y });
-  return out;
-};
-const BackDots: React.FC<{ G: Geo; frame: number }> = ({ G, frame }) => {
-  const { s, tx, ty } = camAt(G, frame);
-  const HY = G.SH / 2;
-  const k = 0.35;
-  const sp = 1 + (s - 1) * k;
-  const px = 960 + (tx + 960 * s - 960) * k - 960 * sp; // 让视差层与主相机同心
-  const py = HY + (ty + HY * s - HY) * k - HY * sp;
-  const dots = React.useMemo(() => dotsFor(G.SH), [G.SH]);
-  return (
-    <svg width={1920} height={G.SH} style={{ position: 'absolute', left: 0, top: 0 }}>
-      <g transform={`translate(${px.toFixed(2)} ${py.toFixed(2)}) scale(${sp.toFixed(4)})`}>
-        {dots.map((d, i) => <circle key={i} cx={d.x} cy={d.y} r={1.6} fill={alpha(L.ink, 0.13)} />)}
-      </g>
-    </svg>
-  );
-};
+// [Agent Edit] bo luoi cham nen (BackDots, thi sai 0.35) theo yeu cau user: khong luoi ke o / luoi cham trang tri
 
 const useScene = () => {
   const { height: SH } = useVideoConfig();
@@ -374,9 +353,7 @@ const Page: React.FC = () => {
   const { G, T, headTrig } = useScene();
   return (
     <AbsoluteFill style={{ overflow: 'hidden' }}>
-      <Stage look={L} keyLight={{ x: 0.5, y: 0.02 }} fill={{ x: 0.85, y: 1 }} grain={0} vignette={0.14}>
-        <BackDots G={G} frame={frame} />
-      </Stage>
+      <Stage look={L} keyLight={{ x: 0.5, y: 0.02 }} fill={{ x: 0.85, y: 1 }} grain={0} vignette={0.14} />
       <Cam G={G} frame={frame}>
         <World G={G} frame={frame} T={T} headTrig={headTrig} />
       </Cam>
@@ -414,8 +391,9 @@ export const CraneRiseReveal: React.FC = () => {
   const fast = frame > HOLD + 1 && frame < BLUR_END;
   // 特写段的取景暗角：压边聚焦那一行，拉开后收掉（舞台自带的极淡暗角接手）
   const vig = 1 - ramp(frame, HOLD, 60, EASE.swift);
+  const bd = useBackdrop(); // [Agent Edit] nen anh AI: khong ve nen dac
   return (
-    <AbsoluteFill style={{ background: L.bg[1], overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[1], overflow: 'hidden' }}>
       {fast ? (
         <CameraMotionBlur shutterAngle={150} samples={10}>
           <Page />

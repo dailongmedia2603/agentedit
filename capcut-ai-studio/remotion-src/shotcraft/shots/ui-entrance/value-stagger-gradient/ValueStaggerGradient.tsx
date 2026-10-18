@@ -14,7 +14,7 @@
 // Khung doc (portrait.mode = 'native'): chu to hon, cot cao hon (giu ti le doc 92:32 = 2.9 lan), ca khoi can giua.
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
-import { useShotFonts, useText, useVideoConfig, fitSize, wrapLines, measureText } from '../../../runtime';
+import { useBackdrop, useShotFonts, useText, useVideoConfig, fitSize, wrapLines, measureText } from '../../../runtime';
 import { E, lerp, seg, useT } from '../../../fixtures/Motion';
 import { EASE, Grain, Vignette } from '../../../fixtures/Polish';
 
@@ -116,7 +116,7 @@ const Caption: React.FC<{ lines: string[]; size: number; lineH: number; family: 
         <div key={li}>
           {head}
           {tail ? (
-            <span style={{ background: 'linear-gradient(90deg, hsl(200,85%,70%), hsl(320,80%,72%))', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>{tail}</span>
+            <span style={{ background: 'linear-gradient(90deg, hsl(200,85%,70%), hsl(320,80%,72%))', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', textShadow: 'none' }}>{tail}</span>
           ) : null}
         </div>
       );
@@ -171,14 +171,16 @@ export const ValueStaggerGradient: React.FC = () => {
   // 柱群下方的柔光随第一拍铺开、第二拍脉冲略增
   const pulseC = Math.sin(seg(t, 0.56, 0.74) * Math.PI);
   const glowY = portrait ? ((baseYStage - barTop * 0.35) / SH) * 100 : 66;
+  // [Agent Edit] nen anh AI: bo nen gradient + quang code; khung chu dam hon chut + bong toi nhe de chu doc ro tren anh
+  const bd = useBackdrop();
   return (
-    <AbsoluteFill style={{ background: 'linear-gradient(180deg, #0e0f15 0%, #0a0b0f 100%)' }}>
-      <AbsoluteFill
+    <AbsoluteFill style={{ background: bd ? 'transparent' : 'linear-gradient(180deg, #0e0f15 0%, #0a0b0f 100%)' }}>
+      {!bd && <AbsoluteFill
         style={{
           background: `radial-gradient(ellipse 46% ${portrait ? 22 : 34}% at 50% ${glowY.toFixed(1)}%, rgba(120,110,255,0.16), rgba(120,110,255,0) 70%)`,
           opacity: 0.35 + 0.65 * seg(t, 0.06, 0.5) + pulseC * 0.3,
         }}
-      />
+      />}
       {/* 柱群：设计坐标 ×4，基线对齐到舞台 baseYStage */}
       <div style={{ position: 'absolute', left: 0, top: baseYStage - 196 * Z, width: 480, height: 270, transform: `scale(${Z})`, transformOrigin: '0 0' }}>
         <div style={{ position: 'absolute', inset: 0, overflow: 'visible' }}>
@@ -189,7 +191,7 @@ export const ValueStaggerGradient: React.FC = () => {
       <div
         style={{
           position: 'absolute', left: (1920 - capW) / 2, top: capTopL, width: capW, height: capH, borderRadius: Math.min(28, size * 0.5),
-          background: 'rgba(255,255,255,0.035)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.12), inset 0 1px 0 rgba(255,255,255,0.08)',
+          background: bd ? 'rgba(10,12,20,0.38)' : 'rgba(255,255,255,0.035)', textShadow: bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined, boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.12), inset 0 1px 0 rgba(255,255,255,0.08)',
           overflow: 'hidden', opacity: capIn, transform: `translateY(${lerp(capIn, 16, 0).toFixed(3)}px)`,
         }}
       >

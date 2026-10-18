@@ -18,7 +18,7 @@
 // cai bang (clapper) -> bieu tuong nhan (tag) trung tinh. Nhip go 4-6f/chu; tu dai -> nen deu de go xong truoc khung 40
 // (giu nguyen 2 nhat cat cung MORPH 48 / REVEAL 83 va doan thu nho 66-80).
 // Khung doc (portrait.mode = 'native'): moi thu phong 1.4x, trang thanh pham can giua theo chieu doc.
-import { useCurrentFrame, useShotFonts, useText, useVideoConfig, measureText, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useShotFonts, useText, useVideoConfig, measureText, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, interpolate, Easing } from 'remotion';
 import { Grain, SpeedBlur, velocity } from '../../../fixtures/Polish';
@@ -194,9 +194,12 @@ export const HashtagToPillMaterialize: React.FC = () => {
   });
 
   const revealed = frame >= REVEAL;
+  // [Agent Edit] nen anh AI: bo 2 nen giay trang / kem + hat; chu dat thang tren nen co bong sang
+  const bd = useBackdrop();
+  const TSH = bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined;
 
   return (
-    <AbsoluteFill style={{ background: revealed ? C.bgCream : C.bgWhite, fontFamily: FAM }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : revealed ? C.bgCream : C.bgWhite, fontFamily: FAM, textShadow: TSH }}>
       {/* 成品页（硬切揭示，之后全静） */}
       {revealed && (
         <>
@@ -267,7 +270,7 @@ export const HashtagToPillMaterialize: React.FC = () => {
         </SpeedBlur>
       )}
       {/* 极弱纸面颗粒：防大面积浅底色带，揭示帧随底色一起硬切（同一层，不做过渡） */}
-      <Grain opacity={0.05} step={2} />
+      {!bd && <Grain opacity={0.05} step={2} />}
     </AbsoluteFill>
   );
 };

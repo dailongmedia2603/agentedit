@@ -10,7 +10,7 @@
 // nhip ep tung tu nen theo so tu de MOI tu ep xong truoc khung 40. Mau nhan = LOOKS.paper.accent (doi theo mau video).
 // Khung doc (native): chu to hon, toi da 5 dong, ca khoi giua khung; nen giay phu kin chieu cao.
 // Cuoi canh chi CHU mo dan (nen giay giu nguyen) -> cat sang canh sau khong bi nhay trang.
-import { useCurrentFrame, useVideoConfig, useText, useShotFonts, fitSize, measureText, wrapLines } from '../../../runtime';
+import { useCurrentFrame, useVideoConfig, useText, useShotFonts, useBackdrop, fitSize, measureText, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, interpolate, Easing } from 'remotion';
 import { LOOKS, SERIF } from '../../../fixtures/Look';
@@ -121,16 +121,18 @@ export const PaperTitleCard: React.FC = () => {
   const scale = portrait ? 1.8 : 1;
 
   let wi = 0;
+  // [Agent Edit] DOT 2: co nen anh AI -> bo nen giay + quang sang am; chu ep in nam thang tren anh -> bong sang nhe
+  const bd = useBackdrop();
   return (
     <AbsoluteFill
       style={{
-        backgroundColor: 'oklch(97.5% 0.008 82)',
+        backgroundColor: bd ? 'transparent' : 'oklch(97.5% 0.008 82)',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundImage: `radial-gradient(${1100 * scale}px ${750 * scale}px at 50% 46%, oklch(99.3% 0.014 88 / 0.85), transparent 65%)`,
+        backgroundImage: bd ? undefined : `radial-gradient(${1100 * scale}px ${750 * scale}px at 50% 46%, oklch(99.3% 0.014 88 / 0.85), transparent 65%)`,
       }}
     >
-      <div style={{ textAlign: 'center', width: maxW + 40, opacity: fadeOut, paddingTop: fs * 0.1 }}>
+      <div style={{ textAlign: 'center', width: maxW + 40, opacity: fadeOut, paddingTop: fs * 0.1, textShadow: bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined }}>
         {lineTexts.map((l, li) => (
           <div
             key={li}

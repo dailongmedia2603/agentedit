@@ -25,7 +25,7 @@
 // So bat ky: chon "buoc vach" dep (1/2/2,5/5 x 10^k) sao cho cu nhay ~28 vach nhu ban goc (140k -> 420k = 28 vach)
 // -> toc do nuoc rut (~100px/f), qua da +24 don vi bang, lo xo ham, khoa 110f van GIU NGUYEN. Chu dai tu thu nho / xuong dong.
 // Khung doc (native): chu len tren (to hon), cum bang cuon + cua so doc phong to 1.7 dat giua phan duoi.
-import { useCurrentFrame, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
+import { useCurrentFrame, useShotFonts, useText, useVideoConfig, useBackdrop, fitSize, measureText, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, spring } from 'remotion';
 import { EASE, FONT, SpeedBlur, bezier, mix, ramp, velocity } from '../../../fixtures/Polish';
@@ -226,6 +226,8 @@ export const TapeScrollFixedPointer: React.FC = () => {
   const tapeCY = portrait ? Math.round((textTop + blockH + 120 + SH) / 2) : CY;
   const tapeTf = portrait ? `translate(${(960 - clusterCX).toFixed(1)}px, ${(tapeCY - CY).toFixed(1)}px) scale(${K})` : undefined;
   const t1Words = t1.join(' ').split(/\s+/).length;
+  // [Agent Edit] DOT 2: chu nam truc tiep tren nen anh AI (tieu de trai, so / nhan cua bang cuon) -> bong sang nhe
+  const halo = useBackdrop() ? '0 1px 12px rgba(255,255,255,0.7)' : undefined;
 
   return (
     <AbsoluteFill style={{ fontFamily: FONT.sans, overflow: 'hidden' }}>
@@ -248,6 +250,7 @@ export const TapeScrollFixedPointer: React.FC = () => {
           position: 'absolute', inset: 0,
           WebkitMaskImage: 'linear-gradient(180deg, transparent 2%, #000 24%, #000 76%, transparent 98%)',
           maskImage: 'linear-gradient(180deg, transparent 2%, #000 24%, #000 76%, transparent 98%)',
+          textShadow: halo,
         }}>
           <SpeedBlur vx={0} vy={vy} amount={0.12} max={12}>
             {ticks}
@@ -314,10 +317,11 @@ export const TapeScrollFixedPointer: React.FC = () => {
       </div>
 
       {/* ── 左侧排版 ── */}
-      <div style={{ position: 'absolute', left: textLeft, top: textTop, width: colW }}>
+      <div style={{ position: 'absolute', left: textLeft, top: textTop, width: colW, textShadow: halo }}>
         {kick ? (
           <div style={{ ...type(kSize, 650), letterSpacing: '0.24em', color: L.accent, opacity: head, display: 'flex', alignItems: 'center', gap: 16 * chipS, whiteSpace: 'nowrap', lineHeight: 1.4 }}>
-            <span style={{ width: 36 * chipS, height: 3 * chipS, background: L.accent, borderRadius: 2, flex: 'none' }} />
+            {/* [Agent Edit] DOT 2: cham tron thay vach ngang (doc nhu dau gach "—") */}
+            <span style={{ width: 12 * chipS, height: 12 * chipS, background: L.accent, borderRadius: 999, flex: 'none' }} />
             <span>
               {brandName ? <span style={{ fontFamily: BRAND.font, fontWeight: 700, letterSpacing: '0.03em' }}>{brandName}</span> : null}
               {brandName && kicker.trim() ? ' · ' : ''}

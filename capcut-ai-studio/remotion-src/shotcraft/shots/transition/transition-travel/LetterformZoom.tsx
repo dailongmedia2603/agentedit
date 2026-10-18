@@ -29,7 +29,7 @@
 // (bien doi khoang cach tren canvas, uu tien gan giua khung) -> chu nao cung xuyen dung lo; ZOOM_MAX tang khi net mong /
 // lech tam de lo luon phu kin khung. Khung doc (portrait.mode = 'native'): trang sau bo cuc doc (the gioi logic 1200
 // rong phong 1.6x), chu tren ban xep doc to hon, can giua.
-import { useBrand, useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
+import { useBackdrop, useBrand, useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
 import React, { useId } from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, Grain, bezier, mix, ramp } from '../../../fixtures/Polish';
@@ -168,6 +168,12 @@ const REVEAL_DUR = 26;
 
 type PageText = { brand: string; kicker: string; title: string; subtitle: string; items: string[]; sans: string };
 const NextPage: React.FC<{ frame: number; LW: number; LH: number; portrait: boolean; t: PageText }> = ({ frame, LW, LH, portrait, t }) => {
+  // [Agent Edit] nen anh AI: trang sau bo nen kim loai nong chay / dom nang / quang (nen code ve) -> anh nen hien qua lo chu
+  // roi phu kin khi xuyen; chu dieu huong + tieu de nam thang tren anh -> doi mau theo nen + bong do nhe
+  const bd = useBackdrop();
+  const bdDark = !!bd?.dark;
+  const PINK = bd && bdDark ? '#fff6ea' : INK;
+  const bdShadow = bd ? (bdDark ? '0 2px 18px rgba(0,0,0,0.55)' : '0 1px 12px rgba(255,255,255,0.7)') : undefined;
   const reveal = ramp(frame, REVEAL0, REVEAL_DUR, EASE.out);
   const defocus = 18 * (1 - reveal);
   const N = Math.max(1, t.items.length);
@@ -205,21 +211,23 @@ const NextPage: React.FC<{ frame: number; LW: number; LH: number; portrait: bool
   return (
     <div style={{ position: 'absolute', left: 0, top: 0, width: LW, height: LH, overflow: 'hidden', fontFamily: t.sans }}>
       {/* 熔金渐变：左上金 → 中橙 → 右下深赤，一枚太阳光斑垫在卡片背后 */}
-      <AbsoluteFill style={{ background: 'linear-gradient(128deg, #ffcf5a 0%, #ff9a3c 34%, #ff6b2c 62%, #c2370e 100%)' }} />
-      <AbsoluteFill style={{ background: `radial-gradient(circle ${sun.r}px at ${sun.x}px ${sun.y}px, rgba(255,236,170,0.75) 0%, rgba(255,200,110,0.25) 45%, rgba(255,160,80,0) 72%)` }} />
-      <AbsoluteFill style={{ background: 'radial-gradient(ellipse 70% 60% at 20% 100%, rgba(120,20,0,0.35) 0%, rgba(120,20,0,0) 70%)' }} />
+      {!bd && <AbsoluteFill style={{ background: 'linear-gradient(128deg, #ffcf5a 0%, #ff9a3c 34%, #ff6b2c 62%, #c2370e 100%)' }} />}
+      {!bd && <AbsoluteFill style={{ background: `radial-gradient(circle ${sun.r}px at ${sun.x}px ${sun.y}px, rgba(255,236,170,0.75) 0%, rgba(255,200,110,0.25) 45%, rgba(255,160,80,0) 72%)` }} />}
+      {!bd && <AbsoluteFill style={{ background: 'radial-gradient(ellipse 70% 60% at 20% 100%, rgba(120,20,0,0.35) 0%, rgba(120,20,0,0) 70%)' }} />}
+      {/* [Agent Edit] nen anh: trong lo chu (truoc khi noi dung hien) phu 1 lop sang am nhe -> chu khoet doc ro tren anh */}
+      {bd && <AbsoluteFill style={{ opacity: 1 - reveal, background: 'rgba(255,214,170,0.4)' }} />}
       {/* 失焦期的光形：卡片位置一团奶白柔光、标题区一抹暗赤——字洞里只看得到"有光有形"，看不到字 */}
-      <AbsoluteFill style={{
+      {!bd && <AbsoluteFill style={{
         opacity: 1 - reveal,
         background: `radial-gradient(ellipse 380px 340px at ${cardGlow.x}px ${cardGlow.y}px, rgba(255,246,228,0.55) 0%, rgba(255,240,220,0) 100%), ` +
           `radial-gradient(ellipse 520px 260px at ${titleGlow.x}px ${titleGlow.y}px, rgba(110,25,0,0.22) 0%, rgba(110,25,0,0) 100%)`,
-      }} />
+      }} />}
 
       {/* 内容层：hold 期隐去，主推中段失焦淡入 → 合焦 */}
       {reveal > 0 && (
       <AbsoluteFill style={{ opacity: reveal, filter: defocus > 0.05 ? `blur(${defocus.toFixed(2)}px)` : undefined }}>
       {/* 导航 */}
-      <div style={{ position: 'absolute', left: PADL, right: PADR, top: navY, display: 'flex', alignItems: 'center', color: INK }}>
+      <div style={{ position: 'absolute', left: PADL, right: PADR, top: navY, display: 'flex', alignItems: 'center', color: PINK, textShadow: bdShadow }}>
         {/* App 图标：墨色圆角底 + 反白品牌标志 */}
         <div style={{ width: 46, height: 46, borderRadius: 13, background: INK, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
           <ShotcraftMark size={34} tone="dark" />
@@ -229,11 +237,11 @@ const NextPage: React.FC<{ frame: number; LW: number; LH: number; portrait: bool
         {!portrait && ['Giới thiệu', 'Tính năng', 'Bảng giá'].map((s) => (
           <div key={s} style={{ ...type(28, 550), fontFamily: t.sans, marginLeft: 48, opacity: 0.72, whiteSpace: 'nowrap' }}>{s}</div>
         ))}
-        <div style={{ ...type(28, 650), fontFamily: t.sans, marginLeft: 48, padding: '14px 28px', borderRadius: 999, background: INK, color: '#ffe7c4', whiteSpace: 'nowrap' }}>Bắt đầu</div>
+        <div style={{ ...type(28, 650), fontFamily: t.sans, marginLeft: 48, padding: '14px 28px', borderRadius: 999, background: PINK, color: bd && bdDark ? INK : '#ffe7c4', textShadow: 'none', whiteSpace: 'nowrap' }}>Bắt đầu</div>
       </div>
 
       {/* 主标题区 */}
-      <div style={{ position: 'absolute', left: PADL, top: titleY, width: titleW, color: INK }}>
+      <div style={{ position: 'absolute', left: PADL, top: titleY, width: titleW, color: PINK, textShadow: bdShadow }}>
         {t.kicker ? <div style={{ ...type(26, 750), fontFamily: t.sans, letterSpacing: '0.16em', opacity: 0.62, whiteSpace: 'nowrap' }}>{t.kicker.toUpperCase()}</div> : null}
         <div style={{ ...type(tSize, 820), fontFamily: t.sans, letterSpacing: '-0.04em', lineHeight: 1.1, marginTop: t.kicker ? 26 : 0 }}>
           {tLines.map((l, i) => <div key={i} style={{ whiteSpace: 'nowrap' }}>{l}</div>)}
@@ -279,7 +287,7 @@ const NextPage: React.FC<{ frame: number; LW: number; LH: number; portrait: bool
                 <div style={{ display: 'flex', alignItems: 'baseline' }}>
                   <div style={{ ...type(rowFs, 650), fontFamily: t.sans, whiteSpace: 'nowrap', lineHeight: 1.25 }}>{r}</div>
                   <div style={{ flex: 1 }} />
-                  <div style={{ ...type(30, 600), fontFamily: t.sans, color: alpha(INK, on ? 0.9 : 0.3) }}>{on ? `${Math.round(fill * 100)}%` : '—'}</div>
+                  <div style={{ ...type(30, 600), fontFamily: t.sans, color: alpha(INK, on ? 0.9 : 0.3) }}>{on ? `${Math.round(fill * 100)}%` : '0%'}</div>
                 </div>
                 <div style={{ marginTop: 10, height: 6, borderRadius: 3, background: alpha(INK, 0.08), overflow: 'hidden' }}>
                   <div style={{ width: `${(fill * 100).toFixed(2)}%`, height: '100%', borderRadius: 3, background: `linear-gradient(90deg, ${L.accent}, #ffb02e)` }} />
@@ -291,7 +299,7 @@ const NextPage: React.FC<{ frame: number; LW: number; LH: number; portrait: bool
       </div>
       </AbsoluteFill>
       )}
-      <Grain opacity={0.05} />
+      {!bd && <Grain opacity={0.05} />}
     </div>
   );
 };
@@ -301,6 +309,9 @@ type PlateText = { g: Glyphs; family: string; kicker: string; kickerTop: number;
 const Plate: React.FC<{ scale: number; id: string; H: number; O: Origin; pt: PlateText; ghost?: boolean; blur?: number; intro?: number }> = ({ scale, id, H, O, pt, ghost, blur = 0, intro = 1 }) => {
   const k = 1 / scale; // 线宽 / 模糊半径按 scale 补偿，推进中视觉恒定
   const { g } = pt;
+  // [Agent Edit] nen anh AI: ban chu = lop toi BAN TRONG SUOT phu len anh nen (khong ve nen gradient code) -> anh nen hien
+  // mo o ban chu, sang ro trong lo chu
+  const bd = !!useBackdrop();
   const titleFont: React.CSSProperties = { fontFamily: pt.family, fontWeight: 900, fontSize: g.fs, letterSpacing: `${g.ls.toFixed(2)}px` };
   const words = (props: React.SVGProps<SVGTextElement>) =>
     g.lines.map((l, i) => (
@@ -329,7 +340,7 @@ const Plate: React.FC<{ scale: number; id: string; H: number; O: Origin; pt: Pla
           )}
         </defs>
         <g mask={`url(#${id}m)`}>
-          <rect x={-200} y={-200} width={W + 400} height={H + 400} fill={`url(#${id}g)`} />
+          <rect x={-200} y={-200} width={W + 400} height={H + 400} fill={bd ? 'rgba(8,4,2,0.7)' : `url(#${id}g)`} />
           {!ghost && (
             <>
               {/* 熔光外溢：模糊的橙色描边只画在盖板上——光从字洞里漏到盖板边缘 */}
@@ -438,8 +449,9 @@ export const LetterformZoom: React.FC = () => {
   // 后景视差横移：页面比盖板慢半拍地向左漂 28px，洞里的内容在"动"，读作纵深而不是贴图
   const drift = 28 * (1 - ramp(frame, 0, 100, EASE.smooth));
 
+  const bd = !!useBackdrop();
   return (
-    <AbsoluteFill style={{ background: L.bg[2], overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[2], overflow: 'hidden' }}>
       <div style={{
         position: 'absolute', inset: 0, transform: `translateX(${drift.toFixed(2)}px) scale(${ps.toFixed(5)})`, transformOrigin: `${O.x}px ${O.y}px`,
         filter: expo > 1.002 ? `brightness(${expo.toFixed(3)})` : undefined,
@@ -463,7 +475,7 @@ export const LetterformZoom: React.FC = () => {
         </div>
       )}
       {/* 字卡阶段的舞台颗粒（页面接管后由页面自带颗粒） */}
-      {plateOpacity > 0 && <Grain opacity={0.08 * plateOpacity} blend="soft-light" />}
+      {plateOpacity > 0 && !bd && <Grain opacity={0.08 * plateOpacity} blend="soft-light" />}
     </AbsoluteFill>
   );
 };

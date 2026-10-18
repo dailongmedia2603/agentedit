@@ -29,7 +29,7 @@
 // cac dai ngang deu nhau (anh cat theo dai, khong dung mau giay phu -> hop ca anh nen toi); bo cot ben / lich su.
 // Khung doc (portrait.mode = 'native'): trang doc 1600x2500 (chu to hon, cot "ban truoc" + "binh luan" xuong day trang),
 // camera cung kieu (dac ta -> toan trang -> nang len), khau hieu to ben duoi trang.
-import { useBrand, useCurrentFrame, useImage, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
+import { useBackdrop, useBrand, useCurrentFrame, useImage, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, Img, interpolate, Easing } from 'remotion';
 import { EASE, ramp } from '../../../fixtures/Polish';
@@ -249,11 +249,13 @@ export const DocumentTypewriterReveal: React.FC = () => {
 
   const chrome = (s: number) => s * (portrait ? 1.7 : 1);
   const label = docLabel || title;
+  // [Agent Edit] nen anh AI: bo bui + quang tim sau cua so (Stage tu trong suot); tieu de cuoi co bong
+  const bd = useBackdrop();
 
   return (
     <AbsoluteFill style={{ fontFamily: FAM, overflow: 'hidden' }}>
       <Stage look={L} keyLight={{ x: 0.5, y: 0.02 }} fill={{ x: 0.88, y: 0.95 }} horizon={0.9} breathe={0.7} intensity={0.9}>
-        <Dust look={L} count={24} seed={9} drift={0.16} opacity={0.4} />
+        {!bd && <Dust look={L} count={24} seed={9} drift={0.16} opacity={0.4} />}
       </Stage>
 
       {/* 3D 相机 */}
@@ -268,13 +270,13 @@ export const DocumentTypewriterReveal: React.FC = () => {
             }}
           >
             {/* 背光：窗口背后的一圈紫光（页面空间，随窗口一起透视） */}
-            <div
+            {!bd && <div
               style={{
                 position: 'absolute', left: -220, top: -180, width: PAGE_W + 440, height: PAGE_H + 400, pointerEvents: 'none',
                 background: `radial-gradient(ellipse 50% 50% at 50% 50%, ${alpha(L.accent, 0.34)} 0%, ${alpha(L.accent2, 0.1)} 55%, transparent 72%)`,
                 transform: 'translateZ(-40px)',
               }}
-            />
+            />}
             {/* 应用窗口：文档 + 写入遮罩 + 栏位 + 历史条目，全部裁进圆角 */}
             <div
               style={{
@@ -494,7 +496,7 @@ export const DocumentTypewriterReveal: React.FC = () => {
 
       {/* 收尾标语：底部，左对齐窗口左缘；逐词升起（遮罩上 0.32em / 下 0.26em，越南语声调不被裁） */}
       {frame >= 100 && (
-        <div style={{ position: 'absolute', left: tagLeft, top: tagTop, width: tagW, ...type(tagSize2, 760), lineHeight: 1.18, color: L.ink }}>
+        <div style={{ position: 'absolute', left: tagLeft, top: tagTop, width: tagW, ...type(tagSize2, 760), lineHeight: 1.18, color: L.ink, textShadow: bd ? (L.dark ? '0 2px 18px rgba(0,0,0,0.55)' : '0 1px 12px rgba(255,255,255,0.7)') : undefined }}>
           {(() => {
             let wi = 0;
             return tagLines.map((line, li) => (

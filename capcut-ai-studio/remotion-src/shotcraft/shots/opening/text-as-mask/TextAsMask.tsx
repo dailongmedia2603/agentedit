@@ -28,7 +28,7 @@
 // khong doc duoc web font). Diem phong to (origin) phai nam trong net dac: tim tu dong bang bien doi khoang cach tren
 // canvas (net day nhat, gan giua) — chu nao cung dung; MAX_S tang theo do day net de luon phu kin khung khi chuyen lop.
 // Khung doc (portrait.mode = 'native'): bang dieu khien bo cuc doc rieng (phu kin chieu cao), chu xep doc can giua.
-import { useBrand, useCurrentFrame, useImage, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
+import { useBackdrop, useBrand, useCurrentFrame, useImage, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, Img, interpolate } from 'remotion';
 import { EASE, bezier, ramp } from '../../../fixtures/Polish';
@@ -349,6 +349,10 @@ export const TextAsMask: React.FC = () => {
   const sub = ramp(f, 14, 18, EASE.out);
   const out = 1 - ramp(f, BREATH0, 10, EASE.exit);
 
+  // [Agent Edit] nen anh AI: bo nen trang su (Stage tu bo); chu nam tren nen -> bong do nhe de doc ro tren anh
+  const bd = useBackdrop();
+  const bdShadow = bd ? (bd.dark ? '0 2px 18px rgba(0,0,0,0.55)' : '0 1px 12px rgba(255,255,255,0.7)') : undefined;
+
   const dash = (
     <div style={{ position: 'absolute', inset: 0, transform: `translate(${dx.toFixed(2)}px, ${dy.toFixed(2)}px) scale(${dashS.toFixed(4)})`, transformOrigin: '50% 50%' }}>
       {shot ? (
@@ -369,7 +373,7 @@ export const TextAsMask: React.FC = () => {
     ));
 
   return (
-    <AbsoluteFill style={{ background: L.bg[1], overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[1], overflow: 'hidden' }}>
       <Stage look={L} keyLight={{ x: 0.42, y: 0.12 }} fill={{ x: 0.85, y: 0.9 }} vignette={0.22} />
       {/* 字形遮罩定义（DOM 内 SVG：用镜头字体，越语声调完整） */}
       <svg width={0} height={0} style={{ position: 'absolute' }} aria-hidden>
@@ -400,7 +404,7 @@ export const TextAsMask: React.FC = () => {
 
       {/* 眉题（品牌 / kicker）+ 副题 */}
       {kicker ? (
-        <div style={{ position: 'absolute', top: top0, width: '100%', textAlign: 'center', opacity: eyebrow * out }}>
+        <div style={{ position: 'absolute', top: top0, width: '100%', textAlign: 'center', opacity: eyebrow * out, textShadow: bdShadow }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: portrait ? 22 : 14, verticalAlign: 'middle' }}>
             {brand ? <ShotcraftMark size={portrait ? 72 : 44} tone="light" /> : null}
             <span style={{ fontFamily: FAM, fontSize: fitSize(kicker, { family: FAM, size: portrait ? 60 : 30, maxWidth: W - 400, weight: 700, minSize: 22 }), fontWeight: 700, color: L.ink, whiteSpace: 'nowrap', letterSpacing: `${(0.03 + (1 - eyebrow) * 0.3).toFixed(3)}em` }}>{kicker}</span>
@@ -410,7 +414,7 @@ export const TextAsMask: React.FC = () => {
       {subLines.map((l, i) => (
         <div key={i} style={{
           position: 'absolute', top: g.bottom + subGap + i * subSize * 1.3, width: '100%', textAlign: 'center', fontFamily: FAM, fontSize: subSize, fontWeight: 500,
-          lineHeight: 1.3, letterSpacing: '-0.015em', color: i === subLines.length - 1 ? L.ink : L.ink2, opacity: sub * out, transform: `translateY(${((1 - sub) * 16).toFixed(2)}px)`, whiteSpace: 'nowrap',
+          lineHeight: 1.3, letterSpacing: '-0.015em', color: i === subLines.length - 1 ? L.ink : L.ink2, opacity: sub * out, textShadow: bdShadow, transform: `translateY(${((1 - sub) * 16).toFixed(2)}px)`, whiteSpace: 'nowrap',
         }}>
           {l}
         </div>

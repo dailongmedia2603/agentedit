@@ -26,5 +26,6 @@
   "tranh_khi": "Khoảnh khắc cần năng lượng cao; không liên quan tài liệu / kiểm tra; cảnh ngắn dưới 2 giây (chưa kịp quét).",
   "nang_luong": "thap",
   "chu_de": ["AI", "tài liệu", "kiểm tra", "phân tích", "hợp đồng", "báo cáo", "quét", "tự động hóa"]
- }
+ },
+ "backdrop": true
 }

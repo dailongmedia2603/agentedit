@@ -23,7 +23,7 @@
 // moi hang do be ngang that (measureText) -> tu dai tu thu nho (giu toi thieu ~63% co goc), khoang lap theo be ngang that.
 // Khung doc (portrait.mode = 'native'): tuong cao theo chieu cao that, 3 hang chu to x1.9, mat dat uot + bong phan chieu
 // cao hon; khung ngang giu dung bo cuc goc.
-import { useCurrentFrame, useVideoConfig, useList, useShotFonts, measureText, fitSize } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useList, useShotFonts, measureText, fitSize } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, Grain, Vignette, ramp, mix } from '../../../fixtures/Polish';
@@ -50,15 +50,7 @@ const geoOf = (SH: number): Geo => {
 };
 
 const WALL = '#0a0b14';
-// 砖墙纹理：两行错缝砖（SVG 小图平铺），砖缝极淡——被灯光照到才看得见
-const BRICK = `url("data:image/svg+xml;utf8,${encodeURIComponent(
-  "<svg xmlns='http://www.w3.org/2000/svg' width='300' height='120'>" +
-  "<rect width='300' height='120' fill='none'/>" +
-  "<g stroke='rgba(255,255,255,0.04)' stroke-width='3'>" +
-  "<line x1='0' y1='1.5' x2='300' y2='1.5'/><line x1='0' y1='61.5' x2='300' y2='61.5'/>" +
-  "<line x1='1.5' y1='0' x2='1.5' y2='60'/><line x1='151.5' y1='0' x2='151.5' y2='60'/>" +
-  "<line x1='76.5' y1='60' x2='76.5' y2='120'/><line x1='226.5' y1='60' x2='226.5' y2='120'/></g></svg>",
-)}")`;
+// [Agent Edit] bo van gach (luoi duong ke trang tri): tuong chi con mau tron
 
 // 实测文本宽度（同字体同字号，确定性）：runtime measureText + letterSpacing 0.02em
 const measure = (text: string, family: string, size: number) => measureText(text, family, size, WEIGHT) + text.length * size * 0.02;
@@ -179,18 +171,17 @@ export const NeonTripleMarquee: React.FC = () => {
   const rotY = mix(-17, -9, cam);
   const scale = mix(1.0, 1.05, cam);
 
+  // [Agent Edit] nen anh AI: bo tuong + san uot + phan chieu (nen code); giu den neon + vet sang lan tren anh
+  const bd = useBackdrop();
   return (
-    <AbsoluteFill style={{ background: '#05050a', overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : '#05050a', overflow: 'hidden' }}>
       <div style={{ position: 'absolute', inset: 0, perspective: 1700, perspectiveOrigin: '50% 45%' }}>
         <div style={{
           position: 'absolute', left: (1920 - PLANE_W) / 2, top: 40, width: PLANE_W, height: G.planeH,
           transform: `rotateY(${rotY.toFixed(3)}deg) scale(${scale.toFixed(4)})`, transformOrigin: '50% 40%',
         }}>
           {/* 砖墙：底色 + 极淡砖缝（被灯光照到才看得见） */}
-          <div style={{
-            position: 'absolute', left: 0, top: -240, width: PLANE_W, height: FLOOR + 240, background: WALL,
-            backgroundImage: BRICK, backgroundSize: '300px 120px',
-          }} />
+          {!bd && <div style={{ position: 'absolute', left: 0, top: -240, width: PLANE_W, height: FLOOR + 240, background: WALL }} />}
           {/* 墙面溢光：每行身后一条同色柔光带，随亮度呼吸（screen 叠在砖墙上） */}
           {ROWS.map((r, i) => (
             <div key={`spill${i}`} style={{
@@ -203,8 +194,8 @@ export const NeonTripleMarquee: React.FC = () => {
             <MarqueeRow key={i} row={r} f={f} y={rowY[i]} lit={lit[i]} glass={glass[i]} />
           ))}
           {/* 湿地面：墙脚以下一条深色反光面，倒影只取最下一行（翻转、虚化、渐隐） */}
-          <div style={{ position: 'absolute', left: 0, top: FLOOR, width: PLANE_W, height: G.planeH - FLOOR + 400, background: 'linear-gradient(180deg, #08080e 0%, #040407 100%)' }} />
-          <div style={{
+          {!bd && <div style={{ position: 'absolute', left: 0, top: FLOOR, width: PLANE_W, height: G.planeH - FLOOR + 400, background: 'linear-gradient(180deg, #08080e 0%, #040407 100%)' }} />}
+          {!bd && <div style={{
             position: 'absolute', left: 0, top: FLOOR, width: PLANE_W, height: G.reflH / 2, overflow: 'hidden',
             WebkitMaskImage: 'linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 70%)',
             maskImage: 'linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 70%)',
@@ -214,9 +205,9 @@ export const NeonTripleMarquee: React.FC = () => {
             <div style={{ position: 'absolute', left: 0, top: 0, width: PLANE_W, height: G.reflH, transform: 'scaleY(-1)', transformOrigin: '50% 50%' }}>
               <MarqueeRow row={ROWS[2]} f={f} y={G.reflH + rowY[2] - FLOOR} lit={lit[2]} glass={glass[2]} cheap />
             </div>
-          </div>
+          </div>}
           {/* 地面色光池：每行的光落在地上（远行更弱） */}
-          {ROWS.map((r, i) => (
+          {!bd && ROWS.map((r, i) => (
             <div key={`pool${i}`} style={{
               position: 'absolute', left: 0, right: 0, top: FLOOR - 40, height: 220 * G.k, mixBlendMode: 'screen',
               background: `radial-gradient(ellipse 46% 40% at 50% 30%, ${alpha(r.color, 0.55)} 0%, ${alpha(r.color, 0)} 70%)`,
@@ -224,7 +215,7 @@ export const NeonTripleMarquee: React.FC = () => {
             }} />
           ))}
           {/* 墙脚接缝：一条发丝高光，把墙和地分开 */}
-          <div style={{ position: 'absolute', left: 0, top: FLOOR, width: PLANE_W, height: 2, background: 'rgba(255,255,255,0.06)' }} />
+          {!bd && <div style={{ position: 'absolute', left: 0, top: FLOOR, width: PLANE_W, height: 2, background: 'rgba(255,255,255,0.06)' }} />}
         </div>
       </div>
       <Vignette strength={0.62} inner={0.36} color="#020205" />

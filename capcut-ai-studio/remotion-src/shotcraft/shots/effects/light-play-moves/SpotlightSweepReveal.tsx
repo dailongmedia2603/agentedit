@@ -23,7 +23,7 @@
 // Thuong hieu cua video (neu co) hien duoi cau phu; khong co thi an. Tieu de dai: thu nho vua 1 dong (khung ngang),
 // qua nho thi xuong 2 dong; khung doc (portrait.mode = 'native') xuong toi 3 dong, chu ~230px san khau, man nhung cao
 // theo khung, quang den va mong mat (iris) tu gian theo chieu cao khoi chu. Nhip lac den / iris / do sang 0.07 giu nguyen.
-import { useBrand, useCurrentFrame, useShotFonts, useText, useVideoConfig, measureText, wrapLines } from '../../../runtime';
+import { useBackdrop, useBrand, useCurrentFrame, useShotFonts, useText, useVideoConfig, measureText, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, FONT, Grain, Vignette, bezier, mix, ramp } from '../../../fixtures/Polish';
@@ -185,9 +185,23 @@ export const SpotlightSweepReveal: React.FC = () => {
 
   const kicker = ramp(f, SWING_END + 7, 22, EASE.snappy);
   const sub = ramp(f, SWING_END + 13, 22, EASE.snappy);
+  // [Agent Edit] nen anh AI: anh nen thay cho man nhung + san khau. Mot lop toi phu anh (dark field), quang den
+  // khoet lop toi ra = den chieu sang ANH NEN (mask nguoc cua spotMask); iris mo -> lop toi nhat dan, anh hien ro ca khung. Bo man nhung,
+  // san khau, quang tran, vignette, hat. Chu co bong toi nhe.
+  const bd = useBackdrop();
+  const TSH = bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined;
+  const darkMask = `radial-gradient(ellipse ${radius.toFixed(1)}px ${ry.toFixed(1)}px at ${x.toFixed(1)}px ${y.toFixed(1)}px, transparent 0%, rgba(0,0,0,0.08) 42%, rgba(0,0,0,0.65) 72%, #000 100%)`;
 
   return (
-    <AbsoluteFill style={{ background: `linear-gradient(180deg, ${V.bg0} 0%, ${V.bg1} 60%, ${V.bg2} 100%)`, overflow: 'hidden', fontFamily: FONT.sans }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : `linear-gradient(180deg, ${V.bg0} 0%, ${V.bg1} 60%, ${V.bg2} 100%)`, overflow: 'hidden', fontFamily: FONT.sans }}>
+      {bd ? (
+        <>
+          {/* [Agent Edit] dark field tren anh nen: tat den = toi het; bat den = chi toi ngoai quang den */}
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(6,3,4,0.84)', opacity: 1 - on }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(6,3,4,0.84)', opacity: on * (1 - 0.8 * iris), WebkitMaskImage: darkMask, maskImage: darkMask }} />
+        </>
+      ) : (
+        <>
       {/* 远景：幕布常驻极暗 */}
       <Curtain opacity={0.16} floorY={FLOOR_Y} />
       {/* 顶光余光：灯头口漏下来的一点暖光（常驻，第一帧就有） */}
@@ -210,6 +224,8 @@ export const SpotlightSweepReveal: React.FC = () => {
           background: `radial-gradient(ellipse ${(poolHalf * 0.9).toFixed(0)}px 70px at ${x.toFixed(1)}px ${FLOOR_Y + 60}px, ${alpha(V.warm, 0.22)} 0%, ${alpha(V.warm, 0.06)} 55%, ${alpha(V.warm, 0)} 100%)`,
         }}
       />
+        </>
+      )}
 
       {/* 字影：暗场里常驻的 0.07 */}
       <Title color={V.ink} t={T} style={{ opacity: 0.07 }} />
@@ -251,14 +267,14 @@ export const SpotlightSweepReveal: React.FC = () => {
       {/* 亮版标题：随光斑遮罩；底下垫一层同遮罩柔晕（被照亮的字边微溢光） */}
       <div style={{ position: 'absolute', inset: 0, opacity: on, ...maskStyle }}>
         <Title color={V.warm} t={T} style={{ filter: 'blur(16px)', opacity: 0.5 }} />
-        <Title color={V.ink} t={T} />
+        <Title color={V.ink} t={T} style={{ textShadow: TSH }} />
       </div>
 
       {/* 眉题 + 副标题（全亮后入场） */}
       <div
         style={{
           position: 'absolute', left: 60, right: 60, top: T.top - (portrait ? 110 : 80), display: kickerText ? 'flex' : 'none', justifyContent: 'center', alignItems: 'center', gap: 22,
-          opacity: kicker, ...type(KS, 650, { caps: true }), letterSpacing: `${mix(0.62, 0.36, kicker).toFixed(3)}em`, color: V.gold, lineHeight: 1.4, whiteSpace: 'nowrap',
+          opacity: kicker, ...type(KS, 650, { caps: true }), letterSpacing: `${mix(0.62, 0.36, kicker).toFixed(3)}em`, color: V.gold, lineHeight: 1.4, whiteSpace: 'nowrap', textShadow: TSH,
         }}
       >
         <span style={{ width: mix(0, 70, kicker), height: 1, background: alpha(V.gold, 0.6) }} />
@@ -272,7 +288,7 @@ export const SpotlightSweepReveal: React.FC = () => {
         }}
       >
         {subLines.map((l, i) => (
-          <div key={i} style={{ ...type(SUBS, 450), color: V.ink2, lineHeight: 1.35 }}>
+          <div key={i} style={{ ...type(SUBS, 450), color: V.ink2, lineHeight: 1.35, textShadow: TSH }}>
             {l}
           </div>
         ))}
@@ -283,8 +299,8 @@ export const SpotlightSweepReveal: React.FC = () => {
         ) : null}
       </div>
 
-      <Vignette strength={0.62} inner={0.36} color="#050102" />
-      <Grain opacity={0.09} blend="soft-light" />
+      {!bd && <Vignette strength={0.62} inner={0.36} color="#050102" />}
+      {!bd && <Grain opacity={0.09} blend="soft-light" />}
     </AbsoluteFill>
   );
 };

@@ -6,29 +6,118 @@
  "duration": 150,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.25],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.25
+ ],
  "hold": 100,
  "slots": [
-  {"id": "name", "role": "name", "sample": "Gốm Mộc", "max": 22, "optional": true, "note": "tên trang web / thương hiệu được phân tích (logo góc trái); bỏ trống = tên thương hiệu của video"},
-  {"id": "title", "role": "title", "sample": "Gốm thủ công, đậm chất mộc.", "max": 40, "note": "tiêu đề lớn của trang (H1); TỪ CUỐI tô màu nhấn"},
-  {"id": "subtitle", "role": "subtitle", "sample": "Mỗi chiếc bình là một tác phẩm, nặn tay từ đất sét Bát Tràng.", "max": 90, "optional": true, "note": "đoạn mô tả dưới tiêu đề"},
-  {"id": "cta", "role": "cta", "sample": "Xem bộ sưu tập", "max": 24, "optional": true, "note": "chữ trên nút kêu gọi hành động"},
-  {"id": "caption", "role": "label", "sample": "▶ Bộ sưu tập mùa thu · 0:30", "max": 34, "optional": true, "note": "nhãn nhỏ trên ảnh chính"},
-  {"id": "reading", "role": "label", "sample": "ĐANG QUÉT", "max": 14, "optional": true, "note": "trạng thái máy khi đang quét (in hoa)"},
-  {"id": "done", "role": "label", "sample": "ĐÃ PHÂN TÍCH", "max": 14, "optional": true, "note": "trạng thái máy khi xong (in hoa)"}
+  {
+   "id": "name",
+   "role": "name",
+   "sample": "Gốm Mộc",
+   "max": 22,
+   "optional": true,
+   "note": "tên trang web / thương hiệu được phân tích (logo góc trái); bỏ trống = tên thương hiệu của video"
+  },
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Gốm thủ công, đậm chất mộc.",
+   "max": 40,
+   "note": "tiêu đề lớn của trang (H1); TỪ CUỐI tô màu nhấn"
+  },
+  {
+   "id": "subtitle",
+   "role": "subtitle",
+   "sample": "Mỗi chiếc bình là một tác phẩm, nặn tay từ đất sét Bát Tràng.",
+   "max": 90,
+   "optional": true,
+   "note": "đoạn mô tả dưới tiêu đề"
+  },
+  {
+   "id": "cta",
+   "role": "cta",
+   "sample": "Xem bộ sưu tập",
+   "max": 24,
+   "optional": true,
+   "note": "chữ trên nút kêu gọi hành động"
+  },
+  {
+   "id": "caption",
+   "role": "label",
+   "sample": "▶ Bộ sưu tập mùa thu · 0:30",
+   "max": 34,
+   "optional": true,
+   "note": "nhãn nhỏ trên ảnh chính"
+  },
+  {
+   "id": "reading",
+   "role": "label",
+   "sample": "ĐANG QUÉT",
+   "max": 14,
+   "optional": true,
+   "note": "trạng thái máy khi đang quét (in hoa)"
+  },
+  {
+   "id": "done",
+   "role": "label",
+   "sample": "ĐÃ PHÂN TÍCH",
+   "max": 14,
+   "optional": true,
+   "note": "trạng thái máy khi xong (in hoa)"
+  }
  ],
  "images": [
-  {"id": "photo", "role": "photo", "optional": true, "note": "ảnh chính của trang (sản phẩm / người / không gian), tỉ lệ bất kỳ, cắt lấp khung; không có thì vẽ sẵn bình gốm"}
+  {
+   "id": "photo",
+   "role": "photo",
+   "optional": true,
+   "note": "ảnh chính của trang (sản phẩm / người / không gian), tỉ lệ bất kỳ, cắt lấp khung; không có thì vẽ sẵn bình gốm"
+  }
  ],
  "brand": "optional",
- "sfx": [{"at": 4, "type": "riser"}, {"at": 20, "type": "click"}, {"at": 47, "type": "click"}, {"at": 70, "type": "click"}, {"at": 88, "type": "ding"}],
+ "sfx": [
+  {
+   "at": 4,
+   "type": "riser"
+  },
+  {
+   "at": 20,
+   "type": "click"
+  },
+  {
+   "at": 47,
+   "type": "click"
+  },
+  {
+   "at": 70,
+   "type": "click"
+  },
+  {
+   "at": 88,
+   "type": "ding"
+  }
+ ],
  "vi": {
   "ten": "Máy quét phân tích trang web — khung ngắm + nhãn",
   "mo_ta": "Một trang web bán hàng tông be (logo, menu, tiêu đề lớn, mô tả, nút bấm, ảnh sản phẩm, bảng màu) nằm trong cửa sổ trình duyệt. Một vạch quét xanh lam chạy đều từ trên xuống; quét qua khối nào, khối đó bị 4 góc khung ngắm thu vào bắt nét (nảy nhẹ) rồi một nhãn xanh tự gõ tên khối (LOGO, MENU, TIÊU ĐỀ, CTA…); dòng trạng thái phía trên đếm tín hiệu 00/06 → 06/06. Khung dọc: trang dạng mobile xếp dọc.",
   "hop_khi": "Nói về AI / công cụ phân tích, đọc hiểu website, thương hiệu, landing page; 'AI sẽ quét trang của bạn và chỉ ra…'; audit / chấm điểm website, SEO, thiết kế; giải thích cấu trúc một trang bán hàng.",
   "tranh_khi": "Nội dung không liên quan web / thiết kế / phân tích; cần năng lượng cao; video tone tối.",
   "nang_luong": "vua",
-  "chu_de": ["AI", "phân tích", "website", "landing page", "thương hiệu", "thiết kế", "quét", "audit"]
- }
+  "chu_de": [
+   "AI",
+   "phân tích",
+   "website",
+   "landing page",
+   "thương hiệu",
+   "thiết kế",
+   "quét",
+   "audit"
+  ]
+ },
+ "backdrop": true
 }

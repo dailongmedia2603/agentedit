@@ -15,7 +15,7 @@ import React from 'react';
 // it o hon thi cu day phong to bat dau som hon (= khung o cuoi sang + 16f).
 // Khung doc (portrait.mode = 'native'): luoi 2 cot rong-hep xen ke (muc le: o cuoi rong het hang), tieu de to o tren,
 // chi tiet trong o phong 1.6x, ca khoi giua khung.
-import { useCurrentFrame, useVideoConfig, useText, useList, useBrand, useShotFonts, measureText, fitSize, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useBrand, useShotFonts, measureText, fitSize, wrapLines } from '../../../runtime';
 import { AbsoluteFill, Easing, interpolate } from 'remotion';
 import { ShotcraftMark } from '../../../fixtures/Brand';
 import { Backdrop, Grain } from '../../../fixtures/Polish';
@@ -283,15 +283,18 @@ export const BentoLightUp: React.FC = () => {
   const allLit = interpolate(frame, [FIRST + (n - 1) * GAP + 6, FIRST + (n - 1) * GAP + 30], [0, 1], { ...clampI, easing: Easing.out(Easing.quad) });
   const top = [brand?.name, kicker].filter(Boolean).join(' · ');
 
+  // [Agent Edit] NEN ANH AI: bo nen toi + quang am mat dat; tieu de nam truc tiep tren nen co bong do
+  const bd = useBackdrop();
+
   return (
     <AbsoluteFill style={{ overflow: 'hidden' }}>
-      <Backdrop tone="dark" light={{ x: 0.5, y: 0.1 }} accent={AMBER} grain={0} vignette={0.55} />
-      <AbsoluteFill style={{
+      {!bd && <Backdrop tone="dark" light={{ x: 0.5, y: 0.1 }} accent={AMBER} grain={0} vignette={0.55} />}
+      {!bd && <AbsoluteFill style={{
         background: 'radial-gradient(ellipse 50% 40% at 50% 62%, rgba(232,180,94,0.10), rgba(232,180,94,0) 70%)',
         opacity: 0.3 + 0.7 * allLit,
-      }} />
+      }} />}
       <div style={{ position: 'absolute', inset: 0, transform: `scale(${push.toFixed(5)})`, transformOrigin: `960px ${SH / 2}px` }}>
-        <div style={{ position: 'absolute', left: LEFT, top: titleTop, fontFamily: fonts.sans, opacity: titleLit }}>
+        <div style={{ position: 'absolute', left: LEFT, top: titleTop, fontFamily: fonts.sans, opacity: titleLit, textShadow: bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined }}>
           {top ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 9 * k, height: kSz * 1.3 }}>
               {brand ? <ShotcraftMark size={kSz * 1.4} tone="dark" /> : null}

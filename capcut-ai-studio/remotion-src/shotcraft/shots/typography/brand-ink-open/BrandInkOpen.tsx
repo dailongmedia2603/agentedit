@@ -9,7 +9,7 @@
 // [Agent Edit] o chu: name (ten thuong hieu / san pham / kenh — khong co thi lay ten thuong hieu cua video) / kicker
 // (dong phu go may chu). Ten dai: nhip ep tung chu nen lai de chu cuoi xong truoc khung 64; co chu vua be ngang, khung doc
 // to hon va xuong toi da 2 dong. Kicker go theo ky tu (NFC, khong tach dau), in hoa chi khi ngan.
-import { useCurrentFrame, useVideoConfig, useText, useBrand, useShotFonts, fitSize, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useBrand, useShotFonts, fitSize, wrapLines } from '../../../runtime';
 import { AbsoluteFill, interpolate, Easing } from 'remotion';
 import { BRAND } from '../../../fixtures/Brand';
 
@@ -23,6 +23,7 @@ export const BrandInkOpen: React.FC = () => {
   const { height: SH } = useVideoConfig();
   const portrait = SH > 1080 * 1.2;
   const fonts = useShotFonts();
+  const bd = useBackdrop(); // [Agent Edit] nen anh AI: bo nen giay tu ve, chu co bong sang nhe
   const SERIF = fonts.serif;
   const MONO = fonts.mono;
   const AMBER = BRAND.amber;
@@ -94,8 +95,8 @@ export const BrandInkOpen: React.FC = () => {
   let gi = 0;
   let ci = 0;
   return (
-    <AbsoluteFill style={{ backgroundColor: '#faf7f2', justifyContent: 'center', alignItems: 'center' }}>
-      <div style={{ textAlign: 'center', opacity: brandOpacity, transform: `translateY(${groupY}px) scale(${groupScale})` }}>
+    <AbsoluteFill style={{ backgroundColor: bd ? 'transparent' : '#faf7f2', justifyContent: 'center', alignItems: 'center' }}>
+      <div style={{ textAlign: 'center', opacity: brandOpacity, transform: `translateY(${groupY}px) scale(${groupScale})`, textShadow: bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined }}>
         {/* crosshair drawn by an invisible amber pen */}
         <svg width={64 * k} height={64 * k} viewBox="0 0 64 64" style={{ display: 'block', margin: `0 auto ${34 * k}px`, opacity: crossFade }}>
           <line

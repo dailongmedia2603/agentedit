@@ -20,10 +20,11 @@
  "sfx": [{"at": 3, "type": "swoosh"}],
  "vi": {
   "ten": "Thẻ chữ giấy — ép từng từ một câu",
-  "mo_ta": "Nền giấy trắng ngà ấm, một câu serif lớn ở giữa hiện TỪNG TỪ như được ép in lên giấy (từ to hơn, mờ nhòe rồi nén xuống rõ nét), một từ khoá nghiêng màu nhấn; gạch ngang màu nhấn kéo ra bên dưới, dòng chữ nhỏ kèm con số cuộn kiểu đồng hồ; cuối cảnh chữ mờ đi. Rất ngắn (~1,8 giây), nhẹ nhàng.",
+  "mo_ta": "Trên ảnh nền sáng theo chủ đề (không có ảnh nền: giấy trắng ngà ấm), một câu serif lớn ở giữa hiện TỪNG TỪ như được ép in (từ to hơn, mờ nhòe rồi nén xuống rõ nét), một từ khoá nghiêng màu nhấn; gạch ngang màu nhấn kéo ra bên dưới, dòng chữ nhỏ kèm con số cuộn kiểu đồng hồ; cuối cảnh chữ mờ đi. Rất ngắn (~1,8 giây), nhẹ nhàng.",
   "hop_khi": "Khoảng nghỉ giữa hai đoạn nhiều thông tin; câu dẫn trước khi giới thiệu một tính năng/phần mới (\"Tiếp theo là…\", \"Điều quan trọng nhất là…\"); một câu giá trị cốt lõi ngắn gọn; tone tri thức, doanh nghiệp, chia sẻ kinh nghiệm.",
   "tranh_khi": "Câu dài quá 12 từ hoặc nhiều ý; khoảnh khắc cần năng lượng cao; video tone tối, gắt; cần giữ chữ trên màn hình lâu.",
   "nang_luong": "thap",
   "chu_de": ["câu dẫn", "chương mới", "thông điệp", "câu chốt", "chuyển cảnh", "tiêu đề"]
- }
+ },
+ "backdrop": true
 }

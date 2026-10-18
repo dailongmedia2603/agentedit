@@ -174,12 +174,7 @@ export const GlowOrbAmbient: React.FC = () => {
             opacity: orbIn, mixBlendMode: 'screen',
           }} />
         ))}
-        {/* 远景细点阵（随镜头一起推，给深度一个参照） */}
-        <div style={{
-          position: 'absolute', inset: -40, opacity: 0.5,
-          backgroundImage: `radial-gradient(circle, ${alpha('#cffff4', 0.12)} 1.2px, transparent 1.6px)`, backgroundSize: '40px 40px',
-          WebkitMaskImage: 'radial-gradient(ellipse 70% 70% at 50% 50%, #000 20%, transparent 85%)', maskImage: 'radial-gradient(ellipse 70% 70% at 50% 50%, #000 20%, transparent 85%)',
-        }} />
+        {/* [Agent Edit] bo luoi cham trang tri (远景细点阵) theo yeu cau: khong luoi ke o / luoi cham */}
 
         {/* 主角：磨砂玻璃卡 */}
         <div style={{

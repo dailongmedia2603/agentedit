@@ -29,7 +29,7 @@
 //     zoom chot (REST) tinh tu kich thuoc vung muc tieu de no chiem ~68% chieu cao khung (nhu ban goc).
 //   - o chu: kicker / number / title / subtitle (cot so lieu sau khi dap). Khung doc (native): cot so lieu nam DUOI
 //     anh, chu to; vung muc tieu duoc keo len tren.
-import { useCurrentFrame, useImage, useShotFonts, useText, useVideoConfig, fitSize, wrapLines, useBrand } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useImage, useShotFonts, useText, useVideoConfig, fitSize, wrapLines, useBrand } from '../../../runtime';
 import React, { useEffect, useState } from 'react';
 import { AbsoluteFill, Img, continueRender, delayRender } from 'remotion';
 import { Dust, LOOKS, Stage, TextReveal, alpha, type } from '../../../fixtures/Look';
@@ -142,7 +142,7 @@ const camAt = (g: Geo, f: number) => {
 };
 
 // 一个相机姿态下的整个世界（外框 + 图片 + 角标），给运动模糊子帧复用
-const World: React.FC<{ g: Geo; src?: string; f: number; lift: number; lock: number; breath: number; addr: string }> = ({ g, src, f, lift, lock, breath, addr }) => {
+const World: React.FC<{ g: Geo; src?: string; f: number; lift: number; lock: number; breath: number; addr: string; bd?: boolean }> = ({ g, src, f, lift, lock, breath, addr, bd }) => {
   const { zoom, sx, sy, tilt } = camAt(g, f);
   const tx = sx - g.tcx * zoom;
   const ty = sy - g.tcy * zoom;
@@ -164,6 +164,8 @@ const World: React.FC<{ g: Geo; src?: string; f: number; lift: number; lock: num
             style={{
               position: 'absolute', left: g.ox, top: g.oy, width: g.ow, height: g.oh, borderRadius: g.radius, overflow: 'hidden',
               background: g.phone ? '#0b0806' : '#f9f6f1',
+              // [Agent Edit] nen anh AI: sau cu dap, ca cua so (ngoai muc tieu) mo di de lo anh nen thay vi ep thanh den
+              opacity: bd ? 1 - lift : 1,
               boxShadow: `0 0 0 ${g.phone ? 3 : 1}px ${alpha('#ffd9bf', g.phone ? 0.3 : 0.22)}, 0 40px 90px -10px rgba(5,1,0,0.75), 0 12px 30px rgba(5,1,0,0.5)`,
             }}
           >
@@ -220,6 +222,19 @@ const World: React.FC<{ g: Geo; src?: string; f: number; lift: number; lock: num
             {/* 顶沿受光：外框上沿一道暖色内高光 */}
             <div style={{ position: 'absolute', inset: 0, borderRadius: g.radius, boxShadow: `inset 0 1px 0 ${alpha('#fff4e8', g.phone ? 0.35 : 0.9)}`, pointerEvents: 'none' }} />
           </div>
+          {/* [Agent Edit] nen anh AI: muc tieu ve lai rieng (noi tren anh nen) + bong noi + vien sang */}
+          {bd && lift > 0.001 && (
+            <div
+              style={{
+                position: 'absolute', left: g.ox + g.bezel + tx0, top: g.oy + g.bezel + g.chrome + ty0, width: g.tw, height: g.th, borderRadius: R, overflow: 'hidden',
+                boxShadow: `0 0 0 ${(1.6 / zoom).toFixed(3)}px ${alpha(L.accent, 0.85 * lift)}, 0 0 ${(26 / zoom).toFixed(2)}px ${alpha(L.accent, 0.45 * lift)}, ${softShadow(14 * lift, { color: '#050100', strength: 2.4 })}`,
+              }}
+            >
+              <div style={{ position: 'absolute', left: -tx0, top: -ty0, width: g.FW, height: g.FH, background: '#1a120e' }}>
+                {src ? <Img src={src} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: tall ? '50% 0%' : '50% 50%' }} /> : null}
+              </div>
+            </div>
+          )}
         </div>
       </AbsoluteFill>
     </AbsoluteFill>
@@ -249,6 +264,9 @@ export const CrashZoomReal: React.FC = () => {
   const fonts = useShotFonts();
   const brand = useBrand();
   const portrait = SH > 1080 * 1.2;
+  const bd = !!useBackdrop();
+  // chu nam truc tiep tren nen anh: bong do nhe (chi khi co nen anh)
+  const tsh = bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined;
   const src = useImage('screen', 'textures/live/projects-full.png');
   const aspect = useImageAspect(src, 16 / 10);
   const kicker = useText('kicker', 'TẬP TRUNG VÀO ĐÂY');
@@ -310,7 +328,8 @@ export const CrashZoomReal: React.FC = () => {
   return (
     <AbsoluteFill style={{ overflow: 'hidden' }}>
       <Stage look={L} keyLight={{ x: 0.5, y: 0.0 }} fill={{ x: 0.5, y: 1.05 }} horizon={portrait ? undefined : 0.86} intensity={0.9} breathe={0.5} vignette={0} grain={0} />
-      {/* 背光：外框身后一圈橙色光晕，勾出轮廓；地面反光椭圆 */}
+      {/* 背光：外框身后一圈橙色光晕，勾出轮廓；地面反光椭圆 (nen anh AI: khong ve quang sang / bui code) */}
+      {!bd && <>
       <AbsoluteFill style={{ opacity: wideFade, background: `radial-gradient(ellipse ${portrait ? '48% 34%' : '38% 44%'} at 50% 46%, ${alpha(L.accent, 0.34)}, ${alpha(L.accent, 0)} 70%)` }} />
       <div style={{ position: 'absolute', left: 960 - wideW * 0.62, width: wideW * 1.24, top: wideBottom - 60, height: 160, opacity: wideFade, borderRadius: '50%', background: `radial-gradient(closest-side, ${alpha('#ff9a5c', 0.28)}, ${alpha('#ff9a5c', 0)})`, filter: 'blur(8px)' }} />
       <AbsoluteFill style={{ opacity: wideFade }}>
@@ -320,16 +339,17 @@ export const CrashZoomReal: React.FC = () => {
           </div>
         ))}
       </AbsoluteFill>
-      <Vignette strength={mix(0.1, 0.5, wideFade)} inner={0.42} color={L.shadow} />
+      </>}
+      <Vignette strength={mix(0.1, 0.5, wideFade) * (bd ? 0.4 : 1)} inner={0.42} color={L.shadow} />
 
       {n > 1 ? (
         Array.from({ length: n }, (_, i) => (
           <AbsoluteFill key={i} style={{ opacity: 1 / (i + 1), filter: smear > 0.3 ? `blur(${smear.toFixed(2)}px)` : undefined }}>
-            <World g={g} src={src} f={frame - (SHUTTER * i) / (n - 1)} lift={lift} lock={lock} breath={breath} addr={addr} />
+            <World g={g} src={src} f={frame - (SHUTTER * i) / (n - 1)} lift={lift} lock={lock} breath={breath} addr={addr} bd={bd} />
           </AbsoluteFill>
         ))
       ) : (
-        <World g={g} src={src} f={frame} lift={lift} lock={lock} breath={breath} addr={addr} />
+        <World g={g} src={src} f={frame} lift={lift} lock={lock} breath={breath} addr={addr} bd={bd} />
       )}
 
       {/* 到位帧暖色曝光闪：以目标为中心，8f 指数衰减 */}
@@ -340,15 +360,15 @@ export const CrashZoomReal: React.FC = () => {
       {/* 读数栏：跟随让出的位置（横屏右栏 / 竖屏下方），加一层暖黑压暗保证可读 */}
       {callout && (
         <>
-          <AbsoluteFill
+          {!bd && <AbsoluteFill
             style={{
               opacity: scrim,
               background: portrait
                 ? `linear-gradient(180deg, ${alpha('#0e0603', 0)} ${scrimY.toFixed(1)}px, ${alpha('#0e0603', 0.96)} ${(scrimY + 90).toFixed(1)}px, ${alpha('#0e0603', 0.97)} 100%)`
                 : `linear-gradient(90deg, ${alpha('#0e0603', 0)} ${scrimX.toFixed(1)}px, ${alpha('#0e0603', 0.96)} ${(scrimX + 90).toFixed(1)}px, ${alpha('#0e0603', 0.97)} 100%)`,
             }}
-          />
-          <div style={{ position: 'absolute', left: colX, top: colY, width: colW, color: L.ink }}>
+          />}
+          <div style={{ position: 'absolute', left: colX, top: colY, width: colW, color: L.ink, textShadow: tsh }}>
             {kicker ? (
               <div style={{ ...type(kSize, 650), lineHeight: 1.4, letterSpacing: '0.2em', color: L.accent, display: 'flex', alignItems: 'center', gap: kSize * 0.57, whiteSpace: 'nowrap', marginBottom: portrait ? 34 : 22, opacity: ramp(frame, 68, 10, EASE.out), transform: `translateY(${(14 * (1 - ramp(frame, 68, 14, EASE.snappy))).toFixed(2)}px)` }}>
                 <span style={{ width: kSize * 0.43, height: kSize * 0.43, borderRadius: kSize, background: L.accent, boxShadow: `0 0 14px ${alpha(L.accent, 0.8)}`, flex: 'none' }} />
@@ -382,8 +402,8 @@ export const CrashZoomReal: React.FC = () => {
           </div>
         </>
       )}
-      <Vignette strength={Math.max(0, vig)} inner={0.42} color={L.shadow} cy={0.5} />
-      <Grain opacity={0.08} blend="soft-light" />
+      <Vignette strength={Math.max(0, vig) * (bd ? 0.5 : 1)} inner={0.42} color={L.shadow} cy={0.5} />
+      {!bd && <Grain opacity={0.08} blend="soft-light" />}
     </AbsoluteFill>
   );
 };

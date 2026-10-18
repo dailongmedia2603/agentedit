@@ -14,7 +14,7 @@
 // tuy chon). So moc = so labels (3-5); tong quang duong giu 4200px nhu ban goc (gian moc = 4200/(n-1)) -> duong cong toc
 // do / bat the truoc 6f / phanh gap 104f / day vao 1.28x giu nguyen. The cao theo noi dung that (tieu de 2 dong, mo ta 3 dong).
 // Khung doc (native): toan canh 1920x1080 phong 2.6x quanh truc (truc o ~64% khung), dau trang to o tren.
-import { useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
+import { useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, useBackdrop, fitSize, wrapLines } from '../../../runtime';
 import React from 'react';
 import { interpolate, Easing, spring } from 'remotion';
 import { G } from '../../../fixtures/Fixtures';
@@ -53,6 +53,9 @@ const popFrameOf = (tickX: number): number => {
   }
   return TRAVEL_END;
 };
+
+// [Agent Edit] DOT 2: chu nam truc tiep tren nen anh AI -> bong sang nhe de doc (khong co nen anh: khong bong)
+const useHalo = (): string | undefined => (useBackdrop() ? '0 1px 12px rgba(255,255,255,0.7)' : undefined);
 
 const CARD_W = 360;
 const STEM = 36; // 卡底到轴的连杆长度
@@ -120,6 +123,7 @@ const TickStop: React.FC<{ t: Tick; hero: boolean; frame: number; cardH: number;
     durationInFrames: 26,
   });
   const appeared = frame >= pop;
+  const halo = useHalo();
   // 节点被"点亮"：卡片起弹同拍从空心灰变实心
   const lit = interpolate(frame, [pop, pop + 6], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
 
@@ -141,7 +145,7 @@ const TickStop: React.FC<{ t: Tick; hero: boolean; frame: number; cardH: number;
         }}
       />
       {/* 刻度标签：moc + ngay */}
-      <div style={{ position: 'absolute', left: -200, top: AXIS_Y + 34, width: 400, textAlign: 'center', fontFamily: FONT.sans }}>
+      <div style={{ position: 'absolute', left: -200, top: AXIS_Y + 34, width: 400, textAlign: 'center', fontFamily: FONT.sans, textShadow: halo }}>
         <div style={{ fontWeight: 720, fontSize: labelFs, lineHeight: 1.25, letterSpacing: tracking(labelFs), color: hero ? G.accent : G.ink1, whiteSpace: 'nowrap' }}>{t.label}</div>
         {t.date ? <div style={{ marginTop: 2, fontSize: 28, fontWeight: 500, color: G.ink3, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{t.date}</div> : null}
       </div>
@@ -224,10 +228,12 @@ export const TimelineTravel: React.FC = () => {
   const hLines = portrait ? wrapLines(headTitle, fonts.sans, 128, 1680, 720, 2) : [headTitle];
   const hFs = Math.min(...hLines.map((l) => fitSize(l, { family: fonts.sans, size: portrait ? 128 : 56, maxWidth: 1680, weight: 720, minSize: portrait ? 72 : 36 })));
   const headTop = portrait ? Math.round(SH * 0.09) : 96;
+  const bd = useBackdrop(); // co nen anh AI -> khong ve nen code (gradient / quang sang) va hat nhieu
+  const halo = useHalo();
 
   return (
     <div style={{ width: W, height: SH, overflow: 'hidden', position: 'relative', fontFamily: FONT.sans }}>
-      <Backdrop tone="light" light={{ x: 0.5, y: portrait ? 0.4 : 0.22 }} accent={G.accent} vignette={0.16} grain={0} />
+      {!bd && <Backdrop tone="light" light={{ x: 0.5, y: portrait ? 0.4 : 0.22 }} accent={G.accent} vignette={0.16} grain={0} />}
       <div style={{ position: 'absolute', left: 0, top: 0, width: W, height: 1080, transform: sceneTf, transformOrigin: `960px ${AXIS_Y}px` }}>
         {/* 远景视差：大号刻度字以 0.35× 速度平移、只推近 0.35 倍幅度（远景在推近层之外）；
             按与镜头中心的距离淡入淡出，同一时刻只读到当前刻度 */}
@@ -276,7 +282,7 @@ export const TimelineTravel: React.FC = () => {
         </div>
       </div>
       {/* 固定页眉 */}
-      <div style={{ position: 'absolute', left: 120, top: headTop, opacity: headIn, transform: `translateY(${((1 - headIn) * 8).toFixed(2)}px)` }}>
+      <div style={{ position: 'absolute', left: 120, top: headTop, opacity: headIn, transform: `translateY(${((1 - headIn) * 8).toFixed(2)}px)`, textShadow: halo }}>
         {kicker.trim() ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 * hk, fontSize: kFs, fontWeight: 650, letterSpacing: tracking(30, true), lineHeight: 1.3, color: G.accent, whiteSpace: 'nowrap' }}>
             <ShotcraftMark size={36 * hk} tone="light" />
@@ -287,7 +293,7 @@ export const TimelineTravel: React.FC = () => {
           {hLines.map((l, i) => <div key={i} style={{ fontSize: hFs, fontWeight: 720, lineHeight: 1.2, letterSpacing: tracking(hFs), color: G.ink1, whiteSpace: 'nowrap' }}>{l}</div>)}
         </div>
       </div>
-      <Grain opacity={0.05} />
+      {!bd && <Grain opacity={0.05} />}
     </div>
   );
 };

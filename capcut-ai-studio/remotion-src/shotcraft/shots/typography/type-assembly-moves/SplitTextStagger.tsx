@@ -15,7 +15,7 @@
 // Tu xuong dong theo be ngang that (khung ngang <=2 dong, khung doc <=3 dong, co chu tu vua); nhip 2f/ky tu duoc nen
 // khi chu dai de ky tu cuoi van dap truoc ~f70. Mat na moi ky tu: tren 0.3em + duoi 0.25em (giu dau tieng Viet, chan g y).
 // Khung doc (native): chu to ~220px, khoi chu can giua theo chieu doc.
-import { useCurrentFrame, useVideoConfig, useText, useShotFonts, fitSize, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useShotFonts, fitSize, wrapLines } from '../../../runtime';
 import React from 'react';
 import { interpolate, Easing } from 'remotion';
 import { G } from '../../../fixtures/Fixtures';
@@ -59,13 +59,14 @@ export const SplitTextStagger: React.FC = () => {
   const kickFs = portrait ? 44 : 28;
   const kickIn = ramp(frame, 4, 16, EASE.out);
   let idx = 0;
+  const bd = useBackdrop(); // [Agent Edit] nen anh AI: bo nen sang code, chu co bong nhe
 
   return (
     <div style={{ width: 1920, height: SH, position: 'relative', overflow: 'hidden' }}>
-      <Backdrop tone="light" light={{ x: 0.42, y: 0.3 }} accent={ACC} grain={0.045} vignette={0.12} />
+      {!bd && <Backdrop tone="light" light={{ x: 0.42, y: 0.3 }} accent={ACC} grain={0.045} vignette={0.12} />}
       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {/* 行容器：基线与文字行同宽 */}
-        <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', textShadow: bd ? (bd.dark ? '0 2px 18px rgba(0,0,0,0.55)' : '0 1px 12px rgba(255,255,255,0.7)') : undefined }}>
           {kicker ? (
             <div style={{ fontFamily: fonts.sans, fontSize: kickFs, fontWeight: 650, letterSpacing: '0.16em', color: ACC, marginBottom: kickFs * 0.5, whiteSpace: 'nowrap', opacity: kickIn, transform: `translateY(${((1 - kickIn) * 10).toFixed(2)}px)` }}>
               {kicker}

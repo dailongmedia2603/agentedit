@@ -18,7 +18,7 @@ import React, { useId } from 'react';
 import { AbsoluteFill } from 'remotion';
 import { E, rand, seg, useT } from '../../../fixtures/Motion';
 import { Backdrop, FONT } from '../../../fixtures/Polish';
-import { measureText, fitSize, useBrand, useShot, useText, useVideoConfig, wrapLines } from '../../../runtime';
+import { measureText, fitSize, useBackdrop, useBrand, useShot, useText, useVideoConfig, wrapLines } from '../../../runtime';
 
 export const GRAIN_DISSOLVE_DURATION = 60; // 2000ms @30fps
 
@@ -127,15 +127,17 @@ export const GrainDissolve: React.FC = () => {
   // 横向光痕：只在凝聚冲高处出现一次（cond 升、lock 后段熄）
   const streak = cond * (1 - seg(t, 0.74, 0.92, E.outCubic));
   const boil = Math.floor(t * 46); // 与 seed 同步的沸腾节拍
+  // [Agent Edit] NEN ANH AI: bo nen toi + quang sang (Backdrop fixtures); chu / hat nam tren anh -> bong do nhe
+  const bd = useBackdrop();
 
   return (
-    <AbsoluteFill style={{ background: '#0a0b0e' }}>
-      <Backdrop tone="dark" light={{ x: 0.5, y: 0.47 }} grain={0.07} vignette={0.6} />
+    <AbsoluteFill style={{ background: bd ? 'transparent' : '#0a0b0e' }}>
+      {!bd && <Backdrop tone="dark" light={{ x: 0.5, y: 0.47 }} grain={0.07} vignette={0.6} />}
       <svg
         viewBox={`0 0 ${VW} ${VH}`}
         width={1920}
         height={SH}
-        style={{ position: 'absolute', inset: 0 }}
+        style={{ position: 'absolute', inset: 0, filter: bd ? 'drop-shadow(0 2px 18px rgba(0,0,0,0.55))' : undefined }}
       >
         <defs>
           <filter id={fid} x="-40%" y="-150%" width="180%" height="400%" colorInterpolationFilters="sRGB">

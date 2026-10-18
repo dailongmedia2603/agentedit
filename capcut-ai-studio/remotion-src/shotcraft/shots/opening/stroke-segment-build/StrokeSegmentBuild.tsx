@@ -26,7 +26,7 @@
 // tach 2-6 doan + 1 "doan khoa"; 3 doan khoa (chu dau / giua / cuoi) de cuoi -> giu nguyen nhip giau nghia cua the.
 // Tu dai -> ca bien thu nho vua be ngang. o chu `subtitle` (dong phu hien SAU khi lo chu) + ten thuong hieu (neu co).
 // Khung doc (native): bien to hon (~1.36x), tuong / san / bong phan chieu xep theo chieu cao that.
-import { useCurrentFrame, useShotFonts, useText, useVideoConfig, fitSize } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useShotFonts, useText, useVideoConfig, fitSize } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, interpolate } from 'remotion';
 import { EASE, FONT, ramp } from '../../../fixtures/Polish';
@@ -261,6 +261,8 @@ export const StrokeSegmentBuild: React.FC = () => {
   const word = useText('word', 'LIVE');
   const sub = useText('subtitle', 'TỐI NAY 20:00 · ĐỪNG BỎ LỠ');
   const GLOW = L.accent2;
+  // [Agent Edit] nen anh AI: khong ve tuong / quang tuong / san / bong phan chieu (gia dinh co san toi) — chi con bien neon
+  const bd = useBackdrop();
 
   const b = React.useMemo(() => buildWord(word), [word]);
   const starts = React.useMemo(() => schedule(b), [b]);
@@ -298,10 +300,11 @@ export const StrokeSegmentBuild: React.FC = () => {
   );
 
   return (
-    <AbsoluteFill style={{ background: L.bg[2] }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[2] }}>
       <AbsoluteFill style={{ transform: `scale(${push})`, transformOrigin: '50% 45%' }}>
         <Stage look={L} keyLight={{ x: 0.5, y: 0.0 }} fill={null} intensity={0.35} vignette={0.7} />
         {/* 墙面：灯牌照亮的一团粉紫光（随点亮数增长） */}
+        {!bd && <>
         <div style={{
           position: 'absolute', left: 960 - 800 * glowK, top: cy - 430 * glowK, width: 1600 * glowK, height: 960 * glowK, opacity: Math.min(1, ambient),
           background: `radial-gradient(ellipse 50% 46% at 50% 46%, ${alpha(GLOW, 0.28)} 0%, ${alpha(L.light, 0.12)} 45%, ${alpha(L.light, 0)} 72%)`,
@@ -321,6 +324,7 @@ export const StrokeSegmentBuild: React.FC = () => {
         }}>
           {signLayer('ssbr')}
         </div>
+        </>}
 
         {/* 灯牌 */}
         {signLayer('ssb')}
@@ -329,6 +333,7 @@ export const StrokeSegmentBuild: React.FC = () => {
         <div style={{
           position: 'absolute', left: 0, right: 0, top: subTop, textAlign: 'center', fontFamily: FONT.sans, whiteSpace: 'nowrap',
           fontSize: subSize, fontWeight: 600, letterSpacing: '0.2em', color: L.ink2, opacity: kicker, lineHeight: 1.4,
+          textShadow: bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined,
           transform: `translateY(${((1 - kicker) * 14).toFixed(2)}px)`,
         }}>
           {brand ? (

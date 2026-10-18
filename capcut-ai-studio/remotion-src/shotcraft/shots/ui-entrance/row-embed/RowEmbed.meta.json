@@ -27,5 +27,6 @@
   "tranh_khi": "Cần thời gian đọc lâu (cảnh rất ngắn); nội dung cảm xúc; chỉ có 1–2 ý; tone tối.",
   "nang_luong": "vua",
   "chu_de": ["danh sách", "thông số", "thông tin", "dữ liệu", "app", "tự động hóa", "hồ sơ", "dashboard"]
- }
+ },
+ "backdrop": true
 }

@@ -69,7 +69,7 @@ const UNMASK = (() => {
 type Spec = { portrait: boolean; H: number; label: string; num: string; chapter: string; body: string[]; bodySize: number; word: string[]; wordSize: number };
 type PageProps = { spec: Spec; mark: 'dark' | 'light'; bg: string; ink: string; sub: string; accent: string; line: string; dot: string; page: string; rule?: number };
 
-const Page: React.FC<PageProps> = ({ spec, mark, bg, ink, sub, accent, line, dot, page, rule = 1 }) => {
+const Page: React.FC<PageProps> = ({ spec, mark, bg, ink, sub, accent, dot, page, rule = 1 }) => {
   const P = spec.portrait;
   const H = spec.H;
   const headTop = P ? 170 : 92;
@@ -78,10 +78,7 @@ const Page: React.FC<PageProps> = ({ spec, mark, bg, ink, sub, accent, line, dot
   const wLH = wl > 1 ? 1.08 : 0.8;
   return (
     <div style={{ position: 'absolute', left: 0, top: 0, width: 1920, height: H, background: bg, overflow: 'hidden' }}>
-      {/* 12 栏网格发丝线 */}
-      {Array.from({ length: STRIPS - 1 }, (_, i) => (
-        <div key={i} style={{ position: 'absolute', left: (i + 1) * W, top: 0, bottom: 0, width: 1, background: line }} />
-      ))}
+      {/* [Agent Edit] bo luoi 12 cot (发丝线) trang tri theo yeu cau: khong luoi ke o */}
       {/* 刊头：视频品牌字标（可无）+ 栏目名 + 期号 */}
       <div style={{ position: 'absolute', left: 96, right: 96, top: headTop, display: 'flex', alignItems: 'center', gap: 32, color: ink }}>
         <ShotcraftWordmark size={P ? 44 : 30} markScale={1.6} gap={14} tone={mark} color={ink} />

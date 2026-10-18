@@ -22,5 +22,6 @@
   "tranh_khi": "Câu dài hơn 6 từ; người nói nói câu khác với chữ trên màn hình; đoạn không có lời thoại (tô màu sẽ vô nghĩa); cần năng lượng mạnh.",
   "nang_luong": "vua",
   "chu_de": ["trích dẫn", "khẩu hiệu", "câu chốt", "karaoke", "slogan", "lời khuyên", "nhấn mạnh", "chữ"]
- }
+ },
+ "backdrop": true
 }

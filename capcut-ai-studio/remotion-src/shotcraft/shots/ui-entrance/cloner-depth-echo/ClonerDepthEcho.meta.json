@@ -6,30 +6,123 @@
  "duration": 138,
  "kind": "insert",
  "dark": true,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.25],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.25
+ ],
  "hold": 112,
  "slots": [
-  {"id": "title1", "role": "title", "sample": "Một câu lệnh.", "max": 22, "note": "vế 1 của câu chốt 'một = nhiều'"},
-  {"id": "title2", "role": "title", "sample": "Tám video.", "max": 22, "note": "vế 2; TỪ CUỐI được tô màu nhấn"},
-  {"id": "count", "role": "number", "sample": "8", "max": 4, "note": "con số 'nhiều' (chỉ chữ số): bộ đếm chạy từ 1 lên số này"},
-  {"id": "caption", "role": "subtitle", "sample": "video được tạo từ một câu lệnh", "max": 44, "optional": true, "note": "dòng nhỏ dưới bộ đếm (đọc nối sau con số)"},
-  {"id": "card_title", "role": "name", "sample": "video-ra-mắt", "max": 22, "optional": true, "note": "tên trên đầu thẻ (sản phẩm / mẫu / tài khoản)"},
-  {"id": "card_value", "role": "number", "sample": "60", "max": 6, "optional": true, "note": "số lớn trên thẻ"},
-  {"id": "card_unit", "role": "label", "sample": "giây", "max": 8, "optional": true},
-  {"id": "card_tag", "role": "label", "sample": "1080p", "max": 10, "optional": true}
+  {
+   "id": "title1",
+   "role": "title",
+   "sample": "Một câu lệnh.",
+   "max": 22,
+   "note": "vế 1 của câu chốt 'một = nhiều'"
+  },
+  {
+   "id": "title2",
+   "role": "title",
+   "sample": "Tám video.",
+   "max": 22,
+   "note": "vế 2; TỪ CUỐI được tô màu nhấn"
+  },
+  {
+   "id": "count",
+   "role": "number",
+   "sample": "8",
+   "max": 4,
+   "note": "con số 'nhiều' (chỉ chữ số): bộ đếm chạy từ 1 lên số này"
+  },
+  {
+   "id": "caption",
+   "role": "subtitle",
+   "sample": "video được tạo từ một câu lệnh",
+   "max": 44,
+   "optional": true,
+   "note": "dòng nhỏ dưới bộ đếm (đọc nối sau con số)"
+  },
+  {
+   "id": "card_title",
+   "role": "name",
+   "sample": "video-ra-mắt",
+   "max": 22,
+   "optional": true,
+   "note": "tên trên đầu thẻ (sản phẩm / mẫu / tài khoản)"
+  },
+  {
+   "id": "card_value",
+   "role": "number",
+   "sample": "60",
+   "max": 6,
+   "optional": true,
+   "note": "số lớn trên thẻ"
+  },
+  {
+   "id": "card_unit",
+   "role": "label",
+   "sample": "giây",
+   "max": 8,
+   "optional": true
+  },
+  {
+   "id": "card_tag",
+   "role": "label",
+   "sample": "1080p",
+   "max": 10,
+   "optional": true
+  }
  ],
  "images": [
-  {"id": "image", "role": "screen", "aspect": "16:9", "optional": true, "note": "ảnh sản phẩm / giao diện hiện trong thẻ chính (thay số lớn + biểu đồ)"}
+  {
+   "id": "image",
+   "role": "screen",
+   "aspect": "16:9",
+   "optional": true,
+   "note": "ảnh sản phẩm / giao diện hiện trong thẻ chính (thay số lớn + biểu đồ)"
+  }
  ],
  "brand": "optional",
- "sfx": [{"at": 2, "type": "whoosh"}, {"at": 24, "type": "pop"}, {"at": 76, "type": "whoosh"}, {"at": 86, "type": "boom"}, {"at": 92, "type": "swoosh"}],
+ "sfx": [
+  {
+   "at": 2,
+   "type": "whoosh"
+  },
+  {
+   "at": 24,
+   "type": "pop"
+  },
+  {
+   "at": 76,
+   "type": "whoosh"
+  },
+  {
+   "at": 86,
+   "type": "boom"
+  },
+  {
+   "at": 92,
+   "type": "swoosh"
+  }
+ ],
  "vi": {
   "ten": "Thẻ nhân bản — 1 thành nhiều rồi hợp nhất",
   "mo_ta": "Nền đen than, điểm nhấn xanh chanh: một thẻ giao diện (tên, số lớn, biểu đồ nhỏ hoặc ảnh sản phẩm) 'photocopy' ra 7 bản sao trong suốt xếp hàng lùi sâu vào không gian, bộ đếm '×N' khổng lồ nhảy số theo từng bản; khựng một nhịp cho người xem đếm, rồi cả đội hình hút ngược về thẻ gốc, thẻ nảy nhẹ, hàng ô số thứ tự sáng hết, tiêu đề hai dòng hiện lên.",
   "hop_khi": "Nói về nhân bản / quy mô / làm hàng loạt: 'một câu lệnh ra 8 video', một tài khoản dùng trên nhiều máy, một mẫu nhân ra nhiều phiên bản, AI tạo hàng loạt, đa kênh, tự động hóa, xử lý cùng lúc nhiều việc.",
   "tranh_khi": "Nội dung so sánh khác biệt giữa các phiên bản (các bản sao giống hệt nhau); tone nhẹ nhàng đời sống; không có con số 'nhiều'.",
   "nang_luong": "vua",
-  "chu_de": ["nhân bản", "quy mô", "hàng loạt", "AI", "tự động hóa", "app", "một thành nhiều", "đa nền tảng"]
- }
+  "chu_de": [
+   "nhân bản",
+   "quy mô",
+   "hàng loạt",
+   "AI",
+   "tự động hóa",
+   "app",
+   "một thành nhiều",
+   "đa nền tảng"
+  ]
+ },
+ "backdrop": true
 }

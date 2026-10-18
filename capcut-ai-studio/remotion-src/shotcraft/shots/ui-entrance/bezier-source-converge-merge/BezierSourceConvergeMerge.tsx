@@ -13,7 +13,7 @@
 // nguon xep hang ngang o tren, duong cong chay XUONG hoi tu, phong to x6.5; pan cuoi dua huy hieu + cau chot ve giua.
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
-import { fitSize, useList, useShotFonts, useText, useVideoConfig, wrapLines } from '../../../runtime';
+import { fitSize, useBackdrop, useList, useShotFonts, useText, useVideoConfig, wrapLines } from '../../../runtime';
 import { E, lerp, seg, useT } from '../../../fixtures/Motion';
 import { Backdrop, EASE, softShadow } from '../../../fixtures/Polish';
 import { ShotcraftMark } from '../../../fixtures/Brand';
@@ -150,6 +150,7 @@ export const BezierSourceConvergeMerge: React.FC = () => {
   const SANS = fonts.sans;
   const ACCENT = G.accent;
   const ACCENT_HI = mix(0.3, ACCENT, '#ffffff');
+  const bd = useBackdrop(); // [Agent Edit] nen anh AI: bo nen sang + hat tu ve; cau chot co bong sang nhe
   const title = useText('title', 'Mọi nguồn dữ liệu, về chung một nơi');
   const labels = useList('sources', ['Website', 'Facebook', 'Zalo', 'Email']).slice(0, 5);
   while (labels.length < 3) labels.push('');
@@ -214,7 +215,7 @@ export const BezierSourceConvergeMerge: React.FC = () => {
 
   return (
     <AbsoluteFill>
-      <Backdrop tone="light" light={portrait ? { x: 0.5, y: 0.3 } : { x: 0.62, y: 0.3 }} accent={ACCENT} grain={0.05} vignette={0.12} />
+      {!bd && <Backdrop tone="light" light={portrait ? { x: 0.5, y: 0.3 } : { x: 0.62, y: 0.3 }} accent={ACCENT} grain={0.05} vignette={0.12} />}
       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', fontFamily: SANS, WebkitFontSmoothing: 'antialiased' }}>
         <div
           style={{
@@ -457,6 +458,7 @@ export const BezierSourceConvergeMerge: React.FC = () => {
                 top: hub.y + 34,
                 opacity: capShow,
                 transform: `translateY(${((1 - capShow) * 4).toFixed(2)}px)`,
+                textShadow: bd ? `0 ${(1 / S).toFixed(3)}px ${(12 / S).toFixed(2)}px rgba(255,255,255,0.7)` : undefined,
               }}
             >
               {(() => {

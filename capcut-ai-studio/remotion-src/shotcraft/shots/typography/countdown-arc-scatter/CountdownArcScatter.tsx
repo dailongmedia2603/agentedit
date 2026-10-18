@@ -30,7 +30,7 @@
 // suy ra tu con so (x9 x7 x5.6 x4.4 x3.4 x2 -> so chinh -> x0.8 x0.6, dinh dang tieng Viet); khong phai so thi giu day mau.
 // O chua so chinh do theo be ngang that cua chu (khong co dinh 0.6em). Tieu de qua dai tu thu nho (ngang) / xuong 2 dong
 // (doc). Khung doc (portrait.mode = 'native'): mat dong ho phong x1.25, ca khoi dat giua khung.
-import { useCurrentFrame, useVideoConfig, useText, useShotFonts, measureText, fitSize } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useShotFonts, measureText, fitSize } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, FONT, SpeedBlur, ramp, mix } from '../../../fixtures/Polish';
@@ -75,6 +75,7 @@ export const CountdownArcScatter: React.FC = () => {
   const fonts = useShotFonts();
   const GROT = fonts.sans;
   const portrait = SH > 1080 * 1.2;
+  const bd = useBackdrop(); // [Agent Edit] nen anh AI: Stage tu bo nen; chu nam tren nen co bong sang nhe
   const heroText = useText('number', '5').trim();
   const title = useText('title', 'phút là cài xong');
   const sub = useText('subtitle', 'Không cần cấu hình, chỉ một lệnh duy nhất');
@@ -170,7 +171,7 @@ export const CountdownArcScatter: React.FC = () => {
   const labelCaps = label.length <= 26;
 
   return (
-    <AbsoluteFill>
+    <AbsoluteFill style={{ textShadow: bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined }}>
       <Stage look={L} keyLight={{ x: 0.5, y: portrait ? 0.4 : 0.3 }} fill={null} vignette={0.14} grain={0.05} />
 
       {/* 瑞士网格框：顶部发丝线 + 标签 */}

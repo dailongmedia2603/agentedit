@@ -17,7 +17,7 @@
 //   - ANH (khi co o `screen`, ti le bat ky — doc ti le that truoc khi ve): anh la "trang", 5 dai ngang deu nhau cua
 //     chinh anh la cac hang bay xuong (cat bang background-position theo ti le that), camera lia doc neu anh dai.
 //   - Khung doc (native): trang phu kin chieu cao, hang cao hon + chu to hon; nhip cue tinh theo so hang (hang cuoi van cham dat f58).
-import { useCurrentFrame, useVideoConfig, useText, useList, useImage, useShotFonts, fitSize, measureText, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useImage, useShotFonts, fitSize, measureText, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, interpolate, Easing, continueRender, delayRender } from 'remotion';
 import { Grain, Vignette } from '../../../fixtures/Polish';
@@ -158,9 +158,13 @@ export const RowEmbed: React.FC = () => {
   };
   const rowSkin: React.CSSProperties = imgMode ? {} : { background: '#fffdf9', boxShadow: `inset 0 0 0 1px ${LINE}` };
   const radius = portrait ? 18 : 10;
+  // [Agent Edit] nen anh AI (che do chu): trang khong to nen -> anh nen hien ra; mieng va o trong chi con khung net dut
+  // (hang nen chi hien khi da cai xong); chu tren nen co bong nhe; bo toi goc + hat
+  const bd = useBackdrop();
+  const tsh = bd ? (bd.dark ? '0 2px 18px rgba(0,0,0,0.55)' : '0 1px 12px rgba(255,255,255,0.7)') : undefined;
 
   return (
-    <AbsoluteFill style={{ background: PAGE_BG, overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : PAGE_BG, overflow: 'hidden' }}>
       {/* 页面相机：页面空间 (960, cy) 对准画面中心，zoom 放大 */}
       <div style={{ position: 'absolute', left: 0, top: 0, width: 1920, height: pageH, transformOrigin: '0 0', transform: `translate(${960 - 960 * zoom}px, ${SH / 2 - cy * zoom}px) scale(${zoom})` }}>
         {/* trang: anh that / trang chi tiet ve CSS */}
@@ -173,16 +177,16 @@ export const RowEmbed: React.FC = () => {
                 <span style={{ color: INK, fontWeight: 650 }}>Tổng quan</span><span>Tài liệu</span><span>Lịch sử</span>
               </div>
             </div>
-            <div style={{ position: 'absolute', left: PX, top: textTop, width: PW, fontFamily: fonts.sans }}>
+            <div style={{ position: 'absolute', left: PX, top: textTop, width: PW, fontFamily: fonts.sans, textShadow: tsh }}>
               {kicker ? <div style={{ fontSize: kickFs, fontWeight: 650, letterSpacing: '0.16em', color: 'oklch(60% 0.14 62)', lineHeight: 1.5, whiteSpace: 'nowrap' }}>{kicker}</div> : null}
               <div style={{ marginTop: kicker ? 14 : 0, fontSize: tSize, fontWeight: 700, lineHeight: 1.14, letterSpacing: '-0.035em', color: INK }}>
                 {tLines.map((l, i) => <div key={i} style={{ whiteSpace: 'nowrap' }}>{l}</div>)}
               </div>
-              {sub ? <div style={{ marginTop: 16, fontSize: subFs, color: MUTED, lineHeight: 1.4, whiteSpace: 'nowrap' }}>{sub}</div> : null}
+              {sub ? <div style={{ marginTop: 16, fontSize: subFs, color: bd ? '#4a4136' : MUTED, lineHeight: 1.4, whiteSpace: 'nowrap' }}>{sub}</div> : null}
             </div>
             {/* hang da cai (nam san trong trang — lo ra khi mieng va bien mat) */}
             {rows.map((r, i) => (
-              <div key={`base-${i}`} style={{ position: 'absolute', left: r.x, top: r.y, width: r.w, height: r.h, borderRadius: radius, overflow: 'hidden', ...rowSkin }}>
+              <div key={`base-${i}`} style={{ position: 'absolute', left: r.x, top: r.y, width: r.w, height: r.h, borderRadius: radius, overflow: 'hidden', ...rowSkin, opacity: bd ? interpolate(frame, [CUES[i] + FLY, CUES[i] + FLY + 2], [0, 1], clamp) : undefined }}>
                 <RowContent i={i} />
               </div>
             ))}
@@ -265,7 +269,7 @@ export const RowEmbed: React.FC = () => {
             <React.Fragment key={i}>
               {patchOpacity > 0 ? (
                 <div key={`patch-${i}`} style={{
-                  position: 'absolute', left: r.x - 8, top: r.y - 4, width: r.w + 24, height: r.h + 8, background: imgMode ? 'rgba(249,246,241,0.94)' : PAGE_BG,
+                  position: 'absolute', left: r.x - 8, top: r.y - 4, width: r.w + 24, height: r.h + 8, background: bd && !imgMode ? 'transparent' : imgMode ? 'rgba(249,246,241,0.94)' : PAGE_BG,
                   opacity: patchOpacity, zIndex: 1, pointerEvents: 'none',
                 }}>
                   <div style={{
@@ -281,8 +285,8 @@ export const RowEmbed: React.FC = () => {
           );
         })}
       </div>
-      <Vignette strength={0.1} color="#3a2c1c" inner={0.55} />
-      <Grain opacity={0.035} />
+      {!bd && <Vignette strength={0.1} color="#3a2c1c" inner={0.55} />}
+      {!bd && <Grain opacity={0.035} />}
     </AbsoluteFill>
   );
 };

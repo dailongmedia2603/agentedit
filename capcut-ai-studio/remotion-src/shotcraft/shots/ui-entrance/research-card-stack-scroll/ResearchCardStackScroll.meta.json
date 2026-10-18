@@ -19,10 +19,11 @@
  "sfx": [{"at": 0, "type": "swoosh"}, {"at": 60, "type": "swoosh"}, {"at": 120, "type": "click"}],
  "vi": {
   "ten": "Chồng tài liệu bay vào liên tục",
-  "mo_ta": "Nền sáng có kẻ dòng mờ; từng thẻ tài liệu màu đen (tiêu đề chữ trắng) cứ khoảng nửa giây lại rơi xuống giữa màn hình chồng lên thẻ trước, thẻ trên cùng hiện rõ dòng nguồn + các dòng tóm tắt, các thẻ cũ trôi chéo xuống dưới, mờ dần và tối đi như đang chìm vào chồng giấy. Phía trên có nhãn nhỏ và bộ đếm 01/11 nhảy theo; cuối cảnh dừng lại ở thẻ cuối rõ nét.",
+  "mo_ta": "Từng thẻ tài liệu màu đen (tiêu đề chữ trắng) cứ khoảng nửa giây lại rơi xuống giữa màn hình chồng lên thẻ trước, thẻ trên cùng hiện rõ dòng nguồn + các dòng tóm tắt, các thẻ cũ trôi chéo xuống dưới, mờ dần và tối đi như đang chìm vào chồng giấy. Phía trên có nhãn nhỏ và bộ đếm 01/11 nhảy theo; cuối cảnh dừng lại ở thẻ cuối rõ nét.",
   "hop_khi": "Người nói nhấn mạnh khối lượng tài liệu đã đọc / phân tích / tổng hợp (\"mình đã đọc hơn 100 báo cáo\", \"AI quét hàng nghìn bài viết\"), nghiên cứu thị trường, tra cứu, xử lý văn bản hàng loạt, giới thiệu công cụ AI đọc tài liệu.",
   "tranh_khi": "Cần người xem đọc kỹ từng tiêu đề (mỗi thẻ chỉ hiện rõ ~0,5 giây); ít hơn 5 mục; nội dung cảm xúc, đời thường không liên quan tài liệu.",
   "nang_luong": "vua",
   "chu_de": ["tài liệu", "nghiên cứu", "khối lượng", "đọc", "AI", "báo cáo", "dữ liệu", "tra cứu", "danh sách"]
- }
+ },
+ "backdrop": true
 }

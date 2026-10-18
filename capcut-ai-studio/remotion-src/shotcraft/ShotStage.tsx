@@ -2,8 +2,8 @@
 // Mau duoc viet cho san khau 1920x1080: khung ngang -> phong vua; khung doc -> 'native' (mau tu bo cuc theo chieu cao that)
 // hoac 'band' (giu khoi 1920x1080, phong `zoom`, nen san khau <Stage> / mau `bleed` phu kin phan tren-duoi).
 import React, { useEffect, useState } from 'react'
-import { AbsoluteFill, continueRender, delayRender } from 'remotion'
-import { DEFAULT_FONTS, SHOT_H, SHOT_W, ShotRuntimeProvider, clearMeasureCache, setCurrentShot, type ShotFonts, type ShotRuntimeData, type ShotTexts } from './runtime'
+import { AbsoluteFill, Img, continueRender, delayRender } from 'remotion'
+import { DEFAULT_FONTS, SHOT_H, SHOT_W, ShotRuntimeProvider, clearMeasureCache, resolveUrl, setCurrentShot, type ShotFonts, type ShotRuntimeData, type ShotTexts } from './runtime'
 import { applyShotTheme, type ShotTheme } from './theme'
 import type { ShotMeta } from './meta'
 
@@ -22,6 +22,8 @@ export interface ShotStageProps {
   fonts?: Partial<ShotFonts> | null
   /** xem thu kho (scripts/shot-still.mjs) */
   preview?: boolean
+  /** anh nen AI (URL) — chi dung khi meta.backdrop (mau ho tro nen anh) */
+  backdrop?: string | null
 }
 
 // Nap font cua shot TRUOC khi ve: mau do be ngang chu (fitSize / wrapLines) bang canvas — do luc font chua nap se ra so
@@ -61,7 +63,7 @@ export const ShotStage: React.FC<ShotStageProps> = (props) => {
   return <ShotStageInner {...props} />
 }
 
-const ShotStageInner: React.FC<ShotStageProps> = ({ id, entry, texts, images, rate, width: W, height: H, theme, brand, fonts, preview }) => {
+const ShotStageInner: React.FC<ShotStageProps> = ({ id, entry, texts, images, rate, width: W, height: H, theme, brand, fonts, preview, backdrop }) => {
   const meta = entry.meta
   applyShotTheme(theme)
   const portrait = H > W * 1.05
@@ -87,14 +89,17 @@ const ShotStageInner: React.FC<ShotStageProps> = ({ id, entry, texts, images, ra
     bleed,
     fonts: { ...DEFAULT_FONTS, ...(fonts || {}) },
     slotIds: (meta.slots || []).map((x) => x.id),
-    preview: !!preview
+    preview: !!preview,
+    backdrop: backdrop && meta.backdrop && meta.kind !== 'overlay' ? { src: resolveUrl(backdrop), dark: meta.dark } : null
   }
   setCurrentShot(data)
   const C = entry.C
   const overlay = meta.kind === 'overlay' // lop trong suot (chop sang...) de len canh cat: khong ve nen
   const bleedBg = overlay ? 'transparent' : meta.bleed ? `linear-gradient(180deg, ${meta.bleed[0]} 0%, ${meta.bleed[1]} 100%)` : meta.dark ? '#08090c' : '#f2efe8'
+  const bd = data.backdrop
   return (
-    <AbsoluteFill style={{ overflow: 'hidden', background: portrait || overlay ? bleedBg : meta.dark ? '#000' : '#fff' }}>
+    <AbsoluteFill style={{ overflow: 'hidden', background: bd ? (bd.dark ? '#000' : '#fff') : portrait || overlay ? bleedBg : meta.dark ? '#000' : '#fff' }}>
+      {bd ? <Backdrop src={bd.src} dark={bd.dark} /> : null}
       <div
         style={{
           position: 'absolute',
@@ -115,3 +120,34 @@ const ShotStageInner: React.FC<ShotStageProps> = ({ id, entry, texts, images, ra
     </AbsoluteFill>
   )
 }
+
+/** NEN ANH AI cua canh shot: anh phu kin khung (cover), mo nhe + lop toi (mau nen toi) / lop sang (mau nen sang) de
+ *  CHU cua mau luon noi ro tren anh — nen chi la khong khi cua chu de, khong tranh mat voi chu. */
+const Backdrop: React.FC<{ src: string; dark: boolean }> = ({ src, dark }) => (
+  <AbsoluteFill>
+    <Img
+      src={src}
+      style={{
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+        transform: 'scale(1.06)',
+        filter: dark ? 'blur(4px) brightness(0.62) saturate(0.95)' : 'blur(6px) brightness(1.04) saturate(0.88)'
+      }}
+    />
+    <AbsoluteFill
+      style={{
+        background: dark
+          ? 'linear-gradient(180deg, rgba(4,6,10,0.46) 0%, rgba(4,6,10,0.26) 45%, rgba(4,6,10,0.52) 100%)'
+          : 'linear-gradient(180deg, rgba(250,248,244,0.66) 0%, rgba(250,248,244,0.52) 50%, rgba(250,248,244,0.68) 100%)'
+      }}
+    />
+    <AbsoluteFill
+      style={{
+        background: dark
+          ? 'radial-gradient(ellipse 75% 60% at 50% 50%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.45) 100%)'
+          : 'radial-gradient(ellipse 75% 60% at 50% 50%, rgba(255,255,255,0) 45%, rgba(255,255,255,0.35) 100%)'
+      }}
+    />
+  </AbsoluteFill>
+)

@@ -15,7 +15,7 @@
 // 质感层（改版）：四色 mesh 收成"靛蓝主光 + 一抹暖色余光"的低对比底 + 颗粒 + 暗角；
 // 首词入场带 8px→0 失焦（与淡入同 6f）；缩回段按 scale 速度给瞬时失焦（≤3.5px，停稳归零），
 // 大幅缩放不再"硬缩"；整行上移提前到 f32–46，品牌行静止 26f 再 crash；强调色统一为批次靛蓝。
-import { useCurrentFrame, useVideoConfig, useText, useBrand, useShotFonts, measureText, fitSize, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useBrand, useShotFonts, measureText, fitSize, wrapLines } from '../../../runtime';
 import React, { Fragment, useEffect, useRef, useState } from 'react';
 import { Grain, Vignette } from '../../../fixtures/Polish';
 import { alpha } from '../../../fixtures/Look';
@@ -211,9 +211,10 @@ export const LeadWordZoomAssemble: React.FC = () => {
   const SANS = fonts.sans;
   const ACCENT = G.accent;
   const brand = useBrand();
+  const bd = useBackdrop(); // [Agent Edit] nen anh AI: bo nen mesh + toi goc + hat tu ve, chu co bong sang nhe
   const text = useText('title', 'Giới thiệu Trợ lý AI').trim();
   const hl = useText('highlight', 'Trợ lý AI').trim();
-  const sub = useText('subtitle', 'Một câu lệnh, một video hoàn chỉnh — gõ, duyệt, xuất bản.');
+  const sub = useText('subtitle', 'Một câu lệnh, một video hoàn chỉnh: gõ, duyệt, xuất bản.');
   const words = text.split(/\s+/).filter(Boolean);
   // 强调：精确匹配连续词组（highlight 槽，退回品牌名）；只给一处
   const findSeq = (phrase: string) => {
@@ -253,7 +254,7 @@ export const LeadWordZoomAssemble: React.FC = () => {
   const liftD = portrait ? -(subGap + subLines.length * subFs * 1.3) / 2 : LIFT_DISTANCE * k;
 
   return (
-    <AbsoluteFill style={{ background: meshBg(ACCENT), fontFamily: SANS }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : meshBg(ACCENT), fontFamily: SANS, textShadow: bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined }}>
       <AbsoluteFill
         style={{
           transform: `scale(${1 + crash * CRASH_SCALE})`,
@@ -284,8 +285,8 @@ export const LeadWordZoomAssemble: React.FC = () => {
           {subLines.map((l, i) => <div key={i} style={{ whiteSpace: 'nowrap' }}>{l}</div>)}
         </div>
       </AbsoluteFill>
-      <Vignette strength={0.12} inner={0.5} color="#2a2c36" />
-      <Grain opacity={0.05} />
+      {!bd && <Vignette strength={0.12} inner={0.5} color="#2a2c36" />}
+      {!bd && <Grain opacity={0.05} />}
     </AbsoluteFill>
   );
 };

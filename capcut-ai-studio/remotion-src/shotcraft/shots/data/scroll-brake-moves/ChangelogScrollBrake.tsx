@@ -13,7 +13,7 @@
 // con lai la ten trung tinh tieng Viet chi de lam "dai mau" luc cuon nhanh) / planned (0-5 muc lo trinh sau dong dich).
 // Dong dich tu cao len theo so dong chu that (tieu de dai -> 2 dong). Khung doc (native): cot danh sach phong 1.8x,
 // them dong lo trinh de lap day nua duoi, dong dich doi sang bo cuc doc (dong meta / tieu de lon / mo ta).
-import { useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, fitSize, wrapLines } from '../../../runtime';
+import { useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, useBackdrop, fitSize, wrapLines } from '../../../runtime';
 import React from 'react';
 import { interpolate } from 'remotion';
 import { G } from '../../../fixtures/Fixtures';
@@ -188,6 +188,7 @@ export const ChangelogScrollBrake: React.FC = () => {
   };
   const history = useList('history', []).slice(0, 8);
   const planned = useList('planned', []).slice(0, 5);
+  const bd = useBackdrop(); // [Agent Edit] nen anh AI: bo nen sang + hat code ve, tieu de trang co bong sang
 
   // 列表坐标：竖屏整列放大 u 倍（可见高度 = SH / u）
   const u = portrait ? 1.8 : 1;
@@ -218,7 +219,7 @@ export const ChangelogScrollBrake: React.FC = () => {
       return { v: tg.version, kind: 'launch', kindLabel: tg.kind || KIND_LABEL.launch, title: tg.title, desc: tg.desc, date: tg.date };
     if (i > TARGET) {
       const j = i - TARGET - 1;
-      return { v: '—', kind: 'planned', kindLabel: KIND_LABEL.planned, title: planned[j % Math.max(1, planned.length)] ?? PLANNED[j % PLANNED.length], desc: 'Có trong lộ trình quý tới.', date: 'Q4' };
+      return { v: 'v3.0', kind: 'planned', kindLabel: KIND_LABEL.planned, title: planned[j % Math.max(1, planned.length)] ?? PLANNED[j % PLANNED.length], desc: 'Có trong lộ trình quý tới.', date: 'Q4' };
     }
     const hi = TARGET - 1 - i;
     const title = hi < history.length ? history[hi] : TITLES[i];
@@ -249,7 +250,7 @@ export const ChangelogScrollBrake: React.FC = () => {
 
   return (
     <div style={{ width: 1920, height: SH, position: 'relative', overflow: 'hidden', fontFamily: FONT.sans }}>
-      <Backdrop tone="light" light={{ x: 0.5, y: 0.2 }} vignette={0.16} grain={0} />
+      {!bd && <Backdrop tone="light" light={{ x: 0.5, y: 0.2 }} vignette={0.16} grain={0} />}
       <div style={{ position: 'absolute', inset: 0, WebkitMaskImage: LIST_MASK, maskImage: LIST_MASK }}>
         <SpeedBlur vx={0} vy={v} amount={0.32} max={30}>
           <div style={{ position: 'absolute', left: 0, top: 0, width: 1920 / u, height: VH, transform: `scale(${u})`, transformOrigin: '0 0' }}>
@@ -265,11 +266,11 @@ export const ChangelogScrollBrake: React.FC = () => {
       <div style={{ position: 'absolute', left: 0, top: 0, width: 1920 / u, transform: `scale(${u})`, transformOrigin: '0 0' }}>
         <div style={{ position: 'absolute', left: COL_X, top: 64, width: COL_W, display: 'flex', alignItems: 'baseline', gap: 22 }}>
           {BRAND.name ? <ShotcraftMark size={50} tone="light" style={{ alignSelf: 'center', marginRight: -4 }} /> : null}
-          <div style={{ fontSize: headSize, fontWeight: 720, letterSpacing: tracking(headSize), color: G.ink1, whiteSpace: 'nowrap', lineHeight: 1.25 }}>{header}</div>
+          <div style={{ fontSize: headSize, fontWeight: 720, letterSpacing: tracking(headSize), color: G.ink1, whiteSpace: 'nowrap', lineHeight: 1.25, textShadow: bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined }}>{header}</div>
           {BRAND.name ? <div style={{ fontFamily: BRAND.font, fontSize: 30, fontWeight: 600, color: G.ink3, letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>{BRAND.name}</div> : null}
         </div>
       </div>
-      <Grain opacity={0.05} />
+      {!bd && <Grain opacity={0.05} />}
     </div>
   );
 };

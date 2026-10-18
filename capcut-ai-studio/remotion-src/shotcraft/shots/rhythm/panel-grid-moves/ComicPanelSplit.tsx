@@ -24,7 +24,7 @@
 // can tren / dac ta giua, phong toi da 1.8x de anh khong vo) va poster dung anh; khong co -> ong kinh vector goc (chu de quay phim).
 // Mat na "chu troi len" tu viet (padding tren 0.32em / duoi 0.26em) — TextReveal 'rise' cua fixtures chi chua 0.06em -> cat dau.
 // Khung doc (native): 3 o xep DOC voi 2 duong cat xien 12° nam ngang; o cuoi lan len an het man hinh; poster: chu tren, anh duoi.
-import { useCurrentFrame, useImage, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useImage, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, FONT, Grain, SpeedBlur, Vignette, mix, ramp, velocity } from '../../../fixtures/Polish';
@@ -220,22 +220,19 @@ const Lens: React.FC<{ id: string; tilt?: number; focus: number; aperture: numbe
   );
 };
 
-// ───────────── 背景：带红相的墨黑 + 半调网点（漫画印刷感）─────────────
-const PanelBg: React.FC<{ lx: number; ly: number; k?: number }> = ({ lx, ly, k = 1 }) => (
-  <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(180deg, ${C.bg0} 0%, ${C.bg1} 55%, ${C.bg2} 100%)` }}>
-    <div style={{
-      position: 'absolute', inset: 0,
-      background: `radial-gradient(ellipse 46% 56% at ${lx}px ${ly}px, ${alpha(C.red, 0.34 * k)} 0%, ${alpha(C.red, 0.08 * k)} 45%, ${alpha(C.red, 0)} 75%)`,
-    }} />
-    <div style={{
-      position: 'absolute', inset: 0,
-      backgroundImage: `radial-gradient(circle, ${alpha(C.red, 0.5)} 1.7px, transparent 2.3px)`, backgroundSize: '13px 13px',
-      WebkitMaskImage: `radial-gradient(ellipse 60% 70% at ${lx}px ${ly}px, rgba(0,0,0,0.0) 20%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0) 100%)`,
-      maskImage: `radial-gradient(ellipse 60% 70% at ${lx}px ${ly}px, rgba(0,0,0,0.0) 20%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0) 100%)`,
-      opacity: 0.6 * k,
-    }} />
-  </div>
-);
+// ───────────── 背景：带红相的墨黑（漫画印刷感）─────────────
+// [Agent Edit] bo luoi cham ban tong (halftone) trang tri; co nen anh AI (useBackdrop) -> o truyen trong suot, anh nen hien qua
+const PanelBg: React.FC<{ lx: number; ly: number; k?: number }> = ({ lx, ly, k = 1 }) => {
+  if (useBackdrop()) return null;
+  return (
+    <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(180deg, ${C.bg0} 0%, ${C.bg1} 55%, ${C.bg2} 100%)` }}>
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: `radial-gradient(ellipse 46% 56% at ${lx}px ${ly}px, ${alpha(C.red, 0.34 * k)} 0%, ${alpha(C.red, 0.08 * k)} 45%, ${alpha(C.red, 0)} 75%)`,
+      }} />
+    </div>
+  );
+};
 
 // 一格的主体层：矢量镜头（铺满舞台的 SVG，靠机位取景）或真实照片（在本格外接框内 cover，按焦点放大）
 type PhotoCam = { box: { x: number; y: number; w: number; h: number }; z: number; fx: number; fy: number };
@@ -340,6 +337,8 @@ export const ComicPanelSplit: React.FC = () => {
   const focus = focusAt(f);
   const aperture = apertureAt(f);
   const photo = useImage('photo');
+  const bd = useBackdrop();
+  const bgFill = bd ? 'transparent' : C.bg2;
   const caps = useList('captions', ['Toàn cảnh rõ nét.', 'Chi tiết sắc sảo.', 'Đẹp đến từng điểm.']);
   const title = useText('title', 'Ba góc máy, một câu chuyện.');
   const sub = useText('subtitle', 'Mỗi góc nhìn cắt đúng nhịp.');
@@ -401,7 +400,7 @@ export const ComicPanelSplit: React.FC = () => {
     const top = P ? Math.max(260, H * 0.08) : Math.max(120, 540 - blockH / 2);
     let wi = 0;
     return (
-      <div style={{ position: 'absolute', left: 120, top, color: C.cream, width: tW }}>
+      <div style={{ position: 'absolute', left: 120, top, color: C.cream, width: tW, textShadow: bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined }}>
         <div style={{ opacity: ramp(f, TITLE - 2, 10, EASE.out), minHeight: P ? 70 : 50 }}>
           <ShotcraftWordmark size={P ? 46 : 30} markScale={1.7} gap={16} tone="dark" color={C.cream} />
         </div>
@@ -421,21 +420,21 @@ export const ComicPanelSplit: React.FC = () => {
   const fx = (k: React.ReactNode) => (
     <>
       {k}
-      <Vignette strength={0.5} inner={0.45} color="#050102" style={{ zIndex: 7 }} />
-      <Grain opacity={0.08} blend="soft-light" style={{ zIndex: 8 }} />
+      {!bd && <Vignette strength={0.5} inner={0.45} color="#050102" style={{ zIndex: 7 }} />}
+      {!bd && <Grain opacity={0.08} blend="soft-light" style={{ zIndex: 8 }} />}
     </>
   );
 
   // ===== 海报：吃屏完成后摘罩，只剩镜片机位 + 标题 =====
   if (f >= EXP1) {
     return (
-      <AbsoluteFill style={{ background: C.bg2, overflow: 'hidden' }}>
+      <AbsoluteFill style={{ background: bgFill, overflow: 'hidden' }}>
         {fx(<>
           <PanelBg lx={CAM_END.cx} ly={CAM_END.cy} />
           <Shot id="end" cam={cam3At(f)} focus={focus} aperture={aperture} ring={ring} H={H} photo={photo}
             pcam={{ box: { x: 0, y: 0, w: 1920, h: H }, z: p3z(f), fx: 0.5, fy: 0.45 }} />
           {/* 标题一侧压暗，给标题让出干净的墨底 */}
-          <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(${P ? 180 : 90}deg, ${alpha(C.bg2, 0.94)} 0%, ${alpha(C.bg2, 0.66)} ${P ? 30 : 34}%, ${alpha(C.bg2, 0)} ${P ? 50 : 52}%)` }} />
+          <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(${P ? 180 : 90}deg, ${alpha(C.bg2, bd ? 0.6 : 0.94)} 0%, ${alpha(C.bg2, bd ? 0.38 : 0.66)} ${P ? 30 : 34}%, ${alpha(C.bg2, 0)} ${P ? 50 : 52}%)` }} />
           {Headline()}
         </>)}
       </AbsoluteFill>
@@ -446,7 +445,7 @@ export const ComicPanelSplit: React.FC = () => {
   if (f < SPLIT) {
     const push = ramp(f, 0, SPLIT, EASE.linear);
     return (
-      <AbsoluteFill style={{ background: C.bg2, overflow: 'hidden' }}>
+      <AbsoluteFill style={{ background: bgFill, overflow: 'hidden' }}>
         {fx(<>
           <PanelBg lx={P ? 1100 : 1100} ly={P ? H * 0.48 : 520} />
           <Shot id="open" cam={{ ...CAM_OPEN, s: CAM_OPEN.s * (1 + 0.04 * push) }} tilt={38} focus={focus} aperture={aperture} ring={ring} H={H} photo={photo}
@@ -510,7 +509,7 @@ export const ComicPanelSplit: React.FC = () => {
   );
 
   return (
-    <AbsoluteFill style={{ background: C.ink, overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : C.ink, overflow: 'hidden' }}>
       {/* 被劈开的原画面：未弹入的区域仍是压暗的开场全景，读作"一刀刀把这张图切成格" */}
       {f < cut(2) + 2 && (
         <div style={{ position: 'absolute', inset: 0 }}>
@@ -550,8 +549,8 @@ export const ComicPanelSplit: React.FC = () => {
           </svg>
         </SpeedBlur>
       </div>
-      <Vignette strength={0.5} inner={0.45} color="#050102" style={{ zIndex: 7 }} />
-      <Grain opacity={0.08} blend="soft-light" style={{ zIndex: 8 }} />
+      {!bd && <Vignette strength={0.5} inner={0.45} color="#050102" style={{ zIndex: 7 }} />}
+      {!bd && <Grain opacity={0.08} blend="soft-light" style={{ zIndex: 8 }} />}
     </AbsoluteFill>
   );
 };

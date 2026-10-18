@@ -14,7 +14,7 @@
 // line2 (dong 2, tuy chon). Chu dai ngan bat ky: moi dong do be ngang that va thu nho vua khung; tia chop + quang
 // sang sinh theo be ngang that cua tu khoa (cung hat giong -> van tat dinh). Khung doc (portrait.mode = 'native'):
 // tu khoa dung rieng 1 dong (to hon), phan con lai tu xuong dong ben duoi, ca khoi can giua theo chieu doc.
-import { useCurrentFrame, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, interpolate, Easing } from 'remotion';
 import { EASE, Grain, Vignette, ramp } from '../../../fixtures/Polish';
@@ -222,7 +222,11 @@ export const GradientWordSweep: React.FC = () => {
       ? undefined
       : `linear-gradient(90deg, #000 0%, #000 ${at(pPct - soft)}, transparent ${at(pPct + soft * 0.6)})`;
 
+  // [Agent Edit] nen anh AI: bo nen gan den + toi goc + hat (nen code ve); chu trang tren anh -> bong do nhe
+  const bd = useBackdrop();
+  const bdShadow = bd ? (bd.dark ? '0 2px 18px rgba(0,0,0,0.55)' : '0 1px 12px rgba(255,255,255,0.7)') : undefined;
   const lineStyle: React.CSSProperties = {
+    textShadow: bdShadow,
     fontFamily: FAM,
     fontWeight: WT,
     fontStyle: 'italic',
@@ -245,12 +249,13 @@ export const GradientWordSweep: React.FC = () => {
     WebkitBackgroundClip: 'text',
     backgroundClip: 'text',
     color: 'transparent',
+    textShadow: 'none',
   };
 
   return (
     <AbsoluteFill
       style={{
-        background: 'radial-gradient(ellipse 70% 70% at 50% 48%, #0d0b14 0%, #07060a 60%, #040405 100%)',
+        background: bd ? 'transparent' : 'radial-gradient(ellipse 70% 70% at 50% 48%, #0d0b14 0%, #07060a 60%, #040405 100%)',
         justifyContent: 'center',
         alignItems: 'center',
       }}
@@ -372,8 +377,8 @@ export const GradientWordSweep: React.FC = () => {
           <div key={i} style={{ ...lineStyle, ...lineIn(ramp(frame, 4 + i * 2, 14, EASE.snappy)) }}>{l}</div>
         ))}
       </div>
-      <Vignette strength={0.5} inner={0.45} color="#000000" />
-      <Grain opacity={0.07} blend="soft-light" />
+      {!bd && <Vignette strength={0.5} inner={0.45} color="#000000" />}
+      {!bd && <Grain opacity={0.07} blend="soft-light" />}
     </AbsoluteFill>
   );
 };

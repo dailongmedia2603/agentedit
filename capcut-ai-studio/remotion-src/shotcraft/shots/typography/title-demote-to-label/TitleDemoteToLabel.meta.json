@@ -6,30 +6,128 @@
  "duration": 246,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.25],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.25
+ ],
  "hold": 232,
  "slots": [
-  {"id": "title1", "role": "title", "sample": "Ý tưởng", "max": 16, "note": "tên phần 1, 1-3 từ (tự thêm dấu chấm đỏ); sau đó thu nhỏ thành nhãn góc trên-trái"},
-  {"id": "lead", "role": "subtitle", "sample": "Chọn một vấn đề.", "max": 40, "note": "câu dẫn phần 1 (màu đậm)"},
-  {"id": "lead2", "role": "subtitle", "sample": "Mỗi vấn đề đi kèm một lời giải.", "max": 50, "optional": true, "note": "nửa sau câu dẫn (màu xám)"},
-  {"id": "point1", "role": "item", "sample": "Bắt đầu từ khách hàng", "max": 34, "note": "ý chính trên thẻ 1"},
-  {"id": "point1_note", "role": "subtitle", "sample": "Hỏi đúng câu hỏi trước khi làm bất cứ thứ gì.", "max": 70, "optional": true, "note": "giải thích ngắn cho ý chính"},
-  {"id": "quote", "role": "quote", "sample": "Ý tưởng hay nhất đến từ người dùng thật.", "max": 70, "note": "câu trích dẫn trên thẻ nền tối"},
-  {"id": "point2", "role": "item", "sample": "Thử nhanh, sửa nhanh", "max": 34, "note": "ý trên thẻ 3 (kèm dải nhịp trang trí)"},
-  {"id": "title2", "role": "title", "sample": "Thực hiện", "max": 16, "note": "tên phần 2, 1-3 từ; xuất hiện có khối tô chọn chữ quét qua rồi cũng thu thành nhãn"},
-  {"id": "lines", "role": "item", "sample": "Bản kế hoạch mở đầu bằng mục tiêu rõ ràng,|đi qua từng con số và quan trọng nhất,|mỗi việc đều có người chịu trách nhiệm.|Báo cáo và tổng kết để cuối cùng.", "max": 60, "list": {"min": 3, "max": 4}, "note": "3-4 câu nối nhau như một đoạn văn; CÂU THỨ 3 là câu quan trọng nhất (được tô chọn và nối dây sang thẻ ghi chú)"},
-  {"id": "note", "role": "subtitle", "sample": "Mỗi dòng kế hoạch thành một việc cụ thể.", "max": 60, "note": "kết luận trên thẻ ghi chú cạnh đoạn văn"}
+  {
+   "id": "title1",
+   "role": "title",
+   "sample": "Ý tưởng",
+   "max": 16,
+   "note": "tên phần 1, 1-3 từ (tự thêm dấu chấm đỏ); sau đó thu nhỏ thành nhãn góc trên-trái"
+  },
+  {
+   "id": "lead",
+   "role": "subtitle",
+   "sample": "Chọn một vấn đề.",
+   "max": 40,
+   "note": "câu dẫn phần 1 (màu đậm)"
+  },
+  {
+   "id": "lead2",
+   "role": "subtitle",
+   "sample": "Mỗi vấn đề đi kèm một lời giải.",
+   "max": 50,
+   "optional": true,
+   "note": "nửa sau câu dẫn (màu xám)"
+  },
+  {
+   "id": "point1",
+   "role": "item",
+   "sample": "Bắt đầu từ khách hàng",
+   "max": 34,
+   "note": "ý chính trên thẻ 1"
+  },
+  {
+   "id": "point1_note",
+   "role": "subtitle",
+   "sample": "Hỏi đúng câu hỏi trước khi làm bất cứ thứ gì.",
+   "max": 70,
+   "optional": true,
+   "note": "giải thích ngắn cho ý chính"
+  },
+  {
+   "id": "quote",
+   "role": "quote",
+   "sample": "Ý tưởng hay nhất đến từ người dùng thật.",
+   "max": 70,
+   "note": "câu trích dẫn trên thẻ nền tối"
+  },
+  {
+   "id": "point2",
+   "role": "item",
+   "sample": "Thử nhanh, sửa nhanh",
+   "max": 34,
+   "note": "ý trên thẻ 3 (kèm dải nhịp trang trí)"
+  },
+  {
+   "id": "title2",
+   "role": "title",
+   "sample": "Thực hiện",
+   "max": 16,
+   "note": "tên phần 2, 1-3 từ; xuất hiện có khối tô chọn chữ quét qua rồi cũng thu thành nhãn"
+  },
+  {
+   "id": "lines",
+   "role": "item",
+   "sample": "Bản kế hoạch mở đầu bằng mục tiêu rõ ràng,|đi qua từng con số và quan trọng nhất,|mỗi việc đều có người chịu trách nhiệm.|Báo cáo và tổng kết để cuối cùng.",
+   "max": 60,
+   "list": {
+    "min": 3,
+    "max": 4
+   },
+   "note": "3-4 câu nối nhau như một đoạn văn; CÂU THỨ 3 là câu quan trọng nhất (được tô chọn và nối dây sang thẻ ghi chú)"
+  },
+  {
+   "id": "note",
+   "role": "subtitle",
+   "sample": "Mỗi dòng kế hoạch thành một việc cụ thể.",
+   "max": 60,
+   "note": "kết luận trên thẻ ghi chú cạnh đoạn văn"
+  }
  ],
  "images": [],
  "brand": "optional",
- "sfx": [{"at": 0, "type": "swoosh"}, {"at": 36, "type": "whoosh"}, {"at": 136, "type": "click"}, {"at": 166, "type": "whoosh"}],
+ "sfx": [
+  {
+   "at": 0,
+   "type": "swoosh"
+  },
+  {
+   "at": 36,
+   "type": "whoosh"
+  },
+  {
+   "at": 136,
+   "type": "click"
+  },
+  {
+   "at": 166,
+   "type": "whoosh"
+  }
+ ],
  "vi": {
   "ten": "Tiêu đề lớn thu nhỏ thành nhãn mục — 2 phần nối tiếp",
   "mo_ta": "Trang giấy sáng kiểu tạp chí. Phần 1: tiêu đề chữ đậm rất lớn (chấm đỏ cuối) trồi lên từng ký tự giữa màn hình, đứng một nhịp rồi bay mượt thu nhỏ về góc trên-trái thành nhãn \"01 / …\"; bên dưới câu dẫn và 3 thẻ (ý chính, trích dẫn nền tối, ý phụ có dải nhịp) mọc ra lần lượt. Phần 2: nội dung cũ trôi lên biến mất, tiêu đề thứ hai hiện ra, một khối tô chọn màu đỏ nhạt quét qua như bôi đen chữ rồi cũng thu thành nhãn; một đoạn văn 4 dòng hiện ra, câu thứ 3 được tô chọn và nối dây sang thẻ ghi chú.",
   "hop_khi": "Video chia chương / chia phần (\"phần một… phần hai…\"), bài giảng, chia sẻ kinh nghiệm có cấu trúc, review sách / khóa học, giải thích quy trình 2 giai đoạn kèm ý chính, trích dẫn và kết luận; tone tri thức, biên tập, dài khoảng 8 giây.",
   "tranh_khi": "Đoạn nói ngắn dưới 6 giây; chỉ có một câu đơn lẻ; tone tối, năng lượng cao, giật gân.",
   "nang_luong": "thap",
-  "chu_de": ["chương mới", "phần", "tiêu đề", "bài giảng", "ý chính", "trích dẫn", "kế hoạch", "tạp chí"]
- }
+  "chu_de": [
+   "chương mới",
+   "phần",
+   "tiêu đề",
+   "bài giảng",
+   "ý chính",
+   "trích dẫn",
+   "kế hoạch",
+   "tạp chí"
+  ]
+ },
+ "backdrop": true
 }

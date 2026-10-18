@@ -1693,6 +1693,21 @@ cau chuyen qua nhung gi ban ghi o day.
 5. HOOK KHONG PHAI VIEC CUA BUOC NAY. Buoc sau (B3) se SAO CHEP 3-5s dat nhat len dau video; ban
    than video van chay day du tu dau. Vi vay KHONG keo cau hay len dau, KHONG cat cau do khoi vi tri goc.
 
+# NGAP NGUNG / LAP CHU TRONG CAU -> "cat_vap" (BAT BUOC lam ky)
+Nguoi noi khong quen noi truoc may hay VAP: lap lai 1-2 chu ("cái cái", "là là", "mình mình", "sợ bị... bị rớt"),
+keo dai mot chu de nghi ("bị~~~", "thì~~~"), chen tieng dem ("ờ", "à", "ừm") GIUA cau. Cac cho nay nam TRONG mot cum
+loi Gemini nen khong cat duoc bang start/end cua doan -> ban phai chi ra TUNG khoang can bo trong "cat_vap".
+- Du lieu: `chu_tung_tu` = moi chu Whisper "chu@giay_bat_dau" (GIO THAT, chinh xac) — Whisper co the nghe SAI chu (vd
+  "sợ bị bị rớt" -> "sợ mùi vợ Rất"): doi chieu voi `transcript` (chu Gemini dung) de biet chu nao la chu nao.
+  `goi_y_vap` = cho code nghi la vap (lap chu / keo dai / tieng dem) — chi la GOI Y, ban tu nghe theo ngu canh, va TU
+  TIM THEM cho vap ma code khong bat duoc.
+- Moi muc: {"source_id", "start": <gio BAT DAU chu dau tien bi bo>, "end": <gio BAT DAU chu dau tien duoc GIU sau do>,
+  "bo": "<chu bi bo>", "giu": "<cau nghe duoc sau khi cat>", "ly_do": "lap 1 chu | lap 2 chu | keo dai | tieng dem"}.
+  Lap chu: bo LAN DAU (hoac lan keo dai / ngap ngung), giu lan noi tron. Vd "sợ bị... bị rớt hợp đồng" -> bo tu dau
+  "bị" thu nhat toi dau "bị" thu hai (giu "sợ bị rớt hợp đồng"). Moi khoang 0.12-2.5 giay.
+- KHONG bo: tu lay / nhan manh co chu y noi lien mach ("từ từ", "dần dần", "rất rất là", "nhiều nhiều"); chu mang nghia.
+  Khong co cho vap that -> "cat_vap": [].
+
 # NHIEU VIDEO (source_analysis.sources co tu 2 video)
 Nguoi dung co the them video LON XON — source_1 chua chac la phan dau. Doc transcript + summary
 cua TUNG video de biet chung la cac khuc NOI TIEP nhau cua cung mot bai noi:
@@ -1740,10 +1755,27 @@ cua TUNG video de biet chung la cac khuc NOI TIEP nhau cua cung mot bai noi:
   "removed": [
     {"source_id": "source_1", "start": 8.5, "end": 9.4, "ly_do": "im lang | tieng dem | noi lap | ngoai le | trung voi source_2 41.0"}
   ],
+  "cat_vap": [
+    {"source_id": "source_1", "start": 91.04, "end": 91.52, "bo": "bị", "giu": "sợ bị rớt hợp đồng", "ly_do": "lap 1 chu"}
+  ],
   "notes": "ghi chu (vd: do dai thuc te so voi duration mong muon)"
 }
 
 ⚠️ TRA VE CHI JSON GOC. Khong ```json```. Khong giai thich truoc/sau. Ky tu dau la {, ky tu cuoi la }."""
+
+# Luat noi bang code vao B2 / B3 (user 2026-10-18) — khong nam trong prompt mau de van ap khi prompt da bi sua tay.
+_B2_LUAT_ZOOM = """
+
+# LUAT ZOOM (BAT BUOC, code kiem lai)
+"scale" mac dinh 1.0. Chi dat 1.08-1.15 cho doan chua CAU CHOT / CON SO quan trong / cao trao cam xuc / cau hook, toi da
+~1 lan moi 15 giay. Doan thuong (giai thich, ke chuyen, chuyen y) giu 1.0 — khong doi scale moi lan cat, khong zoom de
+"cho co nhip". Code tu bo zoom qua day / qua nhieu."""
+
+_B3_LUAT_CHU = """
+
+# LUAT CHU HOOK (BAT BUOC)
+"caption" PHAI la cum tu nguoi noi THAT SU NOI TRONG doan hook ban chon (chep tu loi thoai cua doan, rut gon duoc nhung
+khong thay tu, khong lay tu cau ngoai doan): chu hien DUNG LUC cum do duoc noi. Khong dung dau gach ("—", "–", " - ")."""
 
 _TIMELINE_SYSTEM = """Ban la EDITOR chuyen dung timeline video. Tu danh sach doan da chon + source_videos, noi thanh timeline lien tuc.
 
@@ -1772,9 +1804,11 @@ _TIMELINE_SYSTEM = """Ban la EDITOR chuyen dung timeline video. Tu danh sach doa
 - Diem cat (start/end moi segment) PHAI trung RANH GIOI CAU trong loi_thoai: start = start cua
   mot cau, end = end cua mot cau. Khong cat giua cau/giua tu.
 - Talking-head: chia doan dai thanh cac segment ~3-5s tai ranh gioi cau/cum tu (jump-cut).
-  "scale" (1.0-1.3) = muc zoom khung cua doan; engine CHUYEN DONG MUOT tu muc doan truoc sang muc doan nay
-  (zoom in / zoom out ease in-out), khong nhay khung o diem cat -> chi doi scale khi muon zoom nhan / nhip moi,
-  khong xen ke may moc moi lan cat. Neu phong_cach_mau co average_shot_seconds thi bam theo do.
+  "scale" = muc zoom khung cua doan, MAC DINH 1.0. ZOOM CHI KHI CAN (user: "dang lam dung zoom in zoom out"):
+  chi dat 1.08-1.15 cho doan chua CAU CHOT / CON SO quan trong / cao trao cam xuc / cau hook, toi da ~1 lan moi 15s,
+  doan thuong (giai thich, ke chuyen, chuyen y) GIU 1.0 — khong doi scale moi lan cat, khong zoom de "cho co nhip".
+  Engine chuyen muot giua cac muc va tu bo zoom qua day (code kiem). Neu phong_cach_mau co average_shot_seconds thi
+  bam theo do cho do dai doan.
 - Khoang lang dai giua hai cau trong cung doan: cat bo bang cach tach thanh 2 segment
   (tru khi phong_cach_mau.pacing.pause_handling noi mau GIU khoang nghi).
 - B-roll/screen-recording: giu nguyen scale 1.0.
@@ -1956,6 +1990,9 @@ danh sach thi bo trong "transition" — engine tu dung White_Flash. KHONG tu bia
 # CAPTION CHO HOOK
 Kem MOT caption "hero" ngan (<= 15 ky tu/dong) tom y cau hook. Day la chu dau tien nguoi xem
 doc — no phai dung mot minh duoc.
+Caption PHAI la nhung TU NGUOI NOI THAT SU NOI TRONG doan hook (lay dung cum tu trong loi_thoai cua doan, khong viet
+tu khac / khong lay tu cau ngoai doan) — chu hien DUNG LUC cum do duoc noi, nen cum phai nghe thay trong hook.
+Khong dung dau gach ("—", "–", " - ").
 
 # SCHEMA DAU RA (CHI JSON)
 
@@ -1997,7 +2034,7 @@ def gpt_hook(segments, transcript_data, emotion_map_data, key_moments_data, stor
         log("B3/7: %s chon doan hook 3-5s dat len dau..." % plan_ai_name())
     import hook_rule
     text = plan_chat([
-        {"role": "system", "content": _p("_HOOK_SYSTEM") + hook_rule.luat("B3") + creative.luat("B3")
+        {"role": "system", "content": _p("_HOOK_SYSTEM") + _B3_LUAT_CHU + hook_rule.luat("B3") + creative.luat("B3")
          + ngon_ngu.luat(story, "B3")},
         {"role": "user", "content": user},
     ], json_mode=True, max_tokens=2000, temperature=0.5, req_timeout=90,
@@ -2565,6 +2602,13 @@ def gpt_select(brief, reference_analysis=None, edit_request=None, log=None):
             # va biet doan do NOI GI. Truoc day B1 chi thay tom tat -> cat giua cau.
             "transcript": _gon_loi_thoai(src.get("transcript")),
         })
+        if src.get("asr_words"):
+            # NGAP NGUNG / LAP CHU (2026-10-18): chu Whisper TUNG TU (gio that) + goi y cua code -> Claude chi ra dung
+            # khoang can bo trong cau ("cái cái", "bị... bị", "ờ" keo dai) — cum Gemini qua tho de cat o muc chu
+            import speech_cut
+            _ws = speech_cut.words_by_source({"asr_words": {"x": src["asr_words"]}}).get("x") or []
+            brief_slim["sources"][-1]["chu_tung_tu"] = speech_cut.compact_words(_ws)
+            brief_slim["sources"][-1]["goi_y_vap"] = speech_cut.stutter_hints(_ws)
     if not brief.get("sources") and brief.get("transcript"):
         # brief doi cu (1 video, transcript o goc)
         brief_slim["transcript"] = _gon_loi_thoai(brief.get("transcript"))
@@ -2596,7 +2640,7 @@ def gpt_select(brief, reference_analysis=None, edit_request=None, log=None):
     text = plan_chat([
         {"role": "system", "content": sys_prompt},
         {"role": "user", "content": user},
-    ], json_mode=True, max_tokens=8000, temperature=0.6, req_timeout=150, max_attempts=2, step_label="B1-select")
+    ], json_mode=True, max_tokens=14000, temperature=0.5, req_timeout=240, max_attempts=2, step_label="B1-select")
     return _safe_json(text)
 
 
@@ -2607,7 +2651,8 @@ def gpt_timeline(selections, source_videos, duration_target=None, transcript_dat
     Truoc day chi nhan selections + source_videos: khong biet doan do NOI GI, cau bat
     dau/ket thuc o dau -> cat giua cau, va khong biet mach truyen -> xep thu tu tuy y.
     Nay moi selection kem loi thoai BEN TRONG no + cau chuyen cua B1 + nhip cat cua video mau."""
-    sys_prompt = _p("_TIMELINE_SYSTEM")
+    # luat 2026-10-18 noi BANG CODE (van ap khi user da sua prompt B2 trong menu Prompt & quy tac)
+    sys_prompt = _p("_TIMELINE_SYSTEM") + _B2_LUAT_ZOOM
     sel_rows = []
     for i, s in enumerate(selections or []):
         if not isinstance(s, dict):

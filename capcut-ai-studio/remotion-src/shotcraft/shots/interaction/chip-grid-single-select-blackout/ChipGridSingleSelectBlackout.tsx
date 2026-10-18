@@ -27,7 +27,7 @@
 // Be ngang chip DO bang font that (measureText) thay bang do rong co dinh -> vi tri van khoa chet (tinh 1 lan, transform none),
 // chip duoc chon van ve dung giua. Xep hang can bang (3+2 cho 5 muc). Khung doc (native): chip to hon, xep nhieu hang,
 // ca khoi can giua; ket qua: gia cu tren, gia moi rat to ben duoi.
-import { useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, useBrand, fitSize, measureText, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, useBrand, fitSize, measureText, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, FONT, mix, ramp, softShadow } from '../../../fixtures/Polish';
@@ -160,6 +160,9 @@ export const ChipGridSingleSelectBlackout: React.FC = () => {
     }
   });
 
+  // [Agent Edit] nen anh AI: bo nen dac (Stage tu bo gradient); chu truc tiep tren nen co bong nhe
+  const bd = useBackdrop();
+  const tsh = bd ? (bd.dark ? '0 2px 18px rgba(0,0,0,0.55)' : '0 1px 12px rgba(255,255,255,0.7)') : undefined;
   // ── ket qua (sau khi thu gon) ──
   const valFs = fitSize(value, { family: fonts.sans, size: portrait ? 300 : 180, maxWidth: (portrait ? 1680 : before ? 1200 : 1500) - (unit ? measureText(unit, fonts.sans, portrait ? 76 : 48, 500) : 0), weight: 750, minSize: 80, letterSpacingEm: -0.05 });
   const oldFs = portrait ? 96 : 60;
@@ -201,7 +204,7 @@ export const ChipGridSingleSelectBlackout: React.FC = () => {
 
   const oldEl = before ? (
     <div style={{ overflow: 'hidden', padding: '0.3em 0.1em 0.25em', margin: '-0.3em -0.1em -0.25em', fontSize: oldFs, opacity: frame >= 108 ? 1 : 0 }}>
-      <div style={{ position: 'relative', transform: `translateY(calc(${((1 - oldIn) * 110).toFixed(1)}% + ${((1 - oldIn) * 0.6).toFixed(2)}em))`, ...type(oldFs, 500), fontFamily: fonts.sans, lineHeight: 1.1, color: mixC(strike, L.ink2, L.ink3), whiteSpace: 'nowrap' }}>
+      <div style={{ position: 'relative', transform: `translateY(calc(${((1 - oldIn) * 110).toFixed(1)}% + ${((1 - oldIn) * 0.6).toFixed(2)}em))`, ...type(oldFs, 500), fontFamily: fonts.sans, lineHeight: 1.1, color: mixC(strike, L.ink2, L.ink3), whiteSpace: 'nowrap', textShadow: tsh }}>
         {before}
         <div style={{
           position: 'absolute', left: -4, top: '54%', height: portrait ? 6 : 4, borderRadius: 3, background: L.ink3,
@@ -211,7 +214,7 @@ export const ChipGridSingleSelectBlackout: React.FC = () => {
     </div>
   ) : null;
   const valEl = (
-    <div style={{ display: 'flex', alignItems: 'baseline', gap: portrait ? 16 : 10 }}>
+    <div style={{ display: 'flex', alignItems: 'baseline', gap: portrait ? 16 : 10, textShadow: tsh }}>
       <Rise units={valChars} frame={frame} start={116} each={14} gap={valGap} space="0"
         style={{ ...type(valFs, 750), fontFamily: fonts.sans, letterSpacing: '-0.05em', lineHeight: 1, color: L.ink }} />
       {unit ? <span style={{ ...type(unitFs, 500), fontFamily: fonts.sans, color: L.ink2, opacity: ramp(frame, 124, 10, EASE.out), whiteSpace: 'nowrap' }}>{unit}</span> : null}
@@ -219,12 +222,12 @@ export const ChipGridSingleSelectBlackout: React.FC = () => {
   );
 
   return (
-    <AbsoluteFill style={{ background: L.bg[1], overflow: 'hidden', fontFamily: FONT.sans }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[1], overflow: 'hidden', fontFamily: FONT.sans }}>
       <Stage look={L} keyLight={{ x: 0.5, y: 0.12 }} fill={null} />
 
       <AbsoluteFill style={{ transform: `scale(${cam.toFixed(4)})`, transformOrigin: '50% 50%' }}>
         {/* 眉题 + 问句 */}
-        <div style={{ position: 'absolute', left: 0, right: 0, top: headTop, textAlign: 'center', opacity: 1 - titleOut, transform: `translateY(${(-30 * titleOut).toFixed(2)}px)` }}>
+        <div style={{ position: 'absolute', left: 0, right: 0, top: headTop, textAlign: 'center', textShadow: tsh, opacity: 1 - titleOut, transform: `translateY(${(-30 * titleOut).toFixed(2)}px)` }}>
           {/* 眉题：标志 + 品牌名（không có thương hiệu -> ẩn）+ nhãn (字距收拢) */}
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 14, height: kickFs * 1.4, opacity: ramp(frame, 0, 10, EASE.out) }}>
             {brand ? <ShotcraftMark size={kickFs * 1.25} tone="light" /> : null}

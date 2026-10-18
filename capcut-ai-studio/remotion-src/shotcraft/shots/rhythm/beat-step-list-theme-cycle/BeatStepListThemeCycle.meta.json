@@ -25,5 +25,6 @@
   "tranh_khi": "Các mục dài cả câu; nội dung trầm, nghiêm túc; chỉ có 1-2 ý; cần người xem đọc kỹ.",
   "nang_luong": "cao",
   "chu_de": ["danh sách", "tính từ", "lợi ích", "phong cách", "giao diện", "app", "nhịp nhanh", "đổi chủ đề"]
- }
+ },
+ "backdrop": false
 }

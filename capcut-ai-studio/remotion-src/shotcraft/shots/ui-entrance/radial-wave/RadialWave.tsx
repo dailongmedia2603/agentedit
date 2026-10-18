@@ -12,7 +12,7 @@ import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { E, seg, useT } from '../../../fixtures/Motion';
 import { EASE, ramp } from '../../../fixtures/Polish';
-import { useCurrentFrame, useVideoConfig, useText, useShotFonts, wrapLines, fitSize } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useShotFonts, wrapLines, fitSize } from '../../../runtime';
 
 export const RADIAL_WAVE_DURATION = 114; // 3800ms @30fps
 
@@ -61,8 +61,13 @@ export const RadialWave: React.FC = () => {
   const hasText = tl.length > 0 || !!kicker;
   const blockH = (kicker ? kFit * 1.4 + 24 : 0) + tl.length * tSz * 1.15;
 
+  // [Agent Edit] NEN ANH AI: bo nen den; luoi cham la CHINH hieu ung (song lan) nen giu, chay tren anh nen. Quang toi sau
+  // chu -> thay bang bong do tren chu (khong de mot vet toi tren anh)
+  const bd = useBackdrop();
+  const ts = bd ? '0 2px 18px rgba(0,0,0,0.55), ' : '';
+
   return (
-    <AbsoluteFill style={{ background: '#0a0b10', overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : '#0a0b10', overflow: 'hidden' }}>
       {Array.from({ length: ROWS * COLS }, (_, i) => {
         const r = Math.floor(i / COLS);
         const c = i % COLS;
@@ -85,7 +90,8 @@ export const RadialWave: React.FC = () => {
               margin: -5 * K,
               background: pulse2 > 0.3 ? '#b9f2ff' : '#6c8cff',
               transform: `scale(${s})`,
-              opacity: 0.25 + w1 * 0.5 + pulse2 * 0.25,
+              // co anh nen: cham diu hon (anh van doc duoc giua cac cham), song chop van ro
+              opacity: (0.25 + w1 * 0.5) * (bd ? 0.55 : 1) + pulse2 * 0.25,
               boxShadow: pulse2 > 0.3 ? `0 0 ${12 * K}px #7fd8ff` : 'none',
             }}
           />
@@ -94,15 +100,15 @@ export const RadialWave: React.FC = () => {
       {hasText ? (
         <>
           {/* quang toi sau chu: cham van thay o rìa, chu doc ro */}
-          <div style={{
+          {!bd && <div style={{
             position: 'absolute', left: '50%', top: SH / 2, width: W + 400, height: blockH + 360, transform: 'translate(-50%, -50%)', opacity: txtIn,
             background: 'radial-gradient(ellipse 50% 50% at 50% 50%, rgba(10,11,16,0.92) 0%, rgba(10,11,16,0.8) 55%, rgba(10,11,16,0) 100%)',
-          }} />
+          }} />}
           <div style={{ position: 'absolute', left: 0, right: 0, top: SH / 2 - blockH / 2, textAlign: 'center' }}>
             {kicker ? (
               <div style={{
                 fontFamily: fonts.sans, fontSize: kFit, fontWeight: 650, letterSpacing: '0.2em', lineHeight: 1.4, color: '#b9f2ff', marginBottom: 24, whiteSpace: 'nowrap',
-                opacity: kIn, transform: `translateY(${((1 - kIn) * 16).toFixed(2)}px)`, textShadow: '0 0 18px rgba(127,216,255,0.6)',
+                opacity: kIn, transform: `translateY(${((1 - kIn) * 16).toFixed(2)}px)`, textShadow: `${ts}0 0 18px rgba(127,216,255,0.6)`,
               }}>{kicker}</div>
             ) : null}
             {tl.map((l, i) => {
@@ -111,7 +117,7 @@ export const RadialWave: React.FC = () => {
                 <div key={i} style={{
                   fontFamily: fonts.sans, fontSize: tSz, fontWeight: 800, letterSpacing: '-0.035em', lineHeight: 1.15, color: '#f2f6ff', whiteSpace: 'nowrap',
                   opacity: p, filter: p >= 0.999 ? undefined : `blur(${((1 - p) * 14).toFixed(2)}px)`, transform: `scale(${(1.06 - 0.06 * p).toFixed(4)})`,
-                  textShadow: '0 0 40px rgba(108,140,255,0.45)',
+                  textShadow: `${ts}0 0 40px rgba(108,140,255,0.45)`,
                 }}>{l}</div>
               );
             })}

@@ -13,7 +13,7 @@
 // (tinh ca gian chu 0.05em luc dau), khung doc to hon va xuong toi da 2 dong. Khung doc (portrait.mode = 'native'): 3 canh
 // cat la 3 khung cat doc khac nhau cua dashboard (cover 3.2x trai / phai, can canh 3.3x) hoac anh that cover.
 // (can canh doc 3.3x: the 'Trang xem nhieu' van nam tron trong be ngang)
-import { useCurrentFrame, useVideoConfig, useText, useImage, useBrand, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useImage, useBrand, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, Freeze, interpolate, Easing } from 'remotion';
 import { G, FakeDashboard } from '../../../fixtures/Fixtures';
@@ -67,6 +67,8 @@ export const TrailerBumper: React.FC = () => {
   const portrait = SH > 1080 * 1.2;
   const fonts = useShotFonts();
   const brand = useBrand();
+  // [Agent Edit] nen anh AI: the tieu de sang dan tu den len ANH NEN (thay nen sang tu ve); chu co bong sang nhe
+  const bd = useBackdrop();
   const img1 = useImage('shot1');
   const img2 = useImage('shot2');
   const img3 = useImage('shot3');
@@ -151,13 +153,17 @@ export const TrailerBumper: React.FC = () => {
   const kSize = fitSize(kCaps ? kicker.toUpperCase() : kicker, { family: fonts.sans, size: 34 * k, maxWidth: 1600, weight: 600, minSize: 22 * k, letterSpacingEm: kCaps ? 0.18 : 0.04 });
 
   return (
-    <AbsoluteFill style={{ background: '#000000', overflow: 'hidden', fontFamily: fonts.sans }}>
-      <Freeze frame={SETTLED} active={frame >= SETTLED}>
-        <AbsoluteFill style={{ opacity: lightUp }}>
-          <Backdrop tone="light" light={{ x: 0.5, y: portrait ? 0.45 : 0.36 }} vignette={0.2} />
-        </AbsoluteFill>
-      </Freeze>
-      <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : '#000000', overflow: 'hidden', fontFamily: fonts.sans }}>
+      {bd ? (
+        lightUp < 1 ? <AbsoluteFill style={{ background: '#000000', opacity: 1 - lightUp }} /> : null
+      ) : (
+        <Freeze frame={SETTLED} active={frame >= SETTLED}>
+          <AbsoluteFill style={{ opacity: lightUp }}>
+            <Backdrop tone="light" light={{ x: 0.5, y: portrait ? 0.45 : 0.36 }} vignette={0.2} />
+          </AbsoluteFill>
+        </Freeze>
+      )}
+      <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center', textShadow: bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined }}>
         <div
           style={{
             display: 'flex',

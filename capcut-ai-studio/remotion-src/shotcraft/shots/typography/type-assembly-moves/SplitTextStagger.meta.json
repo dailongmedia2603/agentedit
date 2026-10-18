@@ -23,5 +23,6 @@
   "tranh_khi": "Câu dài hơn ~8 từ; khoảnh khắc cảm xúc cần chất liệu ấm; video tone tối.",
   "nang_luong": "vua",
   "chu_de": ["tiêu đề", "câu chốt", "khẩu hiệu", "chữ động", "kết luận"]
- }
+ },
+ "backdrop": true
 }

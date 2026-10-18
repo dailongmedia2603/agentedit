@@ -23,7 +23,7 @@
 // [Agent Edit] o chu: kicker (眉题) / line1 + line2 (主标题两行，line2 末词 = 强调词) / subtitle / label (刊头右) /
 // folio (后景大数字)。Chu that dai ngan bat ky: moi dong tu thu nho vua be ngang; nhip vao tung tu nen theo so tu.
 // Khung doc (portrait.mode = 'native'): tieu de to hon, tu xuong dong theo be ngang, ca khoi dat giua khung.
-import { useCurrentFrame, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
 import React from 'react';
 
 import { LOOKS, SERIF, Stage, alpha } from '../../../fixtures/Look';
@@ -76,9 +76,12 @@ export const BlurSlide: React.FC = () => {
   const line1 = useText('line1', 'Mỗi lần ra mắt');
   const line2 = useText('line2', 'đều thật điện ảnh.');
   const sub = useText('subtitle', 'Công thức cảnh quay và chuyển động máy, do trợ lý AI dựng.');
-  const label = useText('label', 'SỐ 07 — THÁNG 10');
+  const label = useText('label', 'SỐ 07 · THÁNG 10');
   const folio = useText('folio', '07');
   const portrait = SH > 1080 * 1.2;
+  // [Agent Edit] nen anh AI: bo quang mau code, chu nam thang tren anh -> bong sang nhe de doc ro
+  const bd = useBackdrop();
+  const tsh: React.CSSProperties = bd ? { textShadow: '0 1px 12px rgba(255,255,255,0.7)' } : {};
   const W = 1920 - LEFT * 2;
   // 主标题：portrait 时字号放大、按宽度折行；landscape 保持两行、每行缩到一行内
   const H1 = portrait ? 230 : 170;
@@ -130,11 +133,11 @@ export const BlurSlide: React.FC = () => {
   const folioP = ramp(frame, 0, 48, EASE.out);
   const foot = ramp(frame, 72, 26, EASE.snappy);
   const headline: React.CSSProperties = {
-    fontFamily: SERIF, fontSize: size1, fontWeight: 400, lineHeight: 1, letterSpacing: '-0.035em', color: L.ink,
+    fontFamily: SERIF, fontSize: size1, fontWeight: 400, lineHeight: 1, letterSpacing: '-0.035em', color: L.ink, ...tsh,
   };
   return (
     <Stage look={L} keyLight={{ x: 0.3, y: 0.18 }} fill={null} breathe={0.6} grain={0.06} vignette={0.1}>
-      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 40% 50% at 96% 100%, ${alpha(L.accent, 0.06)}, ${alpha(L.accent, 0)} 70%)` }} />
+      {!bd && <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 40% 50% at 96% 100%, ${alpha(L.accent, 0.06)}, ${alpha(L.accent, 0)} 70%)` }} />}
       {/* 后景：刊号大数字（5% 墨色），比文字层推得更慢且反向漂移 → 前后景视差 */}
       <div
         style={{
@@ -146,7 +149,7 @@ export const BlurSlide: React.FC = () => {
         {folio}
       </div>
       {/* 刊头：品牌字标（视频自己的品牌）+ 右侧小标签 */}
-      <div style={{ position: 'absolute', left: LEFT, right: LEFT, top: headY, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: FONT.sans, fontSize: portrait ? 34 : 24, fontWeight: 600, letterSpacing: '0.2em', color: L.ink2, opacity: 0.4 + 0.6 * rule }}>
+      <div style={{ position: 'absolute', left: LEFT, right: LEFT, top: headY, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: FONT.sans, fontSize: portrait ? 34 : 24, fontWeight: 600, letterSpacing: '0.2em', color: L.ink2, opacity: 0.4 + 0.6 * rule, ...tsh }}>
         <ShotcraftWordmark size={portrait ? 34 : 24} markScale={1.5} gap={12} tone="light" color={L.ink2} />
         <span style={{ color: L.ink3 }}>{label}</span>
       </div>
@@ -160,7 +163,7 @@ export const BlurSlide: React.FC = () => {
             style={{
               position: 'absolute', left: LEFT, top: y0, display: 'flex', alignItems: 'center', gap: 18,
               fontFamily: FONT.sans, fontSize: portrait ? 40 : 30, fontWeight: 650, letterSpacing: '0.16em', color: L.accent,
-              opacity: kick, transform: `translateY(${((1 - kick) * 18).toFixed(2)}px)`, filter: kick >= 0.999 ? undefined : `blur(${((1 - kick) * 6).toFixed(2)}px)`,
+              opacity: kick, transform: `translateY(${((1 - kick) * 18).toFixed(2)}px)`, filter: kick >= 0.999 ? undefined : `blur(${((1 - kick) * 6).toFixed(2)}px)`, ...tsh,
             }}
           >
             <span style={{ width: 14, height: 14, background: L.accent, display: 'inline-block' }} />
@@ -177,7 +180,7 @@ export const BlurSlide: React.FC = () => {
             dy={26}
             blur={9}
             gap="0.26em"
-            style={{ position: 'absolute', left: LEFT, top: ySub + i * lineSub, fontFamily: FONT.sans, fontSize: subSize, fontWeight: 400, letterSpacing: '-0.012em', color: L.ink2, lineHeight: 1.2 }}
+            style={{ position: 'absolute', left: LEFT, top: ySub + i * lineSub, fontFamily: FONT.sans, fontSize: subSize, fontWeight: 400, letterSpacing: '-0.012em', color: L.ink2, lineHeight: 1.2, ...tsh }}
           />
         ))}
       </div>

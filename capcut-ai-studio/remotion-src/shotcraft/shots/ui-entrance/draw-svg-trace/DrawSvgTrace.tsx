@@ -6,7 +6,7 @@
 // - look = paper（暖白纸 · 墨 · 朱红）。主体放大到 1120×660（画宽 58%），内容是一张出版级 video-shotcraft 渲染报告卡：
 //   眉题 mono、两段式大标题「Cuts on the beat / 100%」（100% 用 188px 黑体，是全镜头的重点词）、32px 说明、
 //   右侧 12 根逐镜头能量柱（末三根朱红）、署名行（video-shotcraft 标志 + 字标）。
-// - 开场就有东西：绘图纸点阵底 + 四角先长出裁切标记（印刷对位线）——观众先知道"这里要画一个东西"，笔再沿轮廓跑一圈。
+// - 开场就有东西：[Agent Edit: da bo 点阵底] 四角先长出裁切标记（印刷对位线）——观众先知道"这里要画一个东西"，笔再沿轮廓跑一圈。
 // - 笔头：主线 6px 墨 + 三段渐细短 dash + 实心笔尖（按圆角矩形弧长精确定位，带落影）；
 //   描边速度 in-out（起笔、收笔有呼吸），笔尖在四个圆角处自然减速（弧长参数化本身不减速，靠 in-out 整体曲线）。
 // - 闭合：2f 冲纯黑 + 6→11px 加粗，6f 回落；裁切标记同时向外"弹"一下后退场。
@@ -177,16 +177,7 @@ export const DrawSvgTrace: React.FC = () => {
   return (
     <AbsoluteFill style={{ fontFamily: FONT.sans, overflow: 'hidden' }}>
       <Stage look={L} keyLight={{ x: 0.42, y: 0.12 }} fill={{ x: 0.9, y: 0.9 }} />
-      {/* 绘图纸点阵：48px 网格的墨点，中心清晰、四周隐去——描边阶段的"画板"，也给第 1 帧一个底 */}
-      <div
-        style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: `radial-gradient(circle, ${alpha(L.ink, 0.24)} ${portrait ? 3 : 2}px, transparent ${portrait ? 3.5 : 2.4}px)`,
-          backgroundSize: portrait ? '72px 72px' : '48px 48px', backgroundPosition: '24px 18px',
-          WebkitMaskImage: 'radial-gradient(ellipse 62% 66% at 50% 50%, #000 30%, transparent 100%)',
-          maskImage: 'radial-gradient(ellipse 62% 66% at 50% 50%, #000 30%, transparent 100%)',
-        }}
-      />
+      {/* [Agent Edit] bo luoi cham giay ve (nen trang tri kieu luoi cham); nen anh AI: Stage tu bo nen giay */}
 
       <AbsoluteFill style={{ transform: `scale(${push.toFixed(5)})`, transformOrigin: `960px ${SH / 2}px` }}>
         {/* 卡片底面：闭合后上墨、从贴地升起 */}

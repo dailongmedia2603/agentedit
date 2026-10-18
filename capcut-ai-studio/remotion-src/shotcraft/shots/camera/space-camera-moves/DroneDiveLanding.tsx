@@ -3,7 +3,7 @@
 // fixtures), cung kieu the. O anh tuy chon `hero`: anh (chup man hinh / anh minh hoa) phu kin the dich (cover) — may bay
 // lao thang vao anh do. Con so do be ngang that -> thu nho vua the. Khung doc (native): ca the gioi 3D phong to PZ,
 // diem roi o giua khung (trang dashboard tran kin chieu cao, khong cat ngang).
-import { useCurrentFrame, useVideoConfig, useText, useImage, useShotFonts, fitSize, measureText } from '../../../runtime';
+import { useCurrentFrame, useVideoConfig, useText, useImage, useShotFonts, useBackdrop, fitSize, measureText } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, Easing, interpolate } from 'remotion';
 import { CameraMotionBlur } from '@remotion/motion-blur';
@@ -55,21 +55,6 @@ const travel = (frame: number) => {
       easing: Easing.out(Easing.poly(5)),
     })
   );
-};
-
-// 地面点阵：以 hero 为中心铺开的大平面，径向渐隐到远处，不画出硬边
-const FLOOR = { x: -2400, y: -1500, w: 6720, h: 3300 };
-const floorStyle: React.CSSProperties = {
-  position: 'absolute',
-  left: FLOOR.x,
-  top: FLOOR.y,
-  width: FLOOR.w,
-  height: FLOOR.h,
-  backgroundImage: 'radial-gradient(circle at 3px 3px, rgba(40,44,60,0.34) 2.2px, rgba(40,44,60,0) 3.2px)',
-  backgroundSize: '48px 48px',
-  backgroundPosition: `${(-FLOOR.x) % 48}px ${(-FLOOR.y) % 48}px`,
-  WebkitMaskImage: `radial-gradient(ellipse ${FLOOR.w * 0.36}px ${FLOOR.h * 0.42}px at ${-FLOOR.x + 960}px ${-FLOOR.y + 600}px, #000 30%, transparent 100%)`,
-  maskImage: `radial-gradient(ellipse ${FLOOR.w * 0.36}px ${FLOOR.h * 0.42}px at ${-FLOOR.x + 960}px ${-FLOOR.y + 600}px, #000 30%, transparent 100%)`,
 };
 
 // 目标卡（页面坐标，盖在 FakeDashboard A 网格左上格上）：视频自己的指标 / 图片
@@ -167,8 +152,7 @@ const Scene: React.FC = () => {
             transformStyle: 'preserve-3d',
           }}
         >
-          {/* 地面点阵（俯冲时向镜头涌来 = 速度参照） */}
-          <div style={{ ...floorStyle, opacity: 1 - 0.45 * Math.min(1, Math.max(0, p)) }} />
+          {/* [Agent Edit] DOT 2: bo luoi cham mat dat (luoi trang tri phu nen) */}
           {/* 地面接触影：页面同形，随降落收紧 */}
           <div
             style={{
@@ -232,15 +216,19 @@ const Focus: React.FC = () => {
   );
 };
 
-export const DroneDiveLanding: React.FC = () => (
-  <AbsoluteFill>
-    {/* 背景静止，放在动态模糊之外：多重采样叠加大面积渐变会量化出色环 */}
-    <Backdrop tone="light" light={{ x: 0.5, y: 0.12 }} grain={0} vignette={0.16} />
-    <CameraMotionBlur shutterAngle={220} samples={12}>
-      <Scene />
-    </CameraMotionBlur>
-    <Focus />
-    {/* 颗粒放在动态模糊之外：不被多重采样平均掉 */}
-    <Grain opacity={0.06} />
-  </AbsoluteFill>
-);
+export const DroneDiveLanding: React.FC = () => {
+  // [Agent Edit] DOT 2: co nen anh AI -> khong ve nen code (gradient / quang sang) va hat nhieu
+  const bd = useBackdrop();
+  return (
+    <AbsoluteFill>
+      {/* 背景静止，放在动态模糊之外：多重采样叠加大面积渐变会量化出色环 */}
+      {!bd && <Backdrop tone="light" light={{ x: 0.5, y: 0.12 }} grain={0} vignette={0.16} />}
+      <CameraMotionBlur shutterAngle={220} samples={12}>
+        <Scene />
+      </CameraMotionBlur>
+      <Focus />
+      {/* 颗粒放在动态模糊之外：不被多重采样平均掉 */}
+      {!bd && <Grain opacity={0.06} />}
+    </AbsoluteFill>
+  );
+};

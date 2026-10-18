@@ -2089,6 +2089,32 @@ dien thoai; buoc plan doc duoc toan bo kho de chon mau phu hop tung phan; khi ph
   ngang; anh mau trong `remotion-src/shotcraft/.preview-public/`, khong len git).
 - **Kiem**: `HOME=$(mktemp -d) ../CapCutAPI/.venv/bin/python tests/test_shotcraft.py` + `node scripts/shotcraft-sync.mjs --check`.
 
+## 25. SUA LOI EDIT sau video test IMG_4608 (2026-10-18)
+
+User: "cat doan thua khong tot ('sợ bị bị... rớt hợp đồng')", "chu hien truoc roi moi noi", "dau gach tho", "nen code ve +
+ke o nhin AI", "lam dung zoom". Nguyen nhan + sua:
+- **Noi vap / lap chu** (Gemini 3.8 chep dung "sợ bị | bị rớt" nhung o 2 cum; tieng "bị~~" keo dai KHONG phai lang; cut_restarts
+  bo qua lap 1 chu; Whisper nghe "mùi vợ"): B1 (Claude) nhan them `chu_tung_tu` (chu Whisper "chu@giay") + `goi_y_vap`
+  (`speech_cut.stutter_hints`: lap 1-2 chu, chu keo dai, tieng dem) -> tra `cat_vap` [{source_id, start, end, bo, giu}].
+  `speech_cut.normalize_stutter_cuts` kiem (0.12-2.5s, co chu ben trong) -> `plan["stutter_cuts"]`; `cut_stutters` cat (mep =
+  dau chu Whisper +-0.18s roi cho nho tieng nhat +-60ms) o: server sau cut_restarts, build_spec, va BAN SAO HOOK
+  (`plan_guard` sau split_quiet). Gemini 3.8 (tu 10-17) lech gio trung vi 6.9s (truoc <= 1.2s), khop Whisper 74%.
+- **Chu hook**: `hook_caption` gan ca doan hook -> `_bam_chu_whisper` loai vi lech > 0.8s -> chu hien tu giay 0. Nay chu
+  anchor hook tim cum trong doan hook, hien dung luc noi (toi het cum + 1s). `_score_at`: chu man hinh rong hon loi
+  ('RAO CAN LON NHAT' khi chi noi 'rào cản') -> 2+ chu khoa dau khop lien = van bam. B3: luat chu hook = cum noi TRONG hook
+  (`_B3_LUAT_CHU` noi bang code — user da sua _HOOK_SYSTEM / _TIMELINE_SYSTEM trong menu Prompt).
+- **Dau gach**: `plan_guard.bo_dau_gach` / `lam_sach_dau_gach` (caption + chu tung tu, spans lop, chu shot, chu hook) chay
+  truoc chu anh AI (server) + trong build_spec; luat trong R4 (QUY TAC CHU 8), R5, B3, kho shot (luat 7). Giu "3-4", "e-commerce".
+- **Zoom**: B2 (Claude) dat `scale` gan moi doan (51/61 doan). `remotion_plan.han_che_zoom`: mac dinh 1.0, zoom chi o nhip
+  hook/twist/payoff/cta/proof hoac xin >= 1.12, cach >= 14s, <= 1.15, giu <= 4s; `_B2_LUAT_ZOOM` noi bang code vao B2.
+  Hieu ung tu viet: `fx_flow._han_che_zoom_fx` (zoom cach >= 20s, bo phan scale con giu sang / mau).
+- **Nen**: `motion_design._bg` luon `pattern: none` (khong ke o / cham / hoa van). Canh shot: NEN ANH AI —
+  `shot_lib.ensure_backdrops` (sau R4) khai ai_image `role: shot_bg` cho canh shot (mau `backdrop: true`) chua co `bg_asset`
+  (tran rieng MAX_SHOT_BG 5, khong tru tran 6 anh minh hoa); R4 duoc dan tu khai (luat 6 kho shot). `spec_shot` -> shot.backdrop;
+  `ShotStage` ve anh (cover, mo 5-7px, lop toi / sang) duoi mau; runtime `useBackdrop()`; `<Stage>` bo gradient / quang,
+  `<GridFloor>` an; tung mau tu bo nen rieng khi co backdrop (meta `backdrop`).
+- **Kiem**: `HOME=$(mktemp -d) ../CapCutAPI/.venv/bin/python tests/test_edit_fixes.py`.
+
 ## 12. CodeGraph
 
 CodeGraph `0.9.9` da duoc cai va index tai root workspace:

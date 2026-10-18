@@ -17,7 +17,7 @@
 // chi de lam dai mau luc cuon). Bieu tuong loai = SVG (khong dung ky tu Unicode ✦ ↗ ✓ de khong phu thuoc font may).
 // Khung doc (native): ca man (danh sach + goc ngam + nhan) phong 1.5x, dong dich cao hon voi tieu de lon (toi da 2 dong),
 // nhan dat phia tren goc phai dong dich (ben phai khong con cho); them dong lo trinh de lap nua duoi.
-import { useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
+import { useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, useBackdrop, fitSize, wrapLines, measureText } from '../../../runtime';
 import React from 'react';
 import { interpolate, Easing } from 'remotion';
 import { G } from '../../../fixtures/Fixtures';
@@ -152,6 +152,7 @@ export const BrakeReticleLock: React.FC = () => {
   const date = useText('date', 'Hôm nay');
   const tag = useText('tag', 'Vừa ra mắt');
   const history = useList('history', []).slice(0, 8);
+  const bd = useBackdrop(); // [Agent Edit] nen anh AI: bo nen sang + hat code ve
 
   // 列表坐标：竖屏整屏放大 u 倍
   const u = portrait ? 1.5 : 1;
@@ -178,7 +179,7 @@ export const BrakeReticleLock: React.FC = () => {
   const entries: Entry[] = Array.from({ length: N }, (_, i) => {
     const later = i > TARGET_ROW;
     if (i === TARGET_ROW) return { title, desc, v: version, date, kind: 'feature', later };
-    if (later) return { title: LATER[(i - TARGET_ROW - 1) % LATER.length], desc: 'Dự kiến quý tới.', v: '—', date: 'Q4', kind: KINDS[(i * 7) % 3], later };
+    if (later) return { title: LATER[(i - TARGET_ROW - 1) % LATER.length], desc: 'Dự kiến quý tới.', v: 'v3.0', date: 'Q4', kind: KINDS[(i * 7) % 3], later };
     const hi = TARGET_ROW - 1 - i;
     return {
       title: hi < history.length ? history[hi] : TITLES[i % TITLES.length],
@@ -238,7 +239,7 @@ export const BrakeReticleLock: React.FC = () => {
 
   return (
     <div style={{ width: 1920, height: SH, position: 'relative', overflow: 'hidden', fontFamily: FONT.sans }}>
-      <Backdrop tone="light" light={{ x: 0.5, y: 0.25 }} vignette={0.16} grain={0} />
+      {!bd && <Backdrop tone="light" light={{ x: 0.5, y: 0.25 }} vignette={0.16} grain={0} />}
 
       {/* 长列表：整体上掠，速度段纵向模糊 */}
       <div style={{ position: 'absolute', inset: 0, WebkitMaskImage: LIST_MASK, maskImage: LIST_MASK }}>
@@ -307,7 +308,7 @@ export const BrakeReticleLock: React.FC = () => {
           </div>
         )}
       </div>
-      <Grain opacity={0.05} />
+      {!bd && <Grain opacity={0.05} />}
     </div>
   );
 };

@@ -10,9 +10,9 @@
  "rate": [0.85, 1.2],
  "hold": 90,
  "slots": [
-  {"id": "kicker_a", "role": "kicker", "sample": "01 — Khó khăn", "max": 24, "optional": true, "note": "nhãn nhỏ cảnh trước"},
+  {"id": "kicker_a", "role": "kicker", "sample": "01 · Khó khăn", "max": 24, "optional": true, "note": "nhãn nhỏ cảnh trước"},
   {"id": "title_a", "role": "title", "sample": "Đêm nào rồi cũng qua,", "max": 34, "note": "nửa đầu câu (trước khoảnh khắc chuyển)"},
-  {"id": "kicker_b", "role": "kicker", "sample": "02 — Bước ngoặt", "max": 24, "optional": true},
+  {"id": "kicker_b", "role": "kicker", "sample": "02 · Bước ngoặt", "max": 24, "optional": true},
   {"id": "title_b", "role": "title", "sample": "bình minh sẽ tới.", "max": 34, "note": "nửa sau câu (sau khi lóe sáng)"},
   {"id": "modes", "role": "label", "sample": "Đêm|Hoàng hôn|Chân dung", "max": 12, "list": {"min": 2, "max": 3}, "optional": true, "note": "nhãn núm xoay chế độ máy ảnh; con trỏ trượt từ mục 1 sang mục 2"}
  ],
@@ -29,5 +29,6 @@
   "tranh_khi": "Nội dung số liệu / giao diện app; đã dùng hiệu ứng chớp sáng khác gần đó (chỉ một lần mỗi video); tone sáng sủa vui nhộn.",
   "nang_luong": "vua",
   "chu_de": ["chuyển cảnh", "trước sau", "bước ngoặt", "truyền cảm hứng", "hành trình", "điện ảnh", "lóe sáng", "chương mới"]
- }
+ },
+ "backdrop": false
 }

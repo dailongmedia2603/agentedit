@@ -7,7 +7,7 @@
 //   "急刹"进冻结（40–48f）、冻结 52 帧、再 8f 坡道恢复（100–108f）——像升格摄影的变速。
 //   冻结期：柱子停在半途的波浪形、火花悬在半空并保留拖尾（拖尾长度按内容时钟的速度算，所以冻住的是
 //   "运动中的瞬间"而不是静止画面）、计数器低位的滚动模糊也一起冻住。
-// - 环绕：真实 3D 场景（preserve-3d）——面板、火花、透视网格地面、远处点阵墙各在自己的深度。
+// - 环绕：真实 3D 场景（preserve-3d）——面板、火花、地面光池各在自己的深度（[Agent Edit] 已去掉网格地面 / 点阵墙）。
 //   相机 rotateY 0→-52°（26f，smooth）→ 顶点慢漂 12f → 回 0（22f，swift），同时 rotateX 抬 6°、
 //   推近 160px。火花与面板、地面与背墙之间的视差把"相机在绕"讲清楚。
 // - 恢复：柱子长完、火花散尽、柱顶数值标签逐个弹出，主角柱（周日）电光蓝 + 泛光，其余石板蓝。
@@ -25,7 +25,7 @@
 // cot, cung so muc). Bo cuc cot / tia lua / bo dem tinh tu so cot + so chu so that.
 // Khung doc (portrait.mode = 'native'): bang du lieu dung (1560x1960), tieu de + bo dem xep doc tren bieu do, chu to hon;
 // camera quay vong 3D, dong ho kep (noi dung dong bang, camera van chay) giu nguyen.
-import { useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, FONT, mix, ramp } from '../../../fixtures/Polish';
@@ -116,6 +116,7 @@ export const BulletTimeFreezeOrbit: React.FC = () => {
   const frame = useCurrentFrame();
   const { height: SH } = useVideoConfig();
   const fonts = useShotFonts();
+  const bd = useBackdrop(); // [Agent Edit] nen anh AI
   const portrait = SH > 1080 * 1.2;
   const kicker = useText('kicker', 'DOANH THU · TUẦN NÀY');
   const title = useText('title', 'Tổng đơn hàng');
@@ -201,28 +202,17 @@ export const BulletTimeFreezeOrbit: React.FC = () => {
           position: 'absolute', left: 960, top: cy, width: 0, height: 0, transformStyle: 'preserve-3d',
           transform: `translateZ(${dolly.toFixed(2)}px) rotateX(${rx.toFixed(3)}deg) rotateY(${ry.toFixed(3)}deg)`,
         }}>
-          {/* 远处点阵墙 */}
-          <div style={{
-            position: 'absolute', left: -2600, top: portrait ? -3200 : -1500, width: 5200, height: portrait ? 6400 : 3000,
-            transform: 'translateZ(-1200px)',
-            backgroundImage: `radial-gradient(circle at 3px 3px, ${alpha(L.accent, 0.35)} 2px, transparent 3px)`,
-            backgroundSize: '64px 64px',
-            WebkitMaskImage: 'radial-gradient(ellipse 40% 42% at 50% 50%, #000 0%, transparent 100%)',
-            maskImage: 'radial-gradient(ellipse 40% 42% at 50% 50%, #000 0%, transparent 100%)',
-            opacity: 0.55,
-          }} />
-          {/* 透视网格地面（面板下沿下方 70px） */}
-          <div style={{
-            position: 'absolute', left: -1800, top: PANEL.h / 2 + 70 - 1800, width: 3600, height: 3600,
-            transform: 'rotateX(90deg)',
-            backgroundImage:
-              `radial-gradient(ellipse 22% 14% at 50% 50%, ${alpha(L.accent, 0.32)} 0%, transparent 100%),` +
-              `linear-gradient(${alpha(L.accent, 0.22)} 2px, transparent 2px), linear-gradient(90deg, ${alpha(L.accent, 0.22)} 2px, transparent 2px)`,
-            backgroundSize: '100% 100%, 120px 120px, 120px 120px',
-            backgroundPosition: '0 0, -1px -1px, -1px -1px',
-            WebkitMaskImage: 'radial-gradient(circle at 50% 50%, #000 0%, transparent 46%)',
-            maskImage: 'radial-gradient(circle at 50% 50%, #000 0%, transparent 46%)',
-          }} />
+          {/* [Agent Edit] bo diem cham nen (tuong luoi cham) + luoi ke o mat san: chi giu vung sang mem duoi mat san
+              (khong co nen anh AI); co nen anh -> khong ve gi, anh nen hien ra */}
+          {!bd && (
+            <div style={{
+              position: 'absolute', left: -1800, top: PANEL.h / 2 + 70 - 1800, width: 3600, height: 3600,
+              transform: 'rotateX(90deg)',
+              backgroundImage: `radial-gradient(ellipse 22% 14% at 50% 50%, ${alpha(L.accent, 0.32)} 0%, transparent 100%)`,
+              WebkitMaskImage: 'radial-gradient(circle at 50% 50%, #000 0%, transparent 46%)',
+              maskImage: 'radial-gradient(circle at 50% 50%, #000 0%, transparent 46%)',
+            }} />
+          )}
 
           {/* 面板 */}
           <div style={{

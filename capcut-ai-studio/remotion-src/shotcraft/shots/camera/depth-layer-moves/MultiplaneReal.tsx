@@ -23,7 +23,7 @@
 //   - moi the: anh `contain` tren nen la chinh anh do phong to + mo (khong cat anh doc / ngang / vuong).
 //   - o chu: kicker / title / subtitle / badge (nhan the chinh) / tags (chu tren cac vien lop gan).
 //   - Khung doc (native): tieu de to o tren, the to (4:5) giua khung, cac vien lop gan tren / duoi hang the.
-import { staticFile, useCurrentFrame, useVideoConfig, useText, useList, useImage, useShot, useShotFonts, useBrand, fitSize, wrapLines } from '../../../runtime';
+import { staticFile, useCurrentFrame, useVideoConfig, useText, useList, useImage, useShot, useShotFonts, useBrand, useBackdrop, fitSize, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, Img, continueRender, delayRender } from 'remotion';
 import { EASE, SpeedBlur, bezier, mix, ramp, softShadow, velocity } from '../../../fixtures/Polish';
@@ -95,6 +95,9 @@ export const MultiplaneReal: React.FC = () => {
   const fonts = useShotFonts();
   const brand = useBrand();
   const shot = useShot();
+  // [Agent Edit] nen anh AI: bo nen code (mau dac / lop xa anh mo / suong mu) -> anh nen hien ra; chu tren nen co bong nhe
+  const bd = useBackdrop();
+  const tsh = bd ? (bd.dark ? '0 2px 18px rgba(0,0,0,0.55)' : '0 1px 12px rgba(255,255,255,0.7)') : undefined;
   const portrait = SH > 1080 * 1.2;
   const kicker = useText('kicker', 'Góc nhìn chiều sâu');
   const title = useText('title', 'Mọi dự án, một không gian.');
@@ -174,16 +177,16 @@ export const MultiplaneReal: React.FC = () => {
   const farW = 1920 + DRIVE * 0.35 + 240;
 
   return (
-    <AbsoluteFill style={{ background: L.bg[1], overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[1], overflow: 'hidden' }}>
       <Stage look={L} keyLight={{ x: 0.3, y: 0.0 }} fill={{ x: 0.85, y: 1 }} grain={0.06} />
       {/* 远景 0.35x：整张背景放大、退焦、降饱和 */}
-      <div style={{ position: 'absolute', left: -120, top: -80, width: farW, height: SH + 160, transform: `translateX(${(-drive * 0.35).toFixed(2)}px)`, filter: `blur(${hasBg ? 5 : 12}px) saturate(0.7)`, opacity: 0.75 }}>
+      {!bd && <div style={{ position: 'absolute', left: -120, top: -80, width: farW, height: SH + 160, transform: `translateX(${(-drive * 0.35).toFixed(2)}px)`, filter: `blur(${hasBg ? 5 : 12}px) saturate(0.7)`, opacity: 0.75 }}>
         {bg ? <Img src={bg} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
-      </div>
+      </div>}
       {/* 空气透视：远景之上一层暖色薄雾，上部更浓 */}
-      <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(180deg, ${alpha(L.bg[0], 0.86)} 0%, ${alpha(L.bg[1], 0.66)} 50%, ${alpha(L.bg[2], 0.58)} 100%)` }} />
+      {!bd && <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(180deg, ${alpha(L.bg[0], 0.86)} 0%, ${alpha(L.bg[1], 0.66)} 50%, ${alpha(L.bg[2], 0.58)} 100%)` }} />}
       {/* 桌面：中景卡落影的承托面，一条极淡的地平线光 */}
-      <div style={{ position: 'absolute', left: 0, right: 0, top: ROW_Y + rowCH - 40, height: 340, background: `linear-gradient(180deg, ${alpha(L.shadow, 0)}, ${alpha(L.shadow, 0.06)} 40%, ${alpha(L.shadow, 0.02)})` }} />
+      {!bd && <div style={{ position: 'absolute', left: 0, right: 0, top: ROW_Y + rowCH - 40, height: 340, background: `linear-gradient(180deg, ${alpha(L.shadow, 0)}, ${alpha(L.shadow, 0.06)} 40%, ${alpha(L.shadow, 0.02)})` }} />}
 
       {/* 中景 0.7x：卡组横排（主阅读层，无 blur） */}
       <div style={{ position: 'absolute', left: 0, top: ROW_Y, transform: `translateX(${(-drive * 0.7).toFixed(2)}px)` }}>
@@ -232,7 +235,7 @@ export const MultiplaneReal: React.FC = () => {
       </SpeedBlur>
 
       {/* 0x 层：固定在画框上的标题 */}
-      <div style={{ position: 'absolute', left: TX, top: titleTop }}>
+      <div style={{ position: 'absolute', left: TX, top: titleTop, textShadow: tsh }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, height: kickFs * 1.5, ...type(kickFs, 700, { caps: true }), fontFamily: fonts.sans, whiteSpace: 'nowrap', letterSpacing: `${mix(0.5, 0.18, kick).toFixed(3)}em`, color: L.accent, opacity: kick }}>
           {brand ? <ShotcraftMark size={kickFs * 1.55} tone="light" /> : null}
           {brand?.name ? <span style={{ textTransform: 'none', fontFamily: BRAND.font, fontSize: kickFs * 1.18, fontWeight: 700, letterSpacing: '0.03em', color: L.ink }}>{BRAND.name}</span> : null}
@@ -249,8 +252,8 @@ export const MultiplaneReal: React.FC = () => {
       </div>
       {subLines.length ? (
         <div style={portrait
-          ? { position: 'absolute', left: TX, top: titleBottom + 40, width: 1680, fontFamily: fonts.sans, fontSize: subFs, fontWeight: 450, lineHeight: 1.35, color: L.ink2, opacity: sub, transform: `translateY(${((1 - sub) * 14).toFixed(1)}px)` }
-          : { position: 'absolute', right: 120, top: tLines.length > 1 ? titleBottom - subLines.length * subFs * 1.35 : 196, width: 520, textAlign: 'right', fontFamily: fonts.sans, fontSize: subFs, fontWeight: 450, lineHeight: 1.35, color: L.ink2, opacity: sub, transform: `translateY(${((1 - sub) * 14).toFixed(1)}px)` }}>
+          ? { position: 'absolute', left: TX, top: titleBottom + 40, width: 1680, fontFamily: fonts.sans, fontSize: subFs, fontWeight: 450, lineHeight: 1.35, color: L.ink2, textShadow: tsh, opacity: sub, transform: `translateY(${((1 - sub) * 14).toFixed(1)}px)` }
+          : { position: 'absolute', right: 120, top: tLines.length > 1 ? titleBottom - subLines.length * subFs * 1.35 : 196, width: 520, textAlign: 'right', fontFamily: fonts.sans, fontSize: subFs, fontWeight: 450, lineHeight: 1.35, color: L.ink2, textShadow: tsh, opacity: sub, transform: `translateY(${((1 - sub) * 14).toFixed(1)}px)` }}>
           {subLines.map((l, j) => <div key={j} style={{ whiteSpace: 'nowrap' }}>{l}</div>)}
         </div>
       ) : null}

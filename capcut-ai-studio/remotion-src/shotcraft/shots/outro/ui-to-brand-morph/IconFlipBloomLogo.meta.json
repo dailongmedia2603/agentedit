@@ -22,5 +22,6 @@
   "tranh_khi": "Video không có thương hiệu / tên sản phẩm cụ thể để chốt; giữa video khi còn nhiều nội dung; tone tối, nghiêm trọng.",
   "nang_luong": "vua",
   "chu_de": ["logo", "thương hiệu", "outro", "kết video", "app", "tiết lộ", "ra mắt"]
- }
+ },
+ "backdrop": true
 }

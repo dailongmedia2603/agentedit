@@ -6,7 +6,7 @@
 // giao dien xam la "khung xuong" truu tuong (thanh xam thay chu), logo + ten = thuong hieu cua video (khong co -> dau hieu
 // trung tinh, an ten). Khung doc (portrait.mode = 'native'): mat bang cao 1300x1700 (them the viec / dong menu), phong
 // 1.12 va dat giua khung doc; quet sang + vet sang men van chay dung mep tren / mep phai.
-import { useCurrentFrame, useVideoConfig, useImage, useBrand } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useImage, useBrand } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, interpolate } from 'remotion';
 import { BRAND, ShotcraftMark } from '../../../fixtures/Brand';
@@ -146,8 +146,9 @@ export const GlowWakeSleepPanel: React.FC = () => {
   const drift = interpolate(frame, [0, 132], [-150, 150]);
   const driftY = interpolate(frame, [0, 132], [-36, 36]);
 
+  const bd = useBackdrop(); // [Agent Edit] nen anh AI: bo nen den code, tam giao dien van ngu / thuc trong toi
   return (
-    <AbsoluteFill style={{ background: '#040308', overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : '#040308', overflow: 'hidden' }}>
       <div style={{ position: 'absolute', inset: 0, perspective: 1700, perspectiveOrigin: '46% 40%' }}>
         <div style={{
           position: 'absolute', left: portrait ? (1920 - W) / 2 : 400, top: portrait ? (SH - H) / 2 : 150,

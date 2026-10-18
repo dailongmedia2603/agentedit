@@ -28,5 +28,6 @@
   "tranh_khi": "Giữa đoạn chia sẻ nhẹ nhàng; không có tên riêng để giới thiệu; nội dung nghiêm túc / buồn.",
   "nang_luong": "cao",
   "chu_de": ["ra mắt", "mở đầu", "trailer", "giới thiệu", "thương hiệu", "sản phẩm", "sự kiện"]
- }
+ },
+ "backdrop": true
 }

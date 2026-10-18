@@ -18,7 +18,7 @@
 // ung (thay hinh ve tren the, cover). Chu dai: co chu tu thu nho vua be ngang the / khung. Chu "do dac" (SHOT 01, 1080P...)
 // -> tieng Viet trung tinh. Khung doc (native): ca canh 3D phong to P lan quanh tam, vong o giua khung, phu de to ben duoi
 // (cac the hai ben tran ra mep — dung chat bang chuyen).
-import { useCurrentFrame, useVideoConfig, useText, useList, useImage, useShotFonts, fitSize, wrapLines } from '../../../runtime';
+import { useCurrentFrame, useVideoConfig, useText, useList, useImage, useShotFonts, useBackdrop, fitSize, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, FONT, mix } from '../../../fixtures/Polish';
@@ -124,8 +124,11 @@ export const Carousel3D: React.FC = () => {
     );
   };
 
+  // [Agent Edit] DOT 2: co nen anh AI -> bo nen than chi (Stage tu bo gradient); chu nam tren nen -> bong toi nhe
+  const bd = useBackdrop();
+  const halo = bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined;
   return (
-    <AbsoluteFill style={{ background: L.bg[2] }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[2] }}>
       <Stage look={L} keyLight={{ x: 0.5, y: 0.16 }} fill={{ x: 0.5, y: 1.0 }} intensity={0.5} />
 
       <div style={{ position: 'absolute', left: 0, top: 0, width: 1920, height: SH, transform: `scale(${P})`, transformOrigin: `960px ${ringY}px` }}>
@@ -177,7 +180,7 @@ export const Carousel3D: React.FC = () => {
         const numFs = portrait ? 40 : 26;
         const capTop = portrait ? ringY + (CH / 2 + 110) * P : 862;
         return (
-          <div style={{ position: 'absolute', left: 0, right: 0, top: capTop, height: capH, overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', left: 0, right: 0, top: capTop, height: capH, overflow: 'hidden', textShadow: halo }}>
             {[0, 1].map((j) => {
               const c = CARDS[(k + j) % N];
               const y = (j - roll) * capH;
@@ -204,7 +207,7 @@ export const Carousel3D: React.FC = () => {
         const tFs = Math.min(tFs0, ...tLines.map((l) => fitSize(l, { family: fonts.sans, size: tFs0, maxWidth: portrait ? 1720 : 1200, weight: 650, minSize: tFs0 * 0.55 })));
         const tTop = ringY - (CH / 2 + 150) * P - tLines.length * tFs * 1.3;
         return (
-          <>
+          <div style={{ textShadow: halo }}>
             <div style={{ position: 'absolute', left: portrait ? 110 : 120, top: portrait ? 230 : 92, display: 'flex', alignItems: 'center', gap: 14 * u, whiteSpace: 'nowrap' }}>
               {BRAND.name ? <ShotcraftMark size={30 * u} tone="dark" /> : null}
               {BRAND.name ? <div style={{ fontFamily: FONT.mono, fontSize: 22 * u, letterSpacing: '0.1em', color: L.ink2, lineHeight: 1.4 }}>{BRAND.name}</div> : null}
@@ -220,7 +223,7 @@ export const Carousel3D: React.FC = () => {
             <div style={{ position: 'absolute', right: portrait ? 110 : 120, top: portrait ? 236 : 98, fontFamily: FONT.mono, fontSize: 22 * u, letterSpacing: '0.16em', color: L.ink3, lineHeight: 1.4 }}>
               {`${n} MỤC`}
             </div>
-          </>
+          </div>
         );
       })()}
     </AbsoluteFill>

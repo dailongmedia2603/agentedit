@@ -22,9 +22,9 @@
 // The giai tu bo cuc theo chu that (tieu de tu xuong 2 dong, so dai tu thu nho, chu thich tu chuyen xuong duoi so).
 // Ba khung cat (toan canh -> the -> so) tinh tu vi tri that cua the. Khung doc (native): canh cao = height, the phong to
 // 1.5x, chu thich xep duoi so -> khung cat cuoi van la can canh so; HUD bam theo 4 goc khung doc.
-import { useCurrentFrame, useVideoConfig, useText, useShotFonts, measureText, fitSize, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useShotFonts, measureText, fitSize, wrapLines } from '../../../runtime';
 import React from 'react';
-import { AbsoluteFill } from 'remotion';
+import { AbsoluteFill, Img } from 'remotion';
 import { EASE, FONT, Grain, Vignette, mix, ramp } from '../../../fixtures/Polish';
 import { LOOKS, alpha, type } from '../../../fixtures/Look';
 import { BRAND, ShotcraftMark } from '../../../fixtures/Brand';
@@ -184,10 +184,22 @@ const Wall: React.FC<{ SH: number }> = ({ SH }) => {
   const rows = Math.ceil(SH / 124) + 1;
   const cols = 6;
   const word = BRAND.name;
+  // [Agent Edit] nen anh AI: anh nen lam "phong nen" cua canh (ve ngay trong canh de 3 khung cat van zoom theo),
+  // bo nen gradient + gach logo lap lai
+  const bd = useBackdrop();
+  if (bd) {
+    return (
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#000' }}>
+        <Img src={bd.src} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.06)', filter: 'blur(4px) brightness(0.48) saturate(0.9)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(4,6,10,0.4) 0%, rgba(4,6,10,0.2) 45%, rgba(4,6,10,0.5) 100%)' }} />
+      </div>
+    );
+  }
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden',
       background: `radial-gradient(ellipse 60% 70% at 50% 28%, #2a2b2f 0%, #18191c 55%, #0d0d0f 100%)` }}>
-      {Array.from({ length: rows }, (_, r) => (
+      {/* [Agent Edit] khong co ten thuong hieu -> bo hang logo lap lai (nhin nhu luoi cham trang tri); chi giu backdrop ten khi co thuong hieu */}
+      {word && Array.from({ length: rows }, (_, r) => (
         <div key={r} style={{ position: 'absolute', left: (r % 2) * -170 - 60, top: 20 + r * 124, display: 'flex', gap: 0, whiteSpace: 'nowrap' }}>
           {Array.from({ length: cols + 1 }, (_, c) => {
             // 背板砖：视频品牌标志 / 名称交错（整体压到 9%）；无品牌名 → 全是标志
@@ -263,11 +275,13 @@ const Card: React.FC<{ c: CardLayout }> = ({ c }) => (
   </div>
 );
 
-const Scene: React.FC<{ f: number; live: boolean; c: CardLayout }> = ({ f, live, c }) => (
+const Scene: React.FC<{ f: number; live: boolean; c: CardLayout }> = ({ f, live, c }) => {
+  const bd = useBackdrop();
+  return (
   <div style={{ position: 'absolute', inset: 0, fontFamily: FONT.sans, color: L.ink }}>
     <Wall SH={c.SH} />
     {/* 舞台顶光 */}
-    <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 34% 60% at 50% 40%, rgba(255,250,240,0.12) 0%, rgba(255,250,240,0) 70%)` }} />
+    {!bd && <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 34% 60% at 50% 40%, rgba(255,250,240,0.12) 0%, rgba(255,250,240,0) 70%)` }} />}
     {/* 别家相机的远处闪光：4 角星芒 + 柔光，每次 3f */}
     {live && POPS.map((p, i) => {
       const t = f - p.f;
@@ -284,7 +298,8 @@ const Scene: React.FC<{ f: number; live: boolean; c: CardLayout }> = ({ f, live,
     })}
     <Card c={c} />
   </div>
-);
+  );
+};
 
 // ───────────── 裁切与 HUD ─────────────
 type View = { scale: number; cx: number; cy: number };
@@ -377,9 +392,10 @@ export const PaparazziFlash: React.FC = () => {
   const saved = ramp(frame, 84, 12, EASE.out);
   const hx = portrait ? 120 : 130;
   const hy = portrait ? 150 : 112;
+  const bd = useBackdrop();
 
   return (
-    <AbsoluteFill style={{ background: '#0b0b0c', overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : '#0b0b0c', overflow: 'hidden' }}>
       <div style={{
         position: 'absolute', inset: 0, transformOrigin: `960px ${SH / 2}px`,
         transform: `translate(${jx.toFixed(2)}px, ${(jy + settleY).toFixed(2)}px) scale(${(settleScale * holdPush * 1.012).toFixed(5)})`,
@@ -396,8 +412,8 @@ export const PaparazziFlash: React.FC = () => {
           <Still view={STILLS[seg]} f={FLASHES[seg]} live={false} c={c} />
         )}
       </div>
-      <Vignette strength={[0.5, 0.5, 0.56, 0.62][seg + 1]} inner={0.42} color="#000000" />
-      <Grain opacity={0.1} blend="soft-light" />
+      {!bd && <Vignette strength={[0.5, 0.5, 0.56, 0.62][seg + 1]} inner={0.42} color="#000000" />}
+      {!bd && <Grain opacity={0.1} blend="soft-light" />}
 
       {/* 取景器 HUD（屏幕层） */}
       <svg width={1920} height={SH} style={{ position: 'absolute', inset: 0 }}>

@@ -25,7 +25,7 @@
 // Duong cong toc do (3f khoi dong + suy giam mu, dinh ~300px/f, SpeedBlur 0.085 x toc do <= 64px), hold 24f, lift 1.2x:
 // GIU NGUYEN. Khung doc (native): toan bo hinh hoc phong S=2 (the cao hon: 1:1.4), hanh lang dat giua khung,
 // dem so + nhan o tren, thuoc + ten the o duoi.
-import { useCurrentFrame, useImage, useShotFonts, useText, useVideoConfig, fitSize } from '../../../runtime';
+import { useCurrentFrame, useImage, useShotFonts, useText, useVideoConfig, useBackdrop, fitSize } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, Img } from 'remotion';
 import { EASE, FONT, ramp, mix, velocity, softShadow, SpeedBlur } from '../../../fixtures/Polish';
@@ -166,9 +166,12 @@ export const WhipBrakeReal: React.FC = () => {
   const labelSize = fitSize(labelT.toUpperCase(), { family: fonts.sans, size: 32 * (portrait ? 1.7 : 1), maxWidth: portrait ? 1700 : 1500, weight: 600, minSize: 20, letterSpacingEm: 0.16 });
   const kickSize = fitSize(kicker.toUpperCase(), { family: fonts.sans, size: 30 * (portrait ? 1.5 : 1), maxWidth: portrait ? 1680 : 1000, weight: 600, minSize: 18, letterSpacingEm: 0.18 });
   const DIG = DIGIT * (portrait ? 1.5 : 1);
+  // [Agent Edit] DOT 2: co nen anh AI -> bo nen giay (Stage tu bo); chu nam tren nen (so thuoc, nhan, bo dem) -> bong sang nhe
+  const bd = useBackdrop();
+  const halo = bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined;
 
   return (
-    <AbsoluteFill style={{ overflow: 'hidden', background: L.bg[1] }}>
+    <AbsoluteFill style={{ overflow: 'hidden', background: bd ? 'transparent' : L.bg[1], textShadow: halo }}>
       <Stage look={L} keyLight={{ x: 0.5, y: 0.25 }} fill={null} />
 
       {/* 长廊（世界）：卡片 + 刻度尺，整体按相机位移，按速度横向拖影 */}

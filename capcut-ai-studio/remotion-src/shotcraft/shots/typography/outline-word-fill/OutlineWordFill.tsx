@@ -28,7 +28,7 @@
 // subtitle (cau phu duoi chu, toi da 2 dong trong vong tron) / before_label + before (so cu, ben trai) /
 // after_label + after (so moi, ben phai, sang cam khi bat sang). Font: Be Vietnam Pro 500 (ban tinh, du dau tieng Viet).
 // Khung doc (native): ca cum phong 1.3x dat giua khung; so doc truoc/sau dat tren / duoi vong tron (chu lon hon).
-import { useCurrentFrame, useVideoConfig, useText, useShotFonts, useBrand, fitSize, wrapLines, measureText } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useShotFonts, useBrand, fitSize, wrapLines, measureText } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, mix, ramp } from '../../../fixtures/Polish';
@@ -148,11 +148,14 @@ export const OutlineWordFill: React.FC = () => {
   const rdR = rdFit(afterLabel, afterVal);
   const rdTopL = portrait ? CY - R * u - 250 : CY - 74;
   const rdTopR = portrait ? CY + R * u + 160 : CY - 74;
+  // [Agent Edit] nen anh AI: bo nen toi + bui (Stage tu trong suot); chu dat thang tren nen co bong toi nhe
+  const bd = useBackdrop();
+  const TSH = bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined;
 
   return (
-    <AbsoluteFill style={{ background: L.bg[1] }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[1] }}>
       <Stage look={L} keyLight={{ x: 0.5, y: 0.5 }} fill={{ x: 0.5, y: 1.1 }} intensity={0.45 + 0.5 * flash + 0.15 * lit} grain={0.09} vignette={0.6}>
-        {Array.from({ length: Math.ceil(SH / 1080) }, (_, i) => (
+        {!bd && Array.from({ length: Math.ceil(SH / 1080) }, (_, i) => (
           <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: i * 1080, height: 1080 }}>
             <Dust look={L} count={22} seed={3 + i * 11} drift={0.12} opacity={0.4} />
           </div>
@@ -195,26 +198,26 @@ export const OutlineWordFill: React.FC = () => {
 
         {/* 读数：左 = 旧值（弱），右 = 新值（点亮时变橙） */}
         {beforeVal ? (
-          <div style={{ position: 'absolute', left: 120, top: rdTopL, opacity: ext, transform: `translateX(${((1 - ext) * -30).toFixed(2)}px)`, ...type(rdL, 500, { mono: true }), letterSpacing: '0.12em', lineHeight: 1.3, color: L.ink3, whiteSpace: 'nowrap' }}>
+          <div style={{ position: 'absolute', left: 120, top: rdTopL, opacity: ext, transform: `translateX(${((1 - ext) * -30).toFixed(2)}px)`, ...type(rdL, 500, { mono: true }), letterSpacing: '0.12em', lineHeight: 1.3, color: L.ink3, whiteSpace: 'nowrap', textShadow: TSH }}>
             {beforeLabel} <span style={{ color: L.ink2 }}>{beforeVal}</span>
           </div>
         ) : null}
         {afterVal ? (
-          <div style={{ position: 'absolute', right: 120, top: rdTopR, opacity: ext, transform: `translateX(${((1 - ext) * 30).toFixed(2)}px)`, ...type(rdR, 500, { mono: true }), letterSpacing: '0.12em', lineHeight: 1.3, color: L.ink3, textAlign: 'right', whiteSpace: 'nowrap' }}>
-            {afterLabel} <span style={{ color: lit ? L.accent : L.ink2, textShadow: lit && flash > 0.02 ? `0 0 ${(18 * flash).toFixed(1)}px ${alpha(L.accent, 0.8)}` : undefined }}>{afterVal}</span>
+          <div style={{ position: 'absolute', right: 120, top: rdTopR, opacity: ext, transform: `translateX(${((1 - ext) * 30).toFixed(2)}px)`, ...type(rdR, 500, { mono: true }), letterSpacing: '0.12em', lineHeight: 1.3, color: L.ink3, textAlign: 'right', whiteSpace: 'nowrap', textShadow: TSH }}>
+            {afterLabel} <span style={{ color: lit ? L.accent : L.ink2, textShadow: lit && flash > 0.02 ? `0 0 ${(18 * flash).toFixed(1)}px ${alpha(L.accent, 0.8)}` : TSH }}>{afterVal}</span>
           </div>
         ) : null}
 
         <div style={{ position: 'absolute', left: CX, top: CY, width: 0, height: 0, transform: `scale(${u})` }}>
           {/* 眉题 = 品牌落款：小号标志（有品牌时）+ 文字 */}
           {kicker ? (
-            <div style={{ position: 'absolute', left: -R, width: R * 2, top: -wordH / 2 - 30 - kickSize * 1.4 - (lines.length > 1 ? 10 : 0), display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 16, opacity: sub(0), transform: `translateY(${((1 - sub(0)) * 16).toFixed(2)}px)`, ...type(kickSize, 600, { mono: true }), letterSpacing: '0.16em', lineHeight: 1.3, color: L.ink2, whiteSpace: 'nowrap' }}>
+            <div style={{ position: 'absolute', left: -R, width: R * 2, top: -wordH / 2 - 30 - kickSize * 1.4 - (lines.length > 1 ? 10 : 0), display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 16, opacity: sub(0), transform: `translateY(${((1 - sub(0)) * 16).toFixed(2)}px)`, ...type(kickSize, 600, { mono: true }), letterSpacing: '0.16em', lineHeight: 1.3, color: L.ink2, whiteSpace: 'nowrap', textShadow: TSH }}>
               {brand ? <ShotcraftMark size={40} tone="dark" /> : null}
               <span>{kicker}</span>
             </div>
           ) : null}
           {subLines.map((l, i) => (
-            <div key={i} style={{ position: 'absolute', left: -R, width: R * 2, top: wordH / 2 + 20 + i * subSize * 1.25, textAlign: 'center', opacity: sub(3 + i * 2), transform: `translateY(${((1 - sub(3 + i * 2)) * 16).toFixed(2)}px)`, ...type(subSize, 450), letterSpacing: '-0.01em', lineHeight: 1.25, color: L.ink2, whiteSpace: 'nowrap' }}>
+            <div key={i} style={{ position: 'absolute', left: -R, width: R * 2, top: wordH / 2 + 20 + i * subSize * 1.25, textAlign: 'center', opacity: sub(3 + i * 2), transform: `translateY(${((1 - sub(3 + i * 2)) * 16).toFixed(2)}px)`, ...type(subSize, 450), letterSpacing: '-0.01em', lineHeight: 1.25, color: L.ink2, whiteSpace: 'nowrap', textShadow: TSH }}>
               {l}
             </div>
           ))}
@@ -232,7 +235,7 @@ export const OutlineWordFill: React.FC = () => {
             </div>
             <div style={{
               position: 'absolute', inset: 0, color: '#fff5ee', opacity: lit,
-              textShadow: flash > 0.01 ? `0 0 ${(14 * flash).toFixed(1)}px rgba(255,255,255,${(0.7 * flash).toFixed(3)}), 0 0 ${(60 * flash).toFixed(1)}px ${alpha(L.accent, 0.65 * flash)}` : `0 0 40px ${alpha(L.accent, 0.18)}`,
+              textShadow: flash > 0.01 ? `0 0 ${(14 * flash).toFixed(1)}px rgba(255,255,255,${(0.7 * flash).toFixed(3)}), 0 0 ${(60 * flash).toFixed(1)}px ${alpha(L.accent, 0.65 * flash)}${bd ? ', ' + TSH : ''}` : `0 0 40px ${alpha(L.accent, 0.18)}${bd ? ', ' + TSH : ''}`,
             }}>
               {lines.map((l, i) => <div key={i}>{l}</div>)}
             </div>

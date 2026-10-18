@@ -87,7 +87,7 @@ const serveUrl = await bundle({
 })
 console.log(`[shot-still] bundle ${((Date.now() - t0) / 1000).toFixed(1)}s`)
 const brand = props.brand === undefined ? { name: 'Agent Edit' } : props.brand
-const input = { texts, images: props.images || {}, theme: props.theme || null, brand, rate: props.rate || 1, preview: props.preview !== false }
+const input = { texts, images: props.images || {}, theme: props.theme || null, brand, rate: props.rate || 1, preview: props.preview !== false, backdrop: props.backdrop || null }
 const shots = []
 for (const o of orient === 'both' ? ['portrait', 'landscape'] : [orient]) {
   const W = o === 'portrait' ? 1080 : 1920

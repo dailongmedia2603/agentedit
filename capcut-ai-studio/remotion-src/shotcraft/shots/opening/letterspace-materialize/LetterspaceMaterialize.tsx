@@ -15,7 +15,7 @@
 // Chu hoa -> chu thuong (phong chu "toan chu thuong" cua the). Chu dai: tu xuong dong theo tu (2 dong ngang / 3 dong doc),
 // co chu + khoang chu thu theo be ngang that; net giu manh (5.5px), khung doc net day hon chut cho de doc.
 // Khung doc (native): bau troi + nui + mat nuoc ve theo chieu cao that (duong chan troi ~56%), chu to hon (~2x).
-import { useCurrentFrame, useText, useVideoConfig } from '../../../runtime';
+import { useCurrentFrame, useText, useVideoConfig, useBackdrop } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { bezier, ramp, EASE, Grain, Vignette } from '../../../fixtures/Polish';
@@ -159,7 +159,7 @@ const glints = (horizon: number, depthPx: number) =>
 
 const lineWidth = (gs: Glyph[]) => gs.reduce((a, g) => a + g.w, 0) + Math.max(0, gs.length - 1) * TRACK_EM;
 
-const Word: React.FC<{ lines: Glyph[][]; e: number; glowAmt: number; scale: number; stroke: number; lineGap: number }> = ({ lines, e, glowAmt, scale, stroke, lineGap }) => (
+const Word: React.FC<{ lines: Glyph[][]; e: number; glowAmt: number; scale: number; stroke: number; lineGap: number; halo?: boolean }> = ({ lines, e, glowAmt, scale, stroke, lineGap, halo }) => (
   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: lineGap }}>
     {lines.map((gs, k) => (
       <div key={k} style={{ display: 'flex', gap: TRACK_EM * scale, alignItems: 'center' }}>
@@ -177,7 +177,8 @@ const Word: React.FC<{ lines: Glyph[][]; e: number; glowAmt: number; scale: numb
                 strokeDasharray={1}
                 strokeDashoffset={1 - e}
                 style={{
-                  filter: `drop-shadow(0 0 ${(5 + glowAmt * 10) / scale}px rgba(245,225,240,${0.3 + glowAmt * 0.38}))`,
+                  // [Agent Edit] nen anh AI: them bong toi nhe duoi net sang cho de doc tren anh that
+                  filter: `drop-shadow(0 0 ${(5 + glowAmt * 10) / scale}px rgba(245,225,240,${0.3 + glowAmt * 0.38}))${halo ? ` drop-shadow(0 ${2 / scale}px ${18 / scale}px rgba(0,0,0,0.55))` : ''}`,
                 }}
               />
             )}
@@ -193,6 +194,9 @@ export const LetterspaceMaterialize: React.FC = () => {
   const { height: H } = useVideoConfig();
   const portrait = H > 1080 * 1.2;
   const nameT = useText('name', '');
+  // [Agent Edit] DOT 2: co nen anh AI -> bo canh ho hoang hon ve bang code (troi, nui, mat nuoc, bong chu duoi nuoc,
+  // toi goc, hat nhieu); chi con dong chu tu viet tren anh nen
+  const bd = useBackdrop();
   const word = (nameT.trim() || BRAND.name || 'xin chào').normalize('NFC').toLocaleLowerCase('vi');
 
   // ── bo cuc: xuong dong theo tu, chon co chu lon nhat vua be ngang ──
@@ -262,7 +266,9 @@ export const LetterspaceMaterialize: React.FC = () => {
     : `linear-gradient(180deg, #17153a 0%, #24204f 24%, #3a2f63 42%, #5f4270 53%, #8a5878 ${((HORIZON - 14) / 1080) * 100}%, #1c1838 ${(HORIZON / 1080) * 100}%, #0b0a17 100%)`;
 
   return (
-    <AbsoluteFill style={{ background: '#120f24', overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : '#120f24', overflow: 'hidden' }}>
+      {!bd && (
+        <>
       {/* 天空 + 远山（远层） */}
       <AbsoluteFill style={{ transform: `scale(${sFar})`, transformOrigin: `50% ${HORIZON}px` }}>
         <AbsoluteFill style={{ background: skyTop }} />
@@ -331,14 +337,16 @@ export const LetterspaceMaterialize: React.FC = () => {
       >
         <Word lines={lines} e={e} glowAmt={glowAmt * 0.5} scale={scale} stroke={stroke} lineGap={lineGap} />
       </div>
+        </>
+      )}
 
       {/* 大字距字标：全字符并行连续描画 */}
       <div style={{ position: 'absolute', left: 0, right: 0, top: MARK_Y - blockH / 2, height: blockH, display: 'flex', justifyContent: 'center' }}>
-        <Word lines={lines} e={e} glowAmt={glowAmt} scale={scale} stroke={stroke} lineGap={lineGap} />
+        <Word lines={lines} e={e} glowAmt={glowAmt} scale={scale} stroke={stroke} lineGap={lineGap} halo={!!bd} />
       </div>
 
-      <Vignette strength={0.45} inner={0.5} color="#05040c" cy={0.5} />
-      <Grain opacity={0.08} blend="soft-light" />
+      {!bd && <Vignette strength={0.45} inner={0.5} color="#05040c" cy={0.5} />}
+      {!bd && <Grain opacity={0.08} blend="soft-light" />}
     </AbsoluteFill>
   );
 };

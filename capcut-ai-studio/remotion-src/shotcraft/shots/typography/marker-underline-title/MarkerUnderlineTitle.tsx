@@ -11,7 +11,7 @@
 // Chu dai ngan bat ky: tu xuong dong theo be ngang that, cum highlight luon nam tron tren 1 dong; net but do theo be
 // ngang that cua cum highlight, do day / do lech tinh theo co chu (giu ty le goc 118px).
 // Khung doc (portrait.mode = 'native'): co chu ~200px, khoi chu dat giua khung.
-import { useCurrentFrame, useShotFonts, useText, useVideoConfig, useBrand, fitSize, measureText, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useShotFonts, useText, useVideoConfig, useBrand, fitSize, measureText, wrapLines } from '../../../runtime';
 import React, { useId } from 'react';
 import { AbsoluteFill, interpolate } from 'remotion';
 import { Backdrop, EASE, FONT, ramp } from '../../../fixtures/Polish';
@@ -133,6 +133,7 @@ export const MarkerUnderlineTitle: React.FC = () => {
   const drawE = 1 - Math.pow(1 - draw, 2.2);
   // 整段极缓推近（smooth，起止速度为 0）
   const push = 1 + 0.015 * ramp(frame, 0, 74, EASE.smooth);
+  const bd = useBackdrop();
 
   const underline = (
     <svg
@@ -163,11 +164,13 @@ export const MarkerUnderlineTitle: React.FC = () => {
 
   return (
     <AbsoluteFill>
-      <Backdrop tone="light" light={{ x: 0.42, y: 0.3 }} vignette={0.12} grain={0.05} />
+      {/* [Agent Edit] nen anh AI: khong ve nen giay code (gradient + hat) */}
+      {!bd && <Backdrop tone="light" light={{ x: 0.42, y: 0.3 }} vignette={0.12} grain={0.05} />}
       <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center', transform: `scale(${push})` }}>
         <div style={{
           fontFamily: FONT.sans,
           fontWeight: 700, fontSize: fs, color: '#17181c',
+          textShadow: bd ? (bd.dark ? '0 2px 18px rgba(0,0,0,0.55)' : '0 1px 12px rgba(255,255,255,0.7)') : undefined,
           textAlign: 'center', lineHeight: 1.16, letterSpacing: '-0.028em',
         }}>
           {rows.map((row, ri) => {

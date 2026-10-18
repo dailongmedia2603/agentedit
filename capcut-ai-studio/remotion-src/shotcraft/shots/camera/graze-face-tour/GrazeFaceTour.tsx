@@ -17,7 +17,7 @@
 // = ten thuong hieu cua video). Chu giao dien con lai (cay thu muc, tab, nhan cot) doi sang tieng Viet trung tinh.
 // Khung doc (portrait.mode = 'native'): mat phang UI van la "dia hinh" lon -> phu kin chieu cao that; camera gan hon
 // (scale x1.3), vung net (do sau truong anh) doi thanh elip doc, khung neon nen rai theo chieu cao.
-import { useCurrentFrame, useVideoConfig, useText, useList, useBrand, useShotFonts, fitSize, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useBrand, useShotFonts, fitSize, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { FONT, Grain, Vignette, bezier } from '../../../fixtures/Polish';
@@ -510,8 +510,9 @@ const FADE = 7;
 
 const Stage: React.FC<{ portrait: boolean; sy: number }> = ({ portrait, sy }) => {
   const frame = useCurrentFrame();
+  const bd = useBackdrop(); // [Agent Edit] nen anh AI: bo nen toi + khung neon trang tri, chi giu cac mat giao dien
   return (
-    <AbsoluteFill style={{ background: '#07060c' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : '#07060c' }}>
       {SEGS.map((s, i) => {
         const start = i * SEG_LEN;
         const local = frame - start;
@@ -524,7 +525,7 @@ const Stage: React.FC<{ portrait: boolean; sy: number }> = ({ portrait, sy }) =>
         const fadeOut = i === SEGS.length - 1 ? 1 : Math.min(1, Math.max(0, (SEG_LEN - local) / FADE));
         return (
           <AbsoluteFill key={i} style={{ opacity: Math.min(fadeIn, fadeOut) }}>
-            <NeonRects drift={p} sy={sy} />
+            {!bd && <NeonRects drift={p} sy={sy} />}
             <Plane cam={s.cam} p={p} edge={s.edge} zoom={portrait ? 1.3 : 1}>{s.render(t)}</Plane>
           </AbsoluteFill>
         );
@@ -557,9 +558,10 @@ export const GrazeFaceTour: React.FC = () => {
   const focusY = lerpArr(FY);
   // 竖屏：焦点椭圆改为竖向（宽 86% × 高 34%）
   const ell = portrait ? 'ellipse 86% 34%' : 'ellipse 58% 52%';
+  const bd = useBackdrop();
   return (
     <CopyCtx.Provider value={copy}>
-    <AbsoluteFill style={{ background: '#07060c' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : '#07060c' }}>
       <Stage portrait={portrait} sy={SH / 1080} />
       {/* 屏幕空间浅景深：焦点带外整体模糊 */}
       <AbsoluteFill style={{
@@ -570,7 +572,7 @@ export const GrazeFaceTour: React.FC = () => {
         <Stage portrait={portrait} sy={SH / 1080} />
       </AbsoluteFill>
       {/* 带色相的暗角（不再把亮面压成灰）+ 暗场颗粒 */}
-      <Vignette strength={0.62} inner={0.42} color="#06040e" cx={focusX / 100} cy={focusY / 100} />
+      <Vignette strength={bd ? 0.4 : 0.62} inner={0.42} color="#06040e" cx={focusX / 100} cy={focusY / 100} />
       <Grain opacity={0.06} blend="soft-light" />
     </AbsoluteFill>
     </CopyCtx.Provider>

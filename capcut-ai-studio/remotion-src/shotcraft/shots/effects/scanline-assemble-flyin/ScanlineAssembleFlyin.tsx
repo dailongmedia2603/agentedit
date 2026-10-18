@@ -26,7 +26,7 @@
 // moc "quet toi day thi bay vao" (land = frameAtY(day o)) van tinh tu toa do that, khoang cach >= 4f giu nguyen.
 // Khung doc (native): trang kieu di dong 1680 rong, xep doc (nav / chip / H1 3 dong / mo ta / nut / hinh / so lieu),
 // cao theo noi dung, can giua; quet van 84f deu tu tren xuong, chu to gap ~1.4 lan.
-import { useCurrentFrame, useImage, useShotFonts, useText, useList, useVideoConfig, fitSize, wrapLines, measureText } from '../../../runtime';
+import { useCurrentFrame, useImage, useShotFonts, useText, useList, useVideoConfig, useBackdrop, fitSize, wrapLines, measureText } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, Img } from 'remotion';
 import { EASE, FONT, SpeedBlur, mix, ramp } from '../../../fixtures/Polish';
@@ -265,11 +265,10 @@ export const ScanlineAssembleFlyin: React.FC = () => {
     );
   };
 
-  // 网格（帧坐标全屏）：24px 细网格 + 120px 主网格，蓝图色
-  const grid = (c: string, cm: string) =>
-    `repeating-linear-gradient(0deg, ${cm} 0 1.5px, transparent 1.5px 120px), repeating-linear-gradient(90deg, ${cm} 0 1.5px, transparent 1.5px 120px), ` +
-    `repeating-linear-gradient(0deg, ${c} 0 1px, transparent 1px 24px), repeating-linear-gradient(90deg, ${c} 0 1px, transparent 1px 24px)`;
+  // [Agent Edit] DOT 2: bo luoi ke o "ban thiet ke" phu nen (ke ca khi khong co nen anh); vet sang sau tia quet giu lai
+  // thanh mot dai sang mau nhan tron (khong ke o)
   const lyF = AY + ly; // 扫描线帧坐标
+  const halo = useBackdrop() ? '0 2px 18px rgba(0,0,0,0.55)' : undefined; // chu dong trang thai nam tren nen anh AI
 
   // ── noi dung cac khoi ──
   const navMark = 56 * K;
@@ -370,18 +369,17 @@ export const ScanlineAssembleFlyin: React.FC = () => {
     <AbsoluteFill>
       <Stage look={L} keyLight={{ x: 0.62, y: 0.0 }} fill={{ x: 0.1, y: 0.95 }} intensity={0.85} />
       <div style={{ position: 'absolute', inset: 0, transform: `scale(${push.toFixed(5)})`, transformOrigin: '50% 52%' }}>
-        {/* ── 蓝图网格（装完后退到 30%）+ 扫描线身后被照亮的一段 ── */}
-        <div style={{ position: 'absolute', inset: -40, opacity: blueprint, background: grid(alpha('#8fb0ff', 0.045), alpha('#8fb0ff', 0.085)), backgroundPosition: '20px 30px' }} />
+        {/* ── 扫描线身后被照亮的一段（[Agent Edit] 无网格：纯色柔光带）── */}
         {lineOn > 0.01 && (
           <div style={{
-            position: 'absolute', inset: -40, opacity: lineOn, background: grid(alpha(L.accent, 0.22), alpha('#a9c1ff', 0.4)), backgroundPosition: '20px 30px',
+            position: 'absolute', inset: -40, opacity: lineOn * 0.5, background: alpha(L.accent, 0.22),
             WebkitMaskImage: `linear-gradient(180deg, transparent ${lyF - 180 + 40}px, #000 ${lyF + 40}px, transparent ${lyF + 42}px)`,
             maskImage: `linear-gradient(180deg, transparent ${lyF - 180 + 40}px, #000 ${lyF + 40}px, transparent ${lyF + 42}px)`,
           }} />
         )}
 
         {/* ── 状态行（画板上方）── */}
-        <div style={{ position: 'absolute', left: AX, top: AY - 84 * (portrait ? 1.5 : 1), width: AW, height: 48 * (portrait ? 1.3 : 1), display: 'flex', alignItems: 'center', font: `600 ${statusFs}px ${FONT.sans}`, color: L.ink, opacity: ramp(frame, 0, 10, EASE.out), whiteSpace: 'nowrap' }}>
+        <div style={{ position: 'absolute', left: AX, top: AY - 84 * (portrait ? 1.5 : 1), width: AW, height: 48 * (portrait ? 1.3 : 1), display: 'flex', alignItems: 'center', font: `600 ${statusFs}px ${FONT.sans}`, color: L.ink, opacity: ramp(frame, 0, 10, EASE.out), whiteSpace: 'nowrap', textShadow: halo }}>
           <span style={{ color: done > 0.5 ? L.accent2 : L.accent, letterSpacing: '0.06em', textShadow: done > 0.5 ? glow(L.accent2, 0.5) : 'none' }}>
             {done > 0.5 ? '✓ ĐÃ DỰNG XONG' : '▸ ĐANG DỰNG'}
           </span>

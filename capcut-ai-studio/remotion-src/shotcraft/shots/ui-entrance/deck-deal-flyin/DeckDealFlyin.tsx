@@ -29,7 +29,7 @@
 // 0.32em (TextReveal 'rise' cua fixtures chi 0.06em -> cat dau tieng Viet).
 // Khung doc (native): camera giu nguyen quy dao (tam = giua khung that), cuoi canh ban bai day len tren chua cho tieu de
 // to ~200px o phan duoi.
-import { useCurrentFrame, useImage, useList, useShotFonts, useText, useVideoConfig, fitSize } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useImage, useList, useShotFonts, useText, useVideoConfig, fitSize } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, Img, interpolate, Easing } from 'remotion';
 import { EASE, FONT, ramp } from '../../../fixtures/Polish';
@@ -193,6 +193,7 @@ export const DeckDealFlyin: React.FC = () => {
   const P = SH > 1080 * 1.2;
   const cam = camAt(frame, P);
 
+  const bd = useBackdrop(); // [Agent Edit] nen anh AI: bo mat ban graphite + toi goc tu ve; tieu de co bong do nhe
   const title = useText('title', 'Nội dung mới,');
   const title2 = useText('title2', 'đổ về mỗi ngày.');
   const label = useText('label', 'BÀI VIẾT ĐÃ ĐĂNG');
@@ -254,13 +255,13 @@ export const DeckDealFlyin: React.FC = () => {
             }}
           >
             {/* 石墨桌面：远处柔边隐进暗场 */}
-            <div
+            {!bd && <div
               style={{
                 position: 'absolute', left: -T, top: -T, width: 1920 + 2 * T, height: BOARD_H + 2 * T, background: tableBg,
                 WebkitMaskImage: `radial-gradient(ellipse ${2600}px ${3600}px at ${T + 960}px ${T + BOARD_H / 2}px, #000 40%, transparent 100%)`,
                 maskImage: `radial-gradient(ellipse ${2600}px ${3600}px at ${T + 960}px ${T + BOARD_H / 2}px, #000 40%, transparent 100%)`,
               }}
-            />
+            />}
 
             {/* 页面板：越南语页面（顶栏 + 搜索 + 分区小标）+ 纸面延长；落在桌上的大投影 */}
             <div
@@ -388,14 +389,14 @@ export const DeckDealFlyin: React.FC = () => {
       </AbsoluteFill>
 
       {/* 暗角 + 颗粒（屏幕空间，全程） */}
-      <AbsoluteFill style={{ pointerEvents: 'none', background: `radial-gradient(ellipse 75% 75% at 58% 46%, transparent 45%, ${alpha('#050506', 0.55)} 100%)` }} />
+      {!bd && <AbsoluteFill style={{ pointerEvents: 'none', background: `radial-gradient(ellipse 75% 75% at 58% 46%, transparent 45%, ${alpha('#050506', 0.55)} 100%)` }} />}
       {/* 竖版：标题区底部压暗，保证标题可读 */}
       {P && (
         <AbsoluteFill style={{ pointerEvents: 'none', opacity: statIn, background: `linear-gradient(180deg, transparent ${((statTop - 300) / SH) * 100}%, ${alpha('#060607', 0.78)} ${((statTop + 60) / SH) * 100}%, ${alpha('#060607', 0.88)} 100%)` }} />
       )}
 
       {/* 左下 / 底部：标题 + 计数行 */}
-      <div style={{ position: 'absolute', left: 120, top: titleTop, color: L.ink }}>
+      <div style={{ position: 'absolute', left: 120, top: titleTop, color: L.ink, textShadow: bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined }}>
         <div style={{ ...type(tS, 800), lineHeight: 1.15 }}>
           <RiseWords f={frame} text={title} start={100} each={16} gap={4} />
         </div>
@@ -407,6 +408,7 @@ export const DeckDealFlyin: React.FC = () => {
         style={{
           position: 'absolute', left: 124, top: statTop, display: 'flex', alignItems: 'center', gap: 16, opacity: statIn, whiteSpace: 'nowrap',
           ...type(statS, 600, { mono: true }), letterSpacing: '0.14em', color: L.ink2, lineHeight: 1.3,
+          textShadow: bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined,
         }}
       >
         {/* 品牌标志（暗底反白版，不加发光） */}

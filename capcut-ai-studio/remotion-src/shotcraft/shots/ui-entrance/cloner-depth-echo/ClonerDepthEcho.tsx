@@ -26,7 +26,7 @@
 // card_value / card_unit / card_tag (chu tren the chinh). O anh `image` (tuy chon): anh san pham / giao dien thay cho
 // so lon + duong bieu do tren the (ban sao chi con khung vien). Khung doc (native): the to 1.55x giua khung, doi hinh
 // lui ve phia tren-trai (diem tu o tren the), tieu de tren cung, bo dem + caption duoi the.
-import { useCurrentFrame, useVideoConfig, useText, useImage, useShotFonts, fitSize, measureText, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useImage, useShotFonts, fitSize, measureText, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, Img } from 'remotion';
 import { EASE, FONT, mix, ramp } from '../../../fixtures/Polish';
@@ -300,19 +300,23 @@ export const ClonerDepthEcho: React.FC = () => {
   const capTop = portrait ? counterTop + cSize * 1.06 + 50 : 900;
   const capSize = fitSize(caption, { family: fonts.sans, size: capSize0, maxWidth: (portrait ? 1680 : 1640) - 60, weight: 600, minSize: 20 });
 
+  // [Agent Edit] nen anh AI: Stage tu bo nen; bo bui sang + quang chan the (trang tri code ve); chu tren nen -> bong do nhe
+  const bd = useBackdrop();
+  const bdShadow = bd ? (bd.dark ? '0 2px 18px rgba(0,0,0,0.55)' : '0 1px 12px rgba(255,255,255,0.7)') : undefined;
+
   return (
     <AbsoluteFill style={{ fontFamily: FONT.sans, overflow: 'hidden' }}>
       <Stage look={L} keyLight={{ x: 0.62, y: portrait ? 0.5 : 0.42 }} fill={{ x: 0.1, y: 0.95 }} breathe={0.6} intensity={0.45}>
-        <Dust look={L} count={26} seed={5} drift={0.18} opacity={0.35} color={L.accent} />
+        {!bd && <Dust look={L} count={26} seed={5} drift={0.18} opacity={0.35} color={L.accent} />}
       </Stage>
       {/* 主卡脚下的柠檬绿地光 */}
-      <div
+      {!bd && <div
         style={{
           position: 'absolute', left: CX - 160 * S, top: CY + CH - 40 * S, width: CW + 320 * S, height: 220 * S,
           background: `radial-gradient(ellipse 50% 50% at 50% 40%, ${alpha(L.accent, 0.14 + 0.12 * rimFlash)} 0%, transparent 70%)`,
           opacity: enter,
         }}
-      />
+      />}
 
       {/* 相机层：推近以主卡中心为锚 */}
       <AbsoluteFill style={{ transform: `scale(${dolly.toFixed(5)})`, transformOrigin: `${CX + CW / 2}px ${CY + CH / 2}px` }}>
@@ -375,7 +379,7 @@ export const ClonerDepthEcho: React.FC = () => {
       </AbsoluteFill>
 
       {/* 合体后升起的标题（横向左上空位；纵向顶部） */}
-      <div style={{ position: 'absolute', left: portrait ? 120 : 140, top: titleTop, color: L.ink }}>
+      <div style={{ position: 'absolute', left: portrait ? 120 : 140, top: titleTop, color: L.ink, textShadow: bdShadow }}>
         {rows1.map((r, i) => (
           <Rise key={`a${i}`} text={r} start={92 + i * 3} g={g1} style={{ position: 'absolute', left: 0, top: i * tLine, ...type(tSize, 780), lineHeight: 1.14 }} />
         ))}
@@ -392,10 +396,11 @@ export const ClonerDepthEcho: React.FC = () => {
         <div
           style={{
             position: 'absolute', left: portrait ? 132 : 140, top: capTop, display: 'flex', alignItems: 'center', gap: 16, whiteSpace: 'nowrap',
-            opacity: labelIn, ...type(capSize, 600), lineHeight: 1.3, color: L.ink2, letterSpacing: '0.02em',
+            opacity: labelIn, ...type(capSize, 600), lineHeight: 1.3, color: L.ink2, letterSpacing: '0.02em', textShadow: bdShadow,
           }}
         >
-          <span style={{ width: 40 * (portrait ? 1.5 : 1), height: 2 * (portrait ? 1.5 : 1), background: L.accent, flexShrink: 0 }} />
+          {/* [Agent Edit] cham nhan thay vach ngang (doc nhu dau gach "—" truoc chu) */}
+          <span style={{ width: 12 * (portrait ? 1.5 : 1), height: 12 * (portrait ? 1.5 : 1), borderRadius: '50%', background: L.accent, flexShrink: 0 }} />
           {caption}
         </div>
       ) : null}

@@ -6,33 +6,131 @@
  "duration": 165,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
  "hold": 144,
  "slots": [
-  {"id": "kicker", "role": "kicker", "sample": "Góc nhìn chiều sâu", "max": 26, "optional": true, "note": "nhãn ngắn màu cam trên tiêu đề, in hoa"},
-  {"id": "title", "role": "title", "sample": "Mọi dự án, một không gian.", "max": 40, "note": "tiêu đề đứng yên trên khung khi các lớp ảnh trượt qua"},
-  {"id": "subtitle", "role": "subtitle", "sample": "Lướt qua từng sản phẩm như máy quay thật.", "max": 70, "optional": true},
-  {"id": "badge", "role": "label", "sample": "Tâm điểm", "max": 18, "optional": true, "note": "nhãn nhỏ rơi xuống trên ảnh chính khi dừng"},
-  {"id": "tags", "role": "label", "sample": "Thiết kế|Dữ liệu|Trí tuệ nhân tạo|Báo cáo|Tự động", "max": 18, "list": {"min": 0, "max": 5}, "optional": true, "note": "chữ trên các viên lớp gần lướt nhanh qua ống kính (bị mờ, chỉ là trang trí — từ khóa chủ đề)"}
+  {
+   "id": "kicker",
+   "role": "kicker",
+   "sample": "Góc nhìn chiều sâu",
+   "max": 26,
+   "optional": true,
+   "note": "nhãn ngắn màu cam trên tiêu đề, in hoa"
+  },
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Mọi dự án, một không gian.",
+   "max": 40,
+   "note": "tiêu đề đứng yên trên khung khi các lớp ảnh trượt qua"
+  },
+  {
+   "id": "subtitle",
+   "role": "subtitle",
+   "sample": "Lướt qua từng sản phẩm như máy quay thật.",
+   "max": 70,
+   "optional": true
+  },
+  {
+   "id": "badge",
+   "role": "label",
+   "sample": "Tâm điểm",
+   "max": 18,
+   "optional": true,
+   "note": "nhãn nhỏ rơi xuống trên ảnh chính khi dừng"
+  },
+  {
+   "id": "tags",
+   "role": "label",
+   "sample": "Thiết kế|Dữ liệu|Trí tuệ nhân tạo|Báo cáo|Tự động",
+   "max": 18,
+   "list": {
+    "min": 0,
+    "max": 5
+   },
+   "optional": true,
+   "note": "chữ trên các viên lớp gần lướt nhanh qua ống kính (bị mờ, chỉ là trang trí — từ khóa chủ đề)"
+  }
  ],
  "images": [
-  {"id": "hero", "role": "photo", "aspect": "any", "note": "ảnh CHÍNH — dừng ở giữa màn hình, nổi lên có viền; ảnh chụp màn hình app / sản phẩm / ảnh minh họa, tỉ lệ bất kỳ (hiện đủ, không cắt)"},
-  {"id": "img1", "role": "photo", "aspect": "any", "optional": true, "note": "các thẻ ảnh khác trong hàng trượt qua (dự án / sản phẩm / màn hình khác); thiếu thì lặp lại hoặc vẽ thẻ trung tính"},
-  {"id": "img2", "role": "photo", "aspect": "any", "optional": true},
-  {"id": "img3", "role": "photo", "aspect": "any", "optional": true},
-  {"id": "img4", "role": "photo", "aspect": "any", "optional": true},
-  {"id": "img5", "role": "photo", "aspect": "any", "optional": true},
-  {"id": "bg", "role": "photo", "aspect": "any", "optional": true, "note": "lớp xa phía sau (bị mờ + phủ sương); thiếu thì dùng ảnh hero"}
+  {
+   "id": "hero",
+   "role": "photo",
+   "aspect": "any",
+   "note": "ảnh CHÍNH — dừng ở giữa màn hình, nổi lên có viền; ảnh chụp màn hình app / sản phẩm / ảnh minh họa, tỉ lệ bất kỳ (hiện đủ, không cắt)"
+  },
+  {
+   "id": "img1",
+   "role": "photo",
+   "aspect": "any",
+   "optional": true,
+   "note": "các thẻ ảnh khác trong hàng trượt qua (dự án / sản phẩm / màn hình khác); thiếu thì lặp lại hoặc vẽ thẻ trung tính"
+  },
+  {
+   "id": "img2",
+   "role": "photo",
+   "aspect": "any",
+   "optional": true
+  },
+  {
+   "id": "img3",
+   "role": "photo",
+   "aspect": "any",
+   "optional": true
+  },
+  {
+   "id": "img4",
+   "role": "photo",
+   "aspect": "any",
+   "optional": true
+  },
+  {
+   "id": "img5",
+   "role": "photo",
+   "aspect": "any",
+   "optional": true
+  },
+  {
+   "id": "bg",
+   "role": "photo",
+   "aspect": "any",
+   "optional": true,
+   "note": "lớp xa phía sau (bị mờ + phủ sương); thiếu thì dùng ảnh hero"
+  }
  ],
  "brand": "optional",
- "sfx": [{"at": 6, "type": "whoosh"}, {"at": 128, "type": "pop"}],
+ "sfx": [
+  {
+   "at": 6,
+   "type": "whoosh"
+  },
+  {
+   "at": 128,
+   "type": "pop"
+  }
+ ],
  "vi": {
   "ten": "Trượt ngang nhiều lớp chiều sâu — dừng ở ảnh chính",
   "mo_ta": "Nền be ấm như mặt bàn: một hàng thẻ ảnh (ảnh màn hình / sản phẩm / ảnh minh họa) trượt ngang qua như máy quay đặt trên ray, lớp nền phía sau trôi chậm và mờ, vài viên nhãn to mờ ở lớp gần lướt vụt qua nhanh hơn — tạo cảm giác chiều sâu thật. Tiêu đề lớn đứng yên ở trên. Khi dừng, ảnh chính nằm đúng giữa, nổi lên có viền cam và nhãn nhỏ rơi xuống.",
   "hop_khi": "Giới thiệu một loạt dự án / sản phẩm / ảnh màn hình rồi dừng ở cái nổi bật nhất: “đây là các sản phẩm của chúng tôi”, portfolio, các tính năng của app, bộ sưu tập, trước khi đi sâu vào một thứ cụ thể; có sẵn vài ảnh B-roll / ảnh chụp màn hình.",
   "tranh_khi": "Không có ảnh nào phù hợp; cần nhấn mạnh số liệu / chữ; nội dung cảm xúc mạnh hoặc gấp gáp; tone tối.",
   "nang_luong": "vua",
-  "chu_de": ["portfolio", "sản phẩm", "dự án", "ảnh chụp màn hình", "app", "bộ sưu tập", "giới thiệu", "chiều sâu"]
- }
+  "chu_de": [
+   "portfolio",
+   "sản phẩm",
+   "dự án",
+   "ảnh chụp màn hình",
+   "app",
+   "bộ sưu tập",
+   "giới thiệu",
+   "chiều sâu"
+  ]
+ },
+ "backdrop": true
 }

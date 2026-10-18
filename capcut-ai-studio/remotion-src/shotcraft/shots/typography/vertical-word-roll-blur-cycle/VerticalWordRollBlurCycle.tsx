@@ -11,7 +11,7 @@
 // nhip goc (STEPS / cua so 0.11); 5 tu -> 4 lan doi, cua so 0.1 + nghi 0.07 de tu cuoi van hold ~28f.
 // Khung doc (native): 句干 dong tren, cuon tu ngay duoi (can giua), chu to ~2x; nen DesignStage cao theo height that.
 import React from 'react';
-import { useList, useShotFonts, useText, useVideoConfig, fitSize, measureText } from '../../../runtime';
+import { useBackdrop, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText } from '../../../runtime';
 import { DesignStage, E, seg, useT } from '../../../fixtures/Motion';
 import { Backdrop, Grain } from '../../../fixtures/Polish';
 import { LOOKS } from '../../../fixtures/Look';
@@ -53,6 +53,7 @@ export const VerticalWordRollBlurCycle: React.FC = () => {
   const t = useT();
   const { height: SH } = useVideoConfig();
   const fonts = useShotFonts();
+  const bd = useBackdrop(); // [Agent Edit] nen anh AI: bo nen sang + hat tu ve, chu co bong sang nhe (don vi thiet ke x4)
   const stem = useText('stem', 'Dành cho');
   const words = useList('words', ['nhà sáng tạo', 'chủ shop', 'giáo viên', 'tất cả mọi người']).slice(0, 5);
   const ACCENT = LOOKS.porcelain.accent;
@@ -127,7 +128,7 @@ export const VerticalWordRollBlurCycle: React.FC = () => {
                   opacity: op,
                   transform: `scaleY(${squash.toFixed(4)})`,
                   // 落定染色：中心词灰→强调色（d 越小越彩）
-                  color: mixHex(ACCENT_DIM, ACCENT, clamp01(1 - d * 2.4)),
+                  color: mixHex(bd ? '#6E6F76' : ACCENT_DIM, ACCENT, clamp01(1 - d * 2.4)), // [Agent Edit] tren anh nen: hang ben dam hon de con thay
                 }}
               >
                 {w}
@@ -141,8 +142,8 @@ export const VerticalWordRollBlurCycle: React.FC = () => {
 
   return (
     <div style={{ position: 'absolute', inset: 0 }}>
-      <DesignStage bg="#F4F4F2" h={DH}>
-        <Backdrop tone="light" light={{ x: 0.5, y: portrait ? 0.4 : 0.3 }} accent={ACCENT} vignette={0.12} grain={0} />
+      <DesignStage bg={bd ? 'transparent' : '#F4F4F2'} h={DH}>
+        {!bd && <Backdrop tone="light" light={{ x: 0.5, y: portrait ? 0.4 : 0.3 }} accent={ACCENT} vignette={0.12} grain={0} />}
         <div
           style={{
             position: 'absolute',
@@ -154,6 +155,7 @@ export const VerticalWordRollBlurCycle: React.FC = () => {
             alignItems: 'center',
             justifyContent: 'center',
             fontFamily: fam,
+            textShadow: bd ? '0 0.25px 3px rgba(255,255,255,0.7)' : undefined,
           }}
         >
           <div
@@ -173,7 +175,7 @@ export const VerticalWordRollBlurCycle: React.FC = () => {
         </div>
       </DesignStage>
       {/* 颗粒放在设计坐标容器外，按成片像素取样，不随 4× 放大变粗 */}
-      <Grain opacity={0.05} />
+      {!bd && <Grain opacity={0.05} />}
     </div>
   );
 };

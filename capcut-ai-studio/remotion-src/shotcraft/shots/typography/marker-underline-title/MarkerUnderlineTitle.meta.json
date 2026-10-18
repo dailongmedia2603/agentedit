@@ -25,5 +25,6 @@
   "tranh_khi": "Câu dài nhiều ý (> 2 dòng) hoặc không có từ khoá rõ; cần năng lượng cao, hiệu ứng mạnh; video tone tối.",
   "nang_luong": "thap",
   "chu_de": ["tiêu đề", "từ khoá", "nhấn mạnh", "tính năng mới", "ra mắt", "thông điệp", "tối giản"]
- }
+ },
+ "backdrop": true
 }

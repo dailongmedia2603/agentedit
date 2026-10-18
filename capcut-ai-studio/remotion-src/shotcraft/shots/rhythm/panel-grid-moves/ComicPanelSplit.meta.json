@@ -21,10 +21,11 @@
  "sfx": [{"at": 20, "type": "click"}, {"at": 24, "type": "click"}, {"at": 28, "type": "click"}, {"at": 64, "type": "whoosh"}, {"at": 82, "type": "swoosh"}],
  "vi": {
   "ten": "Chia khung truyện tranh — 3 góc máy rồi thành poster",
-  "mo_ta": "Nền đen đỏ kiểu truyện tranh: hình toàn màn hình bị 3 nhát cắt xiên 'cạch cạch cạch' chia thành 3 ô, mỗi ô là một góc nhìn của CÙNG chủ thể (toàn cảnh, cận, đặc tả) kèm khung lời thoại nghiêng; dừng một nhịp rồi ô cuối quét xiên ăn hết màn hình, thành poster với tiêu đề lớn trồi lên (từ cuối màu đỏ). Không có ảnh thì chủ thể là ống kính máy ảnh vẽ đẹp, ống kính tự xoay lấy nét, khép khẩu. Khung dọc: 3 ô xếp chồng dọc.",
+  "mo_ta": "Kiểu truyện tranh đen đỏ (có ảnh nền chủ đề thì hiện sau các ô): hình toàn màn hình bị 3 nhát cắt xiên 'cạch cạch cạch' chia thành 3 ô, mỗi ô là một góc nhìn của CÙNG chủ thể (toàn cảnh, cận, đặc tả) kèm khung lời thoại nghiêng; dừng một nhịp rồi ô cuối quét xiên ăn hết màn hình, thành poster với tiêu đề lớn trồi lên (từ cuối màu đỏ). Không có ảnh thì chủ thể là ống kính máy ảnh vẽ đẹp, ống kính tự xoay lấy nét, khép khẩu. Khung dọc: 3 ô xếp chồng dọc.",
   "hop_khi": "Giới thiệu MỘT sản phẩm / món đồ / nhân vật từ nhiều góc (\"nhìn tổng thể, chi tiết, cận cảnh chất liệu\"); review sản phẩm, unbox; chủ đề quay phim, máy ảnh, nhiếp ảnh, góc máy; đoạn có nhịp mạnh cần cắt theo beat.",
   "tranh_khi": "Ba ý khác nhau không cùng một chủ thể (dùng mẫu lưới / bento); ảnh nhỏ, mờ (bị phóng 1.8x); video tone sáng nhẹ nhàng; đã dùng một mẫu chia khung khác trong video.",
   "nang_luong": "cao",
   "chu_de": ["sản phẩm", "review", "nhiều góc", "truyện tranh", "máy ảnh", "quay phim", "poster", "nhịp beat"]
- }
+ },
+ "backdrop": true
 }

@@ -6,28 +6,116 @@
  "duration": 126,
  "kind": "insert",
  "dark": true,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
  "hold": 92,
  "slots": [
-  {"id": "number", "role": "number", "sample": "1 chạm", "max": 7, "note": "con số / mã ngắn rất to màu nhấn (vd 1 chạm, 3x, −41%, #1, 24/7); chỉ số + đơn vị"},
-  {"id": "title", "role": "title", "sample": "là xuất xong hoá đơn", "max": 34, "note": "con số / chi tiết này nói về cái gì (2–6 từ)"},
-  {"id": "subtitle", "role": "subtitle", "sample": "Không cần mở thêm phần mềm nào khác.", "max": 60, "optional": true, "note": "giải thích ngắn 1 câu"},
-  {"id": "kicker", "role": "label", "sample": "QUAN TRỌNG NHẤT", "max": 24, "optional": true, "note": "nhãn ngắn kiểu HUD trên con số (tự in hoa)"},
-  {"id": "readouts", "role": "label", "sample": "MỤC TIÊU: Nút xuất hoá đơn|VỊ TRÍ: Màn hình chính|TRẠNG THÁI: Đã kích hoạt", "max": 34, "list": {"min": 0, "max": 3}, "optional": true, "note": "các dòng thông số kiểu HUD, mỗi dòng dạng 'NHÃN: giá trị' (nhãn 1–2 từ, giá trị ≤ 4 từ); dòng cuối có chấm sáng trạng thái"},
-  {"id": "screen_label", "role": "label", "sample": "BẢNG ĐIỀU KHIỂN", "max": 26, "optional": true, "note": "tên màn hình / trang đang quét, hiện trên mép ảnh lúc toàn cảnh ('TRỰC TIẾP · ...'); trống thì dùng tên thương hiệu"}
+  {
+   "id": "number",
+   "role": "number",
+   "sample": "1 chạm",
+   "max": 7,
+   "note": "con số / mã ngắn rất to màu nhấn (vd 1 chạm, 3x, −41%, #1, 24/7); chỉ số + đơn vị"
+  },
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "là xuất xong hoá đơn",
+   "max": 34,
+   "note": "con số / chi tiết này nói về cái gì (2–6 từ)"
+  },
+  {
+   "id": "subtitle",
+   "role": "subtitle",
+   "sample": "Không cần mở thêm phần mềm nào khác.",
+   "max": 60,
+   "optional": true,
+   "note": "giải thích ngắn 1 câu"
+  },
+  {
+   "id": "kicker",
+   "role": "label",
+   "sample": "QUAN TRỌNG NHẤT",
+   "max": 24,
+   "optional": true,
+   "note": "nhãn ngắn kiểu HUD trên con số (tự in hoa)"
+  },
+  {
+   "id": "readouts",
+   "role": "label",
+   "sample": "MỤC TIÊU: Nút xuất hoá đơn|VỊ TRÍ: Màn hình chính|TRẠNG THÁI: Đã kích hoạt",
+   "max": 34,
+   "list": {
+    "min": 0,
+    "max": 3
+   },
+   "optional": true,
+   "note": "các dòng thông số kiểu HUD, mỗi dòng dạng 'NHÃN: giá trị' (nhãn 1–2 từ, giá trị ≤ 4 từ); dòng cuối có chấm sáng trạng thái"
+  },
+  {
+   "id": "screen_label",
+   "role": "label",
+   "sample": "BẢNG ĐIỀU KHIỂN",
+   "max": 26,
+   "optional": true,
+   "note": "tên màn hình / trang đang quét, hiện trên mép ảnh lúc toàn cảnh ('TRỰC TIẾP · ...'); trống thì dùng tên thương hiệu"
+  }
  ],
  "images": [
-  {"id": "screen", "role": "screen", "aspect": "any", "note": "ảnh thật bất kỳ tỉ lệ: ảnh chụp màn hình app/web/dashboard, ảnh điện thoại hoặc ảnh chụp sản phẩm/chi tiết; máy quay ĐẬP vào VÙNG GIỮA ảnh (~15% diện tích) nên chi tiết cần nhấn phải nằm ở giữa ảnh"}
+  {
+   "id": "screen",
+   "role": "screen",
+   "aspect": "any",
+   "note": "ảnh thật bất kỳ tỉ lệ: ảnh chụp màn hình app/web/dashboard, ảnh điện thoại hoặc ảnh chụp sản phẩm/chi tiết; máy quay ĐẬP vào VÙNG GIỮA ảnh (~15% diện tích) nên chi tiết cần nhấn phải nằm ở giữa ảnh"
+  }
  ],
  "brand": "optional",
- "sfx": [{"at": 4, "type": "click"}, {"at": 28, "type": "click"}, {"at": 40, "type": "whoosh"}, {"at": 46, "type": "boom"}, {"at": 60, "type": "pop"}],
+ "sfx": [
+  {
+   "at": 4,
+   "type": "click"
+  },
+  {
+   "at": 28,
+   "type": "click"
+  },
+  {
+   "at": 40,
+   "type": "whoosh"
+  },
+  {
+   "at": 46,
+   "type": "boom"
+  },
+  {
+   "at": 60,
+   "type": "pop"
+  }
+ ],
  "vi": {
   "ten": "Zoom giật đập khựng + rung màn hình (HUD chiến thuật)",
-  "mo_ta": "Sân khấu tối có lưới mờ, ảnh (màn hình app/web, ảnh điện thoại, ảnh chụp) đặt thẳng như một màn hình giám sát viền xanh chanh; khung ngắm xanh chanh nhảy quét 2 điểm trong ảnh rồi KHOÁ vào vùng giữa kèm nhãn 'ĐÃ KHOÁ'. Máy quay lùi nhẹ lấy đà rồi ĐẬP thẳng vào cực nhanh (6 khung, nhoè chuyển động) và KHỰNG LẠI như vật nặng rơi: một khung chớp xanh chanh toàn màn hình, xung quanh tối đen, hai vòng sóng xung kích toả ra, màn hình rung mạnh rồi tắt hẳn. Một vạch quét sáng chạy qua chi tiết, rồi các thông số HUD (nhãn: giá trị) và một con số rất to màu nhấn + tiêu đề + câu giải thích hiện lần lượt (khung ngang: hai cột trái/phải; khung dọc: dưới ảnh).",
+  "mo_ta": "Sân khấu tối, ảnh (màn hình app/web, ảnh điện thoại, ảnh chụp) đặt thẳng như một màn hình giám sát viền xanh chanh; khung ngắm xanh chanh nhảy quét 2 điểm trong ảnh rồi KHOÁ vào vùng giữa kèm nhãn 'ĐÃ KHOÁ'. Máy quay lùi nhẹ lấy đà rồi ĐẬP thẳng vào cực nhanh (6 khung, nhoè chuyển động) và KHỰNG LẠI như vật nặng rơi: một khung chớp xanh chanh toàn màn hình, xung quanh tối đen, hai vòng sóng xung kích toả ra, màn hình rung mạnh rồi tắt hẳn. Một vạch quét sáng chạy qua chi tiết, rồi các thông số HUD (nhãn: giá trị) và một con số rất to màu nhấn + tiêu đề + câu giải thích hiện lần lượt (khung ngang: hai cột trái/phải; khung dọc: dưới ảnh).",
   "hop_khi": "Khoảnh khắc chốt mạnh 'chính là nó', 'đây là thứ quan trọng nhất', 'lỗi nằm ở đây', 'chỉ cần bấm nút này': chỉ thẳng vào MỘT chi tiết trên màn hình app/web/dashboard/điện thoại hoặc sản phẩm rồi đọc con số, mức ưu tiên, kết quả; tone công nghệ, dữ liệu, kiểm tra, phát hiện.",
   "tranh_khi": "Không có ảnh chi tiết phù hợp hoặc chi tiết nằm sát mép ảnh (máy luôn đập vào giữa); nội dung nhẹ nhàng, cảm xúc, đời thường; video tone sáng ấm; đã dùng zoom giật khác gần đó (tối đa 2 lần/video, không dùng cạnh 'crash-zoom-punch').",
   "nang_luong": "cao",
-  "chu_de": ["chi tiết", "app", "dashboard", "website", "điện thoại", "số liệu", "ưu tiên", "phát hiện", "HUD", "công nghệ", "kết quả"]
- }
+  "chu_de": [
+   "chi tiết",
+   "app",
+   "dashboard",
+   "website",
+   "điện thoại",
+   "số liệu",
+   "ưu tiên",
+   "phát hiện",
+   "HUD",
+   "công nghệ",
+   "kết quả"
+  ]
+ },
+ "backdrop": true
 }

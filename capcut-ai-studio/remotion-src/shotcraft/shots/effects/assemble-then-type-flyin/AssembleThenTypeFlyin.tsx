@@ -27,7 +27,7 @@
 // (do bang font that); vi tri menu tinh tu be ngang that. Ky tu chuan hoa NFC (dau tieng Viet khong bi tach khoi chu).
 // Khung doc (native): trang xep doc — nav, kicker, tieu de ~200px, cau phu, 2 nut, the "phim + banh xe mau", 3 chi so;
 // ca khoi can giua theo chieu cao that.
-import { useCurrentFrame, useImage, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useImage, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
 import React from 'react';
 
 import { EASE, FONT, SpeedBlur, ramp } from '../../../fixtures/Polish';
@@ -192,6 +192,8 @@ export const AssembleThenTypeFlyin: React.FC = () => {
   const { height: SHH } = useVideoConfig();
   const fonts = useShotFonts();
   const P = SHH > 1080 * 1.2;
+  const bd = useBackdrop(); // [Agent Edit] nen anh AI: khong ve nen code, chu tren nen co bong do nhe
+  const onBg: React.CSSProperties = bd ? { textShadow: '0 2px 18px rgba(0,0,0,0.55)' } : {};
   const GOLD = L.accent2;
   const MONO = fonts.mono;
 
@@ -295,13 +297,13 @@ export const AssembleThenTypeFlyin: React.FC = () => {
   const btnY = (r: R, s: number) => r.y + (r.h - s * 1.3) / 2;
 
   const BLOCKS: Block[] = [
-    { x: M, y: t1Y, start: 58, style: titleStyle, segs: [{ s: line1 }] },
-    { x: M, y: t2Y, start: 66, style: { ...titleStyle, fontStyle: 'italic' }, segs: [{ s: l2head }, { s: l2last, color: GOLD }] },
+    { x: M, y: t1Y, start: 58, style: { ...titleStyle, ...onBg }, segs: [{ s: line1 }] },
+    { x: M, y: t2Y, start: 66, style: { ...titleStyle, ...onBg, fontStyle: 'italic' }, segs: [{ s: l2head }, { s: l2last, color: GOLD }] },
     { x: logo.x + logo.w + 16, y: nav.y + (nav.h - brandS * 1.3) / 2, start: 76, style: { ...type(brandS, 700), fontFamily: BRAND.font, letterSpacing: '0.03em', color: L.ink, lineHeight: 1.3 }, segs: [{ s: brandName }] },
     ...NAV.map((t, i): Block => ({ x: navItemX[i], y: navTextY, start: 79 + i, style: { ...type(sz.nav, 500), color: L.ink2, lineHeight: 1.3 }, segs: [{ s: t }] })),
     { x: navBtn.x, y: nav.y + (nav.h - sz.nav * 1.3) / 2, w: navBtn.w, align: 'center', start: 84, style: { ...type(sz.nav, 650), color: L.ink, lineHeight: 1.3 }, segs: [{ s: NAV_BTN }] },
-    { x: M, y: kickY, start: 86, style: monoStyle(kickS, { fontWeight: 600, color: GOLD }), segs: [{ s: kicker }] },
-    ...subFit.lines.map((l, i): Block => ({ x: M, y: subY + i * subLH, start: 88 + i * 3, style: { ...type(subFit.size, 400), color: L.ink2, lineHeight: 1.22 }, segs: [{ s: l }] })),
+    { x: M, y: kickY, start: 86, style: monoStyle(kickS, { fontWeight: 600, color: GOLD, ...onBg }), segs: [{ s: kicker }] },
+    ...subFit.lines.map((l, i): Block => ({ x: M, y: subY + i * subLH, start: 88 + i * 3, style: { ...type(subFit.size, 400), color: L.ink2, lineHeight: 1.22, ...onBg }, segs: [{ s: l }] })),
     { x: cta.x, y: btnY(cta, ctaS), w: cta.w, align: 'center', start: 92, cta: true, style: { ...type(ctaS, 650), color: '#16120a', lineHeight: 1.3 }, segs: [{ s: ctaT }] },
     { x: ghost.x, y: btnY(ghost, cta2S), w: ghost.w, align: 'center', start: 95, style: { ...type(cta2S, 550), color: L.ink, lineHeight: 1.3 }, segs: [{ s: cta2T }] },
     ...statR.map((r, i): Block => ({ x: r.x + statPad, y: statNumY(r), start: 96 + i * 3, style: { ...type(statS, 750), color: L.ink, lineHeight: 1.15 }, segs: [{ s: stats[i] }] })),
@@ -334,24 +336,14 @@ export const AssembleThenTypeFlyin: React.FC = () => {
   };
   const rect = (r: R): React.CSSProperties => ({ left: r.x, top: r.y, width: r.w, height: r.h });
 
-  const guides = 1 - 0.75 * ramp(frame, 48, 14, EASE.out);
   const ctaOn = ramp(frame, 118, 14, EASE.out);
   const wipe = ramp(frame, 124, 22, EASE.swift); // 胶片调色擦除 0→1（左→右）
   const push = 1 + 0.015 * ramp(frame, 120, 48, EASE.smooth);
-  const hLines = P ? [nav.y, kickY - 30, subY - 30, cta.y - 40, card.y, statR[0].y] : [64, 220, 600, 840, 990];
 
   return (
-    <div style={{ width: 1920, height: SHH, position: 'relative', overflow: 'hidden', fontFamily: FONT.sans, background: L.bg[2] }}>
+    <div style={{ width: 1920, height: SHH, position: 'relative', overflow: 'hidden', fontFamily: FONT.sans, background: bd ? 'transparent' : L.bg[2] }}>
       <Stage look={L} keyLight={{ x: 0.3, y: 0.05 }} fill={{ x: 0.85, y: 0.55 }} intensity={0.75} breathe={0.3} />
-      {/* 12 栏版式参考线：第 1 帧就在，骨架齐后退淡 */}
-      <div style={{ position: 'absolute', inset: 0, opacity: guides }}>
-        {Array.from({ length: 13 }, (_, i) => (
-          <div key={i} style={{ position: 'absolute', left: 120 + i * 140, top: 0, width: 1, height: SHH, background: 'rgba(255,255,255,0.045)' }} />
-        ))}
-        {hLines.map((y) => (
-          <div key={y} style={{ position: 'absolute', left: 0, top: y, width: 1920, height: 1, background: 'rgba(255,255,255,0.04)' }} />
-        ))}
-      </div>
+      {/* [Agent Edit] bo 12 cot duong ke o (luoi ke o trang tri) theo yeu cau user */}
 
       <div style={{ position: 'absolute', inset: 0, transform: `scale(${push.toFixed(5)})`, transformOrigin: '50% 50%' }}>
         {/* ── 骨架段 ── */}

@@ -32,7 +32,8 @@ CATALOG_FILE = os.path.join(HERE, "references", "shotcraft_catalog.json")
 CLIP_DIR = os.path.join(os.path.expanduser("~"), ".capcut-studio", "cache", "shot_clips")
 FPS = 30                    # cac mau viet theo 30fps
 
-SHOT_VERSION = 1            # doi cach kiem / dung shot -> tang (khoa cache R4 doi theo)
+SHOT_VERSION = 2            # doi cach kiem / dung shot -> tang (khoa cache R4 doi theo). 2 = nen anh AI cho canh shot
+MAX_SHOT_BG = 5             # anh nen AI cho canh shot (tinh RIENG, khong tru vao tran ai_image cua R4)
 MAX_SHARE = 0.30            # tong thoi luong canh shot toi da / do dai video
 MAX_USES = 1                # moi mau toi da 1 lan / video (lap lai nhan ra ngay)
 MIN_DUR = 1.0               # canh shot ngan hon -> khong kip doc
@@ -64,7 +65,8 @@ def load():
 
 
 def by_id():
-    return {s["id"]: s for s in load()}
+    """Mau DUNG DUOC (bo mau an: meta hidden — vd luoi cham phu kin khung, user 2026-10-18 khong dung nen dang luoi)."""
+    return {s["id"]: s for s in load() if not s.get("hidden")}
 
 
 def fingerprint():
@@ -129,14 +131,16 @@ def prompt_block():
     rows = []
     cur = None
     for m in load():
+        if m.get("hidden"):
+            continue
         if m.get("category") != cur:
             cur = m.get("category")
             rows.append("\n## %s (%s)" % (cur, _CAT_VI.get(cur, cur)))
         vi = m.get("vi") or {}
         a, b = dur_range(m)
-        head = "- %s [%s; nen %s; nang luong %s; %.1f-%.1fs%s]" % (
+        head = "- %s [%s; nen %s%s; nang luong %s; %.1f-%.1fs%s]" % (
             m["id"], "LOP PHU trong suot de len canh cat" if m.get("kind") == "overlay" else "toan man hinh",
-            "toi" if m.get("dark") else "sang", vi.get("nang_luong", "?"), a, b,
+            "toi" if m.get("dark") else "sang", " + ANH NEN AI" if m.get("backdrop") else "", vi.get("nang_luong", "?"), a, b,
             "; can thuong hieu" if m.get("brand") == "required" else "")
         lines = [head + " " + _cap(vi.get("ten"), 80)]
         lines.append("  thay: " + _cap(vi.get("mo_ta"), 300))
@@ -156,7 +160,7 @@ def prompt_block():
 
 
 def rules_text():
-    return _RULES % {"share": int(MAX_SHARE * 100), "gap": MIN_GAP, "ovl": OVERLONG}
+    return _RULES % {"share": int(MAX_SHARE * 100), "gap": MIN_GAP, "ovl": OVERLONG, "bg": MAX_SHOT_BG}
 
 
 _RULES = """
@@ -185,6 +189,15 @@ LUAT CUNG (code kiem, sai thi canh bi bo):
    moi mau toi da 1 lan / video; dung 3s dau (hook) chi khi mau thuoc nhom mo man va hop hook.
 4. TRONG khoang canh shot: KHONG khai lop do hoa (layers) / chu nhan / hieu ung chong len (mau da tu ve day du).
 5. MAU SAC: mau nhan cua kho lay theo "style.palette" cua video (accent / highlight) — chon mau nen sang / toi hop tone video.
+6. ANH NEN AI (mau co "+ ANH NEN AI"): KHONG dung nen do code ve. Moi canh shot do khai 1 asset ai_image rieng
+   {"id": "<id>", "kind": "ai_image", "role": "shot_bg", "aspect": "<khung video>", "illustrates": "<cau noi>",
+   "prompt": "<TIENG ANH>"} va ghi "bg_asset": "<id>" trong "shot". Anh nen: canh THAT hop CHU DE cau noi luc do (van
+   phong, cua hang, man hinh lam viec, nha may, duong pho... dung nganh nghe trong video), anh sang dien anh, chieu sau
+   (tien canh mo), KHOANG GIUA SACH IT CHI TIET cho chu dat len, tong mau hop nen cua mau (nen "toi" -> canh toi, tram;
+   nen "sang" -> canh sang, diu). TUYET DOI khong chu / so / logo / giao dien trong anh, khong luoi ke o, khong hoa van
+   trang tri. Anh nen KHONG tinh vao tran 6 ai_image (toi da %(bg)d anh nen / video).
+7. CHU KHONG DUNG DAU GACH: o chu khong chua "—", "–" hay " - " lam dau noi / trang tri (dung dau phay, hai cham hoac
+   tach thanh 2 o / 2 dong). Khoang so "3-4" duoc giu.
 """
 
 
@@ -270,6 +283,59 @@ def audit(design, duration):
     if duration and total > duration * MAX_SHARE + 1.0:
         out.append("tong canh shot %.1fs > %d%% video (%.1fs)" % (total, int(MAX_SHARE * 100), duration * MAX_SHARE))
     return out
+
+
+_BG_PROMPT = ("Cinematic background plate for a full-screen motion-graphics card in a short vertical video about %s. "
+              "Scene: %s. Real photographic environment that fits the topic, shallow depth of field with a softly "
+              "blurred foreground, %s, calm composition with a CLEAN LOW-DETAIL CENTRAL AREA reserved for large titles, "
+              "subtle natural textures, no people facing camera. Absolutely no text, letters, numbers, logos, user "
+              "interface, screens with readable content, grids, patterns or graphic overlays.")
+
+
+def ensure_backdrops(design, story=None, changes=None):
+    """Canh shot (mau ho tro nen anh) chua co anh nen hop le -> tu khai 1 ai_image role shot_bg (prompt theo chu de
+    video + chu cua canh). R4 da khai thi giu nguyen. Tra so anh nen da them. Ham thuan (dung lai ket qua cache)."""
+    cat = by_id()
+    if not isinstance(design, dict) or not cat:
+        return 0
+    assets = design.setdefault("assets", [])
+    ids = {a.get("id") for a in assets if isinstance(a, dict)}
+    have = sum(1 for a in assets if isinstance(a, dict) and a.get("role") == "shot_bg")
+    topic = " ".join(str((story or {}).get(k) or "") for k in ("story_arc", "tone"))[:260] or "a business talk"
+    added = 0
+    for i, sc in enumerate(design.get("scenes") or []):
+        sh = sc.get("shot") if isinstance(sc, dict) else None
+        m = cat.get((sh or {}).get("id")) if isinstance(sh, dict) else None
+        if not m or not m.get("backdrop") or m.get("kind") == "overlay":
+            continue
+        if sh.get("bg_asset") in ids:
+            a = next(x for x in assets if isinstance(x, dict) and x.get("id") == sh["bg_asset"])
+            a.setdefault("role", "shot_bg")
+            continue
+        if have >= MAX_SHOT_BG:
+            break
+        words = " / ".join(str(v if not isinstance(v, list) else ", ".join(map(str, v)))
+                           for v in (sh.get("texts") or {}).values() if v)[:200]
+        aid = "shotbg_%d" % i
+        while aid in ids:
+            aid += "x"
+        assets.append({"id": aid, "kind": "ai_image", "role": "shot_bg", "aspect": "16:9" if _landscape() else "9:16",
+                       "illustrates": words or (m.get("vi") or {}).get("ten", ""),
+                       "prompt": _BG_PROMPT % (topic, words or "the moment being discussed",
+                                               "dark moody low-key lighting, deep shadows" if m.get("dark")
+                                               else "bright airy soft daylight, light tones")})
+        sh["bg_asset"] = aid
+        ids.add(aid)
+        have += 1
+        added += 1
+    if added and changes is not None:
+        changes.append("canh shot: tu them %d anh nen AI" % added)
+    return added
+
+
+def _landscape():
+    import canvas
+    return canvas.landscape()
 
 
 def _transcript_fold(p):
@@ -410,6 +476,13 @@ def spec_shot(raw, sc, p, assets_by_id, changes, uses):
     sc["shot"] = {"id": m["id"], "kind": m.get("kind") or "insert", "texts": texts, "images": images,
                   "rate": round(rate, 4), "brand": brand,
                   "hideSubs": bool(texts) and m.get("kind") != "overlay"}
+    if m.get("backdrop") and m.get("kind") != "overlay" and sh.get("bg_asset"):
+        # NEN ANH AI cua canh (user 2026-10-18: khong dung nen code ve) — tao that bai thi mau dung nen goc cua no
+        bp = MD._asset_path(assets_by_id, sh["bg_asset"], False)
+        if bp:
+            sc["shot"]["backdrop"] = bp
+        else:
+            changes.append("%s: anh nen AI '%s' khong co file -> dung nen goc cua mau" % (tag, sh["bg_asset"]))
     sc["layout"] = "full" if m.get("kind") == "overlay" else "graphic"
     sc["morph"] = 0
     sc.pop("bg", None)

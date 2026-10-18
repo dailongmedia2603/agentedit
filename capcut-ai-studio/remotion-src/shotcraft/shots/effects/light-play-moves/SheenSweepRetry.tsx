@@ -24,7 +24,7 @@
 // duoi vach" tu viet lai (TextReveal cua fixtures chi chua 0.06em phia tren -> cat dau tieng Viet): khung che co dem tren
 // 0.32em / duoi 0.26em. Font mono cua ten chu the -> font sans (du dau). Khung doc (portrait.mode = 'native'): the phong
 // to 1.45x dat giua nua tren, cot chu xep ben duoi can trai; khoi tong can giua theo chieu doc.
-import { useBrand, useCurrentFrame, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
+import { useBackdrop, useBrand, useCurrentFrame, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, FONT, mix, ramp } from '../../../fixtures/Polish';
@@ -193,12 +193,15 @@ export const SheenSweepRetry: React.FC = () => {
   const topX = bandC + ((H / 2) * Math.cos((65 * Math.PI) / 180)) / Math.sin((115 * Math.PI) / 180);
 
   const cta = ramp(frame, 92, 16, EASE.snappy);
+  // [Agent Edit] nen anh AI: Stage tu trong suot, bo mat ban toi phia duoi; chu dat thang tren nen co bong sang
+  const bd = useBackdrop();
+  const TSH = bd ? '0 1px 12px rgba(255,255,255,0.7)' : undefined;
 
   return (
     <AbsoluteFill style={{ overflow: 'hidden', fontFamily: FONT.sans }}>
       <Stage look={L} keyLight={{ x: 0.3, y: 0.08 }} fill={{ x: 0.9, y: 0.95 }} horizon={0.86} intensity={1} />
       {/* 展台地面：下 1/4 微微压暗的桌面 + 远处一条柔和的桌沿（portrait 按真实高度铺） */}
-      <div style={{ position: 'absolute', left: 0, right: 0, top: portrait ? Math.round(SH * 0.8) : 820, bottom: 0, background: `linear-gradient(180deg, ${alpha(L.shadow, 0)} 0%, ${alpha(L.shadow, 0.08)} 100%)` }} />
+      {!bd && <div style={{ position: 'absolute', left: 0, right: 0, top: portrait ? Math.round(SH * 0.8) : 820, bottom: 0, background: `linear-gradient(180deg, ${alpha(L.shadow, 0)} 0%, ${alpha(L.shadow, 0.08)} 100%)` }} />}
 
       {/* 卡下投影：接触影（小而实）+ 远影（大而虚），随入场高度收紧 */}
       <div
@@ -298,7 +301,7 @@ export const SheenSweepRetry: React.FC = () => {
         {kickerText ? (
           <div
             style={{
-              ...type(KS, 700, { caps: true }), color: L.accent, opacity: ramp(frame, 6, 18, EASE.out), lineHeight: 1.4, whiteSpace: 'nowrap',
+              ...type(KS, 700, { caps: true }), color: L.accent, textShadow: TSH, opacity: ramp(frame, 6, 18, EASE.out), lineHeight: 1.4, whiteSpace: 'nowrap',
               letterSpacing: `${mix(0.5, 0.28, ramp(frame, 6, 26, EASE.snappy)).toFixed(3)}em`, display: 'flex', alignItems: 'center', gap: 16,
             }}
           >
@@ -312,13 +315,13 @@ export const SheenSweepRetry: React.FC = () => {
             start={12}
             each={24}
             gap={7}
-            style={{ ...type(TS, 760), letterSpacing: '-0.035em', lineHeight: 1.12, color: L.ink }}
+            style={{ ...type(TS, 760), letterSpacing: '-0.035em', lineHeight: 1.12, color: L.ink, textShadow: TSH }}
           />
         </div>
         {bLines.length ? (
           <div
             style={{
-              marginTop: 40, ...type(BS, 450), lineHeight: 1.38, color: L.ink2,
+              marginTop: 40, ...type(BS, 450), lineHeight: 1.38, color: L.ink2, textShadow: TSH,
               opacity: ramp(frame, 30, 18, EASE.out), transform: `translateY(${mix(14, 0, ramp(frame, 30, 22, EASE.snappy)).toFixed(1)}px)`,
             }}
           >

@@ -22,7 +22,7 @@
 // khong doi), kicker (dong nho tren tieu de), title (cau tien canh). Tu tieng Viet rong hon -> co chu tung tu bi gioi han
 // theo be ngang do that. Khung doc (portrait.mode = 'native'): tam duong ham dat giua khung that, elip duong ham keo DOC
 // (he so y 0.6 -> 1.75), chu to hon, tieu de tu xuong dong <= 3 dong; vung che (tu bay qua bi mo 20%) theo khoi tieu de that.
-import { useBrand, useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
+import { useBackdrop, useBrand, useCurrentFrame, useList, useShotFonts, useText, useVideoConfig, fitSize, measureText, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { FONT } from '../../../fixtures/Polish';
@@ -90,6 +90,8 @@ export const FlyingWords: React.FC = () => {
   const fonts = useShotFonts();
   const brand = useBrand();
   const portrait = SH > 1080 * 1.2;
+  // nen anh AI: Stage tu bo gradient, bo quang sang cuoi duong ham + bot toi goc; vong ham / vet sao / chu bay giu (la hieu ung)
+  const bd = !!useBackdrop();
   const CY = SH / 2;
   const YK = portrait ? 1.75 : 0.6; // 隧道截面纵横比：横版扁椭圆，竖版拉成竖椭圆
   const WS = portrait ? 1.3 : 1; // 竖版词整体放大
@@ -153,12 +155,12 @@ export const FlyingWords: React.FC = () => {
 
   return (
     <AbsoluteFill>
-      <Stage look={L} keyLight={{ x: 0.5, y: 0.5 }} fill={null} intensity={0.5} vignette={0.7} grain={0.08}>
+      <Stage look={L} keyLight={{ x: 0.5, y: 0.5 }} fill={null} intensity={0.5} vignette={bd ? 0.3 : 0.7} grain={bd ? 0 : 0.08}>
         {/* 隧道尽头光晕：呼吸 2 次/片，与 CYCLES 对齐 */}
-        <div style={{
+        {!bd && <div style={{
           position: 'absolute', left: CX - GW / 2, top: CY - GH / 2, width: GW, height: GH, borderRadius: '50%', opacity: glowB,
           background: `radial-gradient(ellipse 50% 50% at 50% 50%, ${alpha(L.light, 0.42)} 0%, ${alpha(L.light, 0.12)} 38%, ${alpha(L.light, 0)} 70%)`,
-        }} />
+        }} />}
       </Stage>
 
       {/* ① 隧道壁 + ② 光速流线（一张 SVG） */}
@@ -236,6 +238,7 @@ export const FlyingWords: React.FC = () => {
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18, height: kSize * 1.3,
             fontFamily: FONT.sans, fontWeight: 600, fontSize: kSize, letterSpacing: '0.24em', color: L.accent, marginBottom: 24, whiteSpace: 'nowrap',
+            textShadow: bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined,
           }}>
             {brand ? <ShotcraftMark size={kSize * 1.4} tone="dark" /> : null}
             <span>{kicker.toUpperCase()}</span>

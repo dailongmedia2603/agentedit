@@ -23,5 +23,6 @@
   "tranh_khi": "Chỉ có 1–2 mục; mục là câu dài (> 5 từ); cần nhấn mạnh một con số hay một ý lớn; khoảnh khắc năng lượng cao.",
   "nang_luong": "vua",
   "chu_de": ["danh sách", "tính năng", "app", "điện thoại", "lựa chọn", "menu", "liệt kê"]
- }
+ },
+ "backdrop": true
 }

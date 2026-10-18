@@ -27,7 +27,7 @@
 // cuoi canh, TU CUOI to mau nhan). Icon 3 nut co dinh: micro (noi / nhap) -> lap lanh (AI xu ly) -> may bay giay (gui / xuat).
 // Khung doc (portrait.mode = 'native'): 3 nut xep DOC ben trai, ten buoc to ben phai, duong bay vong ra mep trai giua cac nut
 // (doc nhu mot timeline 3 buoc); tieu de duoi cung. Khung cong huong (LIT_B / LIT_C) va toan bo nhip giu nguyen.
-import { useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, wrapLines, fitSize } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, wrapLines, fitSize } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, bezier, mix, ramp } from '../../../fixtures/Polish';
@@ -150,7 +150,7 @@ const Flyline: React.FC<{ f: number; ln: LineDef }> = ({ f, ln }) => {
 };
 
 type Lay = { R: number; k: number; portrait: boolean; labelSz: number; subSz: number };
-const Node: React.FC<{ f: number; n: NodeDef; ox: number; oy: number; lay: Lay; labelLines: string[]; subLines: string[] }> = ({ f, n, ox, oy, lay, labelLines, subLines }) => {
+const Node: React.FC<{ f: number; n: NodeDef; ox: number; oy: number; lay: Lay; labelLines: string[]; subLines: string[]; ts?: string }> = ({ f, n, ox, oy, lay, labelLines, subLines, ts }) => {
   const fonts = useShotFonts();
   const { R, k, portrait, labelSz, subSz } = lay;
   const enter = ramp(f, n.inAt, 22, EASE.snappy);
@@ -186,9 +186,9 @@ const Node: React.FC<{ f: number; n: NodeDef; ox: number; oy: number; lay: Lay; 
         </svg>
       </div>
       {/* 标签：khung ngang duoi nut (giua); khung doc ben phai nut (can trai, giua theo chieu doc) */}
-      <div style={portrait
+      <div style={{ ...(portrait
         ? { position: 'absolute', left: x + R + 60, top: y - textH / 2, textAlign: 'left' }
-        : { position: 'absolute', left: x - 260, width: 520, top: y + R + 34, textAlign: 'center' }}>
+        : { position: 'absolute', left: x - 260, width: 520, top: y + R + 34, textAlign: 'center' }), textShadow: ts }}>
         {labelLines.map((l, i) => (
           <div key={i} style={{ fontFamily: fonts.sans, fontSize: labelSz, fontWeight: 650, letterSpacing: '-0.03em', lineHeight: 1.18, whiteSpace: 'nowrap', color: on ? L.ink : L.ink3 }}>{l}</div>
         ))}
@@ -305,9 +305,14 @@ export const OrbFlylineRelay: React.FC = () => {
   const nW = allWords.reduce((a, w) => a + w.length, 0);
   const tGap = Math.min(3.5, 24 / Math.max(1, nW));
   let wi = 0;
+  // [Agent Edit] NEN ANH AI: bo nen toi (Stage tu bo gradient); quang sang sau nut (cong huong khi duong bay toi) giu
+  // nhung diu hon; chu nam truc tiep tren nen co bong do
+  const bd = useBackdrop();
+  const ts = bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined;
+  const orbK = bd ? 0.7 : 1;
 
   return (
-    <AbsoluteFill style={{ background: L.bg[2] }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[2] }}>
       <Stage look={L} keyLight={{ x: 0.5, y: -0.05 }} fill={null} intensity={0.8} />
 
       <AbsoluteFill style={{ transform: `scale(${cam})`, transformOrigin: `${fx}px ${fy}px` }}>
@@ -320,7 +325,7 @@ export const OrbFlylineRelay: React.FC = () => {
           const x = n.x + offs[i].ox, y = n.y + offs[i].oy;
           return (
             <div key={i} style={{
-              position: 'absolute', left: x - sz / 2, top: y - sz / 2, width: sz, height: sz, borderRadius: '50%', mixBlendMode: 'screen', opacity: orbIn,
+              position: 'absolute', left: x - sz / 2, top: y - sz / 2, width: sz, height: sz, borderRadius: '50%', mixBlendMode: 'screen', opacity: orbIn * orbK,
               background: `radial-gradient(circle closest-side, ${alpha(n.orb, Math.min(1, kk))} 0%, ${alpha(n.orb, Math.min(1, kk * 0.55))} 25%, ${alpha(n.orb, kk * 0.22)} 52%, ${alpha(n.orb, kk * 0.06)} 76%, ${alpha(n.orb, 0)} 100%)`,
             }} />
           );
@@ -344,7 +349,7 @@ export const OrbFlylineRelay: React.FC = () => {
         </svg>
 
         {NODES.map((n, i) => (
-          <Node key={i} f={f} n={n} ox={nodeOffs[i].ox} oy={nodeOffs[i].oy} lay={lay} labelLines={labs[i].lines} subLines={subl[i].lines} />
+          <Node key={i} f={f} n={n} ox={nodeOffs[i].ox} oy={nodeOffs[i].oy} lay={lay} labelLines={labs[i].lines} subLines={subl[i].lines} ts={ts} />
         ))}
       </AbsoluteFill>
 
@@ -356,7 +361,7 @@ export const OrbFlylineRelay: React.FC = () => {
         return (
           <RiseLine key={li} start={st} each={18} gap={tGap}
             words={ws.map((w, j) => ({ w, accent: base + j === nW - 1 }))}
-            style={{ position: 'absolute', left: 0, right: 0, top: titleTop + li * tLH, textAlign: 'center', fontFamily: fonts.sans, fontSize: tSz, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.16, color: L.ink }} />
+            style={{ position: 'absolute', left: 0, right: 0, top: titleTop + li * tLH, textAlign: 'center', fontFamily: fonts.sans, fontSize: tSz, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.16, color: L.ink, textShadow: ts }} />
         );
       })}
     </AbsoluteFill>

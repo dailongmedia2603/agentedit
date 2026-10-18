@@ -90,6 +90,8 @@ DUNG khoanh khac do trong video. Tha KHONG co hieu ung con hon hieu ung sai ngu 
   KHONG ve chu / so / emoji (chu di qua lop chu rieng co quy tac).
 - "transform": tac dong len KHUNG VIDEO: rung, punch-in / zoom nhip, nghieng, lac, nhoe, doi sang / tuong phan /
   bao hoa / tong mau. Khong 2 transform cung luc.
+  ZOOM / PUNCH-IN CHI KHI THAT CAN (user: "lam dung zoom"): chi o cao trao / con so / cau chot manh nhat, toi da 1 lan
+  moi ~20s (code bo phan zoom qua day); con lai dung hieu ung khac hop y nghia (sang / mau / rung nhe / lop phu).
 
 # RANG BUOC
 - Moi hieu ung 0.4-4 giay (toi da 6), neo GIO NGUON cua dung khoanh khac (src_start/src_end nam trong doan do).
@@ -1004,6 +1006,31 @@ def fx_to_spec(p, spec, changes):
                     continue
             spec.setdefault("fx", []).append({"id": e["id"], "start": round(st, 3), "end": round(st + job["duration"], 3),
                                                "layer": e.get("layer") or "front", "file": _brand_frames(job["out"], brand_hex)})
+    _han_che_zoom_fx(spec, changes)
     n = len(spec.get("fx") or []) + len(spec.get("fxTransforms") or [])
     if n:
         changes.append("%d hieu ung tu viet da ve khung" % n)
+
+
+FX_ZOOM_GAP = 20.0          # hieu ung tu viet co zoom (scale) cach nhau toi thieu (giay timeline) — user 2026-10-18
+
+
+def _han_che_zoom_fx(spec, changes=None):
+    """Hieu ung bien doi khung co ZOOM (scale lech > 3%) qua day -> bo phan zoom (giu sang / mau / rung cua no; con
+    rong thi bo ca hieu ung). Lan zoom dau duoc giu, lan sau phai cach >= FX_ZOOM_GAP."""
+    last, keep, n_bo = -1e9, [], 0
+    for t in sorted(spec.get("fxTransforms") or [], key=lambda x: x.get("start", 0)):
+        vals = t.get("values") or {}
+        sc = vals.get("scale") or []
+        if sc and max(abs(float(v) - 1.0) for v in sc) > 0.03:
+            if float(t.get("start", 0)) - last >= FX_ZOOM_GAP:
+                last = float(t.get("start", 0))
+            else:
+                vals.pop("scale", None)
+                n_bo += 1
+                if not any(vals.values()):
+                    continue
+        keep.append(t)
+    if n_bo and changes is not None:
+        changes.append("hieu ung tu viet: bo zoom o %d hieu ung (zoom chi khi can, cach >= %.0fs)" % (n_bo, FX_ZOOM_GAP))
+    spec["fxTransforms"] = keep

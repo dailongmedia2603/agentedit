@@ -23,7 +23,7 @@
 // Chu so cham: bo net don 0-9 tu ve (cung kieu "12,847" goc), lay mau deu theo do dai net, hang doi theo phap tuyen;
 // so ngan -> net day hon (them hang) de 320 cham van khong chong len nhau. Khung doc (native): cham to hon (R 16),
 // 3 cot rong hon, tieu de to + xuong dong, chu thich xep doc; ca khoi can giua theo chieu cao.
-import { useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, fitSize, wrapLines, measureText } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill, spring } from 'remotion';
 import { EASE, mix, ramp } from '../../../fixtures/Polish';
@@ -337,11 +337,15 @@ export const UnitDotSwarmRegroupV2: React.FC = () => {
   const legendRows = portrait ? G : 1;
   const footTop = legendTop + (portrait ? legendRows * legSize * 1.5 + 40 : 72);
 
+  // [Agent Edit] nen anh AI: bo nen dac (Stage tu bo gradient); chu nam tren nen -> bong do nhe de doc ro tren anh
+  const bd = useBackdrop();
+  const bdShadow = bd ? (bd.dark ? '0 2px 18px rgba(0,0,0,0.55)' : '0 1px 12px rgba(255,255,255,0.7)') : undefined;
+
   return (
-    <AbsoluteFill style={{ background: L.bg[1], overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: bd ? 'transparent' : L.bg[1], overflow: 'hidden' }}>
       <Stage look={L} keyLight={{ x: 0.5, y: 0.3 }} fill={null} />
 
-      <div style={{ position: 'absolute', inset: 0, transform: `scale(${cam.toFixed(5)})`, transformOrigin: `50% ${portrait ? mid - 200 : SH * 0.52}px` }}>
+      <div style={{ position: 'absolute', inset: 0, transform: `scale(${cam.toFixed(5)})`, transformOrigin: `50% ${portrait ? mid - 200 : SH * 0.52}px`, textShadow: bdShadow }}>
         {/* 眉题 + 叙事标题 */}
         <div style={{ position: 'absolute', left: 96, right: 96, top: headTop, display: 'flex', alignItems: 'center', gap: 12 * k, ...type(32 * k, 650), color: L.ink3, opacity: ramp(frame, 0, 12, EASE.out), whiteSpace: 'nowrap', overflow: 'hidden' }}>
           {BRAND.name ? (

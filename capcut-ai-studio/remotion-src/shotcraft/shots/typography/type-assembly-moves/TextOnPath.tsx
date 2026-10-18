@@ -24,7 +24,7 @@
 // do DOM) -> buoc thuc theo font that. Khung ngang: tieu de 1 dong (co chu tu vua 1100px, khong de len bien so).
 // Khung doc (native): tieu de to (<=3 dong) o phan tren, bieu do chiem nua duoi; chu chay tren duong o co nho hon
 // (<=100px, tranh "can goc" o khuc cua) roi phong to dan khi bay len vi tri tieu de.
-import { useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, fitSize, measureText, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useText, useList, useShotFonts, fitSize, measureText, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, bezier, mix, ramp, velocity } from '../../../fixtures/Polish';
@@ -184,6 +184,9 @@ export const TextOnPath: React.FC = () => {
   const badgeIn = ramp(frame, 98, 8, EASE.out);
   const pulse = ramp(frame, T0 + TRAVEL + 2, 24, EASE.out); // 光点到顶的一圈脉冲
 
+  // [Agent Edit] nen anh AI: Stage tu bo nen; chu truc tiep tren nen co bong nhe (luoi 4 vach = truc bieu do, giu)
+  const bd = useBackdrop();
+  const tsh = bd ? (bd.dark ? '0 2px 18px rgba(0,0,0,0.55)' : '0 1px 12px rgba(255,255,255,0.7)') : undefined;
   return (
     <AbsoluteFill style={{ overflow: 'hidden' }}>
       <Stage look={L} keyLight={{ x: 0.78, y: 0.28 }} fill={{ x: 0.12, y: 0.95 }} breathe={0.6} />
@@ -252,9 +255,9 @@ export const TextOnPath: React.FC = () => {
         {value ? (
           <div style={{
             position: 'absolute', left: P3.x - (portrait ? 70 : 56), top: P3.y - (portrait ? 70 : 40), transform: `translateX(-100%) translateY(-100%) translateY(${((1 - badge) * 30).toFixed(2)}px) scale(${(0.9 + 0.1 * badge).toFixed(4)})`,
-            transformOrigin: '100% 100%', opacity: badgeIn, textAlign: 'right', whiteSpace: 'nowrap',
+            transformOrigin: '100% 100%', opacity: badgeIn, textAlign: 'right', whiteSpace: 'nowrap', textShadow: tsh,
           }}>
-            <div style={{ ...type(valFs, 760), fontFamily: fonts.sans, lineHeight: 1.15, color: L.ink, textShadow: glow(L.accent, 0.35) }}>{value}</div>
+            <div style={{ ...type(valFs, 760), fontFamily: fonts.sans, lineHeight: 1.15, color: L.ink, textShadow: tsh ? `${tsh}, ${glow(L.accent, 0.35)}` : glow(L.accent, 0.35) }}>{value}</div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 18, marginTop: 10, alignItems: 'baseline' }}>
               {label ? <span style={{ ...type(subBadgeFs, 500), fontFamily: fonts.sans, color: L.ink2 }}>{label}</span> : null}
               {delta ? <span style={{ ...type(subBadgeFs, 700), fontFamily: fonts.sans, color: L.accent2 }}>{delta}</span> : null}
@@ -264,12 +267,12 @@ export const TextOnPath: React.FC = () => {
 
         {/* 眉题 + 副句 */}
         {kicker ? (
-          <div style={{ position: 'absolute', left: X0 + 4, top: FINAL_Y0 - FS * 0.6 - kickFs * 2.4, fontFamily: fonts.sans, fontSize: kickFs, fontWeight: 700, lineHeight: 1.4, letterSpacing: '0.18em', color: L.accent, whiteSpace: 'nowrap' }}>
+          <div style={{ position: 'absolute', left: X0 + 4, top: FINAL_Y0 - FS * 0.6 - kickFs * 2.4, fontFamily: fonts.sans, fontSize: kickFs, fontWeight: 700, lineHeight: 1.4, letterSpacing: '0.18em', color: L.accent, whiteSpace: 'nowrap', textShadow: tsh }}>
             <TextReveal text={kicker} start={96} by="word" variant="rise" each={14} gap={3} />
           </div>
         ) : null}
         {subLines.length ? (
-          <div style={{ position: 'absolute', left: X0 + 4, top: titleBottom + (portrait ? 40 : 14), fontFamily: fonts.sans, fontSize: subFs, fontWeight: 450, lineHeight: 1.3, color: L.ink2 }}>
+          <div style={{ position: 'absolute', left: X0 + 4, top: titleBottom + (portrait ? 40 : 14), fontFamily: fonts.sans, fontSize: subFs, fontWeight: 450, lineHeight: 1.3, color: L.ink2, textShadow: tsh }}>
             {subLines.map((l, j) => (
               <div key={j} style={{ whiteSpace: 'nowrap' }}>
                 <TextReveal text={l} start={92 + j * 6} by="word" variant="blur" each={16} gap={2.5} />
@@ -306,7 +309,7 @@ export const TextOnPath: React.FC = () => {
               position: 'absolute', left: x, top: y, opacity: op,
               transform: `translate(-50%, -50%) rotate(${ang.toFixed(3)}deg) translateY(${lift.toFixed(2)}px) scale(${sc.toFixed(4)})`,
               fontFamily: fonts.sans, fontSize: FS, fontWeight: 800, letterSpacing: `${TRACK}em`, lineHeight: 1.2, color: L.ink, whiteSpace: 'pre',
-              textShadow: `${(-moving * 1.4).toFixed(1)}px 0 ${(moving * 2).toFixed(1)}px ${alpha(L.accent, 0.5)}, 0 0 24px ${alpha(L.accent, 0.25)}`,
+              textShadow: `${(-moving * 1.4).toFixed(1)}px 0 ${(moving * 2).toFixed(1)}px ${alpha(L.accent, 0.5)}, 0 0 24px ${alpha(L.accent, 0.25)}${tsh ? `, ${tsh}` : ''}`,
             }}>
               {ch}
             </div>

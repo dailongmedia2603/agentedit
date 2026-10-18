@@ -6,22 +6,71 @@
  "duration": 150,
  "kind": "insert",
  "dark": true,
- "portrait": {"mode": "native"},
- "rate": [0.8, 1.25],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.8,
+  1.25
+ ],
  "hold": 66,
  "slots": [
-  {"id": "items", "role": "item", "sample": "Trang chủ|Khám phá|Thư viện|Cửa hàng|Hồ sơ", "max": 16, "list": {"min": 3, "max": 5}, "note": "nhãn ngắn 1-2 từ của các khối (mục menu / thành phần giao diện / bước); khối đầu = đang chọn"},
-  {"id": "kicker", "role": "kicker", "sample": "Tự động căn chỉnh · Khoảng cách", "max": 36, "optional": true, "note": "nhãn nhỏ in hoa trên con số"}
+  {
+   "id": "items",
+   "role": "item",
+   "sample": "Trang chủ|Khám phá|Thư viện|Cửa hàng|Hồ sơ",
+   "max": 16,
+   "list": {
+    "min": 3,
+    "max": 5
+   },
+   "note": "nhãn ngắn 1-2 từ của các khối (mục menu / thành phần giao diện / bước); khối đầu = đang chọn"
+  },
+  {
+   "id": "kicker",
+   "role": "kicker",
+   "sample": "Tự động căn chỉnh · Khoảng cách",
+   "max": 36,
+   "optional": true,
+   "note": "nhãn nhỏ in hoa trên con số"
+  }
  ],
  "images": [],
  "brand": "none",
- "sfx": [{"at": 22, "type": "click"}, {"at": 34, "type": "typing"}, {"at": 86, "type": "swoosh"}, {"at": 100, "type": "pop"}],
+ "sfx": [
+  {
+   "at": 22,
+   "type": "click"
+  },
+  {
+   "at": 34,
+   "type": "typing"
+  },
+  {
+   "at": 86,
+   "type": "swoosh"
+  },
+  {
+   "at": 100,
+   "type": "pop"
+  }
+ ],
  "vi": {
   "ten": "Kéo thông số khoảng cách — giao diện giãn ra rồi bật về",
   "mo_ta": "Nền tối kiểu phần mềm thiết kế (Figma): một hàng nút menu (khung dọc: cột nút xếp chồng) có khung chọn trắng + 8 tay nắm, phía trên là con số px rất to và thước xoay. Con số nhảy từ 12 lên 104, các nút bị đẩy giãn cách CÙNG LÚC, đường đo vàng và nhãn số giữa các khe kéo dài theo; giữ một nhịp rồi bật lò xo co về chặt hơn lúc đầu và ổn định ở 12.",
   "hop_khi": "Nói về thiết kế giao diện, app, website, công cụ no-code / thiết kế, 'chỉ cần chỉnh một thông số là cả giao diện tự cập nhật', tuỳ biến, căn chỉnh khoảng cách, tự động hoá bố cục; video cho designer / dev / người làm sản phẩm.",
   "tranh_khi": "Khán giả phổ thông không biết công cụ thiết kế; nội dung không liên quan giao diện / phần mềm; cần hiện con số thật (số trên màn hình chỉ là px minh hoạ).",
   "nang_luong": "vua",
-  "chu_de": ["thiết kế", "giao diện", "app", "website", "no-code", "Figma", "công cụ", "tuỳ chỉnh"]
- }
+  "chu_de": [
+   "thiết kế",
+   "giao diện",
+   "app",
+   "website",
+   "no-code",
+   "Figma",
+   "công cụ",
+   "tuỳ chỉnh"
+  ]
+ },
+ "backdrop": true
 }

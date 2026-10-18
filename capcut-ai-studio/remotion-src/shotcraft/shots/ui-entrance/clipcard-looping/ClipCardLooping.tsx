@@ -17,7 +17,7 @@
 // staticFile va tinh Sequence theo 30fps cua mau — o day footage chay theo DONG HO THAT cua video (khong nhan `rate`).
 // Gui anh thay video -> anh tinh (cover) voi day may cham.
 // Khung doc (native): the lon chiem phan lon khung, tieu de + chu thich nam duoi; khung ngang: the ben trai, cot chu phai.
-import { useCurrentFrame, useVideoConfig, useImage, useText, useShot, useShotFonts, fitSize, wrapLines } from '../../../runtime';
+import { useBackdrop, useCurrentFrame, useVideoConfig, useImage, useText, useShot, useShotFonts, fitSize, wrapLines } from '../../../runtime';
 import React, { useEffect, useState } from 'react';
 import {
   AbsoluteFill,
@@ -254,8 +254,10 @@ export const ClipCardLooping: React.FC = () => {
   const pad = portrait ? 44 : 24;
 
   const vid = isVideo(src);
+  // [Agent Edit] nen anh AI: bo nen dac / quang sang sau the / hat (Stage tu bo gradient); chu tren nen co bong nhe
+  const bd = useBackdrop();
   return (
-    <AbsoluteFill style={{ overflow: 'hidden', background: L.bg[2] }}>
+    <AbsoluteFill style={{ overflow: 'hidden', background: bd ? 'transparent' : L.bg[2] }}>
       <Stage look={L} keyLight={{ x: 0.5, y: portrait ? 0.12 : 0.05 }} fill={{ x: 0.82, y: 0.95 }} intensity={0.35 + 0.55 * stageOn} breathe={0.5} vignette={0.45}>
         <AbsoluteFill style={{ opacity: 0.6 * stageOn }}>
           {Array.from({ length: Math.ceil(SH / 1080) }, (_, i) => (
@@ -267,13 +269,13 @@ export const ClipCardLooping: React.FC = () => {
       </Stage>
 
       {/* den nen sau the (mau nhan nhat + trang am) */}
-      <div
+      {!bd && <div
         style={{
           position: 'absolute', left: ccx - cardW * 0.95, top: ccy - cardH * 0.8 + bob, width: cardW * 1.9, height: cardH * 1.6, opacity: back,
           background: `radial-gradient(ellipse 50% 50% at 50% 50%, ${alpha(L.accent2, 0.22)}, ${alpha(ACC, 0.08)} 45%, ${alpha(ACC, 0)} 72%)`,
           filter: 'blur(20px)',
         }}
-      />
+      />}
 
       {/* THE */}
       <div style={{ position: 'absolute', inset: 0, perspective: portrait ? 4200 : 2600, perspectiveOrigin: `50% ${((ccy / SH) * 100).toFixed(1)}%` }}>
@@ -334,7 +336,7 @@ export const ClipCardLooping: React.FC = () => {
 
       {/* cot chu: tieu de + chu thich */}
       {hasText ? (
-        <div style={{ position: 'absolute', left: textX, top: textY, width: colW, color: L.ink }}>
+        <div style={{ position: 'absolute', left: textX, top: textY, width: colW, color: L.ink, textShadow: bd ? (bd.dark ? '0 2px 18px rgba(0,0,0,0.55)' : '0 1px 12px rgba(255,255,255,0.7)') : undefined }}>
           {tLines.map((l, i) => {
             const start = tStart + wi * tGap;
             wi += l.split(/\s+/).filter(Boolean).length;
@@ -365,7 +367,7 @@ export const ClipCardLooping: React.FC = () => {
       ) : null}
 
       <Vignette strength={0.32} inner={0.5} color={L.shadow} />
-      <Grain opacity={0.05} blend="soft-light" />
+      {!bd && <Grain opacity={0.05} blend="soft-light" />}
     </AbsoluteFill>
   );
 };

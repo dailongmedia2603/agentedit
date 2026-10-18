@@ -222,9 +222,9 @@ export const LightLeakBurn: React.FC = () => {
   const fonts = useShotFonts();
   const portrait = SH > 1080 * 1.2;
   const golden = frame > PEAK;
-  const kickerA = useText('kicker_a', '01 — Khó khăn');
+  const kickerA = useText('kicker_a', '01 · Khó khăn');
   const titleA = useText('title_a', 'Đêm nào rồi cũng qua,');
-  const kickerB = useText('kicker_b', '02 — Bước ngoặt');
+  const kickerB = useText('kicker_b', '02 · Bước ngoặt');
   const titleB = useText('title_b', 'bình minh sẽ tới.');
   const modes = useList('modes', ['Đêm', 'Hoàng hôn', 'Chân dung']).slice(0, 3);
   const photoA = useImage('photo_a');

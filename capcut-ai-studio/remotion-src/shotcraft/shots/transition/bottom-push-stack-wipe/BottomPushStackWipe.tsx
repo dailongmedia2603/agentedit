@@ -342,7 +342,7 @@ export const BottomPushStackWipe: React.FC = () => {
   const portrait = SH > 1080 * 1.2;
   const H = SH; // 每章整屏 = 舞台实际高度
   const texts = [
-    [useText('intro_label', 'Giới thiệu'), useText('intro', 'Ba bước\nđể bứt phá.'), useText('intro_sub', 'Làm ít hơn, hiệu quả hơn — bắt đầu từ hôm nay.')],
+    [useText('intro_label', 'Giới thiệu'), useText('intro', 'Ba bước\nđể bứt phá.'), useText('intro_sub', 'Làm ít hơn, hiệu quả hơn. Bắt đầu từ hôm nay.')],
     [useText('label1', 'Lên kế hoạch'), useText('title1', 'Một kế hoạch.\nCả nhóm rõ.'), useText('sub1', 'Mọi việc được chia rõ ràng cho từng người ngay từ đầu.')],
     [useText('label2', 'Phối hợp'), useText('title2', 'Họp ngắn,\nchốt nhanh.'), useText('sub2', 'Mười lăm phút mỗi sáng là đủ để cả nhóm cùng nhịp.')],
     [useText('label3', 'Tự động hóa'), useText('title3', 'Việc lặp lại,\ncứ để máy lo.'), useText('sub3', 'Email, báo cáo, nhắc việc chạy tự động không cần chạm tay.')],

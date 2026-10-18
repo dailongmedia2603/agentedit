@@ -23,7 +23,7 @@ import { DesignStage, E, rand, seg, useT } from '../../../fixtures/Motion';
 import { bezier, Backdrop, Grain } from '../../../fixtures/Polish';
 import { ShotcraftMark } from '../../../fixtures/Brand';
 import { LOOKS, rgbOf } from '../../../fixtures/Look';
-import { useBrand, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
+import { useBackdrop, useBrand, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
 
 export const FRACTURE_DURATION = 156; // 5200ms @30fps
 
@@ -157,18 +157,20 @@ const Scene: React.FC = () => {
   const push = 1 + 0.03 * seg(t, 0.45, 1, E.inOutQuad);
   // 拼合程度 → 海报身后环境光
   const whole = seg(t, 0.28, 0.55, E.outCubic) * (1 - seg(t, 0.7, 0.86, E.inQuad));
+  // [Agent Edit] nen anh AI: bo nen toi + quang sang sau poster (nen code ve) -> anh nen hien qua; poster (25 manh) giu nguyen
+  const bd = !!useBackdrop();
   return (
-    <DesignStage raster="zoom" h={DH}>
-      <Backdrop tone="dark" light={{ x: 0.5, y: 0.08 }} accent={`hsl(${h},70%,60%)`} grain={0} vignette={0.55} />
+    <DesignStage raster="zoom" h={DH} bg={bd ? 'transparent' : undefined}>
+      {!bd && <Backdrop tone="dark" light={{ x: 0.5, y: 0.08 }} accent={`hsl(${h},70%,60%)`} grain={0} vignette={0.55} />}
       {/* 海报身后的环境光：拼齐时亮起，像海报在发光 */}
-      <div
+      {!bd && <div
         style={{
           position: 'absolute',
           inset: 0,
           background: `radial-gradient(ellipse 52% 56% at 50% 52%, hsla(${h},70%,58%,0.26) 0%, hsla(${h},70%,50%,0) 70%)`,
           opacity: whole,
         }}
-      />
+      />}
       <div style={{ position: 'absolute', inset: 0, perspective: 900, overflow: 'hidden' }}>
         <div
           style={{
@@ -232,6 +234,7 @@ const Scene: React.FC = () => {
 
 export const Fracture: React.FC = () => {
   const t = useT();
+  const bd = !!useBackdrop();
   // 只给飞行段加运动模糊：聚合（t<0.53）与飞散（t>0.7）；hold 段读字，保持锐利
   const flying = t < 0.53 || t > 0.7;
   return (
@@ -244,7 +247,7 @@ export const Fracture: React.FC = () => {
         <Scene />
       )}
       {/* 颗粒放在模糊之外（多重采样会把颗粒抹平） */}
-      <Grain opacity={0.08} blend="soft-light" />
+      {!bd && <Grain opacity={0.08} blend="soft-light" />}
     </AbsoluteFill>
   );
 };

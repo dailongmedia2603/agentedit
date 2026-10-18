@@ -27,7 +27,7 @@
 // o chu: word (1-3 tu, in hoa — chu chinh nhun theo nhip), subtitle (hien sau drop), kicker (goc trai tren, tuy chon).
 // Khung doc (portrait.mode = 'native'): chu chinh tach dong theo tu de to nhat co the (<= 3 dong, toi da ~420px),
 // dong vong vang tren / duoi bam dong dau / dong cuoi; may tao nhip phong 1.6x dat duoi.
-import { useBrand, useCurrentFrame, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
+import { useBackdrop, useBrand, useCurrentFrame, useShotFonts, useText, useVideoConfig, fitSize, wrapLines } from '../../../runtime';
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import { EASE, FONT, mix, ramp } from '../../../fixtures/Polish';
@@ -99,6 +99,7 @@ const Row: React.FC<{ text: string; size: number; frame: number; gIdx: number; g
   const drop = clamp01(f - DROP + 1) > 0;
   const chars = Array.from(text);
   const center = (chars.length - 1) / 2;
+  const tsh = useBackdrop() ? '0 2px 18px rgba(0,0,0,0.55)' : ''; // chu tren nen anh AI: bong do nhe
   const grad = (i: number) => mixRgb(L.accent, L.accent2, gN > 1 ? (gIdx + i) / (gN - 1) : 0); // drop 后紫→粉渐变（逐字取色）
   return (
     <div style={{ display: 'flex', whiteSpace: 'pre', fontFamily: FONT.sans, fontSize: size, fontWeight: W_REST, letterSpacing: '-0.01em', lineHeight: 1, opacity }}>
@@ -121,8 +122,8 @@ const Row: React.FC<{ text: string; size: number; frame: number; gIdx: number; g
               color: outline ? 'transparent' : col,
               WebkitTextStroke: outline ? `2px ${alpha(drop ? L.accent : L.ink, 0.55)}` : stroke > 0.2 ? `${stroke.toFixed(2)}px ${col}` : undefined,
               textShadow: !outline && shine > 0.05
-                ? `0 0 ${(18 * shine).toFixed(1)}px ${alpha(drop ? L.accent2 : hitCol, 0.5 * shine)}, 0 0 ${(70 * shine).toFixed(1)}px ${alpha(drop ? L.accent2 : hitCol, 0.35 * shine)}`
-                : 'none',
+                ? `0 0 ${(18 * shine).toFixed(1)}px ${alpha(drop ? L.accent2 : hitCol, 0.5 * shine)}, 0 0 ${(70 * shine).toFixed(1)}px ${alpha(drop ? L.accent2 : hitCol, 0.35 * shine)}${tsh ? ', ' + tsh : ''}`
+                : !outline && tsh ? tsh : 'none',
             }}>
               {ch}
             </span>
@@ -139,6 +140,9 @@ export const FontWeightPump: React.FC = () => {
   const fonts = useShotFonts();
   const brand = useBrand();
   const portrait = SH > 1080 * 1.2;
+  // nen anh AI: Stage tu bo gradient; quang sang sau chu (nhip trong) giam con nua; chu tren nen them bong
+  const bd = !!useBackdrop();
+  const tsh = bd ? '0 2px 18px rgba(0,0,0,0.55)' : undefined;
   const word = useText('word', 'BÙNG NỔ').trim();
   const subtitle = useText('subtitle', 'Cắt đúng nhịp, bùng nổ đúng lúc nhạc dồn.');
   const kicker = useText('kicker', 'Đêm nhạc cuối tuần');
@@ -202,17 +206,17 @@ export const FontWeightPump: React.FC = () => {
       {/* 字后柔光：随拍明暗，只在标题身后 */}
       <div style={{
         position: 'absolute', left: 260 - (portrait ? 200 : 0), right: 260 - (portrait ? 200 : 0), top: CY - 240 - blockH / 2 + SIZE / 2, height: 480 + blockH - SIZE, borderRadius: '50%',
-        background: `radial-gradient(ellipse 50% 50% at 50% 50%, ${alpha(down || frame >= DROP ? L.accent2 : L.accent, Math.min(0.6, glowA))} 0%, ${alpha(L.accent, 0)} 100%)`,
+        background: `radial-gradient(ellipse 50% 50% at 50% 50%, ${alpha(down || frame >= DROP ? L.accent2 : L.accent, Math.min(0.6, glowA) * (bd ? 0.5 : 1))} 0%, ${alpha(L.accent, 0)} 100%)`,
         mixBlendMode: 'screen',
       }} />
 
       {/* 眉题 */}
-      <div style={{ position: 'absolute', left: 120, top: portrait ? 240 : 66, display: 'flex', alignItems: 'center', gap: 14 * K, opacity: intro, maxWidth: portrait ? 1680 : 1100 }}>
+      <div style={{ position: 'absolute', left: 120, top: portrait ? 240 : 66, display: 'flex', alignItems: 'center', gap: 14 * K, opacity: intro, maxWidth: portrait ? 1680 : 1100, textShadow: tsh }}>
         {brand ? <ShotcraftMark size={46 * K} tone="dark" /> : null}
         {kicker ? <span style={{ ...label, fontWeight: 700, color: L.ink, overflow: 'hidden', textOverflow: 'ellipsis' }}>{kicker.toUpperCase()}</span> : null}
       </div>
-      <div style={{ position: 'absolute', right: 120, top: portrait ? 240 + 46 * K + 30 : 70, ...label, color: L.ink2, opacity: intro, fontVariantNumeric: 'tabular-nums' }}>
-        128 BPM <span style={{ color: L.ink3, marginLeft: 18 * K }}>{`Ô NHỊP ${bar} / 2`}</span>
+      <div style={{ position: 'absolute', right: 120, top: portrait ? 240 + 46 * K + 30 : 70, ...label, color: L.ink2, opacity: intro, fontVariantNumeric: 'tabular-nums', textShadow: tsh }}>
+        128 BPM <span style={{ color: bd ? L.ink2 : L.ink3, marginLeft: 18 * K }}>{`Ô NHỊP ${bar} / 2`}</span>
       </div>
 
       {/* 回声行（描边）：上 = 首行、下 = 末行 */}
@@ -249,7 +253,7 @@ export const FontWeightPump: React.FC = () => {
       )}
 
       {/* 副标题：drop 后逐词升起（遮罩留足越南语叠加符号空间） */}
-      <div style={{ position: 'absolute', left: 0, right: 0, top: subTop, textAlign: 'center', fontFamily: FONT.sans, fontSize: subSize, fontWeight: 500, color: L.ink2 }}>
+      <div style={{ position: 'absolute', left: 0, right: 0, top: subTop, textAlign: 'center', fontFamily: FONT.sans, fontSize: subSize, fontWeight: 500, color: L.ink2, textShadow: tsh }}>
         {subLines.map((l, li) => (
           <div key={li} style={{ lineHeight: `${Math.round(subSize * 1.3)}px`, whiteSpace: 'nowrap' }}>
             {l.split(/\s+/).filter(Boolean).map((w, k) => {
