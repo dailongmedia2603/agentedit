@@ -19,11 +19,11 @@
  "brand": "none",
  "sfx": [{"at": 55, "type": "click"}, {"at": 88, "type": "click"}, {"at": 121, "type": "click"}],
  "vi": {
-  "ten": "Câu chốt có chip cuộn từ — \"Để AI lo [___] giúp bạn\"",
-  "mo_ta": "Nền trắng sạch, một câu chữ đen đậm ở giữa; giữa câu là viên chip tối bo tròn có dấu tick, chữ trong chip cuộn dọc như bánh xe để đổi lần lượt 2-4 từ (có bóng mờ của từ trước/sau phía trên-dưới chip). Chip co giãn theo độ dài từ, đẩy chữ hai bên ra/vào mượt mà; 3 nhịp đổi đều đặn.",
-  "hop_khi": "Người nói liệt kê nhiều việc / tính năng mà một sản phẩm, app, AI hay dịch vụ lo giúp (\"lo hết kịch bản, quay dựng, âm thanh\"); câu dạng \"chúng tôi xử lý ___ cho bạn\"; tóm gọn lợi ích SaaS, dịch vụ trọn gói, công cụ tự động hoá.",
-  "tranh_khi": "Chỉ có 1 ý; các mục dài cả câu (> 3 từ) hoặc dài ngắn chênh nhau quá nhiều; video tone tối / cảm xúc nặng; cần hiện số liệu hay hình ảnh.",
+  "ten": "Viên chip cuộn từ khóa kiểu máy xèng",
+  "mo_ta": "Bố cục câu văn cố định ở trên và dưới, ở giữa là viên chip bo góc đen nổi bật chứa dấu tích xanh và từ khóa luân phiên thay đổi. Từng từ khóa bên trong cuộn dọc dứt khoát như trục bánh xe máy xèng với bóng mờ trước sau, trong khi viên chip tự co giãn linh hoạt theo độ dài chữ. Tiết tấu nhịp nhàng, đều đặn từng giây, thu hút sự chú ý vào chuỗi tính năng hoặc lợi ích.",
+  "hop_khi": "Dùng khi người nói liệt kê một chuỗi giải pháp trọn gói, danh sách việc cần làm, các bước quy trình hay tính năng đa năng mà một công cụ có thể xử lý hết. Phù hợp với nhịp nói rành mạch, dồn dập tích cực theo từng nhịp nhảy chữ. Ví dụ: 'Để AI lo kịch bản, quay dựng, âm thanh, xuất video giúp bạn', 'Một nền tảng quản lý cả khách hàng, đơn hàng, kho bãi lẫn tài chính', 'Bạn chỉ cần lên ý tưởng, còn lại hệ thống giải quyết hết'.",
+  "mo_rong": "Đổi câu thành Gói spa lo + [Trị mụn, Căng bóng, Tái tạo, Phục hồi] + cho da bạn -> clip quảng cáo dịch vụ thẩm mỹ, spa làm đẹp; đổi câu thành Một app chuẩn bị + [Vé máy bay, Khách sạn, Lịch trình, Bảo hiểm] + cho chuyến đi -> video review du lịch, dịch vụ lữ hành; đổi câu thành Bộ thực đơn giúp + [Tăng cơ, Giảm mỡ, Thải độc, Ngủ ngon] + mỗi ngày -> video huấn luyện viên thể hình, ăn uống lành mạnh F&B; đổi câu thành Phần mềm tự động + [Đăng bài, Chốt đơn, In vận đơn, Báo cáo] + cho shop -> video giới thiệu tool tự động hóa kinh doanh online; đổi câu thành Khóa học bao gồm + [Ngữ pháp, Phát âm, Giao tiếp, Luyện thi] + từ số 0 -> video tuyển sinh trung tâm ngoại ngữ.",
   "nang_luong": "vua",
-  "chu_de": ["danh sách", "tính năng", "lợi ích", "dịch vụ", "app", "AI", "tự động hoá", "câu chốt"]
+  "chu_de": ["viên chip cuộn chữ", "liệt kê tính năng", "giải pháp trọn gói", "quy trình tự động", "máy xèng slot", "kinh doanh online", "du lịch", "spa làm đẹp", "giáo dục", "sức khỏe"]
  }
 }

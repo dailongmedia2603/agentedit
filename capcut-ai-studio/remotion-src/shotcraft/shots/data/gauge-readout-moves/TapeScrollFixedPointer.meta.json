@@ -109,20 +109,23 @@
   }
  ],
  "vi": {
-  "ten": "Băng số cuộn — kim cố định, con số vọt lên mốc mới",
-  "mo_ta": "Nền trắng xanh kiểu đồng hồ máy bay: một băng vạch số dọc chạy suốt khung, cửa sổ đọc số màu xanh đứng yên giữa khung. Số bò chậm rồi bị chặn dưới vạch 'giới hạn cũ'; vạch gãy đôi, băng số lùi nhẹ rồi VỌT nhanh (nhòe chuyển động) vượt qua, phanh lò xo dội lại và dừng đúng mốc mới. Bên cạnh: tiêu đề hiện từng từ, dòng kết luận màu nhấn hiện sau, chip '▲ %' và dòng 'cũ → mới'.",
-  "hop_khi": "Một con số tăng VỌT: doanh thu / lượt xem / người theo dõi / tốc độ / dung lượng / năng suất tăng gấp nhiều lần, phá vỡ giới hạn cũ, nâng cấp gói, kỷ lục mới; câu kiểu 'từ 140 nghìn lên 420 nghìn', 'tăng gấp ba'.",
-  "tranh_khi": "Thay đổi nhỏ (vài %), con số giảm, nhiều chỉ số cùng lúc; không có số cụ thể.",
+  "ten": "Thước đo vạch số trượt bứt phá kỷ lục",
+  "mo_ta": "Thước đo vạch số dọc mang phong cách đồng hồ đo kỹ thuật hiển thị nổi bật ở giữa khung hình với con trỏ xanh cố định ghi nhận giá trị hiện hành. Dải số bò chậm chạm mốc giới hạn cũ rồi đột ngột tăng tốc vọt cực nhanh với hiệu ứng nhòe chuyển động trước khi khựng lại nảy nhẹ ở chỉ số mới cao vượt bậc. Góc trên bên trái tiêu đề gõ hoàn tất câu khẳng định cùng lúc huy hiệu phần trăm tăng trưởng màu xanh bật sáng nổi bật.",
+  "hop_khi": "Phù hợp cho khoảnh khắc báo cáo kết quả tăng trưởng đột phá, khoe thành tích phá vỡ kỷ lục cũ, so sánh bước nhảy vọt trước và sau khi áp dụng giải pháp với cảm xúc tự hào, hào hứng và thuyết phục cao. Ví dụ câu nói: 'Hiệu suất làm việc của cả nhóm đã tăng gấp ba lần chỉ sau một tuần', 'Doanh thu tháng vừa rồi đã phá tan mốc giới hạn cũ mà chúng mình đặt ra', 'Lượng người theo dõi tài khoản vọt từ 100k lên hơn 400k trong thời gian ngắn kỷ lục'.",
+  "mo_rong": "Đổi chỉ số thành lượt view hoặc follow từ 20k lên 200k -> dùng cho video chia sẻ kinh nghiệm xây kênh content creator; đổi thành số đơn hàng hoặc doanh thu từ 50 đơn lên 500 đơn mỗi ngày -> dùng cho video kết quả bán hàng kinh doanh online; đổi đơn vị thành kg hoặc lượng mỡ cơ thể giảm từ 85kg về 68kg -> dùng cho video hành trình tập gym, giảm cân, thể hình; đổi thành điểm số thi cử từ 5.0 lên 8.0 IELTS -> dùng cho video trung tâm ngoại ngữ và giáo dục; đổi thành giá trị bất động sản hoặc tỷ suất lợi nhuận đầu tư -> dùng cho video tài chính và bất động sản.",
   "nang_luong": "cao",
   "chu_de": [
-   "số liệu",
-   "tăng trưởng",
-   "kỷ lục",
-   "nâng cấp",
-   "so sánh",
-   "doanh thu",
-   "hiệu suất",
-   "dashboard"
+   "thước đo số",
+   "tăng trưởng vượt bậc",
+   "phá vỡ kỷ lục",
+   "hiệu suất công việc",
+   "chỉ số kinh doanh",
+   "báo cáo doanh thu",
+   "tài chính đầu tư",
+   "giảm cân sức khỏe",
+   "học tập ngoại ngữ",
+   "xây dựng kênh",
+   "bán hàng online"
   ]
  },
  "backdrop": true

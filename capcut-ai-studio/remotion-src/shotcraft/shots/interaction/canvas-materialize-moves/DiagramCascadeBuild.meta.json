@@ -63,20 +63,22 @@
   }
  ],
  "vi": {
-  "ten": "AI tạo sơ đồ cây từ một câu lệnh",
-  "mo_ta": "Nền tím đêm kiểu ứng dụng AI: ô nhập lệnh có biểu tượng lấp lánh, chữ được gõ từng ký tự rồi bấm gửi; viền ô chạy dải sáng tím-hồng (đang tạo), camera lùi ra và một cây sơ đồ MỌC ra: thẻ gốc → 2 nhánh → các ý con, mỗi đường nối có đốm sáng chạy trước kéo thẻ ra. Xong hiện nhãn 'N mục · N-1 liên kết' và cả cây 'thở' một nhịp. Khung dọc: cây thành dàn dòng thụt lề xếp dọc, chữ to.",
-  "hop_khi": "Nói về dùng AI / ChatGPT để lập kế hoạch, phân tích, chia nhỏ vấn đề; 'chỉ cần một câu lệnh là có cả sơ đồ'; trình bày cấu trúc một ý lớn gồm các ý nhỏ (mind map, kế hoạch kinh doanh, lộ trình học).",
-  "tranh_khi": "Không liên quan AI / cấu trúc; cần hiển thị số liệu hay biểu đồ có sẵn; video tông sáng nhẹ nhàng.",
+  "ten": "Nhập câu lệnh bung sơ đồ tư duy",
+  "mo_ta": "Khung nhập lệnh AI bo tròn ánh tím hiển thị hiệu ứng gõ chữ từng ký tự mượt mà rồi phát sáng khi nút gửi lệnh được kích hoạt. Ngay sau đó, một sơ đồ phân nhánh dạng cây (mindmap) tự động bung nở từng tầng từ nút gốc xuống các nhánh phụ kèm đường nối phát quang tinh tế. Nhịp chuyển động nhanh, hiện đại, thể hiện rõ quá trình tư duy logic từ ý tưởng tổng quát đến kế hoạch hành động chi tiết.",
+  "hop_khi": "Dùng khi người nói hướng dẫn lập kế hoạch, chia nhỏ mục tiêu phức tạp, phân tích cấu trúc vấn đề hoặc biểu diễn quy trình ứng dụng AI giải quyết công việc. Phù hợp với nhịp điệu hướng dẫn logic, mạch lạc, truyền cảm hứng; ví dụ: 'Muốn bắt đầu kinh doanh thì đây là sơ đồ từng bước bạn phải vạch ra', 'Chỉ cần một câu lệnh, toàn bộ lộ trình học tiếng Anh 3 tháng sẽ hiện ra thế này', 'Chia nhỏ ngân sách đám cưới thành các nhánh rõ ràng để không bị thâm hụt'.",
+  "mo_rong": "Đổi câu lệnh thành chẩn đoán da và các nhánh thành phác đồ điều trị kèm sản phẩm -> video tư vấn spa, làm đẹp; đổi các nhánh thành quy trình 4 bước chuẩn bị hồ sơ vay mua nhà -> chuyên đề tài chính ngân hàng, bất động sản; đổi nút gốc thành món ăn và các nhánh thành nguyên liệu, công thức, chi phí -> video dạy nấu ăn, kinh doanh ẩm thực F&B; đổi các nhánh thành lộ trình thăng tiến nghề nghiệp từ thực tập sinh đến quản lý -> video định hướng phát triển sự nghiệp; đổi câu lệnh thành mục tiêu thể hình và các nhánh thành chế độ ăn, lịch tập -> video phong cách sống, fitness.",
   "nang_luong": "vua",
   "chu_de": [
-   "AI",
    "sơ đồ tư duy",
-   "kế hoạch",
-   "câu lệnh",
-   "ChatGPT",
-   "cấu trúc",
-   "phân tích",
-   "app"
+   "nhập lệnh AI",
+   "phân nhánh kế hoạch",
+   "hướng dẫn quy trình",
+   "giao diện công nghệ",
+   "kinh doanh F&B",
+   "giáo dục kỹ năng",
+   "lập lộ trình",
+   "phân tích logic",
+   "phát triển bản thân"
   ]
  },
  "backdrop": true

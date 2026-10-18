@@ -95,19 +95,23 @@
   }
  ],
  "vi": {
-  "ten": "Thẻ kim loại cao cấp, vệt sáng lướt qua",
-  "mo_ta": "Nền màu cát ấm: một tấm thẻ titan đen bóng (chip vàng, chữ khắc tên gói, tên chủ thẻ, hạng thẻ) nâng lên nằm nghiêng 3D; giữa chừng thẻ xoay nhẹ về phía nguồn sáng và một vệt sáng chéo lướt qua mặt thẻ đúng một lần làm chữ khắc lóe lên. Bên cạnh (khung dọc: phía dưới) là tiêu đề đậm trồi lên từng dòng, câu mô tả và nút kêu gọi hành động.",
-  "hop_khi": "Giới thiệu gói hội viên / thẻ VIP / thẻ tín dụng / gói Premium / đặc quyền khách hàng thân thiết; ra mắt sản phẩm cao cấp; câu nói về ưu đãi độc quyền, nâng cấp tài khoản, 'chỉ dành cho...'.",
-  "tranh_khi": "Nội dung không liên quan tới thẻ, gói, hội viên hay sản phẩm cao cấp; tone bình dân vui nhộn; đã có hiệu ứng ánh sáng khác trong video.",
-  "nang_luong": "thap",
+  "ten": "Thẻ hội viên kim loại ánh kim cao cấp",
+  "mo_ta": "Nửa trên khung hình là một tấm thẻ thành viên kim loại đen mờ xoay nghiêng 3D tinh xảo với chip vàng và tên chủ thẻ, đón một vệt sáng quét chéo óng ánh qua bề mặt. Nửa dưới lần lượt xuất hiện dòng thẻ phụ màu cam nổi bật, tiêu đề tuyên ngôn quyền lợi trang trọng, đoạn văn bản mô tả đặc quyền và nút kêu gọi hành động bo tròn tinh tế. Chuyển động lướt sáng êm ái, nhịp điệu đĩnh đạc, toát lên vẻ sang trọng và đẳng cấp.",
+  "hop_khi": "Phù hợp khi người nói công bố chương trình khách hàng thân thiết, ra mắt gói dịch vụ VIP, phát hành thẻ thành viên giới hạn, tri ân khách hàng đặc biệt hoặc mời gia nhập cộng đồng thượng lưu. Tông giọng sang trọng, uy tín, tự tin và mang tính đặc quyền cao. Ví dụ câu nói: 'Chỉ 100 người đầu tiên nhận được tấm thẻ đặc quyền này.', 'Đây là đặc quyền giới hạn dành riêng cho khách hàng VIP của chúng tôi.', 'Nâng tầm trải nghiệm của bạn với gói hội viên thượng lưu ngay hôm nay.'",
+  "mo_rong": "Đổi thẻ thành viên thành thẻ bảo hành điện tử chính hãng, đổi chữ thành cam kết đổi mới trọn đời -> chuỗi bán lẻ đồ gia dụng hoặc công nghệ cao cấp; đổi thành thẻ tập gym hoặc thẻ liệu trình spa không giới hạn -> thẩm mỹ viện, fitness, yoga cao cấp; đổi thành thẻ tín dụng hoàn tiền với hạn mức khủng -> ngân hàng, dịch vụ tài chính; đổi thành vé mời tham dự dạ tiệc private networking -> truyền thông, giải trí, tổ chức sự kiện; đổi thành chứng nhận hoàn thành khóa học danh giá -> học viện đào tạo lãnh đạo, doanh nhân.",
+  "nang_luong": "vua",
   "chu_de": [
    "thẻ hội viên",
+   "ánh kim",
    "VIP",
-   "cao cấp",
-   "ưu đãi",
-   "ra mắt",
+   "sang trọng",
+   "đặc quyền",
    "thẻ tín dụng",
-   "gói premium"
+   "tài chính",
+   "thẩm mỹ spa",
+   "sự kiện độc quyền",
+   "bán lẻ cao cấp",
+   "bảo hành"
   ]
  },
  "backdrop": true

@@ -88,20 +88,23 @@
   }
  ],
  "vi": {
-  "ten": "Kết video kiểu lễ ra mắt — ảnh bay về chụp “ảnh tập thể” quanh tên thương hiệu",
-  "mo_ta": "Nền kem ấm sáng: một vệt sáng quét qua, rồi 9 mảnh (5 khung ảnh + thanh menu, ô tìm kiếm, nhãn “▲ 18% tăng trưởng”, thanh báo cáo) lần lượt bay vào từ bốn phía có xoay nhẹ và nảy khi chạm chỗ, quây thành một bức “ảnh tập thể”; máy quay hạ xuống từ góc hơi chúc rồi đẩy chậm. Logo + tên thương hiệu hiện từng chữ như dập nổi ở giữa với đèn sân khấu phía sau, bụi vàng bay lên, gạch chân mọc ra và câu chào hiện dưới. Cuối cùng tắt dần về tối.",
-  "hop_khi": "Cảnh KẾT video: chào tạm biệt, cảm ơn đã xem, hẹn video sau, nhắc tên kênh / thương hiệu / sản phẩm, tổng kết “tất cả những thứ trên đều nằm trong …”; kết video ra mắt sản phẩm, tổng hợp nhiều tính năng.",
-  "tranh_khi": "Giữa video (cảnh tự tắt về đen ở cuối); không có tên thương hiệu / kênh để hiện; video tone tối, buồn.",
-  "nang_luong": "cao",
+  "ten": "Mảnh ghép ảnh tập thể kết video",
+  "mo_ta": "Trên nền sáng ấm áp, 5 khung ảnh chân dung cùng các chi tiết đồ họa phụ (thanh điều hướng, ô tìm kiếm, huy hiệu tăng trưởng) đồng loạt bay vào từ bốn phía với hiệu ứng nảy nhẹ. Các mảnh ghép hội tụ xung quanh biểu tượng logo tròn và tên thương hiệu hiện lên trang trọng ở chính giữa, bên dưới là câu kêu gọi hành động rõ ràng. Máy quay hạ góc nhìn và lùi dần về phía sau tạo nên một bức tranh kỷ niệm gắn kết, hoàn chỉnh trước khi kết thúc video.",
+  "hop_khi": "Dùng ở phân đoạn kết thúc video (outro), chào tạm biệt khán giả, kêu gọi bấm theo dõi (CTA), tri ân đội ngũ phát triển hoặc tổng kết một chặng đường hợp tác; cảm xúc ấm áp, thân thiện, gắn kết và chuyên nghiệp. Ví dụ câu nói: 'Cảm ơn các bạn đã theo dõi, hẹn gặp lại ở những video chia sẻ tiếp theo!', 'Thành công của dự án ngày hôm nay là nhờ vào sự cống hiến của toàn bộ đội ngũ.', 'Đừng quên bấm đăng ký kênh để đồng hành cùng chúng mình trên hành trình sắp tới nhé!'",
+  "mo_rong": "Thay 5 ảnh chân dung bằng ảnh các khách hàng thực tế kèm đánh giá hài lòng -> video bằng chứng xã hội, dịch vụ nha khoa, thẩm mỹ viện; đổi 5 ảnh thành hình ảnh các học viên tiêu biểu tốt nghiệp -> video tổng kết khóa học, tuyển sinh giáo dục; đổi 5 ảnh thành các thành viên chủ chốt của công ty kèm chức danh -> video tuyển dụng, giới thiệu văn hóa doanh nghiệp; đổi 5 ảnh thành các điểm đến nổi bật trong hành trình -> video tổng kết tour du lịch, vlog trải nghiệm; đổi 5 ảnh thành các góc nội thất hoàn thiện -> video bàn giao công trình nhà ở, kiến trúc.",
+  "nang_luong": "vua",
   "chu_de": [
-   "kết thúc",
-   "outro",
-   "logo",
-   "thương hiệu",
-   "ra mắt",
-   "cảm ơn",
-   "tổng kết",
-   "tên kênh"
+   "kết thúc video",
+   "lời chào tạm biệt",
+   "kêu gọi hành động cta",
+   "mảnh ghép ảnh",
+   "ảnh tập thể đội ngũ",
+   "tri ân khách hàng",
+   "văn hóa doanh nghiệp",
+   "tổng kết dự án",
+   "du lịch trải nghiệm",
+   "giáo dục đào tạo",
+   "bất động sản kiến trúc"
   ]
  },
  "backdrop": true

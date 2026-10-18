@@ -18,11 +18,11 @@
  "brand": "optional",
  "sfx": [{"at": 12, "type": "pop"}, {"at": 24, "type": "typing"}, {"at": 46, "type": "click"}, {"at": 61, "type": "whoosh"}],
  "vi": {
-  "ten": "Gõ lệnh → bảng lệnh thu thành chấm → sóng tối lan ra",
-  "mo_ta": "Một app thư viện ảnh nền sáng (tiêu đề lớn, lưới ảnh bìa màu sắc, thanh đang phát phía dưới). Bảng lệnh kiểu ⌘K rơi xuống giữa màn hình, chữ 'tối' được gõ từng ký tự, dòng 'Chuyển sang giao diện tối' sáng đỏ và được nhấn Enter; bảng lệnh tắt như TV cũ (ép thành vạch sáng rồi thành chấm), chấm sáng giữ một nhịp rồi một vòng sóng tròn viền trắng-cam lan ra, chỗ sóng qua giao diện chuyển sang bản tối, ảnh bìa tỏa sáng trong nền tối.",
-  "hop_khi": "Nói về chế độ tối / dark mode, phím tắt, bảng lệnh, thao tác nhanh trong app; khoe một tính năng chỉ cần gõ một lệnh là đổi cả giao diện; app ảnh / nhạc / thư viện nội dung.",
-  "tranh_khi": "Nội dung không liên quan app / phần mềm; đã có cảnh đổi giao diện khác trong video; người xem không quen phần mềm (bảng lệnh khó hiểu).",
+  "ten": "Bảng lệnh chuyển đổi giao diện tối sáng",
+  "mo_ta": "Trên nền ứng dụng đang mở, thanh bảng lệnh thả xuống giữa màn hình và mô phỏng thao tác gõ phím tìm kiếm rồi chọn lệnh chuyển giao diện tối. Ngay khi bấm chọn, toàn bộ ứng dụng đổi màu mượt mà sang chế độ nền tối tương phản cao và giữ nguyên lưới nội dung. Nhịp chuyển động nhanh, dứt khoát, mang phong cách công nghệ và thao tác người dùng chân thực.",
+  "hop_khi": "Dùng khi minh họa tính năng phím tắt thông minh, chuyển đổi chế độ giao diện, hoặc dùng hình ảnh ẩn dụ cho việc biến đổi trạng thái làm việc tức thì chỉ trong một thao tác. Phù hợp với nhịp nói nhanh nhẹn, gãy gọn, tinh tế. Ví dụ: 'Chỉ cần một tổ hợp phím tắt, giao diện làm việc của bạn sẽ lập tức chuyển sang chế độ tối', 'Bạn có thể thay đổi toàn bộ trạng thái hệ thống trong chớp mắt', 'Tính năng này giúp bạn chuyển chế độ ban đêm siêu nhanh để bảo vệ mắt'.",
+  "mo_rong": "Đổi lệnh thành 'Kích hoạt bảo vệ 2 lớp' hoặc 'Bật chế độ riêng tư' -> dùng cho ứng dụng tài chính, an ninh mạng; đổi thư viện ảnh thành danh mục hàng hoá và lệnh thành 'Lọc hàng giảm giá 50%' -> dùng cho bán hàng online, săn flash sale; đổi sang giao diện quản lý công việc với lệnh 'Chuyển sang chế độ tập trung' -> dùng cho video phát triển bản thân, tăng năng suất; đổi sang menu ẩm thực với lệnh 'Chuyển sang thực đơn tối' -> dùng cho nhà hàng, bar và lounge.",
   "nang_luong": "vua",
-  "chu_de": ["chế độ tối", "bảng lệnh", "phím tắt", "app", "giao diện", "tính năng"]
+  "chu_de": ["giao diện tối sáng", "thanh lệnh thông minh", "demo phần mềm", "phím tắt", "công nghệ", "ứng dụng di động", "năng suất làm việc", "tài chính", "thương mại điện tử", "ẩm thực"]
  }
 }

@@ -23,11 +23,11 @@
  "brand": "optional",
  "sfx": [{"at": 12, "type": "riser"}, {"at": 59, "type": "boom"}, {"at": 59, "type": "click"}, {"at": 63, "type": "pop"}],
  "vi": {
-  "ten": "Danh sách phanh gấp, khung ngắm khóa mục tiêu",
-  "mo_ta": "Nền sáng kiểu giao diện app: một danh sách thẻ dài (icon loại, tên, mô tả, mã phiên bản, ngày) tăng tốc cuộn lên đến nhòe, giảm tốc mạnh vượt quá một chút rồi bật lại dừng; ĐÚNG khoảnh khắc phanh, bốn góc ngắm chữ L màu nhấn bay từ ngoài vào kẹp chặt thẻ ở giữa (nảy nhẹ), thẻ sáng viền, các thẻ khác mờ đi, một nhãn đen 'Vừa ra mắt' bật ra cạnh thẻ.",
-  "hop_khi": "Nhấn mạnh MỘT mục giữa danh sách dài với lực mạnh: 'trong hàng trăm tính năng, đây là cái đáng giá nhất', công bố cập nhật mới của app, chọn ra sản phẩm / việc quan trọng nhất, 'tìm thấy rồi'; video công nghệ, phần mềm, năng suất.",
-  "tranh_khi": "Không có mục chính rõ ràng; video tone tối hoặc cảm xúc nhẹ nhàng; đã dùng mẫu nhật ký cập nhật phanh gấp gần đó (cùng họ chuyển động).",
+  "ten": "Cuộn phanh gấp khóa mục tiêu nổi bật",
+  "mo_ta": "Danh sách thẻ phong cách giao diện ứng dụng cuộn dọc với tốc độ cực nhanh tạo hiệu ứng nhòe chuyển động kịch tính. Sau đó, danh sách hãm phanh đột ngột, nảy nhẹ quán tính rồi khóa chặt vào thẻ tính năng trọng tâm được phóng to với viền phát sáng và nhãn đánh dấu nổi bật. Toàn bộ các mục xung quanh mờ dần làm nền, hướng trọn vẹn sự chú ý của người xem vào thông điệp cốt lõi.",
+  "hop_khi": "Phù hợp khi người nói muốn công bố một tính năng quan trọng nhất, tiết lộ giải pháp cốt lõi giữa muôn vàn lựa chọn, hoặc tạo khoảnh khắc kịch tính bất ngờ với phong cách công nghệ, dứt khoát. Thích hợp cho video ra mắt sản phẩm, cập nhật phần mềm, tổng kết mẹo hay. Ví dụ: 'Trong toàn bộ bản cập nhật lần này, đây là tính năng bạn nhất định phải thử.', 'Giữa hàng chục cách đầu tư, đây là lựa chọn an toàn nhất cho người mới bắt đầu.', 'Và đây chính là bí quyết quan trọng nhất giúp mình nhân đôi doanh số.'",
+  "mo_rong": "Đổi danh sách thành các lỗi sai thường gặp rồi phanh khóa vào 'Sai lầm tai hại nhất khiến bạn mất tiền' -> video tài chính, chứng khoán; đổi thành các món ăn trong menu rồi khóa vào 'Món bán chạy nhất định phải gọi' -> video review F&B, quán ăn; đổi thành danh sách các dòng máy rồi phanh khóa vào 'Chiếc điện thoại đáng mua nhất tầm giá' -> video công nghệ, review đồ gia dụng; đổi thành các tiêu chí phỏng vấn rồi khóa vào 'Yếu tố quyết định nhà tuyển dụng chọn bạn' -> video hướng nghiệp, tuyển dụng; đổi thành các gói dịch vụ rồi khóa vào 'Gói ưu đãi sốc nhất hôm nay' -> video bán hàng, livestream.",
   "nang_luong": "cao",
-  "chu_de": ["cập nhật", "tính năng mới", "danh sách", "chọn lọc", "app", "phần mềm", "nhấn mạnh", "khóa mục tiêu"]
+  "chu_de": ["phanh gấp", "khóa mục tiêu", "công bố tính năng", "giao diện app", "điểm nhấn nổi bật", "công nghệ", "tài chính", "review sản phẩm", "hướng nghiệp", "ẩm thực", "ra mắt sản phẩm"]
  }
 }

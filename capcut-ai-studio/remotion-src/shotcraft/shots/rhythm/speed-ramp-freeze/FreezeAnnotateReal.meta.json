@@ -86,20 +86,22 @@
   }
  ],
  "vi": {
-  "ten": "Dừng hình khoanh bút — chỉ vào một thẻ",
-  "mo_ta": "Nền trắng sáng, một dải thẻ ảnh trượt ngang liên tục, góc trái có đồng hồ 'TRỰC TIẾP' chạy. Bỗng khung hình DỪNG phắt: chớp trắng, bốn góc khung ngắm xanh bật vào, đồng hồ chuyển 'TẠM DỪNG'; thẻ ở giữa được nhấc lên, các thẻ khác mờ xám. Bút dạ xanh vẽ tay một vòng khoanh quanh thẻ, mũi tên cong và lời phê đậm hiện lên kèm chữ ký; rồi mực mờ đi, để lại một ghim bình luận '1' trên góc thẻ và dải thẻ chạy tiếp.",
-  "hop_khi": "Người nói muốn dừng lại chỉ rõ MỘT lựa chọn trong nhiều thứ: 'khoan, nhìn cái này nè', 'trong số này, mẫu này là tốt nhất', 'đây là lỗi mọi người hay gặp'; nhận xét, review, chấm điểm, chọn sản phẩm/mẫu thiết kế, giảng giải có 'gạch chân ý chính'.",
-  "tranh_khi": "Không có ảnh nào phù hợp cho thẻ được khoanh; chỉ có một thứ duy nhất (không có gì để chọn giữa); nhịp video đang rất nhanh liên tục (đoạn dừng 2 giây sẽ bị hẫng); tối đa 2 lần mỗi video.",
-  "nang_luong": "vua",
+  "ten": "Dừng hình khoanh tròn điểm nhấn thẻ ảnh",
+  "mo_ta": "Dải thẻ ảnh đang lướt ngang liên tục thì bất ngờ dừng phắt kèm hiệu ứng chớp sáng, khung ngắm máy ảnh xuất hiện và đồng hồ góc trên chuyển sang chế độ tạm dừng. Thẻ ảnh ở giữa phóng lớn lên phía trước trong khi các thẻ xung quanh mờ đi, một nét vẽ tròn màu xanh bao quanh thẻ kèm dòng ghi chú bút dạ nổi bật phía trên. Sau khoảnh khắc nhấn mạnh, khung hình tiếp tục chạy mượt mà trở lại.",
+  "hop_khi": "Phù hợp khi người nói muốn ngắt nhịp video, chỉ định trực diện một chi tiết quan trọng nhất, sửa lỗi sai hoặc đưa ra lời khuyên cốt lõi với cảm xúc dứt khoát, hài hước hoặc cảnh báo. Ví dụ: 'Trong đống việc này, hãy tập trung làm đúng cái này trước!', 'Đừng mua linh tinh nữa, đây mới là món đáng tiền nhất', 'Điểm mấu chốt quyết định thành bại của hợp đồng nằm ở đây'.",
+  "mo_rong": "Thay thẻ giữa bằng ảnh căn nhà đẹp nhất kèm giá -> video môi giới bất động sản chọn căn hoa hậu; Thay bằng ảnh món ăn signature của quán kèm lời khuyên gọi món -> review ẩm thực F&B; Thay bằng ảnh bước chăm sóc da quan trọng nhất -> video hướng dẫn skincare, spa; Thay bằng ảnh bài tập hiệu quả nhất trong chuỗi động tác -> video hướng dẫn tập gym, thể hình; Thay bằng ảnh CV ứng viên nổi bật -> video chia sẻ kinh nghiệm tuyển dụng, nhân sự.",
+  "nang_luong": "cao",
   "chu_de": [
-   "nhận xét",
-   "review",
-   "lựa chọn",
-   "sản phẩm",
-   "thiết kế",
-   "chỉ ra",
-   "danh sách",
-   "so sánh"
+   "dừng hình đột ngột",
+   "khoanh tròn điểm nhấn",
+   "ghi chú viết tay",
+   "ngắt nhịp video",
+   "chỉ định chi tiết",
+   "review sản phẩm",
+   "hướng dẫn chọn lọc",
+   "bất động sản",
+   "ẩm thực",
+   "đồ họa toàn màn hình"
   ]
  },
  "backdrop": true

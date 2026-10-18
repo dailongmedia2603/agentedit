@@ -19,11 +19,11 @@
  "brand": "optional",
  "sfx": [{"at": 22, "type": "riser"}, {"at": 28, "type": "whoosh"}, {"at": 34, "type": "boom"}],
  "vi": {
-  "ten": "Cú đấm anime — zoom giật vào thẻ số liệu, loé âm bản",
-  "mo_ta": "Toàn cảnh một dashboard phần mềm sáng (thanh bên, 6 thẻ số liệu tiếng Việt), thẻ mục tiêu sáng viền màu nhấn. Camera lùi nhẹ lấy đà rồi ZOOM GIẬT cực nhanh vào thẻ đó; đúng lúc dừng, 3 khung hình loé thành âm bản đen trắng + tia tốc độ kiểu manga + lệch màu đỏ/xanh, rồi rung màn hình và dừng lại cận cảnh thẻ: nhãn, CON SỐ LỚN, câu chốt và biểu đồ cột có cột cuối vọt lên.",
-  "hop_khi": "Khoảnh khắc 'bùm' của video: công bố con số gây sốc / kết quả kỷ lục (tăng 248%, doanh thu x3, 1 triệu lượt xem), cao trào khi nói về dashboard, app, báo cáo, tăng trưởng; chỉ dùng MỘT lần ở đỉnh cảm xúc.",
-  "tranh_khi": "Không có con số nổi bật; nội dung nhẹ nhàng, cảm xúc, sang trọng; đã dùng hiệu ứng mạnh khác gần đó; số liệu tiêu cực / buồn.",
+  "ten": "Zoom giật số liệu trên bảng điều khiển",
+  "mo_ta": "Màn hình mở đầu bằng một dashboard sáng gồm 6 thẻ thống kê chỉ số với các biểu đồ đường và cột trực quan. Camera bất ngờ lùi nhẹ lấy đà rồi zoom giật cực nhanh (snap zoom) vào thẳng thẻ mục tiêu nổi bật ở giữa bên phải. Tại điểm dừng, thẻ số liệu phóng lớn chiếm trọn khung hình với con số phần trăm khổng lồ, tiêu đề phụ và biểu đồ cột tăng trưởng sắc nét.",
+  "hop_khi": "Phù hợp khi người nói nhấn mạnh vào một kết quả đột phá, thành tích ấn tượng, con số kỷ lục hoặc điểm sáng duy nhất trong toàn bộ bức tranh chung; nhịp nói dồn dập, cao trào, tạo cảm giác choáng ngợp và tự hào. Ví dụ: 'Doanh thu tháng vừa rồi tăng vọt hơn hai trăm phần trăm', 'Trong tất cả các chỉ số, đây là con số thay đổi hoàn toàn cục diện', 'Chỉ sau đúng một tuần thử nghiệm, kết quả đạt được khiến cả đội ngũ ngỡ ngàng'.",
+  "mo_rong": "Đổi thành tỷ lệ chốt đơn hoặc doanh số bán lẻ để khoe thành tích kinh doanh thương mại điện tử; đổi thành lượng calo tiêu hao hoặc số kg giảm được để làm bằng chứng biến đổi thể hình trong ngành fitness / giảm cân; đổi thành lượng học viên đăng ký mới hoặc điểm thi IELTS để tạo uy tín cho trung tâm giáo dục; đổi thành số lượt khách ghé quán hoặc doanh thu ngày lễ cho ngành F&B; đổi thành tỷ suất sinh lời của danh mục đầu tư trong ngành tài chính / chứng khoán.",
   "nang_luong": "cao",
-  "chu_de": ["số liệu", "dashboard", "con số", "kỷ lục", "tăng trưởng", "báo cáo", "app", "cao trào"]
+  "chu_de": ["dashboard số liệu", "zoom giật", "kết quả đột phá", "tăng trưởng doanh thu", "báo cáo tài chính", "bán hàng online", "thành tích kinh doanh", "tỷ lệ chuyển đổi", "chứng khoán", "fitness", "giáo dục"]
  }
 }

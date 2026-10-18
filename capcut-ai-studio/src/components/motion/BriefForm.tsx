@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { ImagePlus, Mic, MicOff, Palette, Type, X, FileImage } from 'lucide-react'
+import { ImagePlus, Mic, MicOff, Palette, Type, X, FileImage, Workflow } from 'lucide-react'
 import { Input } from '@/components/ui/primitives'
 import { cn } from '@/lib/utils'
 import { ASPECTS, LANG_OPTIONS } from '@/lib/motion'
@@ -16,6 +16,7 @@ const FALLBACK_TYPES = [
   { id: 'news', label: 'Tin tức ngắn' }
 ]
 let typesCache: { id: string; label: string }[] | null = null
+let mvdCache: MotionCheck['mvd'] | null = null
 
 export function Field({ label, hint, required, children, className }: { label: string; hint?: string; required?: boolean; children: ReactNode; className?: string }) {
   return (
@@ -100,6 +101,20 @@ export function BriefForm({ value, onChange, mode = 'single' }: { value: MotionB
         .catch(() => undefined)
   }, [])
 
+  // Quy trinh motion-video-director: CHI hien khi may nay da cai skill (thu nghiem ca nhan — electron/services/motion/mvd.ts)
+  const [mvd, setMvd] = useState<MotionCheck['mvd'] | null>(mvdCache)
+  useEffect(() => {
+    if (!mvdCache)
+      window.studio
+        .motionCheck()
+        .then((c) => {
+          mvdCache = c.mvd || { available: false, elevenlabs: false }
+          setMvd(mvdCache)
+        })
+        .catch(() => undefined)
+  }, [])
+  const engine = b.engine === 'mvd' && mvd?.available ? 'mvd' : 'motionmaxxing'
+
   const addAssets = async () => {
     const files = await window.studio.motionPickAssets()
     if (files.length) set('assets', Array.from(new Set([...(b.assets || []), ...files])))
@@ -155,6 +170,39 @@ export function BriefForm({ value, onChange, mode = 'single' }: { value: MotionB
           </Field>
         )}
       </Section>
+
+      {mvd?.available && (
+        <Section title="Quy trình dựng" icon={<Workflow className="h-4 w-4 text-brand-500" />}>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { id: 'motionmaxxing' as const, label: 'motionmaxxing', hint: 'Mặc định của app — motion graphics thương hiệu, chữ động, UI' },
+              {
+                id: 'mvd' as const,
+                label: `motion-video-director${mvd.version ? ' v' + mvd.version : ''}`,
+                hint: `Thử nghiệm (skill trên máy này) — ảnh AI nhân vật + đạo cụ ghép code, cắt theo nhịp nhạc${mvd.elevenlabs ? ', nhạc + SFX ElevenLabs' : ''}`
+              }
+            ].map((o) => (
+              <button
+                key={o.id}
+                onClick={() => set('engine', o.id)}
+                className={cn(
+                  'no-drag rounded-xl border px-3 py-2.5 text-left transition',
+                  engine === o.id ? 'border-brand-400 bg-brand-500/10' : 'border-black/10 bg-white hover:border-brand-300'
+                )}
+              >
+                <span className="block text-[13px] font-medium text-ink-900">{o.label}</span>
+                <span className="block text-[11px] leading-snug text-ink-800/45">{o.hint}</span>
+              </button>
+            ))}
+          </div>
+          {engine === 'mvd' && (
+            <div className="text-[11.5px] leading-relaxed text-ink-800/45">
+              Ảnh nhân vật / đạo cụ của bạn (nền trắng) ở mục tư liệu bên dưới sẽ được dùng trước; thiếu thì AI tự tạo bằng Codex. Mỗi video
+              mất khoảng 60–90 phút{mvd.elevenlabs ? ' và dùng khoảng 100 giây credit ElevenLabs' : ''}.
+            </div>
+          )}
+        </Section>
+      )}
 
       <Section title="Hình thức">
         <Field label="Khung hình">

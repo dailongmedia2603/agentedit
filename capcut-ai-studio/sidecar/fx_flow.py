@@ -817,12 +817,12 @@ def fx_sfx(p, changes):
             continue
         hit = RP.map_range(p, e.get("source_id"), providers._f(e.get("src_start")), providers._f(e.get("src_end")),
                            "hook" if e.get("anchor") == "hook" else "body")
-        sid, path = sfx_kit.family_file(e["sfx"])
-        if not hit or not sid:
+        if not hit:
             continue
-        m = lib.get(sid) or {}
-        out.append({"sfx_id": sid, "file": path, "start": hit[0], "purpose": "punch" if e["sfx"] in ("boom",) else "transition",
-                    "_name": m.get("name"), "tags": m.get("tags") or [], "_lufs": m.get("lufs_m"), "_from_layer": e.get("id")})
+        item = sfx_kit.auto_item(e["sfx"], hit[0], e.get("id"), "punch" if e["sfx"] in ("boom",) else "transition",
+                                 lib=lib)
+        if item:
+            out.append(item)
     if out:
         changes.append("tu gan %d SFX theo hieu ung tu viet" % len(out))
     return out

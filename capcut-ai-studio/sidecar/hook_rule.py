@@ -497,13 +497,20 @@ SCHEMA DAU RA (CHI JSON):
 ⚠️ TRA VE CHI JSON GOC."""
 
 
-def gpt_hook_sfx(moment, sfx_catalog, story=None, hinh=None, log=None, level=None, van_de=None):
+def gpt_hook_sfx(moment, sfx_catalog, story=None, hinh=None, log=None, level=None, van_de=None, palette=None):
     payload = {"hook": moment, "cau_chuyen": story or {}, "hieu_ung_hinh": hinh or [], "sfx_catalog": sfx_catalog,
                "muc_do": level or "vua", "van_de": van_de or ["hook chua co SFX"]}
+    sys_prompt = _p("_HOOK_FIX_SFX_PROMPT")
+    import sfx_gen
+    if palette and sfx_gen.available():
+        # bo tao am thanh earshot: hook chon tieng TAO (cung chat bo tieng cua video), khong lay meme co giong noi
+        payload["gen_catalog"] = sfx_gen.hook_catalog()
+        payload["bo_am_thanh"] = palette
+        sys_prompt += sfx_gen.hook_rules_text()
     if log:
         log("Hook-check: %s chon SFX cho hook..." % providers.plan_ai_name())
     text = providers.plan_chat([
-        {"role": "system", "content": _p("_HOOK_FIX_SFX_PROMPT")},
+        {"role": "system", "content": sys_prompt},
         {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
     ], json_mode=True, max_tokens=1500, temperature=0.4, req_timeout=90, max_attempts=2, step_label="Hook-SFX")
     return providers._safe_json(text)
@@ -511,16 +518,22 @@ def gpt_hook_sfx(moment, sfx_catalog, story=None, hinh=None, log=None, level=Non
 
 def clean_sfx(res, moment, sfx_catalog):
     """Giu SFX co trong kho + nam trong khoang hook. Tra [muc audio cua plan]."""
+    import sfx_gen
     ids = {x.get("id"): x for x in sfx_catalog or [] if isinstance(x, dict)}
     out = []
     for a in (res or {}).get("audio") or []:
-        if not isinstance(a, dict) or a.get("sfx_id") not in ids or ids[a["sfx_id"]].get("has_speech"):
+        if not isinstance(a, dict):
+            continue
+        g = sfx_gen.clean_gen(a.get("gen")) if a.get("gen") is not None else None
+        if not g and (a.get("sfx_id") not in ids or ids[a["sfx_id"]].get("has_speech")):
             continue
         t = providers._f(a.get("src_time"), moment["src_start"])
         t = min(max(t, moment["src_start"]), moment["src_end"] - 0.1)
-        item = {"sfx_id": a["sfx_id"], "source_id": moment["source_id"], "src_time": round(t, 3),
+        item = {"sfx_id": "es:" + g["sound"] if g else a["sfx_id"], "source_id": moment["source_id"], "src_time": round(t, 3),
                 "purpose": a.get("purpose") if a.get("purpose") in ("punch", "reveal", "transition", "ui", "comedy")
                 else "punch", "why": str(a.get("why") or "")[:300], "_hook_rule": "ai"}
+        if g:
+            item["gen"] = g
         if moment.get("anchor") == "hook":
             item["anchor"] = "hook"
         out.append(item)
@@ -529,9 +542,23 @@ def clean_sfx(res, moment, sfx_catalog):
     return out
 
 
-def fallback_sfx(moment, sfx_catalog, level="vua"):
-    """Du phong khi AI khong chon duoc: nhe -> tieng em (whoosh / riser / chuong); vua / manh -> tieng dam."""
+def fallback_sfx(moment, sfx_catalog, level="vua", palette=None):
+    """Du phong khi AI khong chon duoc: nhe -> tieng em (whoosh / riser / chuong); vua / manh -> tieng dam. Video co bo
+    tieng earshot (palette) -> tieng whoosh / boom CUA bo do (cung chat ca video)."""
     soft = level == "nhe"
+    import sfx_gen
+    if palette and sfx_gen.available():
+        e = ((palette.get("bo") or {}).get("whoosh" if soft else "boom")
+             or sfx_gen.default_palette(palette.get("tong"))["bo"]["whoosh" if soft else "boom"])
+        g = sfx_gen.clean_gen(e)
+        if g:
+            item = {"sfx_id": "es:" + g["sound"], "gen": g, "source_id": moment["source_id"],
+                    "src_time": round(moment["src_start"] + (0.25 if soft else 0.02), 3),
+                    "purpose": "transition" if soft else "punch", "why": "du phong luat hook (AI khong chon duoc SFX)",
+                    "_hook_rule": "fallback"}
+            if moment.get("anchor") == "hook":
+                item["anchor"] = "hook"
+            return [item]
 
     def score(x):
         s = 0
@@ -814,14 +841,17 @@ def ensure(plan, spec, build, step, sfx_catalog=None, transcript_data=None, stor
     def add_sound(use_fallback, r):
         import engine
         vd = r["yeu"]["sound"] or ["hook chua co SFX"]
+        pal = plan.get("am_thanh")
         if use_fallback:
-            got = fallback_sfx(moment, sfx_catalog, level)
+            got = fallback_sfx(moment, sfx_catalog, level, palette=pal)
             tag = "du phong"
         else:
+            import sfx_gen
             rr = step("Hook-SFX", {"m": moment, "story": story, "sfx": sfx_catalog, "hinh": hook_visuals(plan),
-                                   "vd": vd, "muc": level, "hr": HOOK_RULE_VERSION},
+                                   "vd": vd, "muc": level, "hr": HOOK_RULE_VERSION,
+                                   **({"gen": sfx_gen.fingerprint(), "bo": pal} if pal else {})},
                       lambda: gpt_hook_sfx(moment, sfx_catalog or [], story=story, hinh=hook_visuals(plan), log=log,
-                                           level=level, van_de=vd)) or {}
+                                           level=level, van_de=vd, palette=pal)) or {}
             got = clean_sfx(rr, moment, sfx_catalog)
             tag = "AI chon"
         if not got:

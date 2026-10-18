@@ -31,6 +31,7 @@ import {
   toggleAutoProject
 } from './services/motion/automation'
 import { VIDEO_TYPES } from './services/motion/prompt'
+import { mvdStatus } from './services/motion/mvd'
 import type { MotionBrief } from './services/motion/types'
 
 const errOf = (e: unknown) => String((e as Error)?.message || e)
@@ -57,7 +58,8 @@ export function registerMotionIpc(getWindow: () => BrowserWindow | null): void {
       saydi: saydiMasked(),
       python: py,
       ffmpeg: { ok: !!ffmpegPath() },
-      chrome
+      chrome,
+      mvd: (({ available, version, elevenlabs }) => ({ available, version, elevenlabs }))(mvdStatus())
     }
   })
   ipcMain.handle('motion:list', (_e, filter?: { kind?: 'single' | 'auto'; automationId?: string }) => listMotionJobs(filter || {}))

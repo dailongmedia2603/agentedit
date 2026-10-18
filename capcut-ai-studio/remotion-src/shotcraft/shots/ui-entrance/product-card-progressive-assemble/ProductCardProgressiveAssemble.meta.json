@@ -129,20 +129,22 @@
   }
  ],
  "vi": {
-  "ten": "Thẻ sản phẩm tự điền từng mục — giá cũ gạch, giá mới bật ra",
-  "mo_ta": "Nền trắng xanh nhạt kiểu trang bán hàng: một thẻ sản phẩm lớn hiện lên với các ô xám chờ sẵn; khung viền xanh có nhãn “TỰ ĐIỀN” nhảy lần lượt từng ô và nội dung hiện ra: ảnh sản phẩm trên nền studio, tên sản phẩm, các nhãn đặc điểm, giá gốc rồi giá gốc thu nhỏ bị gạch ngang và giá mới màu xanh bật ra kèm nhãn giảm giá, mô tả có cụm từ được tô bút, chấm màu lựa chọn, cuối cùng nút mua được tô đen từ trái sang phải.",
-  "hop_khi": "Giới thiệu một sản phẩm / dịch vụ / khóa học cụ thể kèm giá: “sản phẩm này có …, giá chỉ …”, chương trình khuyến mãi, giảm giá, review sản phẩm, livestream bán hàng, ra mắt món mới; nói về đặc điểm + giá + kêu gọi mua.",
-  "tranh_khi": "Không nói về sản phẩm hay giá; nội dung cảm xúc, kể chuyện; video tone tối; nhiều sản phẩm cùng lúc.",
-  "nang_luong": "vua",
+  "ten": "Thẻ sản phẩm tự điền thông tin",
+  "mo_ta": "Một thẻ giao diện mua sắm nền trắng bo góc mềm mại xuất hiện nổi bật ở giữa màn hình trên nền mờ có chiều sâu. Khung viền xanh mang nhãn Tự điền di chuyển tuần tự kích hoạt từng thành phần từ trên xuống dưới, làm hiện ảnh sản phẩm, bung tiêu đề thông số, giật số giá ưu đãi cùng mô tả chi tiết và các tùy chọn màu sắc. Toàn bộ thẻ hoàn thiện với nút kêu gọi hành động lớn bật lên ở đáy, nhịp điệu dồn dập mô phỏng sinh động thao tác tải giao diện ứng dụng.",
+  "hop_khi": "Phù hợp cho khoảnh khắc bóc tách chi tiết sản phẩm, công bố giá sốc, tung deal chớp nhoáng hoặc giới thiệu gói dịch vụ chuyên sâu trong video review hoặc bán hàng. Cảm xúc kích thích, dồn dập và thôi thúc ra quyết định mua ngay. Ví dụ câu nói: 'Chiếc tai nghe này đang có mức giá hời chưa từng thấy cùng loạt tính năng xịn sò', 'Một khóa học trọn gói từ cơ bản đến nâng cao giảm ngay 30% hôm nay', 'Căn hộ đầy đủ tiện nghi ngay trung tâm với chính sách thanh toán cực kỳ ưu đãi'.",
+  "mo_rong": "Đổi ảnh tai nghe thành ảnh điện thoại kèm thông số chip và ram -> video review đồ công nghệ; đổi ảnh thành mỹ phẩm kèm nhãn thành phần và giá flash sale -> video livestream bán lẻ mỹ phẩm; thay bằng ảnh xe máy hoặc ô tô kèm bảng giá lăn bánh và màu xe -> quảng bá showroom xe; đổi thành thẻ thông tin khóa học kèm ưu đãi học phí và nút đăng ký -> tuyển sinh đào tạo; đổi thành gói dịch vụ nha khoa hoặc spa kèm quà tặng -> quảng cáo thẩm mỹ viện.",
+  "nang_luong": "cao",
   "chu_de": [
-   "sản phẩm",
-   "giá",
-   "khuyến mãi",
-   "bán hàng",
+   "thẻ sản phẩm",
+   "giao diện bán hàng",
    "thương mại điện tử",
-   "review",
-   "mua ngay",
-   "giảm giá"
+   "giảm giá chớp nhoáng",
+   "review đồ công nghệ",
+   "bán hàng online",
+   "chốt đơn",
+   "tự điền thông tin",
+   "mỹ phẩm làm đẹp",
+   "bảng giá"
   ]
  },
  "backdrop": true

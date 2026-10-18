@@ -6,23 +6,65 @@
  "duration": 104,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.25],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.25
+ ],
  "hold": 66,
  "slots": [
-  {"id": "name", "role": "name", "sample": "Góc Sáng Tạo", "max": 24, "note": "tên thương hiệu / kênh / sản phẩm; bỏ trống thì dùng tên thương hiệu của video"},
-  {"id": "kicker", "role": "subtitle", "sample": "Kể chuyện bằng hình ảnh", "max": 44, "optional": true, "note": "khẩu hiệu ngắn gõ máy chữ dưới tên; ≤ 28 ký tự thì in hoa"}
+  {
+   "id": "name",
+   "role": "name",
+   "sample": "Góc Sáng Tạo",
+   "max": 24,
+   "note": "tên thương hiệu / kênh / sản phẩm; bỏ trống thì dùng tên thương hiệu của video"
+  },
+  {
+   "id": "kicker",
+   "role": "subtitle",
+   "sample": "Kể chuyện bằng hình ảnh",
+   "max": 44,
+   "optional": true,
+   "note": "khẩu hiệu ngắn gõ máy chữ dưới tên; ≤ 28 ký tự thì in hoa"
+  }
  ],
  "images": [],
  "brand": "optional",
- "sfx": [{"at": 10, "type": "click"}, {"at": 28, "type": "typing"}, {"at": 97, "type": "whoosh"}],
+ "sfx": [
+  {
+   "at": 10,
+   "type": "click"
+  },
+  {
+   "at": 28,
+   "type": "typing"
+  },
+  {
+   "at": 97,
+   "type": "whoosh"
+  }
+ ],
  "vi": {
-  "ten": "Mở đầu tên thương hiệu kiểu mực in",
-  "mo_ta": "Nền giấy kem: một dấu thập màu nhấn tự vẽ ra rồi mờ đi, tên thương hiệu serif lớn được 'ép in' TỪNG CHỮ (chữ to rồi ép xuống, nhòe → nét, gạch sáng màu nhấn lóe dưới chân chữ), dòng khẩu hiệu nhỏ gõ máy chữ kèm con trỏ khối nhấp nháy; đứng yên tròn 1 giây rồi bay lên mờ đi. Yên tĩnh, sang, năng lượng thấp.",
-  "hop_khi": "Mở đầu video: giới thiệu tên kênh / thương hiệu / sản phẩm trước khi vào nội dung; khi người nói xưng tên ('mình là…', 'đây là…'); chuyển sang một chuyên mục có tên riêng.",
-  "tranh_khi": "Giữa đoạn nói dồn dập cần năng lượng cao; không có tên riêng nào để hiện; video tông tối gắt.",
-  "nang_luong": "thap",
-  "chu_de": ["logo", "thương hiệu", "mở đầu", "tên kênh", "giới thiệu", "ra mắt"]
+  "ten": "Dập in tên thương hiệu kèm gõ chữ",
+  "mo_ta": "Khởi đầu bằng dấu chữ thập định vị màu cam nhấp nháy, ngay sau đó tên thương hiệu serif lớn dập in từng ký tự xuống nền sáng với vệt sáng lướt nhẹ dưới chân chữ. Dòng khẩu hiệu nhỏ ngay bên dưới được gõ tuần tự như máy chữ với con trỏ khối nhấp nháy, cố định trang trọng ở giữa khung hình.",
+  "hop_khi": "Phù hợp dùng làm cảnh mở đầu (intro) hoặc chuyển đoạn để định danh thương hiệu cá nhân, giới thiệu tên chương trình, hoặc khẳng định uy tín tác giả ở đầu và cuối video. Cảm giác sang trọng, chỉn chu, mang dấu ấn thủ công và đáng tin cậy. Ví dụ câu nói: 'Chào mừng các bạn đã quay trở lại với kênh Góc Sáng Tạo.', 'Mình là Hoàng và hôm nay chúng ta sẽ cùng nói về câu chuyện xây dựng thương hiệu.', 'Đây là chuỗi nội dung đặc biệt dành riêng cho những ai đam mê sáng tạo.'",
+  "mo_rong": "Đổi tên thương hiệu thành tên quán cà phê hoặc studio thiết kế và dòng phụ thành câu slogan -> video quảng bá F&B, thời trang thiết kế, không gian nghệ thuật; thay tên thành tên chuyên gia hoặc bác sĩ kèm chức danh chuyên môn -> video kiến thức y tế, nha khoa, tư vấn tâm lý; thay tên thành tên kênh podcast hoặc talkshow phỏng vấn -> đoạn mở đầu hoặc kết màn cho video phỏng vấn chuyên sâu; đổi tên thành tên dự án bất động sản cao cấp -> video giới thiệu căn hộ mẫu, bất động sản nghỉ dưỡng.",
+  "nang_luong": "vua",
+  "chu_de": [
+   "tên thương hiệu",
+   "dập chữ in",
+   "máy đánh chữ",
+   "nhận diện thương hiệu",
+   "intro mở đầu",
+   "podcast",
+   "thời trang thiết kế",
+   "chuyên gia tư vấn",
+   "ẩm thực",
+   "bất động sản cao cấp"
+  ]
  },
  "backdrop": true
 }

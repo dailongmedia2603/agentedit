@@ -106,20 +106,22 @@
   }
  ],
  "vi": {
-  "ten": "Ảo thuật gia tung thẻ từ tia sáng",
-  "mo_ta": "Nền xanh nửa đêm: một tia sáng hình chữ X màu xanh lóe lên và xoay trong 0,3 giây, rồi một tấm thẻ (vé mời / thẻ sản phẩm màu xanh navy) được 'biến' ra từ chính điểm sáng — xoay tít bay vòng cung về phía camera, chậm dần rồi KHỰNG đứng yên thật to, một vòng sáng tỏa ra, vệt sáng lướt qua mặt thẻ; sau đó nhãn, tiêu đề lớn và câu phụ hiện từng dòng bên cạnh (khung dọc: phía dưới).",
-  "hop_khi": "Khoảnh khắc hé lộ / 'biến ra' một thứ: ra mắt sản phẩm, công bố sự kiện, vé mời, phần quà, thẻ thành viên, bìa sách / khóa học mới; mở đầu video với cú bùng nổ; câu nói kiểu 'và đây là...', 'chính thức ra mắt'.",
-  "tranh_khi": "Nội dung nhẹ nhàng, chậm rãi, nghiêm túc; đã có cú mở đầu mạnh khác; video tone sáng.",
+  "ten": "Thẻ bay 3D công bố sự kiện",
+  "mo_ta": "Từ đốm sáng xanh lướt xoay giữa màn hình tối, một tấm thẻ dọc phong cách vé mời cao cấp xoay lật 3D bay về phía người xem rồi dừng vững vàng ở nửa trên. Mặt thẻ thể hiện logo, nhãn chủ đề và khung giờ sự kiện, đồng thời phía dưới bung ra tiêu đề chữ lớn cùng đoạn phụ đề chi tiết. Nhịp chuyển động mở đầu bất ngờ, kịch tính như màn ảo thuật và dừng lại chắc chắn để người xem tập trung trọn vẹn vào thông tin.",
+  "hop_khi": "DÙNG KHI / PHÙ HỢP: Mở đầu video (hook/opening), khoảnh khắc công bố ra mắt sản phẩm mới, phát hành tính năng đặc biệt, mở bán vé sự kiện hoặc thông báo lịch livestream. Phù hợp nhịp điệu hào hứng, kịch tính, tạo cảm giác sang trọng và độc quyền. Ví dụ: 'Chính thức ra mắt: phiên bản mới nhanh hơn, đẹp hơn và dành riêng cho bạn.', 'Một sự kiện đặc biệt nhất năm sắp diễn ra, giữ chỗ ngay hôm nay!', 'Điều mà tất cả các bạn chờ đợi suốt thời gian qua cuối cùng đã xuất hiện!'",
+  "mo_rong": "1. Thay thẻ thành thẻ VIP/voucher giảm giá 0 đồng, ảnh logo thành hình viện thẩm mỹ -> dùng làm hook mở màn video khai trương spa, làm đẹp. 2. Thay thẻ thành vé xem concert/phim ra rạp, chữ ghi tên nghệ sĩ và ngày công chiếu -> dùng cho video quảng bá sự kiện giải trí, âm nhạc. 3. Thay thẻ thành thẻ phòng resort 5 sao, chữ ghi 'Kỳ nghỉ mơ ước mở bán đợt 1' -> dùng làm mở màn video du lịch, nghỉ dưỡng. 4. Thay thẻ thành thẻ tín dụng ngân hàng, chữ ghi 'Mở thẻ hoàn tiền 2 triệu' -> dùng cho video tài chính cá nhân, fintech. 5. Thay ảnh trên thẻ thành ly cà phê Signature, chữ ghi 'Ra mắt món mới mùa thu' -> dùng cho video ẩm thực, chuỗi quán F&B.",
   "nang_luong": "cao",
   "chu_de": [
-   "ra mắt",
-   "hé lộ",
-   "sự kiện",
-   "vé mời",
-   "sản phẩm",
-   "mở đầu",
-   "thẻ",
-   "ảo thuật"
+   "mở màn",
+   "hook",
+   "công bố ra mắt",
+   "thẻ bay 3D",
+   "vé mời sự kiện",
+   "sản phẩm mới",
+   "công nghệ",
+   "khởi nghiệp",
+   "voucher ưu đãi",
+   "sự kiện giải trí"
   ]
  },
  "backdrop": true

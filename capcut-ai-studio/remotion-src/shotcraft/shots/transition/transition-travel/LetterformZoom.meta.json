@@ -23,11 +23,11 @@
  "brand": "optional",
  "sfx": [{"at": 2, "type": "swoosh"}, {"at": 34, "type": "riser"}, {"at": 80, "type": "whoosh"}, {"at": 124, "type": "ding"}],
  "vi": {
-  "ten": "Xuyên qua chữ — thẻ chương mở sang trang mới",
-  "mo_ta": "Nền đen ấm, một từ in hoa cực đậm khổng lồ được khoét thủng thành cửa sổ, bên trong lộ ánh vàng cam rực; nhãn chương phía trên và câu phụ phía dưới. Máy quay lao nhanh dần vào một nét chữ (có vệt nhòe zoom), lỗ chữ nở ra phủ kín màn hình và đưa người xem vào một trang vàng cam: tiêu đề lớn, câu mô tả, thẻ tiến độ trắng đếm số bước và các thanh chạy đầy, nhãn 'XONG' bật lên.",
-  "hop_khi": "Chuyển sang phần / chương mới của video ('phần 2', 'bí quyết thứ nhất', 'bước tiếp theo'); mở đầu một danh sách bước làm; chuyển cảnh năng lượng cao giữa hai ý.",
-  "tranh_khi": "Từ khóa dài (>2 từ); đã dùng cảnh 'chữ làm cửa sổ' khác trong video; nội dung trầm, cảm xúc nhẹ.",
+  "ten": "Phóng to xuyên chữ mở danh sách",
+  "mo_ta": "Màn hình tối mở đầu với chữ in hoa cực lớn nổi bật kèm nhãn chương phía trên và câu phụ phía dưới. Máy quay lao nhanh xuyên qua lỗ khoét của một ký tự tạo hiệu ứng portal, mở ra giao diện danh mục sáng màu với tiêu đề lớn và thẻ tiến độ liệt kê 4 đầu việc. Các thanh trạng thái màu cam lần lượt chạy đầy đến 100% kèm nhãn hoàn thành, nhịp chuyển động từ lao nhanh sang dừng đọc rõ ràng, dứt khoát.",
+  "hop_khi": "Dùng khi người nói vừa chốt xong phần đặt vấn đề để chuyển sang hướng dẫn thực chiến, công bố bí kíp nhiều bước, hoặc đi sâu vào từng giai đoạn của một kế hoạch. Nhịp chuyển nhanh, dứt khoát, tạo cảm giác chuyên nghiệp và thúc đẩy hành động. Ví dụ câu nói: 'Và đây là 3 bước cốt lõi để bạn nhân đôi doanh thu ngay tuần này.', 'Để làm được điều đó, bí quyết nằm trọn trong quy trình 4 khâu sau.', 'Chương tiếp theo, chúng ta sẽ bắt tay ngay vào khâu chuẩn bị quan trọng nhất.'",
+  "mo_rong": "Đổi chữ khoét thành 'LỘ TRÌNH' và 4 mục thành 4 giai đoạn đào tạo -> giáo dục, phát triển kỹ năng; Đổi chữ lớn thành 'QUY TRÌNH' và 4 mục thành các bước dưỡng da chuyên sâu -> spa, mỹ phẩm, chăm sóc sức khỏe; Đổi chữ thành 'CHECKLIST' và 4 mục thành tiêu chí kiểm tra pháp lý nhà đất -> bất động sản, đầu tư; Đổi chữ thành 'CÔNG THỨC' và 4 mục thành quy chuẩn pha chế đồ uống -> video ẩm thực, F&B; Đổi chữ thành 'TÍNH NĂNG' và 4 mục thành các công cụ AI tự động hóa -> review công nghệ, phần mềm.",
   "nang_luong": "cao",
-  "chu_de": ["chuyển chương", "chuyển cảnh", "mở đầu", "các bước", "tiến độ", "danh sách"]
+  "chu_de": ["chuyển cảnh", "zoom xuyên chữ", "danh sách công việc", "tiến độ", "quy trình", "hướng dẫn từng bước", "giáo dục", "công nghệ", "kinh doanh", "bất động sản", "làm đẹp"]
  }
 }

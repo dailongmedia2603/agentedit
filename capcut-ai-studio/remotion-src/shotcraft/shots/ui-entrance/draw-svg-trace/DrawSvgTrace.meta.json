@@ -111,20 +111,22 @@
   }
  ],
  "vi": {
-  "ten": "Nét bút vẽ viền thẻ — gạch chân điểm nhấn",
-  "mo_ta": "Trang giấy trắng ngà có lưới chấm: bốn góc hiện dấu căn in, một nét mực có đầu bút chạy vòng quanh vẽ ra viền thẻ lớn; khép vòng thì nét đậm lên một nhịp, thẻ nổi lên và nội dung 'lên mực' từ trên xuống — dòng nhãn, câu dẫn, TỪ/SỐ trọng tâm cực to, câu giải thích, cột biểu đồ mọc lên (hoặc ảnh); cuối cùng một nét bút dạ đỏ gạch chân từ trọng tâm.",
-  "hop_khi": "Điểm danh MỘT ý/kết quả quan trọng cần nhấn: 'kết quả là 100%', 'chi phí bằng 0', 'tăng gấp 3', công bố con số kết quả, tóm tắt bài học, giới thiệu một tính năng hay một sản phẩm (kèm ảnh); tone tri thức, review, chia sẻ kinh nghiệm.",
-  "tranh_khi": "Danh sách nhiều ý (dùng mẫu danh sách); khoảnh khắc năng lượng cao cần đập mạnh; video tone tối.",
+  "ten": "Vẽ viền thẻ chỉ số biểu đồ cột",
+  "mo_ta": "Bắt đầu với 4 dấu căn góc định vị trên nền mờ, một đầu bút đỏ chạy viền tạo thành khung chữ nhật bo góc sắc nét. Khi khép góc, thẻ thông tin trắng hiện ra với tiêu đề, con số phần trăm cực lớn được gạch chân cọ đỏ nhấn mạnh, câu giải thích và biểu đồ cột mọc dần ở phía dưới. Nhịp điệu vừa phải, chỉn chu, gãy gọn và thu hút thị giác.",
+  "hop_khi": "Dùng khi người nói công bố một chỉ số then chốt, một kỷ lục mới, kết quả đo lường chính xác hoặc một tiêu chuẩn cam kết cao nhất trong bài chia sẻ; cảm xúc khẳng định, chắc nịch, uy tín. Ví dụ: 'Chúng tôi cam kết tỷ lệ hài lòng đạt chuẩn tuyệt đối 100%', 'Nhìn vào biểu đồ năng lượng này, bạn sẽ thấy sự khác biệt hoàn toàn', 'Tất cả các cảnh quay đều được tối ưu hóa chuẩn xác từng khung hình'.",
+  "mo_rong": "Đổi con số thành tỷ lệ chốt đơn và biểu đồ cột thành doanh thu theo ngày -> khóa học bán hàng, kinh doanh online; đổi số thành lượng mỡ giảm được và biểu đồ thành tiến trình siết cân theo tuần -> fitness, gym, giảm cân, spa thẩm mỹ; đổi số thành tỷ lệ đậu visa/đạt điểm chuẩn và biểu đồ thành điểm số từng kỹ năng -> trung tâm ngoại ngữ, tư vấn du học; đổi số thành độ hài lòng của khách hàng và biểu đồ thành lượng khách quay lại theo tháng -> nhà hàng, quán cafe, khách sạn nghỉ dưỡng; đổi con số thành tỷ suất lợi nhuận và biểu đồ thành mức tăng trưởng tài sản -> tài chính cá nhân, chứng khoán, đầu tư.",
   "nang_luong": "vua",
   "chu_de": [
-   "điểm nhấn",
-   "con số",
-   "kết quả",
-   "thẻ thông tin",
-   "báo cáo",
-   "gạch chân",
-   "vẽ tay",
-   "tóm tắt"
+   "vẽ viền thẻ",
+   "con số trọng tâm",
+   "biểu đồ cột",
+   "chỉ số phần trăm",
+   "báo cáo hiệu suất",
+   "kinh doanh",
+   "đầu tư tài chính",
+   "giáo dục ngoại ngữ",
+   "thể hình gym",
+   "f&b"
   ]
  },
  "backdrop": true

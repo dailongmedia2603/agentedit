@@ -6,23 +6,64 @@
  "duration": 156,
  "kind": "insert",
  "dark": true,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.25],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.25
+ ],
  "hold": 140,
  "slots": [
-  {"id": "before", "role": "title", "sample": "Làm video quảng cáo mất cả tuần", "max": 48, "note": "câu A: vấn đề cũ / cách làm trước đây (hiện trên nền sáng rồi tan đi)"},
-  {"id": "after", "role": "title", "sample": "Giờ chỉ còn vài phút", "max": 40, "note": "câu B: bước ngoặt / giải pháp mới (hiện sau khi nền lật tối, chữ tím chuyển trắng); ngắn gọn, có thể là tên sản phẩm"}
+  {
+   "id": "before",
+   "role": "title",
+   "sample": "Làm video quảng cáo mất cả tuần",
+   "max": 48,
+   "note": "câu A: vấn đề cũ / cách làm trước đây (hiện trên nền sáng rồi tan đi)"
+  },
+  {
+   "id": "after",
+   "role": "title",
+   "sample": "Giờ chỉ còn vài phút",
+   "max": 40,
+   "note": "câu B: bước ngoặt / giải pháp mới (hiện sau khi nền lật tối, chữ tím chuyển trắng); ngắn gọn, có thể là tên sản phẩm"
+  }
  ],
  "images": [],
  "brand": "none",
- "sfx": [{"at": 6, "type": "riser"}, {"at": 88, "type": "boom"}, {"at": 108, "type": "swoosh"}],
+ "sfx": [
+  {
+   "at": 6,
+   "type": "riser"
+  },
+  {
+   "at": 88,
+   "type": "boom"
+  },
+  {
+   "at": 108,
+   "type": "swoosh"
+  }
+ ],
  "vi": {
-  "ten": "Cực quang bừng lên — nền lật sáng sang tối, đổi câu",
-  "mo_ta": "Nền xám sáng, một câu (vấn đề cũ) nằm giữa màn hình; vầng sáng mờ tím–cam–hồng từ đáy chậm rãi dâng lên và nuốt dần từng từ của câu (mờ nhòe rồi tan). Rồi trong ~0,4 giây cả nền sập tối gần đen, vầng sáng nén lại thành ánh hậu quang; sau một khoảng trống ngắn, câu thứ hai hiện từng từ từ mờ, chữ tím rồi chuyển trắng khi đứng yên.",
-  "hop_khi": "Bước ngoặt trong lời nói kiểu 'trước đây… → giờ thì…', 'ai cũng nghĩ… → thật ra…', 'cho tới khi có…'; chuyển từ phần nêu vấn đề sang giải pháp / sản phẩm / AI; khoảnh khắc tiết lộ tên app, tính năng mới.",
-  "tranh_khi": "Câu không có hai vế đối lập; cần hiển thị số liệu, danh sách hay ảnh; nhịp edit quá nhanh (cảnh cần ≥ 4 giây mới có tác dụng).",
-  "nang_luong": "vua",
-  "chu_de": ["bước ngoặt", "trước và sau", "tiết lộ", "giải pháp", "ra mắt", "AI", "thông điệp"]
+  "ten": "Cực quang xóa chữ lật nền tương phản",
+  "mo_ta": "Mở đầu trên nền xám sáng tối giản với dòng chữ đặt vấn đề nằm ở chính giữa màn hình. Một dải ánh sáng cực quang sắc tím cam mềm mại từ đáy dâng lên, làm nhòe và hòa tan hoàn toàn dòng chữ cũ. Ngay sau đó, toàn bộ không gian lật tối sang nền đen huyền ảo, vầng sáng nén lại thành ánh hào quang lung linh phía dưới làm bệ đỡ cho dòng giải pháp mới hiện lên sắc nét.",
+  "hop_khi": "Phù hợp cho khoảnh khắc chuyển đổi trạng thái trước/sau (before/after), so sánh giữa khó khăn cũ và giải pháp đột phá mới, hoặc bước ngoặt thay đổi nhận thức; nhịp nói từ trăn trở sang giải tỏa, bất ngờ hoặc truyền cảm hứng. Ví dụ: 'Trước đây làm việc này mất cả tuần lễ, nhưng giờ chỉ mất vài phút', 'Bạn từng nghĩ kiếm tiền online là bất khả thi, cho đến khi áp dụng công thức này', 'Nỗi đau dai dẳng nhiều năm qua sẽ được giải quyết dứt điểm ngay hôm nay'.",
+  "mo_rong": "Đổi chữ trước thành 'Mụn viêm thâm sạm suốt 3 năm' và chữ sau thành 'Làn da căng bóng sau 2 tuần' cho ngành spa / làm đẹp; đổi câu trước thành chi phí đầu tư đắt đỏ và câu sau thành mức giá siêu tiết kiệm cho video bán hàng; đổi câu trước thành áp lực thi cử và câu sau thành bí quyết nhớ nhanh cho ngành giáo dục; đổi câu trước thành 'Loay hoay tìm kiếm khách hàng' và câu sau thành 'Hệ thống tự động đổ về mỗi ngày' cho dịch vụ marketing / B2B; đổi câu trước thành nỗi sợ tài chính và câu sau thành lộ trình tự do tài chính cho chuyên gia tài chính cá nhân.",
+  "nang_luong": "thap",
+  "chu_de": [
+   "ánh sáng cực quang",
+   "trước và sau",
+   "chuyển cảnh tương phản",
+   "lật nền sáng tối",
+   "so sánh giải pháp",
+   "spa làm đẹp",
+   "chuyển đổi tư duy",
+   "bán hàng",
+   "giáo dục",
+   "tài chính cá nhân"
+  ]
  },
  "backdrop": false
 }

@@ -6,29 +6,112 @@
  "duration": 135,
  "kind": "insert",
  "dark": true,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
  "hold": 112,
  "slots": [
-  {"id": "title", "role": "title", "sample": "ĐỘT PHÁ", "max": 18, "note": "1-2 từ cực mạnh, chữ khổng lồ nghiêng (nên in hoa); cũng làm tường chữ viền nền"},
-  {"id": "kicker", "role": "kicker", "sample": "Bản cập nhật mới", "max": 30, "optional": true, "note": "dòng nhỏ trên chữ lớn; trống thì hiện tên thương hiệu"},
-  {"id": "subtitle", "role": "subtitle", "sample": "Mọi công cụ bạn cần, gói gọn trong một ứng dụng.", "max": 70, "optional": true},
-  {"id": "labels", "role": "label", "sample": "Hộp thư|Công việc|Tổng quan", "max": 14, "list": {"min": 3, "max": 3}, "optional": true, "note": "tên 3 trang/tính năng trên 3 thẻ giao diện"}
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "ĐỘT PHÁ",
+   "max": 18,
+   "note": "1-2 từ cực mạnh, chữ khổng lồ nghiêng (nên in hoa); cũng làm tường chữ viền nền"
+  },
+  {
+   "id": "kicker",
+   "role": "kicker",
+   "sample": "Bản cập nhật mới",
+   "max": 30,
+   "optional": true,
+   "note": "dòng nhỏ trên chữ lớn; trống thì hiện tên thương hiệu"
+  },
+  {
+   "id": "subtitle",
+   "role": "subtitle",
+   "sample": "Mọi công cụ bạn cần, gói gọn trong một ứng dụng.",
+   "max": 70,
+   "optional": true
+  },
+  {
+   "id": "labels",
+   "role": "label",
+   "sample": "Hộp thư|Công việc|Tổng quan",
+   "max": 14,
+   "list": {
+    "min": 3,
+    "max": 3
+   },
+   "optional": true,
+   "note": "tên 3 trang/tính năng trên 3 thẻ giao diện"
+  }
  ],
  "images": [
-  {"id": "screen1", "role": "screen", "aspect": "7:5", "optional": true, "note": "ảnh chụp màn hình app/web (thẻ sau cùng); phủ kín thẻ, canh trên"},
-  {"id": "screen2", "role": "screen", "aspect": "7:5", "optional": true, "note": "thẻ giữa"},
-  {"id": "screen3", "role": "screen", "aspect": "7:5", "optional": true, "note": "thẻ trước nhất"}
+  {
+   "id": "screen1",
+   "role": "screen",
+   "aspect": "7:5",
+   "optional": true,
+   "note": "ảnh chụp màn hình app/web (thẻ sau cùng); phủ kín thẻ, canh trên"
+  },
+  {
+   "id": "screen2",
+   "role": "screen",
+   "aspect": "7:5",
+   "optional": true,
+   "note": "thẻ giữa"
+  },
+  {
+   "id": "screen3",
+   "role": "screen",
+   "aspect": "7:5",
+   "optional": true,
+   "note": "thẻ trước nhất"
+  }
  ],
  "brand": "optional",
- "sfx": [{"at": 10, "type": "whoosh"}, {"at": 62, "type": "riser"}, {"at": 70, "type": "boom"}, {"at": 74, "type": "whoosh"}],
+ "sfx": [
+  {
+   "at": 10,
+   "type": "whoosh"
+  },
+  {
+   "at": 62,
+   "type": "riser"
+  },
+  {
+   "at": 70,
+   "type": "boom"
+  },
+  {
+   "at": 74,
+   "type": "whoosh"
+  }
+ ],
  "vi": {
-  "ten": "Ba thẻ giao diện lật bay → hút vào → vòng khói + chữ khổng lồ",
-  "mo_ta": "Nền tím đen cực quang: ba thẻ giao diện ứng dụng (hộp thư, danh sách việc, tổng quan — hoặc ảnh chụp màn hình thật) lật bay 3D từ cạnh mỏng rồi xếp bậc thang, xoay chậm, rồi bị HÚT vụt vào tâm, lóe sáng trắng và nổ ra một vòng khói hồng tím loang rộng; ngay đó một TỪ KHỔNG LỒ nghiêng phát sáng đập vào giữa, dòng nhỏ phía trên và câu phụ phía dưới hiện lên như poster ra mắt.",
-  "hop_khi": "Cao trào: gom nhiều tính năng/màn hình của một app hay phần mềm thành một thông điệp chốt; ra mắt sản phẩm, công bố bản cập nhật lớn; chuyển từ phần demo tính năng sang câu khẩu hiệu.",
-  "tranh_khi": "Nội dung nhẹ nhàng, tâm sự, đời thường; không liên quan app/phần mềm; câu chốt dài; dùng nhiều lần trong một video (chỉ dành cho đỉnh năng lượng).",
+  "ten": "Dàn thẻ 3D bùng nổ năng lượng",
+  "mo_ta": "Ba tấm thẻ giao diện ứng dụng từ góc nghiêng bay vào và xòe thành các lớp 3D bậc thang lơ lửng trên nền văn phòng mờ ảo. Các tấm thẻ sau đó bị hút xoáy cực nhanh vào tâm, nén lại rồi bùng nổ thành một vòng tròn khói tím ma mị phát sáng, đồng thời đẩy ra tiêu đề chính cực lớn cùng biểu tượng và dòng phụ đề sắc nét. Nhịp điệu biến chuyển từ bay chậm lả lướt sang hút xoáy đột ngột và nổ bung năng lượng cực kỳ mãn nhãn.",
+  "hop_khi": "Phù hợp cho khoảnh khắc cao trào, công bố giải pháp tất-cả-trong-một, ra mắt tính năng đột phá hoặc bước chuyển giao toàn diện; cảm xúc kinh ngạc, choáng ngợp và đầy hào hứng. Ví dụ câu nói: 'Và đây chính là bước đột phá lớn nhất mà chúng mình ấp ủ bấy lâu nay!', 'Tất cả những tính năng bạn vừa thấy giờ đây được tích hợp trọn vẹn trong một bản cập nhật duy nhất.', 'Không còn phải dùng nhiều công cụ rời rạc nữa, tất cả đã gom về một nơi.'",
+  "mo_rong": "Đổi 3 thẻ giao diện thành 3 hình ảnh dòng sản phẩm (son môi, kem nền, serum) hội tụ bùng nổ ra hộp quà Bộ sưu tập giới hạn -> dùng cho mỹ phẩm, thời trang; Đổi 3 thẻ thành 3 môn học (Toán, Lý, Hóa) hội tụ thành Khóa học thủ khoa toàn diện -> dùng cho giáo dục, luyện thi; Đổi 3 thẻ thành 3 món ăn đặc trưng hút vào tâm nổ ra thông báo Khai trương chi nhánh mới với tone khói vàng cam ấm cúng -> dùng cho F&B, ẩm thực; Đổi 3 thẻ thành 3 bước hoàn thiện hồ sơ gom lại thành Dịch vụ visa trọn gói -> dùng cho du học, định cư, xuất khẩu lao động; Đổi 3 thẻ thành 3 không gian nội thất gom lại thành Gói thiết kế căn hộ thông minh -> dùng cho bất động sản, kiến trúc.",
   "nang_luong": "cao",
-  "chu_de": ["app", "phần mềm", "ra mắt", "tính năng", "dashboard", "cao trào", "khẩu hiệu", "chuyển cảnh"]
+  "chu_de": [
+   "hội tụ 3d",
+   "bùng nổ",
+   "vòng khói năng lượng",
+   "đột phá",
+   "bản cập nhật mới",
+   "tất cả trong một",
+   "giải pháp tổng thể",
+   "công nghệ",
+   "mỹ phẩm",
+   "ẩm thực",
+   "giáo dục",
+   "bất động sản"
+  ]
  },
  "backdrop": true
 }

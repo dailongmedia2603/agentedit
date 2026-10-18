@@ -6,23 +6,72 @@
  "duration": 168,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.3],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.3
+ ],
  "hold": 160,
  "slots": [
-  {"id": "sources", "role": "item", "sample": "Website|Facebook|Zalo|Email", "max": 14, "list": {"min": 3, "max": 5}, "note": "tên các nguồn / kênh / công cụ được gom lại, 1-2 từ mỗi mục"},
-  {"id": "title", "role": "title", "sample": "Mọi nguồn dữ liệu, về chung một nơi", "max": 48, "note": "câu chốt về việc hợp nhất / gom về một chỗ, hiện cuối cảnh dưới huy hiệu"}
+  {
+   "id": "sources",
+   "role": "item",
+   "sample": "Website|Facebook|Zalo|Email",
+   "max": 14,
+   "list": {
+    "min": 3,
+    "max": 5
+   },
+   "note": "tên các nguồn / kênh / công cụ được gom lại, 1-2 từ mỗi mục"
+  },
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Mọi nguồn dữ liệu, về chung một nơi",
+   "max": 48,
+   "note": "câu chốt về việc hợp nhất / gom về một chỗ, hiện cuối cảnh dưới huy hiệu"
+  }
  ],
  "images": [],
  "brand": "optional",
- "sfx": [{"at": 8, "type": "swoosh"}, {"at": 58, "type": "whoosh"}, {"at": 120, "type": "pop"}, {"at": 141, "type": "ding"}],
+ "sfx": [
+  {
+   "at": 8,
+   "type": "swoosh"
+  },
+  {
+   "at": 58,
+   "type": "whoosh"
+  },
+  {
+   "at": 120,
+   "type": "pop"
+  },
+  {
+   "at": 141,
+   "type": "ding"
+  }
+ ],
  "vi": {
-  "ten": "Nhiều nguồn hội tụ về một điểm",
-  "mo_ta": "Nền sáng tối giản: 3-5 nút tròn trắng có biểu tượng và nhãn tên nguồn (vd Website, Facebook, Zalo) nối bằng các đường cong mảnh tới một huy hiệu logo. Chấm màu nhấn chạy dọc đường như dữ liệu đang chảy; rồi các nút trượt theo đường cong, thu nhỏ và bị 'hút' vào huy hiệu, huy hiệu nảy nhẹ + gợn sóng, đường cong rút đi, cuối cùng chỉ còn logo và câu chốt hiện từng từ bên dưới. Khung dọc: nguồn xếp hàng ngang trên cùng, dòng chảy đổ xuống.",
-  "hop_khi": "Nói về việc gom nhiều kênh / công cụ / dữ liệu về một chỗ: tích hợp, đồng bộ, 'một ứng dụng thay cho cả chục ứng dụng', CRM gom khách từ nhiều kênh, hợp nhất báo cáo, nền tảng tất cả trong một.",
-  "tranh_khi": "Nội dung không có ý 'nhiều thành một'; cần năng lượng cao / sốc; có hơn 5 nguồn cần kể tên.",
+  "ten": "Đường cong dữ liệu hội tụ trung tâm",
+  "mo_ta": "Nửa trên màn hình hiển thị hàng nút tròn trắng đại diện cho các nguồn phân tán kèm nhãn tên rõ nét. Các đường cong bezier mềm mại kết nối từng nút nguồn hội tụ về huy hiệu logo trung tâm phía dưới, với các xung ánh sáng liên tục chảy dọc thân đường cong như dòng dữ liệu. Cuối cùng các nút nguồn và đường dây thu gọn biến mất, huy hiệu trung tâm nâng vị trí và bung ra tiêu đề lớn đầy uy lực.",
+  "hop_khi": "Lý tưởng cho khoảnh khắc giải thích quy trình gom nguồn, đồng bộ dữ liệu đa kênh, chuyển từ trạng thái phân tán phức tạp sang quản lý tập trung tại một đầu mối. Mang lại cảm giác giải phóng công sức, tiện lợi và thông minh. Ví dụ câu nói: 'Thay vì phải kiểm tra từng kênh rời rạc, giờ đây mọi đơn hàng đều đổ về một nơi duy nhất', 'Dù khách hàng nhắn tin ở bất kỳ nền tảng nào, dữ liệu cũng tự động đồng bộ tức thì', 'Tất cả các khoản thu chi hàng ngày của bạn đều được gom lại trong một ứng dụng duy nhất'.",
+  "mo_rong": "Đổi các nguồn thành Shopee, TikTok Shop, Lazada, Website và logo trung tâm là phần mềm quản lý kho -> giải pháp bán hàng đa kênh omnichannel; đổi các nguồn thành Lương, Cổ tức, Bất động sản cho thuê và logo đích là Ví đầu tư -> quản lý tài chính cá nhân; đổi các nguồn thành Hồ sơ bệnh án, Kết quả xét nghiệm, Đơn thuốc về một Ứng dụng y tế -> chuyển đổi số y tế và chăm sóc sức khỏe; đổi các nguồn thành Kịch bản, Hình ảnh, Giọng đọc về khung Video hoàn chỉnh -> hướng dẫn quy trình sáng tạo nội dung AI; đổi các nguồn thành Facebook, LinkedIn, Sự kiện về Phễu ứng viên -> quản lý tuyển dụng nhân sự.",
   "nang_luong": "vua",
-  "chu_de": ["tích hợp", "hợp nhất", "dữ liệu", "đa kênh", "nền tảng", "app", "tự động hóa", "CRM"]
+  "chu_de": [
+   "hội tụ dữ liệu",
+   "đồng bộ hóa",
+   "đường cong bezier",
+   "bán hàng đa kênh",
+   "quản lý tập trung",
+   "tài chính cá nhân",
+   "công nghệ phần mềm",
+   "sáng tạo nội dung",
+   "tuyển dụng nhân sự",
+   "y tế thông minh"
+  ]
  },
  "backdrop": true
 }

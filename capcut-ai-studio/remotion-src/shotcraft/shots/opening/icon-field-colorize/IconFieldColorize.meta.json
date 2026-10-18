@@ -64,20 +64,22 @@
   }
  ],
  "vi": {
-  "ten": "Cánh đồng icon bừng sáng — sóng màu quét",
-  "mo_ta": "Nền tối ấm: hàng trăm phím icon nhỏ màu xám (tim, sao, tia sét, máy ảnh, nhà, quà, tên lửa…) lần lượt nổi lên từ giữa ra phủ kín khung như bàn phím chưa bật điện; khựng một nhịp, rồi 4 đợt sóng màu vàng → cam → đỏ san hô quét từ trên xuống làm từng phím 'cắm điện' bừng sáng, lóe trắng và tỏa quầng; cuối cùng giữa khung tối lại, hiện nhãn + tiêu đề hai vế chữ lớn.",
-  "hop_khi": "Mở đầu / chốt khi nói về sự ĐẦY ĐỦ, hệ sinh thái: 'mọi tính năng trong một app', hàng trăm tích hợp / công cụ / tiện ích, kho mẫu khổng lồ, nền tảng tất-cả-trong-một, giới thiệu sản phẩm phần mềm, trước logo.",
-  "tranh_khi": "Nội dung về một tính năng cụ thể duy nhất; tone nhẹ nhàng / sáng; cần hiển thị ảnh thật hay số liệu chi tiết.",
+  "ten": "Lưới biểu tượng phủ sóng đổi màu phát sáng",
+  "mo_ta": "Khung cảnh tối dần làm nổi bật hàng trăm biểu tượng ứng dụng bo góc bung tỏa từ tâm ra phủ kín toàn màn hình như một bàn phím số. Ngay sau đó, dải sóng ánh sáng chuyển sắc từ vàng ấm sang cam đỏ quét từ trên xuống làm bừng sáng toàn bộ lưới biểu tượng. Ở đỉnh điểm, một thẻ thông tin màu tối hiện lên ngay trung tâm với nhãn phụ phía trên và dòng tiêu đề lớn nổi bật, chuyển động nhanh dần rồi neo giữ chắc chắn ở thông điệp chính.",
+  "hop_khi": "Phù hợp làm mở màn (hook) hoặc điểm nhấn giới thiệu sự đồ sộ, phong phú, đa năng của một hệ sinh thái, nền tảng số hoặc giải pháp toàn diện; mang lại cảm giác công nghệ, hiện đại và tràn đầy năng lượng. Rất hợp với các câu nói khẳng định như: 'Tất cả công cụ bạn cần đều nằm gọn trong một nơi duy nhất', 'Hơn 400 tính năng tự động giúp bạn tối ưu hóa công việc', hoặc 'Không cần cài đặt hàng chục phần mềm phức tạp nữa'.",
+  "mo_rong": "Đổi lưới icon thành biểu tượng món ăn/nguyên liệu và đổi chữ trung tâm -> giới thiệu thực đơn phong phú cho F&B, ẩm thực; đổi icon thành các loại danh mục tài sản/tiền tệ và chỉnh màu xanh lá -> giới thiệu giải pháp tài chính hoặc đầu tư; đổi icon thành vali/địa danh và đổi chữ -> quảng bá mạng lưới tour du lịch toàn cầu; đổi icon thành sách/chứng chỉ -> giới thiệu kho khóa học trực tuyến đồ sộ cho giáo dục; đổi icon thành biểu tượng làm đẹp -> giới thiệu gói chăm sóc toàn diện cho spa, thẩm mỹ viện.",
   "nang_luong": "cao",
   "chu_de": [
+   "mở màn",
    "hệ sinh thái",
-   "tính năng",
-   "app",
-   "tích hợp",
-   "tất cả trong một",
-   "mở đầu",
-   "ra mắt",
-   "phần mềm"
+   "tích hợp công nghệ",
+   "nền tảng số",
+   "đa dạng tính năng",
+   "giáo dục trực tuyến",
+   "ẩm thực",
+   "tài chính",
+   "du lịch",
+   "đồ họa biểu tượng"
   ]
  },
  "backdrop": true

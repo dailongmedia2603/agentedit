@@ -6,22 +6,59 @@
  "duration": 150,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.8, 1.3],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.8,
+  1.3
+ ],
  "hold": 84,
  "slots": [
-  {"id": "title", "role": "name", "sample": "Bứt Phá", "max": 24, "optional": true, "note": "tên thương hiệu / tên sản phẩm / từ khóa 1–3 từ; bỏ trống = tên thương hiệu của video"}
+  {
+   "id": "title",
+   "role": "name",
+   "sample": "Bứt Phá",
+   "max": 24,
+   "optional": true,
+   "note": "tên thương hiệu / tên sản phẩm / từ khóa 1–3 từ; bỏ trống = tên thương hiệu của video"
+  }
  ],
  "images": [],
  "brand": "optional",
- "sfx": [{"at": 0, "type": "riser"}, {"at": 45, "type": "click"}, {"at": 80, "type": "boom"}],
+ "sfx": [
+  {
+   "at": 0,
+   "type": "riser"
+  },
+  {
+   "at": 45,
+   "type": "click"
+  },
+  {
+   "at": 80,
+   "type": "boom"
+  }
+ ],
  "vi": {
-  "ten": "Chữ trôi từ bốn phía ghép lại — kiểu mở đầu phim",
-  "mo_ta": "Nền xám trắng: các ký tự của một từ/tên rất to trôi chậm từ nhiều hướng vào giữa, mờ nhòe, xoay nghiêng và to hơn như bay từ trước ống kính, rồi lần lượt khớp vào vị trí — mỗi chữ đậm lên một nhịp khi khóa; ghép xong cả từ “thở” phóng nhẹ rồi trở lại, có bóng mờ dưới chân chữ. Kiểu mở đầu phim (Stranger Things), trang trọng.",
-  "hop_khi": "Xướng tên thương hiệu / sản phẩm / chương trình / tên phần mới một cách trang trọng; nhấn một từ khóa then chốt của video (“Kỷ luật”, “Tự do tài chính”); mở đầu video hoặc mở chương.",
-  "tranh_khi": "Câu dài (chỉ hợp 1–3 từ); nội dung gấp gáp nhịp nhanh; video tone tối.",
+  "ten": "Ký tự trôi hội tụ thành từ",
+  "mo_ta": "Các ký tự đơn lẻ từ nhiều góc bay trôi, xoay nghiêng và dần hội tụ về chính giữa màn hình trên nền video được làm mờ nhẹ. Khi các chữ cái ghép hoàn chỉnh thành cụm từ 'Bứt Phá', toàn bộ từ khóa khóa chặt vào vị trí với phông chữ đậm nét và tương phản rõ ràng. Cụm từ giữ cố định ở tâm khung hình trong suốt các giây tiếp theo giúp người xem tập trung tuyệt đối vào thông điệp cốt lõi.",
+  "hop_khi": "Phù hợp khi người nói nhấn mạnh một từ khóa then chốt, tuyên ngôn đúc kết, khái niệm cốt lõi hoặc bước ngoặt tư duy trong bài chia sẻ, mang nhịp điệu dứt khoát và truyền cảm hứng. Thích hợp với các câu nói như: 'Và điều duy nhất bạn cần lúc này chính là: Bứt phá!', 'Toàn bộ bí quyết của chiến dịch chỉ gói gọn trong hai chữ: Tối ưu.', 'Nếu muốn thay đổi hoàn toàn kết quả, hãy bắt đầu từ: Kỷ luật.'",
+  "mo_rong": "Đổi chữ thành tên thương hiệu hoặc slogan ngắn (vd: 'VINFAST', 'TIÊN PHONG') -> dùng cho mở màn video giới thiệu công ty hoặc ra mắt dự án mới; đổi chữ thành thuật ngữ kinh doanh/tài chính (vd: 'DÒNG TIỀN', 'LỢI NHUẬN') -> nhấn mạnh bài học trọng tâm trong video tài chính, quản trị; đổi chữ thành từ khóa giải pháp hoặc tính năng công nghệ (vd: 'AI AGENT', 'TỰ ĐỘNG HÓA') -> tạo điểm nhấn công nghệ trong video review ứng dụng; đổi chữ thành từ khóa sắc đẹp/sức khỏe (vd: 'TRẺ HÓA', 'PHỤC HỒI') -> dùng cho clip tư vấn liệu trình spa, làm đẹp; đổi chữ thành lời kêu gọi hành động quyết liệt (vd: 'HÀNH ĐỘNG NGAY') -> chốt chuyển đổi cuối video bán hàng.",
   "nang_luong": "vua",
-  "chu_de": ["tên thương hiệu", "từ khóa", "mở đầu", "logo chữ", "chương mới", "tiêu đề"]
+  "chu_de": [
+   "hội tụ ký tự",
+   "từ khóa then chốt",
+   "tiêu đề toàn màn hình",
+   "tuyên ngôn",
+   "truyền cảm hứng",
+   "kinh doanh",
+   "công nghệ",
+   "phát triển bản thân",
+   "chuyển ý",
+   "điểm nhấn bài học",
+   "kêu gọi hành động"
+  ]
  },
  "backdrop": true
 }

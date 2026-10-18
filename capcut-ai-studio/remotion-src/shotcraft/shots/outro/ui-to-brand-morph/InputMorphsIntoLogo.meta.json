@@ -77,20 +77,23 @@
   }
  ],
  "vi": {
-  "ten": "Ô chat biến thành logo — các mảnh rơi xuống ghép khung",
-  "mo_ta": "Giao diện chat sáng: tên kênh, hai tin nhắn và một ô nhập lớn có dòng tin đang gõ. Con trỏ bấm nút gửi, dòng chữ bắn vọt lên góc phải; mực đen loang từ nút gửi lấp đầy ô nhập, rồi ô nhập co lại thành một nét dọc. Ba mảnh đen lần lượt rơi từ trên xuống khớp vào rãnh vẽ nét đứt (trên, dưới, phải) ghép thành khung vuông; logo thật hoặc chữ viết tắt bật vào giữa khung; logo dịch sang bên (khung dọc: dịch lên) để tên thương hiệu hiện từng chữ, khẩu hiệu hiện bên dưới.",
-  "hop_khi": "Kết video / outro cho app chat, phần mềm làm việc nhóm, công cụ SaaS; 'chỉ cần gửi một tin nhắn là xong'; chốt tên thương hiệu sau phần demo sản phẩm; kêu gọi dùng thử app.",
-  "tranh_khi": "Video không có thương hiệu / sản phẩm số để chốt; nội dung đời thường không liên quan app / nhắn tin; giữa video.",
+  "ten": "Gửi tin nhắn biến hình logo thương hiệu",
+  "mo_ta": "Màn hình hiển thị giao diện kênh chat với các dòng tin nhắn trao đổi và thanh nhập văn bản nổi bật ở trung tâm. Con trỏ chuột nhấn nút gửi, thanh nhập lập tức co lại và biến hình mượt mà thành khối logo thương hiệu. Logo mở rộng ra cùng tên thương hiệu và câu khẩu hiệu xuất hiện thanh lịch bên dưới trên nền mờ tối giản.",
+  "hop_khi": "Phù hợp cho khoảnh khắc kết thúc video (outro), chốt hạ dự án, kêu gọi hành động nhắn tin, liên hệ tư vấn hoặc giới thiệu giải pháp làm việc nhóm, công nghệ. Cảm xúc chuyên nghiệp, hiện đại, nhịp chuyển dứt khoát tạo ấn tượng thương hiệu mạnh mẽ. Ví dụ câu nói: 'Nhắn tin ngay cho chúng mình để nhận giải pháp tối ưu nhất nhé!', 'Chỉ cần gửi yêu cầu, toàn bộ khâu còn lại cứ để team mình lo.', 'Đăng ký dùng thử ngay hôm nay để tăng tốc độ làm việc của đội ngũ.'",
+  "mo_rong": "Đổi nội dung chat thành lời nhắn đặt lịch khám, biến hình thành logo phòng khám hoặc spa -> Outro chốt lịch hẹn làm đẹp, y tế; đổi tin nhắn thành 'Chốt đơn 2 combo nhé shop', biến hình thành logo shop thời trang hoặc mỹ phẩm -> Kêu gọi mua sắm online ở cuối video bán hàng; đổi tin nhắn thành câu hỏi học viên 'Em muốn đăng ký khóa học', biến hình thành logo trung tâm đào tạo -> Outro tuyển sinh khóa học; đổi tên kênh và tin nhắn thành trao đổi tư vấn tài chính hoặc bất động sản, biến hình thành logo sàn giao dịch -> Kêu gọi liên hệ tư vấn đầu tư.",
   "nang_luong": "vua",
   "chu_de": [
-   "logo",
-   "thương hiệu",
+   "kết thúc video",
    "outro",
-   "app",
+   "nhận diện thương hiệu",
+   "tin nhắn",
    "chat",
+   "kêu gọi hành động",
+   "công nghệ",
+   "bán hàng online",
    "làm việc nhóm",
-   "SaaS",
-   "kết video"
+   "dịch vụ",
+   "tuyển sinh"
   ]
  },
  "backdrop": true

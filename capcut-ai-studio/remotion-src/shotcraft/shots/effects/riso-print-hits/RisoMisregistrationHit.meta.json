@@ -6,26 +6,96 @@
  "duration": 120,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.25],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.25
+ ],
  "hold": 76,
  "slots": [
-  {"id": "title", "role": "title", "sample": "BÙNG NỔ DOANH SỐ.", "max": 28, "note": "câu chốt cực ngắn, nên IN HOA, 2-5 từ; tự xuống 1-3 dòng"},
-  {"id": "kicker", "role": "kicker", "sample": "BẢN TIN Nº 07", "max": 26, "optional": true, "note": "nhãn nhỏ góc trên trái"},
-  {"id": "items", "role": "item", "sample": "GIAO HÀNG 2 GIỜ|MIỄN PHÍ ĐỔI TRẢ|GIÁ TỐT MỖI NGÀY", "max": 24, "list": {"min": 2, "max": 3}, "note": "2-3 điểm nổi bật ngắn, in hoa"},
-  {"id": "notes", "role": "subtitle", "sample": "Nội thành Hà Nội & TP.HCM|Trong vòng 30 ngày|Cam kết hoàn tiền", "max": 30, "list": {"min": 2, "max": 3}, "optional": true, "note": "dòng giải thích dưới từng điểm, cùng số mục với items"},
-  {"id": "stamp", "role": "label", "sample": "ĐÃ CHỐT ĐƠN", "max": 16, "optional": true, "note": "chữ chạy vòng quanh con dấu đóng xuống cuối cảnh"}
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "BÙNG NỔ DOANH SỐ.",
+   "max": 28,
+   "note": "câu chốt cực ngắn, nên IN HOA, 2-5 từ; tự xuống 1-3 dòng"
+  },
+  {
+   "id": "kicker",
+   "role": "kicker",
+   "sample": "BẢN TIN Nº 07",
+   "max": 26,
+   "optional": true,
+   "note": "nhãn nhỏ góc trên trái"
+  },
+  {
+   "id": "items",
+   "role": "item",
+   "sample": "GIAO HÀNG 2 GIỜ|MIỄN PHÍ ĐỔI TRẢ|GIÁ TỐT MỖI NGÀY",
+   "max": 24,
+   "list": {
+    "min": 2,
+    "max": 3
+   },
+   "note": "2-3 điểm nổi bật ngắn, in hoa"
+  },
+  {
+   "id": "notes",
+   "role": "subtitle",
+   "sample": "Nội thành Hà Nội & TP.HCM|Trong vòng 30 ngày|Cam kết hoàn tiền",
+   "max": 30,
+   "list": {
+    "min": 2,
+    "max": 3
+   },
+   "optional": true,
+   "note": "dòng giải thích dưới từng điểm, cùng số mục với items"
+  },
+  {
+   "id": "stamp",
+   "role": "label",
+   "sample": "ĐÃ CHỐT ĐƠN",
+   "max": 16,
+   "optional": true,
+   "note": "chữ chạy vòng quanh con dấu đóng xuống cuối cảnh"
+  }
  ],
  "images": [],
  "brand": "optional",
- "sfx": [{"at": 20, "type": "whoosh"}, {"at": 28, "type": "boom"}, {"at": 72, "type": "click"}],
+ "sfx": [
+  {
+   "at": 20,
+   "type": "whoosh"
+  },
+  {
+   "at": 28,
+   "type": "boom"
+  },
+  {
+   "at": 72,
+   "type": "click"
+  }
+ ],
  "vi": {
-  "ten": "Poster in riso — tiêu đề đập vào, lệch bản màu rồi khớp 'cạch'",
-  "mo_ta": "Poster giấy in hai màu (hồng huỳnh quang + xanh dương) với mặt trời chấm bi và 2-3 cột thông tin. Tiêu đề chữ đậm rất to lao từ phải vào, đúng lúc dừng tách thành hai bản màu hồng/xanh lệch nhau rung lắc như in lệch khuôn, rồi 'cạch' khớp lại thành mực tím đậm, một con dấu tròn đóng xuống. Khung dọc: mặt trời + con dấu phía trên, tiêu đề to giữa, các điểm xếp hàng dưới.",
-  "hop_khi": "Khoảnh khắc chốt mạnh một câu ngắn: tuyên bố, kết quả, ưu đãi, slogan (\"BÙNG NỔ DOANH SỐ\", \"CHỐT ĐƠN LIỀN TAY\"); nhấn mạnh 2-3 lợi ích kèm theo; video bán hàng, sự kiện, poster, phong cách trẻ, retro, in ấn.",
-  "tranh_khi": "Câu dài trên 5-6 từ; nội dung nghiêm túc / buồn; video công nghệ tối màu; dùng quá 2 lần trong một video.",
+  "ten": "Poster riso in lệch đập dấu xác nhận",
+  "mo_ta": "Bố cục poster mang phong cách in risograph cổ điển với chấm bi hồng huỳnh quang lớn và các dòng cam kết nổi bật ở góc dưới. Dòng tiêu đề cỡ đại lao mạnh vào giữa khung hình rồi tách thành hai bản in hồng và xanh lắc lệch nhau trước khi dập khít lại thành màu mực tím đậm. Một con dấu tròn đập mạnh xuống góc trên như lời đóng mộc chắc chắn, nhịp chuyển động dồn dập, giật nảy và cực kỳ giàu năng lượng.",
+  "hop_khi": "DÙNG KHI / PHÙ HỢP: Khoảnh khắc tạo điểm nhấn bùng nổ (impact hit), đưa ra lời cam kết vàng, công bố doanh số kỷ lục, chốt đơn khẩn cấp hoặc đánh tan sự do dự của khách hàng. Phù hợp nhịp điệu cao trào, dồn dập, quyết liệt và kích thích hành động ngay. Ví dụ: 'Doanh số tháng này đã thực sự bùng nổ nhờ duy nhất một công thức!', 'Cam kết giao hàng 2 giờ và miễn phí đổi trả trong 30 ngày!', 'Cơ hội duy nhất hôm nay, chốt đơn ngay kẻo hết phần!'",
+  "mo_rong": "1. Thay tiêu đề thành 'PHÁ GIÁ TOÀN SÀN', 3 mục dưới thành 'Giảm sốc 70% | Mua 1 tặng 1 | Miễn ship', con dấu đổi thành 'GIỚI HẠN' -> dùng tạo khan hiếm cho video livestream bán hàng. 2. Thay tiêu đề thành 'CHẠM MỐC 1000 ĐƠN', 3 mục dưới ghi 'Không chạy quảng cáo | Tự động hóa | 3 ngày triển khai', con dấu ghi 'THỰC CHIẾN' -> dùng cho video case study kinh doanh. 3. Thay tiêu đề thành 'BẢO HÀNH TRỌN ĐỜI', 3 mục dưới ghi các chính sách hậu mãi vàng, con dấu ghi 'UY TÍN 100%' -> dùng gia tăng niềm tin cho video bán đồ gia dụng, công nghệ. 4. Thay tiêu đề thành 'KẾT QUẢ ĐỘT PHÁ', 3 mục dưới ghi 'Giảm 4kg | Giảm 6cm vòng eo | Da sáng mịn', con dấu ghi 'THÀNH CÔNG' -> dùng cho video review spa, làm đẹp, giảm cân. 5. Thay tiêu đề thành 'BẢN TIN NÓNG HỔI', 3 mục dưới tóm tắt 3 sự kiện chính trong ngày, con dấu ghi 'ĐÃ KIỂM CHỨNG' -> dùng cho video tin tức ngắn, xu hướng thị trường.",
   "nang_luong": "cao",
-  "chu_de": ["câu chốt", "ưu đãi", "bán hàng", "poster", "slogan", "sự kiện", "lợi ích", "retro"]
+  "chu_de": [
+   "nhấn mạnh",
+   "poster riso",
+   "in lệch màu",
+   "đóng dấu chốt đơn",
+   "bùng nổ doanh số",
+   "bán hàng online",
+   "cam kết dịch vụ",
+   "khuyến mãi sốc",
+   "thương mại điện tử",
+   "tin nóng"
+  ]
  },
  "backdrop": true
 }

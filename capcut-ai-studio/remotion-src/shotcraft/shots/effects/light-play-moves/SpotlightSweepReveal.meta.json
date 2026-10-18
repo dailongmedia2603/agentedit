@@ -19,11 +19,11 @@
  "brand": "optional",
  "sfx": [{"at": 4, "type": "click"}, {"at": 10, "type": "riser"}, {"at": 121, "type": "boom"}, {"at": 135, "type": "ding"}],
  "vi": {
-  "ten": "Đèn sân khấu quét sáng tiêu đề",
-  "mo_ta": "Sân khấu tối với màn nhung đỏ rượu vang: tiêu đề chữ serif lớn gần như vô hình; một luồng đèn rọi ấm bật lên chớp nháy rồi đung đưa như con lắc qua lại, chiếu tới đâu chữ và nếp màn sáng tới đó, có bụi lơ lửng trong luồng sáng; cuối cùng đèn dừng giữa và mở rộng làm sáng trọn tiêu đề, dòng nhãn vàng và câu phụ hiện ra. Sang trọng, kịch tính kiểu đêm công chiếu.",
-  "hop_khi": "Màn mở đầu / hé lộ trang trọng: công bố sản phẩm, ra mắt khóa học, tên chương trình, 'và đây chính là...', giới thiệu nhân vật / khách mời, khoảnh khắc 'hồi hộp chờ kết quả'.",
-  "tranh_khi": "Video tone sáng, vui nhộn, nhịp nhanh; nội dung kỹ thuật khô (số liệu, hướng dẫn); đã dùng hiệu ứng ánh sáng khác trong video (tối đa 1-2 lần hiệu ứng đèn cả video); tiêu đề dài hơn 2 dòng.",
+  "ten": "Đèn rọi sân khấu quét chữ tiêu đề",
+  "mo_ta": "Trong bối cảnh không gian làm việc tối mang phong cách điện ảnh huyền bí, một luồng đèn rọi hình nón từ trên cao đung đưa nhẹ qua lại, để lộ các hạt bụi vàng lơ lửng trong luồng sáng. Chùm sáng chiếu thẳng vào tiêu đề chữ Serif cỡ lớn sang trọng ở trung tâm, sau đó luồng sáng ổn định để làm lộ rõ dòng kicker phía trên và phụ đề giải thích bên dưới. Nhịp chuyển động chậm rãi, trang trọng, khơi gợi cảm giác tò mò và hồi hộp.",
+  "hop_khi": "Hoàn hảo cho khoảnh khắc mở màn, hé lộ một dự án tâm huyết sau thời gian dài chuẩn bị, thông báo sự kiện trọng đại hoặc chia sẻ bước ngoặt quan trọng; cảm xúc trang trọng, sâu lắng, truyền cảm hứng. Phù hợp với các câu nói: 'Đêm nay, sau hơn một năm âm thầm chuẩn bị, mình xin chính thức công bố...', 'Khoảnh khắc mà cả đội ngũ của chúng mình mong chờ cuối cùng cũng đã đến...', 'Đây chính là bước ngoặt lớn nhất trong sự nghiệp của mình...'",
+  "mo_rong": "Đổi chữ thành tên thương hiệu thời trang kèm slogan bộ sưu tập mới -> lookbook thời trang, ra mắt BST cao cấp; đổi chữ thành tên sự kiện đêm nhạc/khai trương kèm ngày giờ -> quảng bá sự kiện, minishow, quán bar lounge giải trí; đổi chữ thành thông điệp chiêm nghiệm/châm ngôn cuộc sống -> video podcast, self-help, kể chuyện truyền cảm hứng; đổi chữ thành tên công trình/dự án kiến trúc vừa hoàn thiện -> giới thiệu thiết kế nội thất, bất động sản nghỉ dưỡng hạng sang; đổi chữ thành cột mốc đạt được (như đạt nút vàng/doanh thu kỷ lục) -> video tri ân khán giả, kỷ niệm ngày thành lập công ty.",
   "nang_luong": "vua",
-  "chu_de": ["ra mắt", "hé lộ", "sân khấu", "công bố", "mở đầu", "tiêu đề", "sự kiện"]
+  "chu_de": ["mở màn", "công bố ra mắt", "đèn rọi sân khấu", "chữ nghệ thuật", "truyền cảm hứng", "thời trang cao cấp", "sự kiện giải trí", "kể chuyện podcast", "thương hiệu cá nhân", "thiết kế nội thất", "cinematic", "tri ân kỷ niệm"]
  }
 }

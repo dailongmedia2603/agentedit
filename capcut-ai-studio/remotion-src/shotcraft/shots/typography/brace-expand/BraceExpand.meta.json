@@ -56,19 +56,23 @@
   }
  ],
  "vi": {
-  "ten": "Ngoặc nhọn { } bung mở lộ từ khoá",
-  "mo_ta": "Nền tối xanh điện kiểu trình soạn code (hoặc ảnh nền theo chủ đề): con trỏ nhấp nháy giữa màn hình rồi biến thành cặp ngoặc nhọn { } nhỏ, cặp ngoặc bật mạnh sang hai bên (có nảy nhẹ) và phóng to, kéo mở như tấm màn để lộ TỪ KHOÁ chính ở giữa; sau đó dòng chú thích '// ...' phía trên và câu phụ phía dưới hiện dần.",
-  "hop_khi": "Nhắc tới một khái niệm/từ khoá công nghệ cần nhấn: AI, code, lập trình, tự động hoá, API, tên tính năng/công cụ phần mềm; mở chương mới trong video về công nghệ, dev, sản phẩm số.",
-  "tranh_khi": "Chủ đề đời sống, cảm xúc, ẩm thực, làm đẹp (chất code không hợp); câu dài nhiều ý; video tone sáng ấm.",
-  "nang_luong": "vua",
+  "ten": "Cặp ngoặc công nghệ mở rộng từ khóa",
+  "mo_ta": "Trên nền tối làm mờ không gian làm việc, một cặp ngoặc nhọn xanh neon phát sáng ở giữa màn hình rồi bật nảy dứt khoát sang hai bên, kéo mở từ khóa trọng tâm in đậm ở vị trí trung tâm. Dòng chú thích dạng ghi chú lập trình '//' phía trên và câu diễn giải mờ phía dưới đồng thời hiện ra, tạo nên cấu trúc cân đối và đậm chất kỹ thuật.",
+  "hop_khi": "Thích hợp khi người nói nhấn mạnh một từ khóa then chốt, tiết lộ mẹo công nghệ hoặc AI, giải pháp kỹ thuật đột phá hoặc thuật ngữ chuyên ngành có sức nặng. Nhịp điệu dứt khoát, hiện đại, kích thích sự tò mò và tập trung cao độ. Ví dụ câu nói: 'Chìa khóa giúp bạn tiết kiệm 80% thời gian chỉ gói gọn trong: tự động hoá.', 'Bí mật lớn nhất của các lập trình viên hàng đầu nằm ở khái niệm này.', 'Một câu lệnh duy nhất giúp toàn bộ quy trình vận hành trơn tru.'",
+  "mo_rong": "Đổi từ khóa thành tên công cụ hoặc thuật ngữ lập trình (Notion, Python, ChatGPT) và kicker thành cú pháp code -> hướng dẫn phần mềm, thủ thuật tin học, công nghệ AI; đổi từ khóa thành chỉ số tăng trưởng (ROI, Tỷ lệ chuyển đổi) và màu ngoặc sang xanh lá neon -> video báo cáo hiệu quả marketing, phân tích dữ liệu kinh doanh; đổi từ khóa thành thuật ngữ tài chính (Lãi suất kép, Dòng tiền thụ động) -> video chia sẻ đầu tư, quản lý tài chính cá nhân; đổi từ khóa thành tên phương pháp học tập hoặc kỹ năng mềm -> video giáo dục, phát triển bản thân.",
+  "nang_luong": "cao",
   "chu_de": [
-   "code",
-   "lập trình",
-   "AI",
+   "ngoặc nhọn",
    "công nghệ",
-   "từ khoá",
-   "tiêu đề",
-   "phần mềm"
+   "từ khóa trọng tâm",
+   "mẹo công nghệ",
+   "lập trình",
+   "trí tuệ nhân tạo",
+   "thủ thuật số",
+   "tối ưu quy trình",
+   "marketing số",
+   "tài chính",
+   "phát triển bản thân"
   ]
  },
  "backdrop": true

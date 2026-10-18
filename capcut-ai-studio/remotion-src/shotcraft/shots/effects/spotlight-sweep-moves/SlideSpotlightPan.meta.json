@@ -17,11 +17,11 @@
  "brand": "optional",
  "sfx": [{"at": 0, "type": "riser"}, {"at": 16, "type": "swoosh"}],
  "vi": {
-  "ten": "Vệt sáng tím men mép giao diện + lia ngang",
-  "mo_ta": "Phông đen; một giao diện phần mềm rất rộng nằm thẳng, cận cảnh. Vệt sáng tím-hồng rực bò lên dọc mép trái, rẽ qua góc rồi chạy đều sát mép trên; ánh tím loang vào phần trên giao diện, quầng sáng đi theo đầu vệt làm lộ giao diện, chỗ ánh sáng đã qua thì tối lại. Cùng lúc giao diện trượt đều sang trái như camera lia phải.",
-  "hop_khi": "Dẫn vào phần trình bày một phần mềm / bảng điều khiển / website (\"cùng xem giao diện bên trong\"), tour tính năng bí ẩn, chuyển cảnh giữa hai phần nói về sản phẩm số; tone tối, công nghệ.",
-  "tranh_khi": "Cần đọc rõ thông tin trên màn hình; tone sáng; nội dung không phải phần mềm.",
-  "nang_luong": "thap",
-  "chu_de": ["app", "phần mềm", "dashboard", "website", "giao diện", "chuyển cảnh", "công nghệ", "ánh sáng"]
+  "ten": "Vệt sáng neon quét lướt giao diện",
+  "mo_ta": "Trên phông nền đen tối giản, toàn bộ bảng giao diện phần mềm dạng danh sách nhiều cột được hiển thị cận cảnh và sắc nét. Một vệt sáng neon tím hồng trượt dọc viền trên từ trái sang phải, kéo theo quầng đèn rọi mềm làm bừng sáng từng phần nội dung theo nhịp camera pan lướt ngang. Chuyển động lia máy êm ái, mang đậm phong cách công nghệ, vùng ánh sáng đi qua giúp nội dung nổi bật rồi dịu dần về phía sau.",
+  "hop_khi": "Phù hợp khi người nói muốn giới thiệu bao quát một hệ sinh thái, bảng số liệu tổng hợp, quy trình làm việc tự động hoặc giao diện công cụ số chuyên nghiệp; nhịp nói từ tốn, giải thích mạch lạc. Rất hợp với các câu nói như: 'Toàn bộ hệ thống quản lý dữ liệu được kết nối tự động như thế này...', 'Mình đã thiết lập sẵn một template theo dõi tiến độ cực kỳ chi tiết cho anh em...', 'Nhìn vào bảng danh sách tổng hợp này bạn sẽ thấy mọi luồng công việc đều rất rõ ràng...'",
+  "mo_rong": "Đổi ảnh màn hình thành trang quản trị đơn hàng e-commerce (Shopee/TikTok Shop) -> chia sẻ kinh nghiệm vận hành bán hàng online; đổi ảnh màn hình thành bảng tính Excel phân bổ dòng tiền và đầu tư -> hướng dẫn quản lý tài chính cá nhân; đổi ảnh màn hình thành danh sách lộ trình bài học khóa học -> giới thiệu chương trình đào tạo trực tuyến; đổi ảnh màn hình thành giao diện app quản lý bàn và doanh thu -> giải pháp số hóa cho chủ quán cà phê, nhà hàng F&B; đổi ảnh màn hình thành danh mục hồ sơ ứng viên tuyển dụng -> video chia sẻ quy trình nhân sự cho doanh nghiệp.",
+  "nang_luong": "vua",
+  "chu_de": ["giao diện phần mềm", "quản lý công việc", "hiển thị dữ liệu", "quét sáng neon", "công nghệ", "bán hàng online", "tài chính đầu tư", "giáo dục trực tuyến", "vận hành doanh nghiệp", "notion template", "số hóa quy trình", "pan lướt ngang"]
  }
 }

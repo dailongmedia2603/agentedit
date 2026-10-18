@@ -2684,7 +2684,7 @@ def gpt_timeline(selections, source_videos, duration_target=None, transcript_dat
 def gpt_audio(key_moments_data, emotion_map_data, sfx_catalog, segments=None,
               transcript_data=None, story=None, reference_analysis=None, hook=None,
               transitions=None, captions=None, inserts=None, log=None, hook_visuals=None,
-              music_catalog=None, music_ctx=None):
+              music_catalog=None, music_ctx=None, gen_catalog=None):
     """B7: Chon SFX — chay CUOI vi SFX la dau cham cau cho nhung gi da co:
     chuyen canh (R4), chu hero (R5 + lop chu do hoa), meme (B6), hook (B3). Khong biet nhung thu do thi SFX
     de dat trung cho meme, bo lo cho chuyen canh, hoac danh nhau voi chu hero.
@@ -2700,8 +2700,11 @@ def gpt_audio(key_moments_data, emotion_map_data, sfx_catalog, segments=None,
 
     music_catalog (2026-10-05): kho nhac nen (music_lib) -> CUNG luot AI chon them 1 bai nhac nen (khoa "music").
     Rong -> system prompt + payload y het truoc.
+
+    gen_catalog (2026-10-18, sfx_gen): danh muc BO TAO AM THANH earshot -> AI tra them "bo_am_thanh" (bo tieng ca video)
+    + muc "gen" cho moi tieng khong co giong noi; sfx_catalog luc nay chi con tieng co giong noi (meme).
     """
-    if not sfx_catalog and not music_catalog:
+    if not sfx_catalog and not music_catalog and not gen_catalog:
         if log:
             log("B7/7: Khong co SFX catalog -> bo qua.")
         return {"audio": []}
@@ -2716,6 +2719,9 @@ nam o giay thu may trong file (do bang am thanh that, chi co o SFX khong co gion
 src_time/start la luc SFX BAT DAU phat: muon cu dam roi dung luc X thi dat = X - peak_time.
 Muc khong co summary: nhan doan tu ten file.
 """ + json.dumps(sfx_catalog or [], ensure_ascii=False)
+    if gen_catalog:
+        import sfx_gen
+        sys_prompt += sfx_gen.rules_text() + json.dumps(gen_catalog, ensure_ascii=False)
     if music_catalog:
         import music_lib
         sys_prompt += music_lib.rule_text(music_catalog)
@@ -2759,11 +2765,13 @@ Muc khong co summary: nhan doan tu ten file.
         payload["nhac_nen"] = music_ctx
     user = json.dumps(payload, ensure_ascii=False)
     if log:
-        log("B7/7: %s chon SFX tu %d muc%s..." % (plan_ai_name(), len(sfx_catalog or []), (
+        log("B7/7: %s chon SFX tu %d muc%s%s..." % (plan_ai_name(), len(sfx_catalog or []), (
+            " + bo tao am thanh %d tieng" % sum(len(g.get("tieng") or []) for g in gen_catalog)) if gen_catalog else "", (
             " + nhac nen tu %d bai" % len(music_catalog)) if music_catalog else ""))
     text = plan_chat([
         {"role": "system", "content": sys_prompt},
         {"role": "user", "content": user},
-    ], json_mode=True, max_tokens=6000, temperature=0.4, req_timeout=90, max_attempts=2, step_label="B7-audio")
+    ], json_mode=True, max_tokens=9000 if gen_catalog else 6000, temperature=0.4, req_timeout=150 if gen_catalog else 90,
+        max_attempts=2, step_label="B7-audio")
     return _safe_json(text)
 

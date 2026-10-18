@@ -6,26 +6,85 @@
  "duration": 150,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.8, 1.3],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.8,
+  1.3
+ ],
  "hold": 30,
  "slots": [
-  {"id": "title", "role": "title", "sample": "Báo cáo chi phí quý 3", "max": 34, "note": "tên tài liệu đang được kiểm tra (hợp đồng, hóa đơn, CV, báo cáo…)"},
-  {"id": "items", "role": "item", "sample": "Quảng cáo Facebook|Thuê văn phòng|Lương nhân sự|Phần mềm & công cụ|Vận chuyển|Sự kiện ra mắt|Chi phí khác", "max": 24, "list": {"min": 4, "max": 7}, "optional": true, "note": "các dòng trong bảng của tài liệu (cột đầu); cột khác là số liệu giả"},
-  {"id": "meta", "role": "subtitle", "sample": "Phòng Kế toán · Bản rà soát · 07/2025", "max": 48, "optional": true, "note": "dòng phụ nhỏ dưới tên tài liệu"}
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Báo cáo chi phí quý 3",
+   "max": 34,
+   "note": "tên tài liệu đang được kiểm tra (hợp đồng, hóa đơn, CV, báo cáo…)"
+  },
+  {
+   "id": "items",
+   "role": "item",
+   "sample": "Quảng cáo Facebook|Thuê văn phòng|Lương nhân sự|Phần mềm & công cụ|Vận chuyển|Sự kiện ra mắt|Chi phí khác",
+   "max": 24,
+   "list": {
+    "min": 4,
+    "max": 7
+   },
+   "optional": true,
+   "note": "các dòng trong bảng của tài liệu (cột đầu); cột khác là số liệu giả"
+  },
+  {
+   "id": "meta",
+   "role": "subtitle",
+   "sample": "Phòng Kế toán · Bản rà soát · 07/2025",
+   "max": 48,
+   "optional": true,
+   "note": "dòng phụ nhỏ dưới tên tài liệu"
+  }
  ],
  "images": [
-  {"id": "screen", "role": "screen", "aspect": "page", "optional": true, "note": "ảnh chụp tài liệu / hợp đồng / màn hình thật; có thì thay bảng giả, hiển thị cover"}
+  {
+   "id": "screen",
+   "role": "screen",
+   "aspect": "page",
+   "optional": true,
+   "note": "ảnh chụp tài liệu / hợp đồng / màn hình thật; có thì thay bảng giả, hiển thị cover"
+  }
  ],
  "brand": "none",
- "sfx": [{"at": 0, "type": "pop"}, {"at": 12, "type": "click"}, {"at": 26, "type": "riser"}],
+ "sfx": [
+  {
+   "at": 0,
+   "type": "pop"
+  },
+  {
+   "at": 12,
+   "type": "click"
+  },
+  {
+   "at": 26,
+   "type": "riser"
+  }
+ ],
  "vi": {
-  "ten": "Tia quét kiểm tra tài liệu",
-  "mo_ta": "Nền sáng: một tờ tài liệu trắng (tiêu đề, bảng 4 cột vài dòng, dòng tổng cộng — hoặc ảnh tài liệu thật) bật nhẹ ra giữa màn hình, bốn ngoặc góc chữ L lần lượt rơi xuống khung lấy nó; rồi một vạch sáng màu nhấn kéo vệt mờ phía sau quét lên quét xuống 5 lượt, chậm ở hai đầu, dòng nào vạch đi qua thì sáng nhẹ lên. Tài liệu đứng yên hoàn toàn — chỉ có ánh sáng 'đọc' nó. Nhịp đều, máy móc, tiết chế.",
-  "hop_khi": "Nói về AI / phần mềm đọc, phân tích, kiểm tra tài liệu: 'AI rà soát hợp đồng trong vài giây', soát lỗi báo cáo, chấm CV, đối chiếu hóa đơn, quét dữ liệu, kiểm duyệt nội dung, OCR.",
-  "tranh_khi": "Khoảnh khắc cần năng lượng cao; không liên quan tài liệu / kiểm tra; cảnh ngắn dưới 2 giây (chưa kịp quét).",
-  "nang_luong": "thap",
-  "chu_de": ["AI", "tài liệu", "kiểm tra", "phân tích", "hợp đồng", "báo cáo", "quét", "tự động hóa"]
+  "ten": "Quét bảng biểu tài liệu chuyên sâu",
+  "mo_ta": "Một trang tài liệu bảng biểu màu trắng bo góc xuất hiện êm ái giữa khung hình, lập tức được bốn ngàm chữ L khóa viền định vị. Một vạch sáng quét màu xanh lam lướt dọc đều đặn từ trên xuống dưới qua từng hàng dữ liệu, làm bừng sáng dòng danh mục quan trọng trước khi đọng lại ở phần tổng kết. Chuyển động cơ học chuẩn xác, thanh thoát, duy trì bố cục tĩnh sáng rõ tạo cảm giác minh bạch và thuyết phục.",
+  "hop_khi": "Dùng khi người nói công khai số liệu tài chính, bóc tách cơ cấu chi phí, liệt kê các hạng mục đầu tư hoặc rà soát điều khoản trong hợp đồng, biên bản. Phù hợp với phong thái điềm tĩnh, chuyên gia, đòi hỏi độ tin cậy và sự minh bạch tuyệt đối. Ví dụ câu nói: 'Toàn bộ chi phí thực tế trong quý vừa qua được kê khai chi tiết ở đây', 'Bóc tách từng khoản mới thấy ngân sách đang bị thất thoát ở đâu', 'Đây là bảng báo giá chi tiết từng hạng mục mà bên mình áp dụng'.",
+  "mo_rong": "Đổi thành bảng danh sách các môn học và học phí theo kỳ để tư vấn lộ trình đào tạo (Giáo dục / Khóa học); đổi thành bảng dự toán chi phí thi công và vật liệu để minh bạch ngân sách xây dựng (Bất động sản / Nội thất); đổi thành thực đơn combo kèm đơn giá từng món để giới thiệu gói tiệc ưu đãi (F&B / Nhà hàng); đổi thành bảng so sánh cấu hình phần cứng hoặc gói tính năng phần mềm để tư vấn giải pháp (Review công nghệ / SaaS); đổi thành danh mục phân bổ tài sản đầu tư để hướng dẫn quản lý vốn an toàn (Tài chính / Đầu tư chứng khoán).",
+  "nang_luong": "vua",
+  "chu_de": [
+   "bảng biểu",
+   "quét tài liệu",
+   "báo cáo tài chính",
+   "kê khai chi phí",
+   "kế toán",
+   "báo giá",
+   "bất động sản",
+   "minh bạch",
+   "phân tích dữ liệu",
+   "danh sách"
+  ]
  },
  "backdrop": true
 }

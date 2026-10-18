@@ -6,27 +6,87 @@
  "duration": 105,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
  "hold": 72,
  "slots": [
-  {"id": "label", "role": "label", "sample": "Doanh thu tháng này", "max": 30, "note": "tên chỉ số trên thẻ đích"},
-  {"id": "number", "role": "number", "sample": "1,2 tỷ", "max": 10, "note": "con số lớn (chữ số + đơn vị ngắn)"},
-  {"id": "delta", "role": "label", "sample": "+32%", "max": 8, "optional": true, "note": "mức tăng/giảm"},
-  {"id": "subtitle", "role": "subtitle", "sample": "so với tháng trước", "max": 32, "optional": true}
+  {
+   "id": "label",
+   "role": "label",
+   "sample": "Doanh thu tháng này",
+   "max": 30,
+   "note": "tên chỉ số trên thẻ đích"
+  },
+  {
+   "id": "number",
+   "role": "number",
+   "sample": "1,2 tỷ",
+   "max": 10,
+   "note": "con số lớn (chữ số + đơn vị ngắn)"
+  },
+  {
+   "id": "delta",
+   "role": "label",
+   "sample": "+32%",
+   "max": 8,
+   "optional": true,
+   "note": "mức tăng/giảm"
+  },
+  {
+   "id": "subtitle",
+   "role": "subtitle",
+   "sample": "so với tháng trước",
+   "max": 32,
+   "optional": true
+  }
  ],
  "images": [
-  {"id": "hero", "role": "screen", "aspect": "7:6", "optional": true, "note": "ảnh phủ thẻ đích (thay cho thẻ số liệu): ảnh chụp màn hình / ảnh minh hoạ"}
+  {
+   "id": "hero",
+   "role": "screen",
+   "aspect": "7:6",
+   "optional": true,
+   "note": "ảnh phủ thẻ đích (thay cho thẻ số liệu): ảnh chụp màn hình / ảnh minh hoạ"
+  }
  ],
  "brand": "optional",
- "sfx": [{"at": 20, "type": "riser"}, {"at": 26, "type": "whoosh"}, {"at": 50, "type": "boom"}],
+ "sfx": [
+  {
+   "at": 20,
+   "type": "riser"
+  },
+  {
+   "at": 26,
+   "type": "whoosh"
+  },
+  {
+   "at": 50,
+   "type": "boom"
+  }
+ ],
  "vi": {
-  "ten": "Máy quay lao xuống từ trên cao, đáp vào thẻ số liệu",
-  "mo_ta": "Nền sáng, nhìn từ trên cao xuống cả trang bảng điều khiển (dashboard) nằm phẳng trên nền lưới chấm; máy quay nhấc nhẹ rồi LAO VỤT xuống có nhoè chuyển động, góc nghiêng dựng thẳng dần, đệm khí hãm lại và dừng cận cảnh vào một thẻ: tên chỉ số + CON SỐ LỚN + mức tăng (hoặc ảnh), xung quanh tối nhẹ để dồn tiêu điểm.",
-  "hop_khi": "Từ bức tranh tổng thể đi thẳng vào một con số quan trọng (doanh thu, người dùng, tăng trưởng); \"và con số đáng chú ý nhất là…\"; mở chương về kết quả/số liệu của app, dashboard, báo cáo kinh doanh.",
-  "tranh_khi": "Không có con số/chỉ số cụ thể; chủ đề đời thường, cảm xúc; video tone tối; dùng nhiều lần trong một video (động tác lớn).",
+  "ten": "Cú bổ nhào drone chốt số ấn tượng",
+  "mo_ta": "Góc máy từ trên cao bao quát toàn bộ giao diện bảng điều khiển đang nằm nghiêng trong không gian 3D. Camera đột ngột lao vun vút xuống, bẻ góc dựng đứng và hãm phanh mượt mà ngay trước thẻ số liệu trọng tâm hiển thị con số kích thước lớn cùng phần trăm tăng trưởng và đường biểu đồ tăng dần. Nhịp chuyển động cực nhanh, dồn dập, tạo cú va chạm thị giác mạnh mẽ nhằm đóng đinh sự chú ý của người xem.",
+  "hop_khi": "Dùng tại thời điểm công bố kết quả đỉnh điểm (climax), hé lộ doanh thu, khoe thành tích, chỉ số tăng trưởng đột phá hoặc nhấn mạnh một con số gây sốc. Phù hợp với nhịp nói dồn dập, cao trào, tự hào hoặc kích thích tò mò; ví dụ: 'Và đây là doanh thu thực tế mà chiến dịch này mang lại chỉ sau đúng một tuần', 'Tỷ lệ chốt đơn đã nhảy vọt lên con số mà chính mình cũng không ngờ tới', 'Bạn có tin mức tiết kiệm có thể chạm mốc 30 triệu mỗi tháng?'.",
+  "mo_rong": "Đổi con số thành số kg giảm được hoặc calo tiêu hao -> chia sẻ hành trình giảm cân, fitness, làm đẹp; đổi thẻ số liệu thành giá bán căn hộ hoặc tỷ suất lợi nhuận đầu tư -> review bất động sản, tài chính đầu tư; đổi thành số lượng đơn hàng bán ra trong phiên livestream -> bán hàng online, tổng kết sự kiện sale; đổi thành số học viên đỗ chứng chỉ hoặc điểm thi xuất sắc -> quảng bá khóa học giáo dục; đổi thành số lượng hồ sơ ứng tuyển nhận được -> báo cáo tuyển dụng nhân sự.",
   "nang_luong": "cao",
-  "chu_de": ["số liệu", "dashboard", "doanh thu", "tăng trưởng", "app", "báo cáo", "con số", "3D"]
+  "chu_de": [
+   "lao máy quay",
+   "cú rơi drone",
+   "con số khổng lồ",
+   "tăng trưởng đột phá",
+   "công bố kết quả",
+   "chỉ số KPI",
+   "bán hàng livestream",
+   "báo cáo tài chính",
+   "bất động sản",
+   "thành tích đỉnh cao"
+  ]
  },
  "backdrop": true
 }

@@ -19,11 +19,11 @@
  "brand": "optional",
  "sfx": [{"at": 10, "type": "swoosh"}, {"at": 32, "type": "pop"}, {"at": 46, "type": "swoosh"}, {"at": 68, "type": "pop"}],
  "vi": {
-  "ten": "Đường sáng nối số liệu trên dashboard tối",
-  "mo_ta": "Màn hình dashboard tối (thẻ số liệu, biểu đồ nhỏ) hơi mờ làm nền; một đường cong phát sáng với đầu sáng chạy từ thẻ thứ nhất \"bắn\" sang thẻ thứ hai, thẻ đó lóe viền sáng và vòng sóng; rồi đường thứ hai nối tiếp sang thẻ thứ ba. Ba thẻ được nối mang nhãn và con số lấy từ lời nói. Sau đó đứng yên.",
-  "hop_khi": "Giải thích quan hệ nhân quả giữa các chỉ số: \"chi phí quảng cáo kéo doanh thu, doanh thu kéo khách mới\"; dòng chảy dữ liệu, kết nối giữa các bộ phận, phễu bán hàng, báo cáo kinh doanh, dashboard của app/phần mềm.",
-  "tranh_khi": "Không có số liệu cụ thể; nội dung cảm xúc / đời sống; video tông sáng; có nhiều hơn 3 chỉ số cần nối.",
+  "ten": "Tia sáng nối chuỗi số liệu dashboard",
+  "mo_ta": "Màn hình dashboard tối với 6 thẻ chỉ số kèm biểu đồ mini, có tiêu đề nằm ở góc trên. Một tia sáng tím cong mềm mại bắn từ thẻ số liệu đầu tiên sang thẻ thứ hai làm viền thẻ bừng sáng xung lực, rồi tiếp tục bắn sang thẻ thứ ba kết nối một chuỗi 3 dữ liệu quan trọng. Nhịp chuyển động mượt mà, đậm chất công nghệ số và dừng lại rõ nét ở cuối shot.",
+  "hop_khi": "Phù hợp khi người nói phân tích mối quan hệ nhân quả giữa các con số, tổng kết hiệu quả chiến dịch kinh doanh hoặc báo cáo tăng trưởng tài chính với phong thái tự tin, chuyên nghiệp. Ví dụ: 'Bỏ ra 12 triệu tiền quảng cáo nhưng mang về tận 86 triệu doanh thu', 'Chỉ sau một tuần tỷ lệ chuyển đổi tăng vọt giúp kéo thêm hơn 1000 khách mới', 'Từ chi phí đầu tư ban đầu đến lợi nhuận ròng thực tế chênh lệch thế nào?'.",
+  "mo_rong": "Đổi số liệu tài chính thành các chỉ số sức khỏe (calo nạp vào, calo tiêu hao, cân nặng giảm) -> video fitness, giảm cân; Đổi thành quy trình phễu marketing (lượt tiếp cận, tin nhắn, chốt đơn) -> đào tạo kinh doanh online; Đổi thành thông số kỹ thuật xe hơi hoặc đồ công nghệ (công suất, mô-men xoắn, thời gian tăng tốc) -> review ô tô, công nghệ; Đổi thành tiến độ dự án bất động sản (vốn đầu tư, diện tích quy hoạch, số căn đã bán) -> tư vấn bất động sản.",
   "nang_luong": "vua",
-  "chu_de": ["dashboard", "số liệu", "dữ liệu", "kết nối", "nhân quả", "kinh doanh", "báo cáo", "phần mềm"]
+  "chu_de": ["dashboard số liệu", "báo cáo tài chính", "kinh doanh online", "tia sáng liên kết", "chỉ số tăng trưởng", "hiệu quả marketing", "công nghệ", "phân tích dữ liệu", "đồ họa toàn màn hình"]
  }
 }

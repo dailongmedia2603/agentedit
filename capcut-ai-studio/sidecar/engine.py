@@ -379,7 +379,13 @@ def resolve_plan_sfx(plan, max_sfx=None, min_gap=None):
     resolved = []
     for a in audio:
         sid = a.get("sfx_id")
-        if sid:
+        if a.get("gen") is not None:
+            # tieng TAO bang earshot (sfx_gen): render / doc cache -> file + do to + diem dong bo
+            import sfx_gen
+            a = sfx_gen.resolve(dict(a))
+            if not a:
+                continue
+        elif sid:
             e = lib.get(sid)
             if not e:
                 continue  # id sai -> bo (khong lam vo build)

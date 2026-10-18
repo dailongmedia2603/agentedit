@@ -108,20 +108,23 @@
   }
  ],
  "vi": {
-  "ten": "Thẻ nhân bản — 1 thành nhiều rồi hợp nhất",
-  "mo_ta": "Nền đen than, điểm nhấn xanh chanh: một thẻ giao diện (tên, số lớn, biểu đồ nhỏ hoặc ảnh sản phẩm) 'photocopy' ra 7 bản sao trong suốt xếp hàng lùi sâu vào không gian, bộ đếm '×N' khổng lồ nhảy số theo từng bản; khựng một nhịp cho người xem đếm, rồi cả đội hình hút ngược về thẻ gốc, thẻ nảy nhẹ, hàng ô số thứ tự sáng hết, tiêu đề hai dòng hiện lên.",
-  "hop_khi": "Nói về nhân bản / quy mô / làm hàng loạt: 'một câu lệnh ra 8 video', một tài khoản dùng trên nhiều máy, một mẫu nhân ra nhiều phiên bản, AI tạo hàng loạt, đa kênh, tự động hóa, xử lý cùng lúc nhiều việc.",
-  "tranh_khi": "Nội dung so sánh khác biệt giữa các phiên bản (các bản sao giống hệt nhau); tone nhẹ nhàng đời sống; không có con số 'nhiều'.",
-  "nang_luong": "vua",
+  "ten": "Nhân bản thẻ chiều sâu 3D",
+  "mo_ta": "Trên nền tối có chiều sâu, một thẻ giao diện bo góc ở trung tâm liên tục phân tách và nhân bản lùi sâu vào không gian 3D tạo thành hàng dài nhiều lớp mờ dần. Bộ đếm kích thước lớn ở góc dưới nhảy số dứt khoát từ 1 lên 8 theo từng bản sao, sau đó tiêu đề lớn hai dòng bung ra ở góc trên để khẳng định thông điệp. Chuyển động nhanh, dứt khoát và tạo ấn tượng thị giác mạnh mẽ về sự mở rộng quy mô.",
+  "hop_khi": "Phù hợp khi người nói nhấn mạnh sự bùng nổ về số lượng, tăng năng suất vượt bậc bằng công nghệ hoặc kết quả nhân rộng ngoạn mục chỉ từ một hành động nhỏ; năng lượng hứng khởi, tự tin và dứt khoát. Ví dụ: 'Chỉ với một câu lệnh đơn giản, hệ thống tự động tạo ra 8 video hoàn chỉnh', 'Từ một ý tưởng bài viết ban đầu, bạn có thể nhân bản thành hàng chục nội dung đa kênh', 'Bỏ ra 15 phút thiết lập nhưng mang lại hiệu quả công việc gấp nhiều lần thông thường'.",
+  "mo_rong": "Đổi thẻ giao diện thành mẫu thiết kế quảng cáo và tăng số lượng -> agency marketing chứng minh tốc độ sản xuất ấn phẩm; đổi thẻ thành gói hàng vận chuyển kèm số lượng đơn -> thương mại điện tử khoe doanh số bán hàng bùng nổ; đổi thẻ thành hồ sơ ứng viên -> nhà tuyển dụng nhấn mạnh số lượng hồ sơ nộp về sau khi đăng tin; đổi thẻ thành căn hộ hoặc phòng cho thuê -> bất động sản chứng minh khả năng lấp đầy phòng nhanh chóng; đổi thẻ thành chứng chỉ học viên -> tổ chức giáo dục nhấn mạnh số lượng học viên hoàn thành xuất sắc.",
+  "nang_luong": "cao",
   "chu_de": [
    "nhân bản",
-   "quy mô",
-   "hàng loạt",
-   "AI",
+   "chiều sâu 3d",
+   "tăng trưởng",
+   "hiệu suất cao",
+   "năng suất xn",
    "tự động hóa",
-   "app",
-   "một thành nhiều",
-   "đa nền tảng"
+   "công nghệ ai",
+   "marketing",
+   "bán hàng online",
+   "tuyển dụng",
+   "thương mại điện tử"
   ]
  },
  "backdrop": true

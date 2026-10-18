@@ -544,6 +544,25 @@ def family_file(name, world=None):
     return (sid, path) if os.path.isfile(path) else (None, None)
 
 
+def auto_item(fam, t, ref, purpose, lib=None, dur=None):
+    """Muc audio (gio timeline) cho tieng TU GAN tai su kien `t` (chu hien, lop do hoa, canh shot, hieu ung tu viet).
+    Plan co bo tieng earshot (sfx_gen.use trong build_spec) -> tieng TAO theo bo cua video, take theo `ref`; plan cu
+    -> bo tieng kit-* trong kho nhu truoc. `lib` = {id: muc kho} (doc 1 lan o ham goi). Tra None neu khong co tieng."""
+    import sfx_gen
+    a = sfx_gen.auto_item(fam, ref, dur=dur)
+    if a:
+        a.update({"start": sfx_gen.place(a, float(t)), "purpose": purpose, "_from_layer": ref})
+        return a
+    sid, path = family_file(fam)
+    if not sid:
+        return None
+    e = (lib or {}).get(sid)
+    if e is None:
+        e = next((x for x in engine.sfx_list() if x.get("id") == sid), {})
+    return {"sfx_id": sid, "file": path, "start": t, "purpose": purpose, "_name": e.get("name"),
+            "tags": e.get("tags") or [], "_lufs": e.get("lufs_m"), "_from_layer": ref}
+
+
 def sound_catalog():
     """Danh muc am thanh cho luong Tao video (sidecar /sound/catalog -> motion/sound.ts): 5 bo tieng the gioi + SFX kho
     khong giong noi co nhan + nhac nen khong loi."""

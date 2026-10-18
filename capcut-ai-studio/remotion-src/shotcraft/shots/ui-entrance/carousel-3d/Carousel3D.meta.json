@@ -118,20 +118,23 @@
   }
  ],
  "vi": {
-  "ten": "Băng chuyền thẻ 3D xoay vòng",
-  "mo_ta": "Nền tối than chì, 8 thẻ đứng thành vòng tròn 3D trên mặt sàn phản chiếu, cả vòng xoay đều và cứ ~0,7 giây lại khựng một nhịp; thẻ ở chính giữa phía trước sáng viền xanh chanh, nhô ra, phụ đề lớn bên dưới cuộn đổi tên theo thẻ đó. Mỗi thẻ có hình vẽ (hoặc ảnh), con số lớn và tên mục.",
-  "hop_khi": "Giới thiệu một loạt tính năng / sản phẩm / mẫu / dịch vụ / tích hợp (\"app có đủ: đơn hàng, kho, thanh toán…\"); thư viện, bộ sưu tập; đoạn liệt kê nhiều thứ cùng loại, nền cho lời nói dài.",
-  "tranh_khi": "Chỉ có 1-2 mục; cần một điểm nhấn mạnh có mở đầu/kết thúc rõ (vòng xoay liên tục, không có cao trào); chủ đề cảm xúc, đời thường.",
+  "ten": "Băng chuyền thẻ tính năng 3D",
+  "mo_ta": "Trên nền tối làm mờ có sàn phản chiếu bóng, 8 thẻ giao diện 3D xếp thành vòng tròn xoay quanh trục và dừng lại theo từng nhịp dứt khoát. Thẻ xoay về phía trước phát sáng viền xanh neon, nhô to làm nổi bật đồ họa cùng số liệu chính, đồng thời phụ đề chân trang lật đổi tên mục tương ứng. Chuyển động xoay vòng 3D nhịp nhàng, mượt mà và mang hơi thở công nghệ cao cấp.",
+  "hop_khi": "Phù hợp khi người nói giới thiệu hệ sinh thái giải pháp, liệt kê danh mục dịch vụ toàn diện hoặc tổng kết nhiều tính năng nổi bật trong cùng một giải pháp; nhịp điệu đĩnh đạc, chuyên nghiệp và đáng tin cậy. Ví dụ: 'Mọi tính năng quản lý bạn cần đều nằm trọn trong một ứng dụng duy nhất', 'Hệ thống này giải quyết từ A đến Z mọi khâu vận hành cho doanh nghiệp của bạn', 'Dưới đây là 8 quyền lợi đặc biệt bạn nhận được khi đăng ký tài khoản hôm nay'.",
+  "mo_rong": "Đổi ảnh giao diện thành ảnh món ăn kèm số calo hoặc giá tiền -> menu các món bán chạy cho nhà hàng F&B; đổi thành ảnh các bước chăm sóc da kèm số phút liệu trình -> spa giới thiệu quy trình làm đẹp; đổi thành ảnh thực tế các phòng kèm diện tích và tiện ích -> bất động sản giới thiệu căn hộ cao cấp; đổi thành ảnh bài tập kèm số hiệp/lần lặp -> huấn luyện viên gym hướng dẫn giáo án thể hình; đổi thành bìa các học phần kèm số giờ học -> trung tâm đào tạo giới thiệu lộ trình khóa học.",
   "nang_luong": "vua",
   "chu_de": [
-   "danh sách",
-   "tính năng",
-   "sản phẩm",
-   "app",
-   "bộ sưu tập",
-   "thư viện",
-   "dịch vụ",
-   "3D"
+   "vòng xoay 3d",
+   "carousel",
+   "hệ sinh thái",
+   "tính năng phần mềm",
+   "danh mục dịch vụ",
+   "menu ẩm thực",
+   "spa làm đẹp",
+   "bất động sản",
+   "khóa học",
+   "công nghệ",
+   "trưng bày sản phẩm"
   ]
  },
  "backdrop": true

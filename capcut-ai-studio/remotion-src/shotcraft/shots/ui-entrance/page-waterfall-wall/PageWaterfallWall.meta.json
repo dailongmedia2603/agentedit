@@ -92,21 +92,22 @@
   }
  ],
  "vi": {
-  "ten": "Bức tường ảnh chảy — 3 cột màn hình cuộn ngược chiều",
-  "mo_ta": "Trên ảnh nền theo chủ đề (hoặc nền tối), một bức tường nghiêng ra sau (phối cảnh 3D) gồm 3 cột thẻ ảnh chụp màn hình bo góc cuộn liên tục với tốc độ khác nhau, cột giữa cuộn ngược chiều; máy quay chậm rãi tiến gần. Cảm giác 'nhiều đến xem không hết'. Có thể kèm một câu ngắn nổi giữa khung trên nền kính mờ.",
-  "hop_khi": "Khoe số lượng / độ phong phú: rất nhiều mẫu, nhiều tính năng, nhiều trang, nhiều sản phẩm, kho template, danh mục khóa học, portfolio nhiều dự án, hàng loạt bài đăng / video đã làm; câu kiểu 'có hàng trăm mẫu', 'tất cả những thứ này đều làm bằng...'.",
-  "tranh_khi": "Chỉ có 1-2 ảnh (sẽ lặp lại lộ rõ); cần người xem đọc chi tiết một màn hình; video không có ảnh chụp giao diện / sản phẩm.",
+  "ten": "Bức tường giao diện 3D thác nước",
+  "mo_ta": "Bức tường nghiêng phối cảnh 3D gồm 3 cột thẻ giao diện hoặc ảnh chụp bo góc lướt trôi liên tục theo chiều dọc như thác nước với các tốc độ đan xen. Máy quay tiến chậm tạo chiều sâu không gian dày đặc, chính giữa nổi bật viên thuốc bo tròn chứa tiêu đề số lượng áp đảo. Chuyển động cuộn mượt mà, tạo cảm giác vô tận, hoành tráng và chuyên nghiệp.",
+  "hop_khi": "Dùng khi người nói muốn khoe kho tài nguyên khổng lồ, danh mục sản phẩm đồ sộ, hệ sinh thái tính năng hoặc thành tựu quy mô lớn để xây dựng uy tín tuyệt đối. Phù hợp với nhịp nói hào hứng, tự tin, nhấn mạnh vào sự phong phú và sẵn có. Ví dụ: 'Bạn sẽ được sở hữu toàn bộ kho hơn 200 mẫu thiết kế có sẵn này', 'Chúng tôi đã tích hợp sẵn hàng trăm kịch bản bán hàng thực chiến', 'Một thư viện tài liệu khổng lồ đang chờ bạn khám phá'.",
+  "mo_rong": "Thay ảnh chụp màn hình bằng mockup bìa sách hoặc khóa học, đổi chữ thành 500+ Bài giảng chuyên sâu -> quảng bá nền tảng giáo dục e-learning; thay bằng ảnh chụp feedback hoặc tin nhắn chuyển khoản khách hàng, đổi chữ thành 1.000+ Khách hàng tin dùng -> làm bằng chứng uy tín cho bán hàng online, thẩm mỹ viện; thay bằng ảnh chụp căn hộ hoặc biệt thự, đổi chữ thành 300+ Căn hộ giá tốt -> video môi giới bất động sản, homestay; thay bằng ảnh các món ăn trong thực đơn, đổi chữ thành Hơn 80 món chuẩn vị -> giới thiệu nhà hàng, F&B, quán cafe; thay bằng danh thiếp hoặc ảnh ứng viên, đổi chữ thành 10.000+ Nhân sự chất lượng -> video dịch vụ tuyển dụng, săn đầu người.",
   "nang_luong": "vua",
   "chu_de": [
-   "app",
-   "website",
-   "giao diện",
-   "mẫu thiết kế",
-   "template",
-   "danh mục",
-   "portfolio",
-   "số lượng",
-   "sản phẩm"
+   "thư viện giao diện",
+   "kho tài nguyên",
+   "trưng bày sản phẩm",
+   "uy tín thương hiệu",
+   "thác nước 3d",
+   "bán hàng online",
+   "giáo dục",
+   "bất động sản",
+   "fnb",
+   "tuyển dụng"
   ]
  },
  "backdrop": true

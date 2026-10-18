@@ -20,11 +20,11 @@
  "brand": "optional",
  "sfx": [{"at": 20, "type": "click"}, {"at": 32, "type": "click"}, {"at": 44, "type": "click"}, {"at": 56, "type": "click"}, {"at": 68, "type": "click"}, {"at": 80, "type": "ding"}],
  "vi": {
-  "ten": "Bức tường ô bento sáng lần lượt",
-  "mo_ta": "Nền tối ấm, một bức tường 3–6 ô thẻ kiểu bento (rộng hẹp xen kẽ) nằm sẵn nhưng tối mờ. Lần lượt từng ô: một vệt sáng hổ phách chạy vòng quanh viền như sao chổi, rồi nội dung ô (nhãn, con số, biểu đồ nhỏ) bừng sáng và nảy nhẹ lên; đủ các ô thì cả bức tường nhích gần lại rồi đứng yên. Tiêu đề lớn phía trên.",
-  "hop_khi": "Liệt kê các tính năng / hạng mục của sản phẩm, app, gói dịch vụ một cách trang trọng: \"ứng dụng có đủ: quản lý đơn, báo cáo, khách hàng...\"; tổng quan dashboard, các chỉ số chính; đoạn giới thiệu thương hiệu cần cảm giác cao cấp.",
-  "tranh_khi": "Chỉ có 1–2 ý; nội dung đời thường không phải sản phẩm; video tông sáng; đã dùng cảnh bản vẽ thành giao diện (wireframe) trong cùng video.",
+  "ten": "Bảng lưới bento phát sáng từng ô",
+  "mo_ta": "Bố cục bảng lưới bento gồm 6 ô thẻ thông tin hiện đại trên nền tối sang trọng, phía trên là tiêu đề phụ và tiêu đề chính rõ ràng. Từng ô thẻ lần lượt được một vệt sáng hổ phách quét vòng quanh viền, kích hoạt con số, nhãn danh mục và biểu đồ thu nhỏ bên trong bừng sáng kèm hiệu ứng nảy nhẹ. Nhịp điệu dồn dập xây dựng cảm giác đủ đầy, tổng hòa trước khi toàn bộ bảng số liệu cố định vững chắc.",
+  "hop_khi": "Thích hợp khi tổng kết thành quả kinh doanh, công bố các chỉ số hiệu quả định lượng, phô diễn sức mạnh toàn diện của một sản phẩm công nghệ hoặc đúc kết giá trị trọn gói. Tạo cảm giác thuyết phục cao độ dựa trên dữ liệu minh bạch và độ bao quát. Ví dụ câu nói: 'Tất cả chỉ số quan trọng nhất của doanh nghiệp đều nằm gọn trong lòng bàn tay', 'Chỉ sau 3 tháng triển khai, đây là những con số biết nói mà chúng tôi đạt được', 'Một giải pháp duy nhất giải quyết trọn vẹn từ vận hành, tài chính đến khách hàng'.",
+  "mo_rong": "Giữ nguyên 6 ô và thay bằng các chỉ số doanh thu, đơn hàng, ROAS, tỷ lệ chốt -> báo cáo kết quả bán hàng online và marketing; thay số liệu thành số ca thành công, điểm hài lòng, năm kinh nghiệm -> tạo dựng uy tín cho trung tâm y tế, nha khoa hoặc thẩm mỹ viện; thay số liệu thành diện tích xanh, số tầng hầm, tiện ích ngoại khu -> chứng minh giá trị dự án bất động sản; thay thẻ thành số giờ thực hành, số học viên, cam kết đầu ra -> quảng bá khóa học giáo dục; thay số liệu thành thông số pin, camera, chip xử lý -> review so sánh đồ công nghệ.",
   "nang_luong": "vua",
-  "chu_de": ["tính năng", "danh sách", "dashboard", "app", "sản phẩm", "bento", "tổng quan", "số liệu"]
+  "chu_de": ["bento grid", "bảng điều khiển", "báo cáo số liệu", "phát sáng tuần tự", "tổng kết thành quả", "kinh doanh online", "bất động sản", "tài chính doanh nghiệp", "công nghệ", "giáo dục đào tạo", "thẩm mỹ viện"]
  }
 }

@@ -6,22 +6,62 @@
  "duration": 130,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.25],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.25
+ ],
  "hold": 104,
  "slots": [
-  {"id": "name", "role": "name", "sample": "", "max": 24, "optional": true, "note": "tên sản phẩm / kênh / thương hiệu hiện cạnh logo; bỏ trống = tên thương hiệu của video"}
+  {
+   "id": "name",
+   "role": "name",
+   "sample": "",
+   "max": 24,
+   "optional": true,
+   "note": "tên sản phẩm / kênh / thương hiệu hiện cạnh logo; bỏ trống = tên thương hiệu của video"
+  }
  ],
  "images": [],
  "brand": "optional",
- "sfx": [{"at": 2, "type": "pop"}, {"at": 34, "type": "swoosh"}, {"at": 46, "type": "pop"}, {"at": 66, "type": "whoosh"}],
+ "sfx": [
+  {
+   "at": 2,
+   "type": "pop"
+  },
+  {
+   "at": 34,
+   "type": "swoosh"
+  },
+  {
+   "at": 46,
+   "type": "pop"
+  },
+  {
+   "at": 66,
+   "type": "whoosh"
+  }
+ ],
  "vi": {
-  "ten": "Icon lật mình thành logo — tên thương hiệu rơi vào chỗ",
-  "mo_ta": "Nền sáng dịu, một icon laptop mặt cười nảy lên, lắc lư lấy đà hai nhịp, rồi lật theo trục dọc bẹp thành một vạch mảnh (có bóng mờ kéo theo); qua điểm mỏng nhất nó bung ra thành logo (logo thật của thương hiệu, hoặc khung bo góc với chữ viết tắt), rồi logo dịch sang bên (khung dọc: dịch lên) nhường chỗ cho tên thương hiệu hiện từng chữ, mỗi chữ từ to mờ thu nhỏ lại rõ nét.",
-  "hop_khi": "Kết video / outro: chốt tên kênh, tên sản phẩm, thương hiệu ('đó chính là [tên app]', 'theo dõi [tên kênh]'); khoảnh khắc tiết lộ app / công cụ đứng sau kết quả; chuyển từ nói về tính năng sang giới thiệu thương hiệu.",
-  "tranh_khi": "Video không có thương hiệu / tên sản phẩm cụ thể để chốt; giữa video khi còn nhiều nội dung; tone tối, nghiêm trọng.",
+  "ten": "Biểu tượng lật thẻ mở ra nhận diện thương hiệu",
+  "mo_ta": "Trên phông nền làm mờ dịu mắt, một biểu tượng vẽ nét hoạt họa dễ thương nảy lên ở giữa khung hình rồi lắc lư lấy đà hai nhịp. Tiếp đó, biểu tượng lật 3D theo trục dọc rồi bung nở thành logo thương hiệu bo góc trang trọng, đồng thời dòng tên thương hiệu xuất hiện ngay phía dưới qua hiệu ứng hiển thị từng chữ sắc nét. Nhịp điệu vui tươi, mượt mà và kết thúc bằng việc giữ tĩnh logo sắc sảo.",
+  "hop_khi": "Phù hợp cho đoạn kết thúc video (outro), khẳng định tên tuổi thương hiệu hoặc lời kêu gọi hành động (CTA) sau khi đã chia sẻ kiến thức, mẹo vặt hay câu chuyện. Tạo cảm xúc thân thiện, gần gũi và chuyên nghiệp, ăn khớp với những câu nói như: 'Nhớ follow kênh của mình để không bỏ lỡ mẹo hay', 'Mình là Agent Edit, đồng hành cùng bạn làm nội dung', hoặc 'Bấm vào link bio để nhận tài liệu miễn phí nhé'.",
+  "mo_rong": "Đổi icon thành giỏ hàng và đổi chữ thành tên shop -> kết thúc video bán hàng thời trang, mỹ phẩm; đổi icon thành ly cà phê và đổi chữ thành tên quán -> outro cho quán cafe, nhà hàng F&B; đổi icon thành cây kéo/cây son -> ghi dấu tên tiệm spa, salon tóc; đổi icon thành cuốn sách -> kết bài kênh chia sẻ tri thức, làm mẹ, phát triển bản thân; đổi icon thành ngôi nhà -> kết video môi giới bất động sản chuyên nghiệp.",
   "nang_luong": "vua",
-  "chu_de": ["logo", "thương hiệu", "outro", "kết video", "app", "tiết lộ", "ra mắt"]
+  "chu_de": [
+   "kết thúc",
+   "outro",
+   "nhận diện thương hiệu",
+   "logo",
+   "kêu gọi hành động",
+   "thương hiệu cá nhân",
+   "bán hàng online",
+   "fnb",
+   "làm đẹp",
+   "bất động sản"
+  ]
  },
  "backdrop": true
 }

@@ -22,11 +22,11 @@
  "brand": "optional",
  "sfx": [{"at": 30, "type": "click"}, {"at": 44, "type": "whoosh"}, {"at": 54, "type": "boom"}, {"at": 62, "type": "ding"}],
  "vi": {
-  "ten": "Bảng điều khiển bị nhiễu sóng xé ngang rồi chuyển trạng thái",
-  "mo_ta": "Nền xanh đêm kiểu bảng điều khiển phần mềm: tiêu đề lớn trạng thái trước, % tiến độ chạy tới 99%, biểu đồ đường, 18 ô sáng dần, log máy chủ. Giây ~1.5 cả trang bị XÉ thành 16 dải ngang giật trái-phải dữ dội, bóng màu xanh lệch, vạch quét nhấp nháy (glitch kỹ thuật số) — giữa cơn nhiễu cắt sang trạng thái sau: tiêu đề mới (từ cuối xanh ngọc phát sáng), con số lớn đếm tới, 18/18 ô sáng xanh, 3 chỉ số hiện lên.",
-  "hop_khi": "Khoảnh khắc chuyển trạng thái đột ngột: 'và rồi... đã xong', ra mắt / lên sóng / cập nhật phiên bản, hệ thống chuyển từ cũ sang mới, trước/sau khi áp dụng giải pháp, sự cố / lỗi hệ thống được khắc phục; chủ đề phần mềm, app, server, công nghệ, AI, dữ liệu.",
-  "tranh_khi": "Nội dung nhẹ nhàng, đời thường, cảm xúc; video tone sáng; đã có nhiều chuyển cảnh mạnh gần nhau (năng lượng cao dễ loãng); không có ý 'trước → sau'.",
+  "ten": "Chuyển cảnh glitch bảng điều khiển số",
+  "mo_ta": "Bố cục bảng điều khiển kỹ thuật số tông xanh đêm hiển thị trạng thái chuẩn bị với số phần trăm nhảy vọt và biểu đồ tiến độ. Ở giữa video, hiệu ứng glitch giật xé ngang màn hình cực mạnh chuyển đổi dứt khoát sang trạng thái hoàn thành với thông số mới rực sáng xanh ngọc. Nhịp chuyển động nhanh, dồn dập, tạo ấn tượng đột phá công nghệ và bùng nổ tức thì.",
+  "hop_khi": "Phù hợp cho các đoạn cao trào công bố kết quả, ra mắt phiên bản mới, lột xác trước - sau, hoặc thời khắc hoàn thành cột mốc quan trọng; giọng điệu hào hứng, bất ngờ, khẳng định. Ví dụ: 'Và sau 6 tháng miệt mài thử nghiệm, hôm nay chúng tôi chính thức mở bản cập nhật lớn!', 'Chỉ sau 3 ngày tối ưu toàn diện, kết quả đã hoàn toàn thay đổi ngoạn mục!', 'Từ một hệ thống chậm chạp, chúng tôi đã đẩy tốc độ lên một tầm cao mới!'.",
+  "mo_rong": "Đổi thông số máy chủ và tiến độ thành doanh số, đơn hàng -> Dùng làm màn khoe số bùng nổ doanh thu ngày siêu sale; thay đổi trạng thái A/B từ 'thể lực suy kiệt' sang 'cơ bắp săn chắc' kèm chỉ số calo/nhịp tim -> Dùng cho video fitness, giảm cân lột xác; đổi tiêu đề thành học vấn/chứng chỉ kèm điểm số -> Video chia sẻ hành trình vượt khó đỗ chứng chỉ quốc tế hoặc du học; thay bằng thông số tăng trưởng lượt xem/người theo dõi -> Mừng cột mốc kênh đạt 100k người theo dõi.",
   "nang_luong": "cao",
-  "chu_de": ["glitch", "chuyển trạng thái", "ra mắt", "cập nhật", "phần mềm", "dashboard", "công nghệ", "trước sau", "hệ thống"]
+  "chu_de": ["chuyển cảnh glitch", "bảng điều khiển", "công nghệ", "ra mắt sản phẩm", "kết quả trước sau", "thành tích", "bán hàng online", "chỉ số kỹ thuật", "tài chính", "dữ liệu"]
  }
 }

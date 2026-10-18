@@ -6,23 +6,57 @@
  "duration": 130,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.8, 1.3],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.8,
+  1.3
+ ],
  "hold": 72,
  "slots": [
-  {"id": "title", "role": "title", "sample": "Làm ít hơn. Đạt nhiều hơn.", "max": 40, "note": "câu chốt ngắn, càng ngắn chữ càng to (tối đa 2 dòng ngang / 3 dòng dọc)"},
-  {"id": "kicker", "role": "kicker", "sample": "", "max": 28, "optional": true, "note": "dòng nhỏ màu nhấn phía trên (tùy chọn)"}
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Làm ít hơn. Đạt nhiều hơn.",
+   "max": 40,
+   "note": "câu chốt ngắn, càng ngắn chữ càng to (tối đa 2 dòng ngang / 3 dòng dọc)"
+  },
+  {
+   "id": "kicker",
+   "role": "kicker",
+   "sample": "",
+   "max": 28,
+   "optional": true,
+   "note": "dòng nhỏ màu nhấn phía trên (tùy chọn)"
+  }
  ],
  "images": [],
  "brand": "none",
- "sfx": [{"at": 12, "type": "swoosh"}],
+ "sfx": [
+  {
+   "at": 12,
+   "type": "swoosh"
+  }
+ ],
  "vi": {
-  "ten": "Chữ trồi lên từng ký tự từ đường cắt",
-  "mo_ta": "Nền xám trắng sạch, chữ đậm rất to ở giữa: từng ký tự lần lượt trồi lên từ một đường cắt vô hình (nhô quá một chút rồi đáp xuống, có nhòe chuyển động), một gạch chân màu nhấn mọc từ trái sang phải dưới dòng chữ. Gọn, lý tính, dễ đọc.",
-  "hop_khi": "Nhấn một câu chốt / khẩu hiệu / con số ngắn mà người nói vừa nói: kết luận, nguyên tắc, lời khuyên, tên phần mới; tone chuyên nghiệp, công nghệ, kinh doanh, giáo dục.",
-  "tranh_khi": "Câu dài hơn ~8 từ; khoảnh khắc cảm xúc cần chất liệu ấm; video tone tối.",
+  "ten": "Tiêu đề chữ trồi gạch chân dứt khoát",
+  "mo_ta": "Bố cục chữ đậm cỡ lớn đặt ngay trọng tâm màn hình trên nền mờ tối giản. Từng ký tự trồi lên từ một đường cắt vô hình theo nhịp so le với độ nảy nhẹ, kết thúc bằng một đường gạch chân màu xanh tím kẻ dứt khoát từ trái sang phải dưới chân chữ. Nhịp chuyển động đĩnh đạc, rõ nét, tập trung toàn bộ sự chú ý của người xem vào câu từ then chốt.",
+  "hop_khi": "Phù hợp khi người nói nhấn mạnh một bài học cốt lõi, triết lý sống, câu châm ngôn, hoặc câu chốt sale đắt giá với giọng điệu quả quyết, tự tin và truyền cảm hứng. Ví dụ: 'Làm ít hơn nhưng đạt nhiều hơn.', 'Kỷ luật chính là chiếc cầu nối giữa mục tiêu và thành tựu.', 'Đừng bao giờ hạ thấp tiêu chuẩn của chính mình.'",
+  "mo_rong": "Đổi thành tuyên ngôn giá trị cốt lõi của thương hiệu -> dùng cho video giới thiệu doanh nghiệp hoặc xây dựng thương hiệu cá nhân; đổi thành câu đúc kết sai lầm phổ biến -> dùng cho video chia sẻ kinh nghiệm kinh doanh, đầu tư; đổi thành câu giật tít cảnh báo người xem -> dùng làm hook mở đầu video tài chính hoặc sức khỏe; đổi thành thông điệp khuyến mãi lớn -> dùng cho video bán hàng online, F&B, thời trang.",
   "nang_luong": "vua",
-  "chu_de": ["tiêu đề", "câu chốt", "khẩu hiệu", "chữ động", "kết luận"]
+  "chu_de": [
+   "tiêu đề lớn",
+   "châm ngôn",
+   "triết lý sống",
+   "thông điệp cốt lõi",
+   "phát triển bản thân",
+   "thương hiệu cá nhân",
+   "hook mở đầu",
+   "chữ động",
+   "kinh doanh",
+   "truyền cảm hứng"
+  ]
  },
  "backdrop": true
 }

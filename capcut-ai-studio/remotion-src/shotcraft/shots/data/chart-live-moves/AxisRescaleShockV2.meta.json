@@ -126,20 +126,23 @@
   }
  ],
  "vi": {
-  "ten": "Biểu đồ vỡ trần — trục phải co giãn lại",
-  "mo_ta": "Trang giấy màu cát kiểu poster Thụy Sĩ: tiêu đề đen đậm, biểu đồ đường phủ kín khung leo đều từng kỳ; rồi kỳ cuối vọt lên bằng nét màu đất nung, xuyên thủng đường trần (vạch trần nứt, mảnh vỡ văng, biểu đồ rung) và đâm vào con số lớn góc phải; khựng nửa nhịp rồi trục Y 'ào' đổi thang (nhãn cũ bay xuống, nhãn mới trượt vào, đường cũ bị ép dẹt), điểm cuối hạ về đúng giá trị và bật nhãn số kèm 'gấp X lần'.",
-  "hop_khi": "Khoảnh khắc tăng trưởng đột phá 'vượt mọi dự đoán': doanh thu tháng này gấp mấy lần tháng trước, lượt xem bùng nổ sau video viral, đơn hàng sau chiến dịch, người dùng tăng vọt sau ra mắt — 'biểu đồ không chứa nổi'.",
-  "tranh_khi": "Tăng trưởng nhỏ / đều (dưới ~2 lần); số liệu giảm; so sánh nhiều nhóm; dùng quá 1 lần trong cùng video.",
+  "ten": "Biểu đồ đường bùng nổ chọc thủng trần",
+  "mo_ta": "Biểu đồ đường màu đen chạy trên nền xám tối giản với tiêu đề đậm góc trái, tỷ lệ tăng trưởng góc phải và đường gióng ngang trần giới hạn ở mức 100k. Đường chỉ số leo đều qua các tháng T1 đến T11 rồi bất ngờ chuyển màu cam rực rỡ ở mốc T12, đâm thẳng chọc thủng vạch trần khiến khung biểu đồ rung giật và trục tung lập tức tự động mở rộng thang đo lên mức 400k. Nhãn kết quả 340k cùng huy hiệu tăng trưởng nhảy vọt bật nảy sinh động ở đỉnh cột mốc cuối với nhịp điệu từ tốn rồi bùng nổ cao trào đầy kinh ngạc.",
+  "hop_khi": "Phù hợp khi diễn giả công bố bước nhảy vọt về doanh số, kết quả đột phá ngoài dự tính, phá vỡ kỷ lục cá nhân, thành tích viral bất ngờ hoặc một chiến dịch đạt hiệu quả bùng nổ. Rất hợp với cảm xúc ngạc nhiên, tự hào, tạo cú sốc thị giác mạnh mẽ cho người xem. Ví dụ câu nói: 'Cả năm doanh thu chỉ túc tắc đi ngang, nhưng đúng đến tháng 12 thì mọi thứ bùng nổ phá vỡ toàn bộ kỷ lục cũ', 'Chiến dịch này đã vượt xa mọi trần kỳ vọng mà ban giám đốc đặt ra', 'Từ một kênh mới lập, lượng tương tác đã tăng vọt gấp gần 5 lần chỉ sau một đêm duy nhất'.",
+  "mo_rong": "Đổi các mốc tháng thành các khung giờ flash sale, số liệu thành số đơn hàng chốt được -> dùng cho video bán hàng online khoe doanh thu livestream; đổi các mốc thành tuần học, chỉ số thành số từ vựng ghi nhớ hoặc điểm thi -> dùng cho video chia sẻ kinh nghiệm học tập, ngoại ngữ; đổi chỉ số thành số lượng người dùng đăng ký mới khi ra mắt tính năng AI -> dùng cho video công nghệ, khởi nghiệp; đổi các mốc thời gian thành các năm, chỉ số thành giá trị danh mục tài sản -> dùng cho video đầu tư bất động sản, chứng khoán; đổi chỉ số thành mức tạ nâng được hoặc số bước chân mỗi ngày -> dùng cho video gym, thể thao, biến đổi vóc dáng.",
   "nang_luong": "cao",
   "chu_de": [
-   "số liệu",
-   "tăng trưởng",
+   "tăng trưởng đột biến",
    "doanh thu",
-   "bùng nổ",
    "biểu đồ đường",
-   "kỷ lục",
-   "viral",
-   "báo cáo"
+   "phá kỷ lục",
+   "tài chính",
+   "bán hàng online",
+   "chỉ số KPI",
+   "kinh doanh",
+   "dữ liệu",
+   "thành tích",
+   "marketing"
   ]
  },
  "backdrop": true

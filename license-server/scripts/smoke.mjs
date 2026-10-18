@@ -78,6 +78,49 @@ const t = ticketOk(r.ticket)
 check('ve ky dung khoa cong khai', !!t && t.lid === L1.id && t.plan === 'month', t)
 check('han thang ~ 28-31 ngay', r.license && r.license.expires_at - Date.now() > 27 * 864e5 && r.license.expires_at - Date.now() < 32 * 864e5, r.license)
 check('ve mang ma may da gan', t && t.fp && t.fp.c['win.board'] === fpA.c['win.board'], t)
+
+console.log('Luu tam video de dang (Phone Agent)')
+{
+  const postCall = async (dev, fp, key, path, op, extra = {}) => {
+    const p = JSON.stringify({ op, key, dev: dev.pub, fp, ts: Date.now(), ...extra })
+    const s = sign(null, Buffer.from(p), dev.sk).toString('base64')
+    const r = await fetch(API + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ p, s }) })
+    return r.json()
+  }
+  // 2 phan: 16 MiB + 1000 byte
+  const PART = 16 * 1024 * 1024
+  const vid = Buffer.alloc(PART + 1000)
+  for (let i = 0; i < vid.length; i += 4096) vid[i] = (i / 4096) & 255
+  let st = await postCall(device(), fpA, L1.key, '/v1/post/start', 'post_start', { size: vid.length })
+  check('post_start may khac -> bad_signature/other_machine', !st.ok, st)
+  st = await postCall(A, fpA, L1.key, '/v1/post/start', 'post_start', { size: 3 * 1024 ** 3 })
+  check('post_start > 2GB -> post_big', st.code === 'post_big', st)
+  st = await postCall(A, fpA, L1.key, '/v1/post/start', 'post_start', { size: vid.length })
+  check('post_start -> id + ut', st.ok && /^[0-9a-f]{20}$/.test(st.id) && st.part_size === PART, st)
+  const parts = []
+  for (let n = 1, off = 0; off < vid.length; n++, off += PART) {
+    const chunk = vid.subarray(off, Math.min(vid.length, off + PART))
+    const pr = await fetch(`${API}/v1/post/part?ut=${encodeURIComponent(st.ut)}&u=${encodeURIComponent(st.upload_id)}&n=${n}`, { method: 'PUT', body: chunk }).then((x) => x.json())
+    check(`gui phan ${n}`, pr.ok && pr.etag, pr)
+    parts.push({ n, etag: pr.etag })
+  }
+  const bad = await fetch(`${API}/v1/post/part?ut=${encodeURIComponent(st.ut + 'x')}&u=${encodeURIComponent(st.upload_id)}&n=1`, { method: 'PUT', body: Buffer.alloc(10) })
+  check('ut sai -> 403', bad.status === 403)
+  const done = await fetch(API + '/v1/post/complete', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ut: st.ut, u: st.upload_id, parts }) }).then((x) => x.json())
+  check('complete -> link .mp4', done.ok && done.size === vid.length && /\/v1\/post\/f\/.+\/video\.mp4$/.test(done.url), done)
+  const h = await fetch(done.url, { method: 'HEAD' })
+  check('HEAD -> 200 video/mp4 + do dai', h.status === 200 && h.headers.get('content-type') === 'video/mp4' && Number(h.headers.get('content-length')) === vid.length, [h.status, h.headers.get('content-length')])
+  const full = Buffer.from(await (await fetch(done.url)).arrayBuffer())
+  check('GET ca file dung byte', full.equals(vid))
+  const rg = await fetch(done.url, { headers: { range: `bytes=${PART - 5}-${PART + 4}` } })
+  const rb = Buffer.from(await rg.arrayBuffer())
+  check('Range qua ranh gioi 2 phan -> 206', rg.status === 206 && rb.equals(vid.subarray(PART - 5, PART + 5)), rg.status)
+  const forged = done.url.replace(/\/([^/]+)\/video\.mp4$/, '/AAAA/video.mp4')
+  check('link sua chu ky -> 403', (await fetch(forged)).status === 403)
+  const del = await postCall(A, fpA, L1.key, '/v1/post/delete', 'post_delete', { id: st.id })
+  check('post_delete -> ok', del.ok, del)
+  check('sau xoa -> 404', (await fetch(done.url)).status === 404)
+}
 r = await call(A, fpA, L1.key, 'check', { reason: 'open' })
 check('mo app -> ok', r.ok, r)
 

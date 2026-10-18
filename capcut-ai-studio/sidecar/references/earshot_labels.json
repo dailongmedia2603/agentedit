@@ -1,0 +1,1115 @@
+{
+ "bank": "forge_v2r6+fit1+pluck1",
+ "sounds": {
+  "click/double": {
+   "nghe": "Tiếng click kép liên tiếp siêu nhanh, giòn đanh chất liệu nhựa cứng, âm sắc sáng và khô ráo không vang.",
+   "hop": "Xuất hiện hai lựa chọn kế tiếp, con trỏ nhấp đúp hoặc mở rộng một khung thông tin.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "click/snap": {
+   "nghe": "Tiếng tách gãy gọn, cực ngắn và sắc nét, âm sắc cao đanh dứt khoát, hoàn toàn không có độ vang.",
+   "hop": "Icon bật sáng tức thì, nhãn dán xuất hiện bất ngờ hoặc chốt nhanh một luận điểm.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "click/soft": {
+   "nghe": "Tiếng lách cách êm nhẹ, trầm đục và tròn trịa như chạm vào nút cao su, tắt êm không vang.",
+   "hop": "Chữ phụ đề nhỏ lướt vào, gạt nút công tắc hoặc xuất hiện thanh công cụ phụ tinh tế.",
+   "cam_xuc": "nhe nhang",
+   "manh": "nhe"
+  },
+  "click/thock": {
+   "nghe": "Tiếng gõ thock trầm ấm, dày dặn và chắc nịch như phím cơ cao cấp, tắt gọn gàng không vang.",
+   "hop": "Hiện con số thống kê quan trọng, đóng dấu chốt ý hoặc mở thẻ nội dung trọng tâm.",
+   "cam_xuc": "sang trong",
+   "manh": "vua"
+  },
+  "click/tink": {
+   "nghe": "Tiếng chạm kim loại tí hon leng keng, trong trẻo, âm sắc cao vút và sáng bừng, tắt nhanh.",
+   "hop": "Ý tưởng lóe sáng, hiện mẹo nhỏ hữu ích hoặc ngôi sao đánh giá xuất hiện trên màn hình.",
+   "cam_xuc": "trong sang",
+   "manh": "nhe"
+  },
+  "downlifter/air_fall": {
+   "nghe": "nghe thay gi (1 cau tieng Viet co dau, cu the: chat lieu, do day, do dai, sang / tram, co vang khong)",
+   "hop": "HOP KHI NAO trong video (goc nguoi xem dang thay gi, 1 cau tieng Viet co dau)",
+   "cam_xuc": "nhe nhang|am ap|trong sang|hao hung|hoi hop|soc|hai huoc|sang trong|trung tinh",
+   "manh": "nhe|vua|manh"
+  },
+  "downlifter/flange_air": {
+   "nghe": "Tiếng xả gió lướt xuống kéo dài vừa phải, âm sắc dải cao có hiệu ứng flange cuộn sóng và tan êm dịu.",
+   "hop": "Chuyển cảnh mượt mà, phân đoạn lắng lại hoặc kết thúc một chuỗi hành động để vào chủ đề mới.",
+   "cam_xuc": "nhe nhang",
+   "manh": "vua"
+  },
+  "downlifter/shepard_fall": {
+   "nghe": "Tiếng synth ảo giác trượt cao độ rơi đều đều kéo dài, âm trầm vừa phải, không gian vang rộng mang cảm giác hụt hẫng.",
+   "hop": "Tình huống tụt mood, nhân vật rơi vào bế tắc hoặc bắt đầu một câu chuyện bí ẩn, ly kỳ.",
+   "cam_xuc": "hoi hop",
+   "manh": "vua"
+  },
+  "downlifter/sub_sink": {
+   "nghe": "Tiếng sub-bass trầm đục, rất dày và nặng, trượt xuống đáy dải siêu trầm rồi ngắt dứt khoát không vang.",
+   "hop": "Cú chốt bất ngờ gây chấn động, sự thật nghiệt ngã lộ diện hoặc nhấn mạnh điểm rơi tiêu cực của vấn đề.",
+   "cam_xuc": "soc",
+   "manh": "manh"
+  },
+  "downlifter/synth_fall": {
+   "nghe": "Tiếng đàn synth điện tử hạ cao độ kéo dài, âm thanh sáng sắc nét mô phỏng cảm giác rơi tự do, đuôi âm ngắt êm.",
+   "hop": "Hình ảnh biểu đồ tụt dốc, nhân vật thất bại hài hước hoặc hiệu ứng mất năng lượng trong video công nghệ.",
+   "cam_xuc": "hai huoc",
+   "manh": "vua"
+  },
+  "downlifter/tape": {
+   "nghe": "Tiếng dừng băng tua chậm dần, âm sắc retro trầm ấm, hạ cao độ mượt mà kéo dài rồi tắt hẳn.",
+   "hop": "Khoảnh khắc tạm dừng ngắt nhịp lời nói để sửa sai, đổi ý bất ngờ hoặc hạ màn phân đoạn.",
+   "cam_xuc": "hai huoc",
+   "manh": "vua"
+  },
+  "fit/bell/small_bell": {
+   "nghe": "Tiếng chuông nhỏ leng keng trong trẻo, âm sắc cao thanh thoát, ngân vang dài dịu nhẹ rồi tan dần.",
+   "hop": "Biểu tượng ý tưởng lóe sáng, mẹo hữu ích bật ra hoặc điểm số tích cực xuất hiện trên màn hình.",
+   "cam_xuc": "trong sang",
+   "manh": "nhe"
+  },
+  "fit/click/floss_lid": {
+   "nghe": "Tiếng bật nắp nhựa kêu tách siêu ngắn, đanh giòn, âm sắc trung cao dứt khoát và khô ráo không vang.",
+   "hop": "Dấu tích xanh hoàn thành, icon nhỏ bật lên hoặc nút gạt công tắc chuyển trạng thái.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "fit/hit/bamboo_tok": {
+   "nghe": "Tiếng gõ cốc vào ống tre rỗng đanh gọn, âm sắc trầm ấm mộc mạc, tắt nhanh và hầu như không vang.",
+   "hop": "Dòng chữ ghi chú bật ra, gạch đầu dòng xuất hiện trong video phong cách tối giản hoặc đời sống.",
+   "cam_xuc": "am ap",
+   "manh": "vua"
+  },
+  "fit/key.space/thock_space": {
+   "nghe": "Tiếng phím spacebar bàn phím cơ kêu thock trầm ấm, dày đầm, có độ nảy nhả phím gọn gàng.",
+   "hop": "Chữ dạng gõ máy tính xuất hiện, thanh tìm kiếm nhảy kết quả hoặc chuyển ý trong video công nghệ.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "fit/key/lubed": {
+   "nghe": "Tiếng gõ phím cơ êm ái, âm trầm đục và mượt mà, độ dày vừa, ngắt dứt khoát không vang.",
+   "hop": "Icon nhỏ hoặc nhãn thông tin trượt nhẹ ra màn hình trong video phong cách tối giản.",
+   "cam_xuc": "nhe nhang",
+   "manh": "nhe"
+  },
+  "fit/key/medium": {
+   "nghe": "Tiếng gõ phím nhựa giòn và đanh vừa, âm thanh sáng rõ, khô ráo và ngắt nhanh không vang.",
+   "hop": "Từng chữ hoặc dòng bullet point nảy ra khi liệt kê mẹo trong video công nghệ.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "fit/key/thock": {
+   "nghe": "Tiếng gõ phím đầm chắc, âm thock trầm ấm và dày dặn, tắt ngay không vang tạo cảm giác đã tai.",
+   "hop": "Thẻ thông tin, khung kết quả hoặc số liệu quan trọng hạ xuống vững chãi trên màn hình.",
+   "cam_xuc": "am ap",
+   "manh": "nhe"
+  },
+  "fit/land.light/finger_phone": {
+   "nghe": "Tiếng đầu ngón tay chạm nhẹ lên màn hình điện thoại, hơi đanh chất kính, rất ngắn và không vang.",
+   "hop": "Thao tác ngón tay chạm chọn nút bấm, bật công tắc hoặc mở tab trên giao diện ứng dụng.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "fit/land.light/finger_wood": {
+   "nghe": "Tiếng ngón tay gõ nhẹ lên mặt bàn gỗ, mộc mạc, âm trầm ấm và gọn gàng, không có độ vang.",
+   "hop": "Đồ vật nhỏ hạ xuống bàn hoặc chi tiết minh họa xuất hiện trong vlog phong cách sống.",
+   "cam_xuc": "am ap",
+   "manh": "nhe"
+  },
+  "fit/land.light/fingertip_book": {
+   "nghe": "Tiếng chạm gõ nhẹ của ngón tay lên mặt bìa giấy, âm trầm đục, êm ái, rất ngắn và không có độ vang.",
+   "hop": "Thẻ thông tin hoặc hình ảnh nhỏ nhẹ nhàng hạ cánh xuống màn hình trong video phong cách tối giản.",
+   "cam_xuc": "nhe nhang",
+   "manh": "nhe"
+  },
+  "fit/pop/lip_pop": {
+   "nghe": "Tiếng bật môi pop ngắn gọn, âm thanh bọng khí tự nhiên, đanh giòn và dứt khoát không vang.",
+   "hop": "Icon biểu cảm, sticker hoạt hình hoặc bóng thoại ngộ nghĩnh nảy ra cạnh nhân vật.",
+   "cam_xuc": "hai huoc",
+   "manh": "nhe"
+  },
+  "fit/pop/mouth_plop": {
+   "nghe": "Tiếng bật miệng tạo âm plop rỗng, hơi ướt nhẹ, âm sắc tròn trịa và tắt nhanh không vang.",
+   "hop": "Bong bóng chat bung nở, avatar người dùng hoặc nút bấm tròn xuất hiện trên giao diện.",
+   "cam_xuc": "hai huoc",
+   "manh": "nhe"
+  },
+  "fit/snap/switch_flip": {
+   "nghe": "Tiếng bật công tắc nhựa cơ học đanh giòn, sắc nét, âm thanh khô và dứt khoát hoàn toàn không vang.",
+   "hop": "Công tắc gạt bật tắt hiển thị, ô checkbox được tích chọn hoặc chuyển đổi chế độ trong video công nghệ.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "fit/tick/domino": {
+   "nghe": "Tiếng va chạm lách cách rất thanh của quân cờ domino, âm sắc cao khô, siêu ngắn và không vang.",
+   "hop": "Con số thống kê nhảy nấc, dấu tích hoàn thành xuất hiện hoặc gạch đầu dòng trượt ra.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "fit/whoosh.short/bamboo_swish": {
+   "nghe": "Tiếng vụt gió tre sắc gọn, thanh thoát ở dải cao, chuyển động lướt nhanh và tắt ngay không vang.",
+   "hop": "Thẻ chữ hoặc icon nhỏ lướt nhanh vào khung hình khi chuyển ý trong video talking-head.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "glitch/crush": {
+   "nghe": "Tiếng nhiễu sóng kỹ thuật số bị bẻ gãy gắt gao, lạo xạo điện tử đanh khô và dứt khoát.",
+   "hop": "Hiệu ứng giật lag hình ảnh đột ngột, vạch nhiễu ngang màn hình khi có tình huống bất ngờ.",
+   "cam_xuc": "soc",
+   "manh": "vua"
+  },
+  "glitch/data": {
+   "nghe": "Tiếng xung dữ liệu số ríu rít lách tách, âm sắc sáng mảnh, vụn ngắn và không có đuôi vang.",
+   "hop": "Dãy số liệu nhảy liên tục, dòng code chạy qua hoặc quét thông tin công nghệ trên màn hình.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "glitch/hit": {
+   "nghe": "Tiếng va đập điện tử đanh dứt kết hợp xung lực trầm dứt khoát, vang rất ngắn và bất ngờ.",
+   "hop": "Điểm nhấn mạnh cú chốt câu nói, hiện chữ cảnh báo quan trọng hoặc giật lỗi bất ngờ.",
+   "cam_xuc": "soc",
+   "manh": "manh"
+  },
+  "glitch/scramble": {
+   "nghe": "Tiếng xáo trộn tín hiệu số rột rẹt biến điệu liên hồi, độ dày vừa phải và ngắt gọn.",
+   "hop": "Hiệu ứng xáo mã ký tự trước khi hiển thị tiêu đề hoặc biến đổi bộ lọc hình ảnh nhanh.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "glitch/stutter": {
+   "nghe": "Tiếng nhiễu kỹ thuật số giật cục lặp lại liên hồi, âm sắc điện tử khô đanh, độ dài vừa và dứt khoát không vang.",
+   "hop": "Hiệu ứng chữ chớp nháy gián đoạn, màn hình bị lỗi glitch hoặc chuyển cảnh công nghệ gấp gáp.",
+   "cam_xuc": "hoi hop",
+   "manh": "vua"
+  },
+  "hover_tick/air": {
+   "nghe": "Tiếng tíc khẽ thoảng hơi gió êm, cực ngắn, âm sắc trầm mờ dịu và dứt ngay không vang.",
+   "hop": "Con trỏ lướt qua nút bấm, nhãn chú thích phụ hiện ra êm ái trong video tối giản.",
+   "cam_xuc": "nhe nhang",
+   "manh": "nhe"
+  },
+  "hover_tick/high": {
+   "nghe": "Tiếng click đanh gọn ở dải cao, siêu ngắn, chất âm cơ học sắc nét và khô ráo không vang.",
+   "hop": "Từng con số nhảy liên tục trên màn hình, từng ký tự gõ phím hoặc điểm mốc biểu đồ xuất hiện.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "hover_tick/mid": {
+   "nghe": "Tiếng tíc dải trung đục nhẹ như gõ nhẹ lên gỗ, cực ngắn, âm tròn gọn và dứt tức thì không vang.",
+   "hop": "Tick chọn mục trong danh sách, gạt công tắc chuyển đổi hoặc thẻ thông tin nhỏ trượt mở.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "hover_tick/ping": {
+   "nghe": "Tiếng ping vi điện tử siêu ngắn, âm sắc kim loại thanh mảnh, rất sáng và dứt nhanh.",
+   "hop": "Icon ngôi sao lóe sáng, thông báo pop-up nhỏ nảy lên góc màn hình hoặc điểm thưởng cộng dồn.",
+   "cam_xuc": "trong sang",
+   "manh": "nhe"
+  },
+  "impact/blast": {
+   "nghe": "Tiếng nổ rền cực dày và uy lực, âm trầm rung chuyển mạnh kèm đuôi vang điện ảnh kéo dài.",
+   "hop": "Tiết lộ sự thật gây sốc, cú twist bất ngờ hoặc tiêu đề chấn động bùng nổ trên màn hình.",
+   "cam_xuc": "soc",
+   "manh": "manh"
+  },
+  "impact/classic": {
+   "nghe": "Tiếng va đập trầm tròn trịa kinh điển, độ dày vừa vặn, đuôi vang không gian thoáng đãng và êm tai.",
+   "hop": "Xuất hiện logo thương hiệu, mở đầu video chuyên nghiệp hoặc chuyển sang phần nội dung cốt lõi.",
+   "cam_xuc": "sang trong",
+   "manh": "vua"
+  },
+  "impact/deep": {
+   "nghe": "Tiếng xung sub-bass siêu trầm, tối và nặng nề, rung rền sâu lắng lan tỏa dần trong không gian.",
+   "hop": "Cảnh báo sai lầm nghiêm trọng, đặt câu hỏi kịch tính hoặc hé lộ góc khuất đáng lo ngại.",
+   "cam_xuc": "hoi hop",
+   "manh": "manh"
+  },
+  "impact/metal": {
+   "nghe": "Tiếng va chạm kim khí đanh sắc, dải cao sáng chói kết hợp âm đáy trầm nặng và đuôi vang kéo dài.",
+   "hop": "Con số thống kê gây sốc va đập vào khung hình, hoặc hình ảnh tiền bạc và công nghệ xuất hiện mạnh mẽ.",
+   "cam_xuc": "soc",
+   "manh": "manh"
+  },
+  "impact/punch": {
+   "nghe": "Tiếng đấm thụi chắc nịch, lực nén đanh gọn, âm trầm dày và dứt khoát với đuôi tắt tương đối nhanh.",
+   "hop": "Chốt hạ luận điểm đanh thép của người nói, hoặc biểu tượng minh họa dập mạnh vào màn hình.",
+   "cam_xuc": "hao hung",
+   "manh": "manh"
+  },
+  "impact/swell": {
+   "nghe": "Tiếng gió cuộn dâng trào từ âm trầm rồi bùng nổ thành cú đập bass uy lực, dày dặn và có đuôi vang rền kéo dài.",
+   "hop": "Mở màn tiêu đề giật gân, điểm nhấn kịch tính nhất video hoặc cú chuyển cảnh bước ngoặt cốt truyện.",
+   "cam_xuc": "hoi hop",
+   "manh": "manh"
+  },
+  "logo_sting/soft_bloom": {
+   "nghe": "Hợp âm chuông điện tử gảy nhẹ nhàng, chất âm trong trẻo, êm dịu, ngân vang êm ái và tan dần.",
+   "hop": "Logo thương hiệu xuất hiện cuối video, hoặc khung thông điệp ý nghĩa mang tính kết nối nhẹ nhàng.",
+   "cam_xuc": "nhe nhang",
+   "manh": "nhe"
+  },
+  "logo_sting/spark": {
+   "nghe": "Chuỗi rải hạt kim loại lấp lánh réo rắt, âm sắc cao và sáng chói, độ dài ngắn cùng đuôi vang mảnh.",
+   "hop": "Hiệu ứng ánh sao lấp lánh, huy hiệu thành tích lóe sáng hoặc ý tưởng hay vừa bừng hiện trên màn hình.",
+   "cam_xuc": "trong sang",
+   "manh": "vua"
+  },
+  "logo_sting/whoosh_glass": {
+   "nghe": "Tiếng vụt gió thanh thoát kết hợp tiếng gõ pha lê sắc nét, âm cao ngân vang thanh lịch rồi dứt êm.",
+   "hop": "Thẻ tên hoặc logo thương hiệu hiện đại trượt vào giữa màn hình, chuyển cảnh mượt mà và tinh tế.",
+   "cam_xuc": "sang trong",
+   "manh": "vua"
+  },
+  "notify/m0": {
+   "nghe": "Hai nốt gõ điện tử nảy tưng nhẹ nhàng, âm thanh tròn trịa, ấm áp, ngắn gọn và có độ vang nhỏ.",
+   "hop": "Hộp thoại tin nhắn hoặc bong bóng thông báo pop-up nảy lên góc màn hình để kêu gọi tương tác.",
+   "cam_xuc": "am ap",
+   "manh": "vua"
+  },
+  "notify/m1": {
+   "nghe": "Tiếng mộc cầm hai nốt trầm ấm kết hợp tiếng chuông mảnh, độ dài vừa phải, âm vang nhẹ êm tai.",
+   "hop": "Biểu tượng mẹo nhỏ hoặc hộp thoại lưu ý tinh tế xuất hiện trên màn hình.",
+   "cam_xuc": "nhe nhang",
+   "manh": "nhe"
+  },
+  "notify/m2": {
+   "nghe": "Tiếng gõ mộc cầm ba nốt nảy dồn đi lên, âm sắc sáng trong, dứt khoát và có độ vang tự nhiên.",
+   "hop": "Huy hiệu tích xanh, biểu tượng nhiệm vụ hoàn thành hoặc pop-up phần thưởng hiện lên.",
+   "cam_xuc": "hao hung",
+   "manh": "vua"
+  },
+  "notify/m3": {
+   "nghe": "Tiếng chuông thanh hai nốt ngân dài, âm sắc cao và trong trẻo với phần đuôi vang vọng êm ái.",
+   "hop": "Dòng trích dẫn suy ngẫm hoặc thông điệp cốt lõi hiển thị chậm rãi trên khung hình.",
+   "cam_xuc": "trong sang",
+   "manh": "nhe"
+  },
+  "notify/m4": {
+   "nghe": "Tiếng gõ phím gỗ hai nốt ấm áp, độ dày vừa, gọn gàng và âm vang ngắn như tiếng báo tin nhắn.",
+   "hop": "Bong bóng bình luận, hộp thoại tin nhắn thân mật nảy ra trong video chia sẻ.",
+   "cam_xuc": "am ap",
+   "manh": "nhe"
+  },
+  "notify/m5": {
+   "nghe": "Tiếng chuông kim loại nốt cao thanh mảnh, gõ sắc nét, ngắt tương đối nhanh với độ vang nhẹ.",
+   "hop": "Nút bấm theo dõi, biểu tượng chuông nhắc nhở hoặc con số chỉ số nảy lên màn hình.",
+   "cam_xuc": "trong sang",
+   "manh": "vua"
+  },
+  "pluck/kalimba": {
+   "nghe": "Tiếng gảy phím đàn kalimba mộc mạc, độ dày vừa phải, âm sắc trong sáng và ngân tự nhiên êm dịu.",
+   "hop": "Xuất hiện icon minh họa, ghi chú nhỏ hoặc mẹo hữu ích trong vlog đời thường.",
+   "cam_xuc": "trong sang",
+   "manh": "vua"
+  },
+  "pluck/kalimba_ring": {
+   "nghe": "Tiếng gảy đàn kalimba nốt cao, thanh thoát, đượm ánh kim và có đuôi vang ngân dài rõ nét.",
+   "hop": "Ý tưởng mới lóe sáng, hiện thông điệp tích cực hoặc con số quan trọng trong video truyền cảm hứng.",
+   "cam_xuc": "trong sang",
+   "manh": "vua"
+  },
+  "pluck/kalimba_soft": {
+   "nghe": "Tiếng gảy kalimba trầm ấm, rất mềm mại, độ dày nhẹ và tiêu âm êm dịu không chói gắt.",
+   "hop": "Chữ chú thích nhẹ nhàng hiện ra, lướt ảnh kỷ niệm trong video tâm sự hoặc chữa lành.",
+   "cam_xuc": "nhe nhang",
+   "manh": "nhe"
+  },
+  "pop/0": {
+   "nghe": "Tiếng nổ bụp ngắn gọn, dứt khoát như bọt khí vỡ hoặc gõ phím, âm thanh tròn và đanh nhẹ.",
+   "hop": "Sticker hoạt hình nảy ra, tích chọn ô vuông hoặc nút bấm tương tác xuất hiện trên màn hình.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "pop/1": {
+   "nghe": "Tiếng búng nốt pop siêu ngắn, thanh thoát, âm sắc sáng và tắt ngay lập tức không có độ vang.",
+   "hop": "Chữ nhảy ra theo nhịp nói, icon nhỏ xuất hiện liên hoàn hoặc chuyển tab nhanh trên giao diện.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "pop/3": {
+   "nghe": "Tiếng nổ bốp bong bóng nước tròn trịa, độ dày vừa, âm sắc tươi sáng, dứt nhanh không vang.",
+   "hop": "Icon sticker hoặc bong bóng chat nảy ra vui tươi trên màn hình.",
+   "cam_xuc": "trong sang",
+   "manh": "vua"
+  },
+  "pop/4": {
+   "nghe": "Tiếng pop rút nút chai trầm ấm, thân âm khá dày, độ dài ngắn và tắt êm ái.",
+   "hop": "Thẻ thông tin nhỏ hiện lên hoặc chạm vào nút tùy chọn trên giao diện.",
+   "cam_xuc": "nhe nhang",
+   "manh": "nhe"
+  },
+  "pro_click/glass": {
+   "nghe": "Tiếng gõ chạm mặt kính siêu ngắn, âm sắc thanh mảnh, trong trẻo, đanh gọn và không vang.",
+   "hop": "Chạm ngón tay vào màn hình hoặc xuất hiện icon nhỏ tinh tế trong video công nghệ thanh lịch.",
+   "cam_xuc": "sang trong",
+   "manh": "nhe"
+  },
+  "pro_click/mouse": {
+   "nghe": "Tiếng click chuột cơ học siêu ngắn, đanh khô, sắc nét và hoàn toàn không vang.",
+   "hop": "Con trỏ chuột nhấn chọn liên kết, chuyển tab hoặc bật công tắc trong video hướng dẫn phần mềm.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "pro_click/snap": {
+   "nghe": "Tiếng tách cơ học khô giòn như khớp nối gài chốt, siêu ngắn, đanh chắc và dứt khoát.",
+   "hop": "Khối nội dung hít khớp vào khung lưới hoặc tick chọn hoàn thành một đầu việc.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "pro_click/soft": {
+   "nghe": "Tiếng click nhẹ êm tai, âm trầm ấm và rất ngắn, độ dày vừa phải, khô gọn không vang.",
+   "hop": "Nút bấm nhỏ trên giao diện được chạm, icon tối giản hiện ra hoặc chuyển mục menu êm ái.",
+   "cam_xuc": "nhe nhang",
+   "manh": "nhe"
+  },
+  "pro_click/tink": {
+   "nghe": "Tiếng gõ kim loại mảnh hoặc thủy tinh cực ngắn, âm cao trong trẻo, đanh gọn và dứt khoát không vang.",
+   "hop": "Dấu tick hoàn thành xuất hiện, chọn nhanh một tùy chọn hoặc thông báo tinh tế bật lên.",
+   "cam_xuc": "trong sang",
+   "manh": "nhe"
+  },
+  "pro_glitch/crunchy": {
+   "nghe": "Tiếng nhiễu sóng kỹ thuật số rè giòn, dày tiếng, âm sắc gai góc và vỡ vụn giật cục kéo dài.",
+   "hop": "Hiệu ứng màn hình chớp giật lỗi, chuyển cảnh cắt ngang đột ngột hoặc cảnh báo sự cố gián đoạn.",
+   "cam_xuc": "soc",
+   "manh": "manh"
+  },
+  "pro_glitch/data": {
+   "nghe": "Tiếng truyền dữ liệu kỹ thuật số dồn dập, âm điện tử công nghệ cao, nhiều hạt âm lách tách li ti và khô ráo.",
+   "hop": "Dòng mã dữ liệu quét qua, văn bản nhảy chữ tự động hoặc giao diện đồ họa thông tin hiển thị.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "pro_glitch/fastroll": {
+   "nghe": "Tiếng cuộn lướt kỹ thuật số dồn dập với âm thanh xoay trượt nhanh, đanh gọn và mang tính chuyển động cao.",
+   "hop": "Chuyển cảnh lia nhanh giữa hai ý, con số đếm tăng tốc liên tục hoặc khung hình trượt vụt qua.",
+   "cam_xuc": "hao hung",
+   "manh": "vua"
+  },
+  "pro_glitch/framelock": {
+   "nghe": "Tiếng giật nhiễu số dồn dập, đanh gắt, độ dài ngắn, âm sắc trung cao sắc bén, dứt khoát không vang.",
+   "hop": "Khung hình bị khựng đơ đột ngột, hiệu ứng giật màn hình hoặc lỗi kỹ thuật số chớp nhoáng.",
+   "cam_xuc": "soc",
+   "manh": "vua"
+  },
+  "pro_glitch/sparse": {
+   "nghe": "Tiếng lách tách điện tử rải rác, hạt số thưa thớt, mỏng nhẹ, âm sáng khô ráo, tắt nhanh.",
+   "hop": "Chi tiết đồ họa công nghệ li ti xuất hiện, chữ giải mã từng ký tự hoặc nhiễu sóng nhẹ.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "pro_glitch/standard": {
+   "nghe": "Tiếng rẹt quét nhiễu sóng số tiêu chuẩn, độ dày vừa phải, âm sắc sáng sắc, kết thúc dứt điểm.",
+   "hop": "Chuyển cảnh glitch nhanh giữa hai đoạn phim, logo hoặc tiêu đề nhấp nháy biến dạng.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "pro_hover_tick/detent": {
+   "nghe": "Tiếng cạch cơ học siêu ngắn, đanh gọn, âm sắc trầm ấm khô ráo, không có đuôi vang.",
+   "hop": "Con trỏ lướt qua lựa chọn menu, vặn nấc điều chỉnh thông số hoặc thanh trượt nhảy từng nấc.",
+   "cam_xuc": "sang trong",
+   "manh": "nhe"
+  },
+  "pro_hover_tick/ping": {
+   "nghe": "Tiếng gõ kim loại vi mô siêu ngắn, thanh mảnh, âm sắc cao trong trẻo, tắt tức thì.",
+   "hop": "Chấm sáng lóe nhẹ, icon nhỏ bật sáng hoặc con trỏ chạm vào chi tiết tinh tế trên màn hình.",
+   "cam_xuc": "trong sang",
+   "manh": "nhe"
+  },
+  "pro_hover_tick/soft": {
+   "nghe": "Tiếng click nhẹ cực kỳ ngắn, âm sắc hơi đanh và khô ráo, tắt tức thì không có đuôi vang.",
+   "hop": "Menu nhỏ trượt ra hoặc biểu tượng icon được bấm chọn trong video hướng dẫn phần mềm.",
+   "cam_xuc": "nhe nhang",
+   "manh": "nhe"
+  },
+  "pro_impact/air": {
+   "nghe": "Tiếng va chạm nhẹ quyện cùng luồng khí phì lướt qua, âm vực trung trầm, dứt êm và thoáng.",
+   "hop": "Khung nội dung hoặc hình ảnh đồ họa trượt mượt vào màn hình trong video hiện đại.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "pro_impact/deep": {
+   "nghe": "Tiếng dập trầm sâu uy lực, độ dày lớn và nặng, kèm đuôi vang sub-bass rền rĩ lan tỏa kéo dài.",
+   "hop": "Tiêu đề chính giáng mạnh xuống màn hình hoặc cú chốt luận điểm quan trọng trong video kịch tính.",
+   "cam_xuc": "hoi hop",
+   "manh": "manh"
+  },
+  "pro_impact/rumble": {
+   "nghe": "Tiếng đập trầm đục kèm rung chấn rền rĩ như sấm âm u kéo dài, âm sắc tối và nặng nề.",
+   "hop": "Cảnh báo rủi ro, con số thống kê gây sốc lộ diện hoặc chuyển sang phân đoạn căng thẳng.",
+   "cam_xuc": "hoi hop",
+   "manh": "manh"
+  },
+  "pro_impact/short": {
+   "nghe": "Tiếng dập trầm gọn gàng, lực nén chắc khỏe, độ dài ngắn và ngắt đuôi dứt khoát không kéo dài.",
+   "hop": "Từ khóa nhấn mạnh hoặc nhãn thông tin dán bộp vào khung hình theo nhịp nói của nhân vật.",
+   "cam_xuc": "hao hung",
+   "manh": "vua"
+  },
+  "pro_impact/swell": {
+   "nghe": "Tiếng cuộn gió tăng dần độ dày và dồn nén rồi ngắt đột ngột, mang âm sắc trầm và vang nhẹ.",
+   "hop": "Khoảnh khắc hồi hộp trước khi lật mở đáp án, phóng to khung hình hoặc chuyển cảnh dồn dập.",
+   "cam_xuc": "hoi hop",
+   "manh": "vua"
+  },
+  "pro_logo_sting/chirp_hum": {
+   "nghe": "Tiếng chích điện tử mảnh sắc lướt nhanh rồi tan vào một âm rung ấm áp, ngắn và sạch sẽ.",
+   "hop": "Logo công nghệ tối giản hiện ra, icon tính năng xuất hiện nhẹ nhàng trong video chia sẻ kiến thức.",
+   "cam_xuc": "nhe nhang",
+   "manh": "nhe"
+  },
+  "pro_logo_sting/swell_sting": {
+   "nghe": "Tiếng gió cuộn dâng mượt mà dẫn vào nốt chuông kim loại ngân vang sáng bóng, ngân dài thanh thoát.",
+   "hop": "Logo thương hiệu cao cấp xuất hiện ở cuối video, hoặc bảng thành tựu sáng lóa bung nở.",
+   "cam_xuc": "sang trong",
+   "manh": "vua"
+  },
+  "pro_logo_sting/taps_tone": {
+   "nghe": "Tiếng gõ lách cách liên hoàn dứt khoát nối theo nốt đệm trầm ấm tròn trịa, khô và gọn gàng.",
+   "hop": "Con số thống kê hoàn tất đếm, thẻ checklist được tick chọn hoặc thông báo giao diện xuất hiện.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "pro_logo_sting/zap_bloom": {
+   "nghe": "Tiếng lướt điện tử sắc gọn lóe lên rồi bung nở thành luồng âm thanh synth đa tầng tươi sáng, ngân vang lấp lánh.",
+   "hop": "Hiệu ứng biến hình phép thuật, vật phẩm hoặc logo phong cách trẻ trung năng động bung nở rực rỡ.",
+   "cam_xuc": "hao hung",
+   "manh": "vua"
+  },
+  "pro_notify/ding_1822": {
+   "nghe": "Tiếng ding kỹ thuật số rất ngắn, âm sắc mỏng và sáng dịu, tắt dứt khoát không vang.",
+   "hop": "Hiện icon thông báo nhỏ, tick chọn nhanh hoặc ghim một dòng nhắc nhở tinh tế.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "pro_notify/ding_1930": {
+   "nghe": "Tiếng gõ kim loại mini cực ngắn, thanh mảnh, cao và sáng rõ, có chút ngân vang thoáng qua.",
+   "hop": "Hiện khung pop-up nhỏ, xuất hiện gợi ý nhanh hoặc con số thống kê ngắn gọn.",
+   "cam_xuc": "trong sang",
+   "manh": "nhe"
+  },
+  "pro_notify/ding_2045": {
+   "nghe": "Tiếng chuông ding trong trẻo, âm vực cao vừa phải, có độ ngân vang nhẹ nhàng êm ái.",
+   "hop": "Hiện kết quả đạt được, bật sáng một ý tưởng hoặc hiển thị mẹo hữu ích trên màn hình.",
+   "cam_xuc": "trong sang",
+   "manh": "nhe"
+  },
+  "pro_notify/ding_2167": {
+   "nghe": "Tiếng ting chất liệu kính pha kim loại mảnh, âm sắc sáng trong, ngắn gọn và tan biến nhanh.",
+   "hop": "Chữ từ khóa hoặc bullet point nhỏ nảy ra, gắn nhãn hashtag ngắn gọn trong video chia sẻ kiến thức.",
+   "cam_xuc": "trong sang",
+   "manh": "nhe"
+  },
+  "pro_notify/ding_2296": {
+   "nghe": "Tiếng ping giao diện điện tử siêu ngắn, gọn gàng, âm thanh sáng sạch và gần như không có độ vang.",
+   "hop": "Hiệu ứng nút bấm UI được chạm nhẹ, chuyển đổi trạng thái bật tắt hoặc hiện logo góc màn hình.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "pro_pop/boop": {
+   "nghe": "Tiếng bụp tròn trịa dạng bong bóng điện tử, âm sắc trung cao, mềm mại, độ dài cực ngắn và dứt khoát không vang.",
+   "hop": "Icon tiện ích hoặc bong bóng thông báo nhỏ nảy ra giữa khung hình khi người nói liệt kê ý.",
+   "cam_xuc": "nhe nhang",
+   "manh": "nhe"
+  },
+  "pro_pop/chirp": {
+   "nghe": "Tiếng chíp điện tử quét nốt lên cao, sáng trong, thanh thoát, ngắt nhanh và có độ nảy tươi tắn.",
+   "hop": "Huy hiệu thành tích hoặc mũi tên tăng trưởng bật lên khi nhắc đến kết quả tích cực.",
+   "cam_xuc": "hao hung",
+   "manh": "vua"
+  },
+  "pro_pop/double": {
+   "nghe": "Hai tiếng pop nảy liên tiếp nhịp nhàng, âm thanh thanh sáng, mỏng nhẹ, tắt ngay không đuôi vang.",
+   "hop": "Hai lựa chọn hoặc cặp nhãn dán so sánh cùng lúc xuất hiện cạnh khuôn mặt người nói.",
+   "cam_xuc": "trong sang",
+   "manh": "vua"
+  },
+  "pro_pop/thup": {
+   "nghe": "Tiếng thụp trầm đục giả lập nút bấm cơ học, dày dặn, ấm và khô, ngắt tức thì không chút dư âm.",
+   "hop": "Hộp văn bản tối giản hạ xuống hoặc thao tác bấm chọn trên giao diện mô phỏng.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "pro_pop/tink": {
+   "nghe": "Tiếng lách cách kim loại vi mô cực sắc bén, tần số rất cao, thanh mảnh và kết thúc gọn gàng.",
+   "hop": "Ngôi sao lấp lánh xuất hiện bên góc hoặc con số đếm phần trăm chốt lại chính xác.",
+   "cam_xuc": "trong sang",
+   "manh": "nhe"
+  },
+  "pro_pop_in/airy": {
+   "nghe": "Tiếng pop bật nhẹ, thanh mảnh nhiều hơi khí, âm sáng, cực ngắn và tắt ngay không vang.",
+   "hop": "Chữ phụ đề nhỏ hoặc icon mảnh xuất hiện tinh tế trong video phong cách tối giản.",
+   "cam_xuc": "nhe nhang",
+   "manh": "nhe"
+  },
+  "pro_pop_in/deep": {
+   "nghe": "Tiếng pop trầm đục, thân âm dày dặn, có lực nén chắc, ngắt rất nhanh không để lại đuôi vang.",
+   "hop": "Thẻ thông tin lớn hoặc popup hình ảnh hiện ra tạo cảm giác uy tín, vững chãi.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "pro_pop_in/double": {
+   "nghe": "Tiếng pop đúp hai nhịp gõ liền kề cực nhanh, âm sáng rõ, khô ráo và dứt khoát.",
+   "hop": "Hai dòng chữ xuất hiện nối tiếp hoặc hiệu ứng tích chọn checkbox, tăng số đếm nhanh.",
+   "cam_xuc": "trong sang",
+   "manh": "vua"
+  },
+  "pro_pop_in/knock": {
+   "nghe": "Tiếng gõ cộc khô và đanh như tiếng gõ khớp ngón tay lên gỗ, âm trung trầm, tắt tức thì.",
+   "hop": "Nút bấm tương tác hoặc biểu tượng đồ họa hiện ra dứt khoát khi người nói nhấn mạnh ý.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "pro_pop_in/round": {
+   "nghe": "Tiếng pop tròn trịa như bong bóng nước vỡ, siêu ngắn, âm sắc trầm ấm êm dịu và tắt ngay.",
+   "hop": "Icon, nhãn dán hoặc dòng chữ phụ đề nảy nhẹ lên trên màn hình.",
+   "cam_xuc": "nhe nhang",
+   "manh": "nhe"
+  },
+  "pro_riser/air_gate": {
+   "nghe": "Tiếng gió cuộn rít tăng dần đều kết hợp ngắt nhịp ngắt quãng mượt mà, âm sáng vừa, ngắt đột ngột ở đỉnh.",
+   "hop": "Tạo cao trào dẫn vào khoảnh khắc chuyển cảnh hoặc trước khi đưa ra kết luận then chốt.",
+   "cam_xuc": "hoi hop",
+   "manh": "manh"
+  },
+  "pro_riser/chop": {
+   "nghe": "Tiếng synth tăng cao trào bị băm ngắt nhịp dồn dập dạng stutter, âm sắc điện tử hiện đại, sáng vừa và ngắt dứt khoát.",
+   "hop": "Đồ hoạ chuyển động dạng glitch, đếm nhịp nhanh hoặc tạo đà gấp trước khi chuyển sang phân cảnh mới.",
+   "cam_xuc": "hoi hop",
+   "manh": "vua"
+  },
+  "pro_riser/nblips": {
+   "nghe": "Chuỗi tiếng tít điện tử ngắn đanh tăng dần cao độ và tốc độ, âm sắc digital khô gọn, rõ nét và không có đuôi vang.",
+   "hop": "Con số thống kê nhảy tăng vọt, thanh tiến trình chạy nhanh hoặc quét dữ liệu trong video công nghệ, tài chính.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "pro_riser/nblips_hi": {
+   "nghe": "Chuỗi tiếng bíp điện tử âm vực rất cao, hạt âm thanh nảy li ti cực nhanh, mỏng nhẹ, sáng mảnh và ngắt ngay.",
+   "hop": "Icon thông báo nhỏ nhảy ra, chi tiết vi mô xuất hiện hoặc chỉ số công nghệ tinh tế lướt nhanh trên màn hình.",
+   "cam_xuc": "trong sang",
+   "manh": "nhe"
+  },
+  "pro_riser/roll": {
+   "nghe": "Tiếng dồn trống gõ tăng dần tốc độ và độ dày, âm trầm trung đanh chắc, dồn nén cao trào và cắt gãy gọn.",
+   "hop": "Khoảnh khắc chuẩn bị công bố kết quả, mở hộp sản phẩm hoặc tạo đà hồi hộp trước cú chốt hạ của người nói.",
+   "cam_xuc": "hoi hop",
+   "manh": "manh"
+  },
+  "pro_shimmer/m0": {
+   "nghe": "Tiếng chuông lấp lánh lung linh, âm sắc kim loại sáng trong trẻo, bay bổng với đuôi vang ngân êm dịu kéo dài.",
+   "hop": "Mẹo hay bất ngờ hiện ra, hiệu ứng ngôi sao tỏa sáng hoặc giới thiệu sản phẩm làm đẹp, thời trang cao cấp.",
+   "cam_xuc": "trong sang",
+   "manh": "nhe"
+  },
+  "pro_shimmer/m1": {
+   "nghe": "Tieng chuong gio kim loai reo vuot len nhe, am sac sang va trong treo, co do vang min tat dan sau hon 1 giay.",
+   "hop": "Icon lap lanh, ngoi sao phat sang hoac dong chu cam hung hien ra tao diem nhan tinh te tren man hinh.",
+   "cam_xuc": "sang trong",
+   "manh": "nhe"
+  },
+  "pro_shimmer/m2": {
+   "nghe": "Tieng bui phep kim loai reo lanh canh deu dan theo nhip roi xuong, am cao trong sang kem duoi vang nhe nhang.",
+   "hop": "Hieu ung sparkle bung quanh san pham lam dep hoac meo hay huu ich vua duoc bat mi.",
+   "cam_xuc": "trong sang",
+   "manh": "nhe"
+  },
+  "pro_shimmer/m4": {
+   "nghe": "Chuoi am chuong thuy tinh ket hop kim loai vang lanh lanh keo dai, am sac tuoi sang voi duoi reverb em diu lan toa.",
+   "hop": "Khoanh khac bien hinh truoc va sau (before/after), phan thuong bat ngo hoac ket qua my man hien ra.",
+   "cam_xuc": "trong sang",
+   "manh": "vua"
+  },
+  "pro_sub_drop/bright": {
+   "nghe": "Tieng dap am tram dien tu co tieng go dau sac gon roi lan xuong sub-bass day dan, vang nhe khoang 1 giay.",
+   "hop": "Tieu de chinh dap manh xuong man hinh hoac chuyen nhanh sang luan diem then chot trong video chia se.",
+   "cam_xuc": "hao hung",
+   "manh": "vua"
+  },
+  "pro_sub_drop/low": {
+   "nghe": "Tieng sub-bass tram dac, rung sau nang ne o tan so thap, am sac toi va day, tao do rung chan tat khoang 1 giay.",
+   "hop": "Cu chot bat ngo, su that giat minh lo dien hoac khung hinh dung hinh o khoanh khac gay can.",
+   "cam_xuc": "hoi hop",
+   "manh": "manh"
+  },
+  "pro_sub_drop/quick": {
+   "nghe": "Tiếng sub bass trầm sâu rơi nhanh, lực đầm và chắc, tắt gọn với đuôi rung nhẹ.",
+   "hop": "Chữ tiêu đề hoặc con số mấu chốt rơi xuống dứt khoát trong video tài chính, công nghệ.",
+   "cam_xuc": "sang trong",
+   "manh": "vua"
+  },
+  "pro_sub_drop/ref": {
+   "nghe": "Tiếng sub bass trầm dày, lực va chạm mạnh mẽ với đuôi ngân rền kéo dài vang đều.",
+   "hop": "Cú chốt thông điệp chính, xuất hiện logo hoặc chuyển đoạn cao trào trong video.",
+   "cam_xuc": "sang trong",
+   "manh": "manh"
+  },
+  "pro_sub_drop/soft": {
+   "nghe": "Tiếng sub trầm ấm êm tai, lực đánh mềm mại, độ ngân nhẹ nhàng không gây giật mình.",
+   "hop": "Hình ảnh minh họa hoặc khung thông tin trượt vào êm ái trong video chia sẻ, phong cách sống.",
+   "cam_xuc": "nhe nhang",
+   "manh": "nhe"
+  },
+  "pro_tap/double": {
+   "nghe": "Tiếng gõ đúp hai nhịp cực ngắn, âm sắc đanh giòn, khô ráo và không có độ vang.",
+   "hop": "Hiệu ứng chạm hai lần trên màn hình, xuất hiện hai dấu tick hoặc biểu tượng liên tiếp.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "pro_tap/finger": {
+   "nghe": "Tiếng chạm ngón tay đơn siêu ngắn, âm mộc gọn gàng, độ nảy nhẹ và dứt khoát hoàn toàn.",
+   "hop": "Mô phỏng thao tác bấm nút giao diện, chọn mục menu hoặc hiện thẻ tag nhỏ.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "pro_tap/glass": {
+   "nghe": "Tiếng gõ chạm kính cực ngắn, âm sắc trong trẻo và đanh sáng, thanh mảnh, dứt khoát không vang.",
+   "hop": "Bấm icon tinh tế, bật tick chọn hoặc xuất hiện chi tiết nhỏ trong video phong cách sang trọng, tối giản.",
+   "cam_xuc": "sang trong",
+   "manh": "nhe"
+  },
+  "pro_tap/knock": {
+   "nghe": "Tiếng gõ cộc đanh gọn như gỗ cứng, âm trầm vừa, độ dày chắc, khô ráo và tắt ngay không vang.",
+   "hop": "Hiện thẻ thông tin, bật tắt nút switch hoặc đánh dấu bước chuyển ý trong video chia sẻ kiến thức.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "pro_tap/soft": {
+   "nghe": "Tiếng chạm đệm múp êm ái, âm trầm ấm và dịu nhẹ, rất ngắn, hoàn toàn không có đuôi vang.",
+   "hop": "Chuyển tab phụ, lướt menu nhẹ nhàng hoặc hiện chữ phụ trợ mà không làm phân tâm lời nói.",
+   "cam_xuc": "nhe nhang",
+   "manh": "nhe"
+  },
+  "pro_typing_key/blip": {
+   "nghe": "Tiếng blip điện tử siêu ngắn, âm cao mảnh và sáng rõ, chất liệu kỹ thuật số hiện đại, không vang.",
+   "hop": "Con số đếm nhảy nhanh, ký tự code gõ hiện lên hoặc tương tác giao diện UI trong video công nghệ.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "pro_typing_key/crackle": {
+   "nghe": "Tiếng click gõ phím cơ giòn và đanh nhẹ, khô ráo, có độ ma sát lách cách nhẹ, tắt tức thì.",
+   "hop": "Hiệu ứng chữ chạy từng ký tự kiểu máy gõ, hiển thị phụ đề nhanh hoặc thao tác nhập liệu.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "pro_typing_key/double": {
+   "nghe": "Tiếng gõ phím đôi tách-tách đanh gọn, âm sắc khô mỏng, cực ngắn và không vang.",
+   "hop": "Hai chữ cái hoặc một từ ngắn bất ngờ bật nảy ra trên màn hình khi người nói nhấn mạnh.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "pro_typing_key/glass": {
+   "nghe": "Tiếng gõ đanh sắc như chạm mặt kính, âm sáng mỏng, cực ngắn và tắt tức thì không vang.",
+   "hop": "Một icon nhỏ tinh tế xuất hiện hoặc nút gạt công tắc bật sáng trên giao diện ứng dụng.",
+   "cam_xuc": "trong sang",
+   "manh": "nhe"
+  },
+  "pro_typing_key/tick": {
+   "nghe": "Tiếng gõ tick nhựa khô ráo dứt khoát, âm trung mỏng, siêu ngắn và hoàn toàn không vang.",
+   "hop": "Từng ký tự đơn lẻ hiện ra lần lượt hoặc con số nhảy từng đơn vị trong bảng số liệu.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "pro_typing_run/blip": {
+   "nghe": "Chuỗi tiếng gõ phím điện tử blip nảy giòn dồn dập, âm sáng mỏng, nhịp nhanh kéo dài không vang.",
+   "hop": "Dòng phụ đề công nghệ hoặc dòng lệnh chạy chữ nhanh theo kiểu máy tính đánh máy.",
+   "cam_xuc": "hao hung",
+   "manh": "vua"
+  },
+  "pro_typing_run/double": {
+   "nghe": "Chuỗi tiếng gõ phím cơ học dồn dập liên tục, độ dày vừa phải, âm sắc khô giòn không vang.",
+   "hop": "Đoạn văn bản ghi chú hoặc trích dẫn dài tự động gõ chữ dồn dập trên màn hình.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "pro_typing_run/glass": {
+   "nghe": "Chuỗi tiếng gõ phím liên hồi thanh mảnh như gõ trên mặt kính, âm sắc sáng trong, độ dày vừa phải và khô ráo không vang.",
+   "hop": "Đoạn văn bản, trích dẫn hoặc câu hỏi hiện ra theo hiệu ứng gõ chữ trên nền giao diện hiện đại và tinh tế.",
+   "cam_xuc": "sang trong",
+   "manh": "vua"
+  },
+  "pro_typing_run/soft": {
+   "nghe": "Tiếng gõ phím lách cách mềm mại, âm trầm đục nhẹ như bàn phím laptop mỏng, dải âm ấm và không có độ vang.",
+   "hop": "Đoạn tin nhắn chat, ghi chú nhật ký hoặc dòng chữ chạy ra từ tốn trong video chia sẻ, tâm sự nhẹ nhàng.",
+   "cam_xuc": "nhe nhang",
+   "manh": "nhe"
+  },
+  "pro_typing_run/standard": {
+   "nghe": "Tiếng gõ bàn phím máy tính văn phòng tiêu chuẩn gõ dồn dập, độ cao trung bình, độ nảy giòn và không vang.",
+   "hop": "Thao tác gõ vào thanh tìm kiếm, nhập dữ liệu biểu mẫu hoặc dòng lệnh xuất hiện trong video hướng dẫn công nghệ.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "pro_typing_run/tick": {
+   "nghe": "Chuỗi tiếng nhấp nhả cực kỳ đanh gọn và sắc cạnh như vi công tắc cơ học, âm cao sáng rõ và dứt khoát.",
+   "hop": "Dãy số liệu đếm nhảy liên tục, đồng hồ đếm ngược tăng tốc hoặc thanh tiến trình đang tải nhanh dữ liệu.",
+   "cam_xuc": "hoi hop",
+   "manh": "vua"
+  },
+  "pro_whoosh_big/gritty": {
+   "nghe": "Tiếng vút gió siêu trầm và nặng đặc, kèm kết cấu rạn rát ma sát thô ráp cuộn trào mạnh mẽ rồi ngắt dứt khoát.",
+   "hop": "Chuyển cảnh lia máy giật nhanh, tiêu đề chính đập mạnh vào giữa khung hình hoặc khoảnh khắc bẻ lái nội dung gay cấn.",
+   "cam_xuc": "hao hung",
+   "manh": "manh"
+  },
+  "pro_whoosh_big/long": {
+   "nghe": "Tiếng gió vụt dài, âm sắc trầm dày, lướt êm uy lực với phần đuôi tan dần mềm mại.",
+   "hop": "Chuyển cảnh lớn toàn màn hình hoặc tiêu đề chính trượt vào từ từ trong video.",
+   "cam_xuc": "sang trong",
+   "manh": "manh"
+  },
+  "pro_whoosh_big/reverse": {
+   "nghe": "Tiếng hút gió dồn ngược kéo dài, âm lượng tăng dần từ trầm lên cao rồi ngắt bất ngờ.",
+   "hop": "Khung hình thu phóng dồn nén tạo đà trước khi một sự thật bất ngờ hoặc kết quả lộ diện.",
+   "cam_xuc": "hoi hop",
+   "manh": "manh"
+  },
+  "pro_whoosh_big/swell": {
+   "nghe": "Tiếng gió cuộn phồng dày dặn, lướt nhanh với lực đẩy mạnh mẽ và đuôi âm gọn.",
+   "hop": "Hiệu ứng chữ to hoặc hình ảnh đồ họa bất ngờ bung nở phóng lớn giữa khung hình.",
+   "cam_xuc": "hao hung",
+   "manh": "manh"
+  },
+  "pro_whoosh_big/tonal": {
+   "nghe": "Tiếng vụt lướt kết hợp âm synth có cao độ du dương, âm sắc sáng trong và có đuôi ngân nhẹ.",
+   "hop": "Logo thương hiệu, icon phát sáng hoặc giao diện công nghệ trượt vào màn hình.",
+   "cam_xuc": "sang trong",
+   "manh": "vua"
+  },
+  "pro_whoosh_big/windy": {
+   "nghe": "Tiếng gió rít tự nhiên, âm sắc xào xạc thoáng đãng, độ dài vừa phải và dứt khoát.",
+   "hop": "Cú lia máy nhanh chuyển cảnh hoặc khi nhân vật vung tay gạt chuyển slide thông tin.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "pro_zip/down": {
+   "nghe": "Tiếng zip điện tử hạ tông ngắn gọn, âm sắc khô đanh, sắc nét và tắt nhanh không vang.",
+   "hop": "Thẻ thông tin hoặc chữ phụ trượt xuống ẩn đi, chuyển mục nhanh trong video công nghệ.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "pro_zip/down_warm": {
+   "nghe": "Tiếng zip hạ tông mượt mà, âm sắc ấm và tròn trịa ở dải trung trầm, dứt khoát không vang.",
+   "hop": "Hộp thoại hoặc icon nhỏ thu lại biến mất trong video phong cách nhẹ nhàng, tinh tế.",
+   "cam_xuc": "am ap",
+   "manh": "nhe"
+  },
+  "riser/air": {
+   "nghe": "Tiếng luồng khí rít tăng dần âm lượng, chất âm sáng mỏng, thoáng đãng và có độ vang nhẹ.",
+   "hop": "Hình ảnh zoom từ từ hoặc chuyển tiếp êm đềm trước khi lộ diện thông tin quan trọng.",
+   "cam_xuc": "hoi hop",
+   "manh": "vua"
+  },
+  "riser/rush": {
+   "nghe": "Tiếng gió cuộn dồn dập tăng tốc nhanh, chất âm dày dặn, mạnh mẽ từ trầm lên cao rồi dứt khoát.",
+   "hop": "Chuyển cảnh giật nhanh, camera lia tốc độ cao hoặc đẩy cảm xúc trước cú lật bất ngờ.",
+   "cam_xuc": "hao hung",
+   "manh": "manh"
+  },
+  "riser/shepard": {
+   "nghe": "Tiếng synth tăng cao độ tuần hoàn tạo cảm giác lên mãi, âm thanh điện tử căng thẳng và ngân dài.",
+   "hop": "Khoảnh khắc hồi hộp chờ kết quả, câu hỏi kích thích suy nghĩ hoặc tình huống cao trào leo thang.",
+   "cam_xuc": "hoi hop",
+   "manh": "vua"
+  },
+  "riser/swell": {
+   "nghe": "Tiếng gió cuộn kết hợp synth swell dâng cao mượt mà, độ dày vừa, âm sắc ấm và mở dần, có độ vang không gian rộng.",
+   "hop": "Chuyển tiếp tăng dần cảm xúc trước khi công bố thông tin quan trọng hoặc chuẩn bị đổi cảnh chính.",
+   "cam_xuc": "hao hung",
+   "manh": "vua"
+  },
+  "riser/tension": {
+   "nghe": "Tiếng synth rít dồn dập dâng cao đầy căng thẳng, chất âm đanh dày, mang tính kim loại gắt và ngắt dứt khoát.",
+   "hop": "Khoảnh khắc đếm ngược, đặt vấn đề gay cấn hoặc chuẩn bị hé lộ cú twist bất ngờ.",
+   "cam_xuc": "hoi hop",
+   "manh": "manh"
+  },
+  "shimmer/m0": {
+   "nghe": "Tiếng chuông pha lê rải nhanh lấp lánh, âm sắc trong trẻo, mỏng mảnh, độ vang ngân êm dịu.",
+   "hop": "Ngôi sao lấp lánh, mẹo hay lóe sáng hoặc thông tin hữu ích vừa hiện lên góc màn hình.",
+   "cam_xuc": "trong sang",
+   "manh": "vua"
+  },
+  "shimmer/m1": {
+   "nghe": "Tiếng rải chuông gió kim loại lướt qua tơi xốp, âm thanh sáng rõ, ngân vang bay bổng và lượn mượt.",
+   "hop": "Vệt sáng đồ họa chuyển động quét qua, quà tặng hoặc ưu đãi hấp dẫn vừa xuất hiện.",
+   "cam_xuc": "trong sang",
+   "manh": "vua"
+  },
+  "shimmer/m2": {
+   "nghe": "Tiếng điểm chuông ngân cao vút kèm vệt bụi sáng lấp lánh, âm sắc rất sáng, thanh mảnh và đuôi vang lan tỏa.",
+   "hop": "Nhân vật nảy ra ý tưởng mới, biểu tượng lóe sáng hoặc hiệu ứng làm đẹp biến hóa tức thì.",
+   "cam_xuc": "trong sang",
+   "manh": "vua"
+  },
+  "shimmer/m3": {
+   "nghe": "Tiếng chuông gió kim loại rải nhẹ, âm sắc thanh mảnh, rất cao và sáng, đuôi ngân vang lan tỏa êm dịu kéo dài hơn 3 giây.",
+   "hop": "Hiệu ứng ánh sáng lấp lánh xuất hiện, mẹo hữu ích được bật mí hoặc khoảnh khắc điều ước/phép màu hiển hiện trên màn hình.",
+   "cam_xuc": "trong sang",
+   "manh": "nhe"
+  },
+  "shimmer/m4": {
+   "nghe": "Tiếng hạt ma thuật và chuông nhỏ rải nốt đi lên réo rắt, âm thanh thanh mảnh, trong trẻo, đuôi vang nhẹ rồi tan dần trong 3.5 giây.",
+   "hop": "Ý tưởng sáng tạo vừa nảy ra, logo thương hiệu phát sáng hoặc chi tiết đặc biệt được làm nổi bật trên khung hình.",
+   "cam_xuc": "trong sang",
+   "manh": "nhe"
+  },
+  "shimmer/m5": {
+   "nghe": "Tiếng chuông lấp lánh nốt cao sắc nét, hạt rải nhanh và dứt khoát hơn, âm thanh sáng rõ với độ ngân vang vừa phải kéo dài 3.5 giây.",
+   "hop": "Vật phẩm cao cấp hé lộ, phần thưởng xuất hiện hoặc điểm nhấn thành quả ấn tượng lóe sáng trong video.",
+   "cam_xuc": "sang trong",
+   "manh": "vua"
+  },
+  "sub_drop/808": {
+   "nghe": "Tiếng bass drop 808 điện tử trầm sâu, lực nện đầu dày ấm và trượt tụt cao độ rền dài hơn 2 giây mà không bị rè.",
+   "hop": "Chuyển cảnh bất ngờ sang phân đoạn kịch tính, kết luận chốt hạ then chốt hoặc cú bẻ lái ấn tượng trong video.",
+   "cam_xuc": "hoi hop",
+   "manh": "manh"
+  },
+  "sub_drop/gritty": {
+   "nghe": "Tiếng sub drop trầm đục pha chất méo tiếng gai góc, độ dày lớn, tạo cảm giác nặng nề rung chuyển với đuôi rền rĩ kéo dài hơn 2 giây.",
+   "hop": "Cú twist gây chấn động, tình huống nguy cơ hay cảnh báo sự cố nghiêm trọng bất ngờ đập vào mắt người xem.",
+   "cam_xuc": "soc",
+   "manh": "manh"
+  },
+  "sub_drop/long": {
+   "nghe": "Tiếng sub-bass trầm sâu, dải âm rất dày và nặng, hạ cao độ mượt mà rồi ngân rền kéo dài hơn hai giây.",
+   "hop": "Điểm nhấn tạo cao trào kịch tính khi tiết lộ bí mật hoặc cú chốt thông tin mang tính chấn động cuối video.",
+   "cam_xuc": "hoi hop",
+   "manh": "manh"
+  },
+  "sub_drop/pro": {
+   "nghe": "Tiếng thụt âm trầm tròn trịa, dải sub hạ mượt và ngân êm tai, chất âm sạch sẽ mang phong cách điện ảnh cao cấp.",
+   "hop": "Logo thương hiệu xuất hiện, hiện tiêu đề chính hoặc chuyển sang phân đoạn quan trọng trong video công nghệ, chuyên nghiệp.",
+   "cam_xuc": "sang trong",
+   "manh": "manh"
+  },
+  "sub_drop/punch": {
+   "nghe": "Tiếng nện sub-bass chắc nịch, lực đấm đanh gọn ở đầu rồi hạ trầm và ngắt dứt khoát chỉ trong một giây.",
+   "hop": "Dòng chữ giật tít dập thẳng vào giữa khung hình hoặc con số thống kê gây giật mình xuất hiện.",
+   "cam_xuc": "soc",
+   "manh": "manh"
+  },
+  "swipe/cloth": {
+   "nghe": "Tiếng quẹt gió mềm mượt như ma sát vải vóc, âm sắc trầm ấm tự nhiên, dải âm vừa phải và tan nhanh không vang.",
+   "hop": "Hình ảnh minh họa hoặc khung thông tin trượt nhẹ qua màn hình trong video phong cách sống, tối giản.",
+   "cam_xuc": "nhe nhang",
+   "manh": "nhe"
+  },
+  "swipe/flick": {
+   "nghe": "Tiếng vút gió nhanh, thanh thoát và dứt khoát tựa cú búng tay xé gió, âm sắc hơi sáng, tắt gọn gàng.",
+   "hop": "Chuyển cảnh lướt nhanh, thẻ phụ đề bật vút ra hoặc chi tiết icon nhỏ nhảy vào khung hình.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "swipe/glide": {
+   "nghe": "Tiếng lướt gió điện tử êm ái, độ dày mỏng nhẹ, âm sắc sáng trong, chuyển động mượt mà và tắt nhanh không vang.",
+   "hop": "Thẻ thông tin, hình ảnh hoặc thanh đồ họa trượt ngang mượt mà vào khung hình trong video hiện đại.",
+   "cam_xuc": "nhe nhang",
+   "manh": "nhe"
+  },
+  "swipe/paper": {
+   "nghe": "Tiếng ma sát sột soạt của trang giấy quẹt qua bề mặt, khô ráo, độ dài vừa phải, âm sắc sáng tự nhiên và không có độ vang.",
+   "hop": "Hiệu ứng lật trang, tài liệu hoặc khung ghi chú giấy trượt ra trên màn hình khi chia sẻ kiến thức.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "swipe/velvet": {
+   "nghe": "Tiếng lướt êm trầm như mặt vải nhung miết nhẹ, chất âm dày ấm, kéo dài và tan dần rất dịu không vang gắt.",
+   "hop": "Chuyển cảnh chậm rãi, tinh tế hoặc tiêu đề chữ lớn trượt vào trong video phong cách sang trọng, tối giản.",
+   "cam_xuc": "sang trong",
+   "manh": "nhe"
+  },
+  "swish/blade": {
+   "nghe": "Tiếng vút gió xé không khí sắc lẹm, vương chút ánh kim khí, cực ngắn, âm cao đanh và dứt khoát không vang.",
+   "hop": "Đường gạch chéo nhấn mạnh, icon chém vào khung hình hoặc chuyển ý chớp nhoáng tạo cú giật thị giác.",
+   "cam_xuc": "hoi hop",
+   "manh": "manh"
+  },
+  "swish/cane": {
+   "nghe": "Tiếng vung gậy vụt mạnh qua gió, rít đanh và thoáng âm mộc rỗng, độ dài trung bình, dứt khoát không vang.",
+   "hop": "Cử chỉ vung tay dứt khoát của người nói, mũi tên chỉ hướng hoặc con số thống kê phóng vụt vào trọng tâm.",
+   "cam_xuc": "hao hung",
+   "manh": "manh"
+  },
+  "swish/soft": {
+   "nghe": "Tiếng vút gió nhẹ êm, âm trầm dày vừa phải, lướt qua mượt mà và tan đều tự nhiên.",
+   "hop": "Hình ảnh hoặc khung thông tin trượt êm vào màn hình, chuyển cảnh nhẹ nhàng trong vlog.",
+   "cam_xuc": "nhe nhang",
+   "manh": "nhe"
+  },
+  "swish/stick": {
+   "nghe": "Tiếng que quật vút trong không khí nhanh và đanh, âm trung cao sắc gọn, dứt khoát không vang.",
+   "hop": "Chuyển cảnh lia máy nhanh (whip pan), chữ hoặc đồ họa vụt ra dứt khoát để ngắt ý.",
+   "cam_xuc": "hao hung",
+   "manh": "vua"
+  },
+  "swish/zing": {
+   "nghe": "Tiếng vút xé gió kèm ánh kim loại sáng bén, âm cao vút lên lấp lánh rồi tắt nhanh.",
+   "hop": "Con số quan trọng bật ra, vệt sáng lướt qua hoặc gạch chân làm nổi bật từ khóa chính.",
+   "cam_xuc": "hao hung",
+   "manh": "vua"
+  },
+  "tap/finger": {
+   "nghe": "Tiếng gõ đầu ngón tay trầm đục, âm lượng nhỏ gọn, chất âm mộc và khô ráo hoàn toàn.",
+   "hop": "Ngón tay chạm nút trên giao diện màn hình, đánh dấu tick hoàn thành trong danh sách.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "tap/glass": {
+   "nghe": "Tiếng gõ mặt kính thủy tinh trong trẻo, âm thanh đanh sáng và nảy nhẹ, tắt rất nhanh.",
+   "hop": "Biểu tượng thông báo hoặc bong bóng hội thoại nhỏ bất ngờ nảy lên trên màn hình.",
+   "cam_xuc": "trong sang",
+   "manh": "nhe"
+  },
+  "tap/knuckle": {
+   "nghe": "Tiếng gõ khớp ngón tay lên mặt gỗ rỗng, âm sắc trầm đục, độ dày vừa, rất ngắn và khô ráo, không vang.",
+   "hop": "Biểu tượng hoặc dòng chữ gạch đầu dòng xuất hiện mộc mạc khi người nói liệt kê ý.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "tap/soft": {
+   "nghe": "Tiếng chạm gõ đệm mềm êm tai, âm trầm ấm và tròn trịa, mỏng nhẹ, tắt ngay lập tức không vang.",
+   "hop": "Đầu ngón tay chạm nhẹ vào nút ảo hoặc khung phụ đề nhỏ lướt nhẹ ra màn hình.",
+   "cam_xuc": "nhe nhang",
+   "manh": "nhe"
+  },
+  "tap/table": {
+   "nghe": "Tiếng gõ mặt bàn gỗ cứng dứt khoát, âm trung đanh rõ, độ dày vừa phải, tắt dứt điểm không vang.",
+   "hop": "Thẻ thông tin hoặc nhãn giá chốt hạ rơi ngay ngắn vào khung hình.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "toggle/latch": {
+   "nghe": "Tiếng then chốt cơ khí bằng nhựa cứng gài khớp hai nhịp, âm sắc đanh gọn, độ dài ngắn, tắt nhanh không vang.",
+   "hop": "Cần gạt công tắc chuyển đổi chế độ hoặc hộp thoại tùy chọn bật mở trên giao diện.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "toggle/micro": {
+   "nghe": "Tiếng click vi công tắc siêu nhỏ, sắc mảnh, âm cao sáng rõ, cực ngắn và khô ráo không vang.",
+   "hop": "Dấu tích xanh bật lên trong ô checkbox hoặc một icon cài đặt nhỏ được kích hoạt.",
+   "cam_xuc": "nhe nhang",
+   "manh": "nhe"
+  },
+  "toggle/off": {
+   "nghe": "Tiếng lách cách công tắc nhựa nhỏ gạt tắt, âm sắc hơi trầm đục, thời lượng rất ngắn, khô gọn không vang.",
+   "hop": "Nút gạt tắt tính năng trên màn hình điện thoại, bỏ chọn checkbox hoặc icon tắt thông báo.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "toggle/on": {
+   "nghe": "Tiếng tách bật công tắc nhựa đanh gọn, âm sắc sáng và nảy, cực ngắn, dứt khoát không có độ vang.",
+   "hop": "Nút gạt bật chế độ xanh lá, tích chọn hoàn thành nhiệm vụ hoặc icon kích hoạt tính năng.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "toggle/rocker": {
+   "nghe": "Tiếng bập bênh hai thì của công tắc cơ học nhựa cứng, độ dày vừa, hơi trầm đục và khô ráo không vang.",
+   "hop": "Gạt chuyển đổi qua lại giữa hai tab giao diện, cần gạt công tắc vật lý hoặc bấm nút nguồn.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "typing_key/clicky": {
+   "nghe": "Tiếng gõ phím cơ clicky sắc đanh, có độ nảy kim loại nhẹ, thời lượng ngắn và dứt nhanh không vang.",
+   "hop": "Từng ký tự code, con số hoặc dòng chữ đánh máy hiện ra sắc nét trong video công nghệ.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "typing_key/crisp": {
+   "nghe": "Tiếng gõ phím giòn tan, âm sắc sáng và đanh nhẹ, chạm đáy dứt khoát không có âm vang thừa.",
+   "hop": "Chữ nhảy ra theo nhịp gõ phím, dòng tin nhắn hiển thị hoặc thao tác bấm nút tìm kiếm.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "typing_key/deep": {
+   "nghe": "Tiếng gõ phím cơ trầm, đầm, ngắn và khô ráo, không có độ vang.",
+   "hop": "Ký tự chữ hoặc icon nhỏ xuất hiện tuần tự khi gõ text trên màn hình.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "typing_key/thock": {
+   "nghe": "Tiếng gõ phím đanh giòn, âm sắc nảy và tròn trịa đặc trưng của phím cơ, ngắn gọn dứt khoát.",
+   "hop": "Chữ cái, checkbox hoặc nút bấm tương tác nhảy ra trên màn hình.",
+   "cam_xuc": "trung tinh",
+   "manh": "nhe"
+  },
+  "whoosh_big/cape": {
+   "nghe": "Tiếng gió vút mượt mà như tà áo choàng phất mạnh, âm thanh êm ái lướt qua kéo dài vừa phải.",
+   "hop": "Chuyển cảnh lướt ngang mượt mà hoặc slide hình ảnh trượt vào khung hình.",
+   "cam_xuc": "nhe nhang",
+   "manh": "vua"
+  },
+  "whoosh_big/deep": {
+   "nghe": "Tiếng vút gió trầm đục, âm bass rền dày và nặng kéo dài, tạo cảm giác không gian sâu.",
+   "hop": "Chuyển cảnh điện ảnh quy mô lớn, tiêu đề chính lao nhanh ra hoặc đổi chủ đề quan trọng.",
+   "cam_xuc": "hoi hop",
+   "manh": "manh"
+  },
+  "whoosh_big/gust": {
+   "nghe": "Tiếng luồng gió giật ào qua dữ dội, âm xé gió rít mạnh dần rồi tan dần tự nhiên.",
+   "hop": "Vật thể lớn phóng vụt qua trước ống kính hoặc chuyển cảnh quét nhanh toàn màn hình.",
+   "cam_xuc": "hao hung",
+   "manh": "manh"
+  },
+  "whoosh_big/jet": {
+   "nghe": "Tiếng gió rít dày và uy lực như luồng phản lực lao qua, âm trầm đầy đặn kèm tiếng rít gió dài, có độ vang rõ.",
+   "hop": "Chuyển cảnh hoành tráng giữa các phân đoạn chính hoặc đồ họa kích thước lớn lao vút qua màn hình.",
+   "cam_xuc": "hao hung",
+   "manh": "manh"
+  },
+  "whoosh_big/reverse": {
+   "nghe": "Tiếng hút gió ngược tăng dần âm lượng từ trầm đến bùng nổ, chất âm dày, tạo cảm giác dồn nén cao trào.",
+   "hop": "Chuẩn bị hé lộ thông tin bất ngờ, đếm ngược trước cú chốt hoặc hiệu ứng video tua ngược thời gian.",
+   "cam_xuc": "hoi hop",
+   "manh": "vua"
+  },
+  "whoosh_big/swell": {
+   "nghe": "Tiếng gió cuộn lướt êm ái, âm sắc trầm ấm mượt mà, độ dài vừa phải và có độ vang tự nhiên lan tỏa.",
+   "hop": "Chuyển cảnh mượt mà giữa các chủ đề lớn, tiêu đề chính hoặc logo thương hiệu trượt nhẹ vào giữa khung hình.",
+   "cam_xuc": "sang trong",
+   "manh": "vua"
+  },
+  "whoosh_fast/crisp": {
+   "nghe": "Tiếng quẹt gió nhanh, âm sắc sáng và sắc bén, dứt khoát, tạo cảm giác vuốt lướt thanh thoát.",
+   "hop": "Thẻ chữ, icon hoặc con số trượt nhanh vào màn hình trong các video chia sẻ kiến thức, công nghệ.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "whoosh_fast/heavy": {
+   "nghe": "Tiếng vút gió ngắn, đầm chắc với lực đập mạnh ở dải trầm, dứt nhanh và có lực nhấn rõ rệt.",
+   "hop": "Chuyển cảnh chớp nhoáng, đồ họa dập mạnh xuống màn hình hoặc nhấn mạnh một luận điểm then chốt.",
+   "cam_xuc": "hao hung",
+   "manh": "manh"
+  },
+  "whoosh_fast/reverse": {
+   "nghe": "Tiếng gió hút ngược ngắn, độ dày tăng dần từ trầm lên cao rồi ngắt dứt khoát, không có đuôi vang.",
+   "hop": "Chữ hoặc hình ảnh bị hút biến mất, chuyển cảnh lật ngược hoặc tạo đà chờ đợi trước một cú chốt.",
+   "cam_xuc": "hoi hop",
+   "manh": "vua"
+  },
+  "whoosh_fast/sleeve": {
+   "nghe": "Tiếng quệt vải vung tay áo êm dịu, chất âm xào xạc tự nhiên, hơi trầm đục, ngắn và khô không vang.",
+   "hop": "Chữ nhỏ hoặc thẻ thông tin trượt vào nhẹ nhàng, chuyển cảnh gạt tay êm trong video tối giản.",
+   "cam_xuc": "nhe nhang",
+   "manh": "nhe"
+  },
+  "whoosh_fast/tight": {
+   "nghe": "Tiếng gió vút ngắn gọn, âm sắc sáng vừa, độ dày trung bình, dứt khoát và không có đuôi vang.",
+   "hop": "Chuyển cảnh nhanh giữa hai câu nói hoặc thẻ thông tin trượt lướt qua màn hình.",
+   "cam_xuc": "trung tinh",
+   "manh": "vua"
+  },
+  "whoosh_fast/whistle": {
+   "nghe": "Tiếng gió rít huýt sáo ngắn, âm sắc rất sáng và sắc mảnh như vật nhỏ xé gió, tắt nhanh.",
+   "hop": "Mũi tên, đường vẽ hoặc icon đồ họa bắn vút qua màn hình để nhấn mạnh chi tiết nhanh.",
+   "cam_xuc": "hao hung",
+   "manh": "vua"
+  }
+ }
+}

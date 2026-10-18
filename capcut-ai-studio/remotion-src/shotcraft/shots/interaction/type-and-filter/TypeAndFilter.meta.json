@@ -129,19 +129,23 @@
   }
  ],
  "vi": {
-  "ten": "Gõ tìm kiếm rồi lọc — lưới thẻ thu về đúng một kết quả",
-  "mo_ta": "Giao diện thư viện sáng (thanh đầu, ô tìm kiếm, lưới thẻ có ảnh bìa). Máy quay áp sát ô tìm kiếm, từ khóa được gõ từng chữ với con trỏ nhấp nháy; kéo ra toàn cảnh, các thẻ khác lần lượt mờ và chìm xuống, thẻ kết quả nổi lên trượt về ô đầu tiên; mũi tên chuột lướt tới, click (2 vòng gợn sóng + viền sáng) rồi máy đẩy sát vào thẻ đó. Ngắn ~2.4s, thường nối bằng chớp sáng sang cảnh tiếp.",
-  "hop_khi": "Diễn tả thao tác tìm kiếm / lọc / chọn trong app, website, kho dữ liệu: 'chỉ cần gõ X là ra ngay', tìm đúng sản phẩm / tài liệu / mẫu; demo tính năng tìm kiếm thông minh; dẫn vào phần chi tiết của một mục.",
-  "tranh_khi": "Không nói về phần mềm / tìm kiếm; nội dung cần giữ lâu để đọc (cảnh ngắn, đẩy máy ở cuối); từ khóa dài.",
+  "ten": "Gõ tìm kiếm lọc thẻ nổi bật",
+  "mo_ta": "Khung cảnh mở đầu bằng góc cận thanh tìm kiếm trên giao diện sáng, từ khóa được gõ nhanh từng ký tự kèm con trỏ nhấp nháy. Màn hình lùi nhanh về toàn cảnh để lộ lưới danh mục gồm các thẻ bo góc có ảnh bìa gradient, đồng thời các thẻ không khớp lập tức mờ tối và lặn xuống. Thẻ kết quả nổi bật trồi lên, phóng to nhẹ rồi trượt vào vị trí trung tâm với nhịp chuyển động mượt mà và dứt khoát.",
+  "hop_khi": "Dùng khi người nói nhắc đến hành động tìm kiếm giải pháp, chọn lọc ra tính năng đắt giá nhất trong một kho dữ liệu, hoặc tìm ra phương án tối ưu giữa vô vàn lựa chọn; nhịp điệu hiện đại, thông minh và tạo cảm giác tìm đúng chìa khóa vấn đề. Phù hợp với các câu nói như: 'Trong hàng trăm công cụ ngoài kia, đây là giải pháp duy nhất bạn cần...', 'Chỉ cần gõ đúng từ khóa này, kết quả chuẩn xác sẽ hiện ra ngay...', 'Nếu bạn muốn tự động hóa quy trình, hãy chọn ngay tính năng này...'.",
+  "mo_rong": "Đổi ảnh thẻ thành ảnh bìa khóa học, từ khóa thành tên kỹ năng -> giáo dục, giới thiệu khóa học phù hợp trình độ; đổi thẻ thành hình ảnh món ăn và gõ tên món đặc trưng -> F&B / ẩm thực, gợi ý món best-seller; đổi thành danh sách dự án nhà ở và gõ mức ngân sách -> bất động sản, lọc căn hộ theo tầm tài chính; đổi thành các dòng mỹ phẩm và gõ loại vấn đề da -> làm đẹp / spa, đề xuất sản phẩm đặc trị; đổi thành danh sách tour và gõ tên địa danh -> du lịch, tìm kiếm lịch trình phù hợp.",
   "nang_luong": "vua",
   "chu_de": [
    "tìm kiếm",
-   "app",
-   "website",
-   "giao diện",
-   "lọc",
-   "thao tác",
+   "lọc dữ liệu",
+   "chọn lọc",
    "thư viện",
+   "công nghệ",
+   "phần mềm",
+   "giáo dục",
+   "bất động sản",
+   "ẩm thực",
+   "thương mại điện tử",
+   "danh mục",
    "demo tính năng"
   ]
  },

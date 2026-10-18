@@ -70,21 +70,22 @@
   }
  ],
  "vi": {
-  "ten": "Zoom giật vào chi tiết + con số lớn",
-  "mo_ta": "Ảnh (màn hình app/web trong cửa sổ trình duyệt, hoặc ảnh dọc trong khung điện thoại) đứng nghiêng trên sân khấu tối ánh cam; bốn góc ngắm màu cam khoá vào vùng giữa ảnh, rồi máy quay ĐẬP giật vào cực nhanh (6 khung, có nhoè chuyển động), nảy nhẹ, chớp sáng, xung quanh tối lại. Sau đó khung lùi sang trái (dọc: lên trên) nhường chỗ cho một con số rất to hiện từng ký tự kèm tiêu đề và câu giải thích.",
-  "hop_khi": "Người nói chỉ thẳng vào một chi tiết trên màn hình/app/dashboard rồi đọc con số kết quả: 'nhìn chỗ này nè', 'giảm 41% chi phí', 'tăng gấp 3 doanh thu'; khoe kết quả, số liệu ấn tượng gắn với một sản phẩm, trang web, báo cáo.",
-  "tranh_khi": "Không có con số cụ thể; không có ảnh màn hình/ảnh chi tiết phù hợp; chi tiết quan trọng nằm sát mép ảnh (máy quay luôn đập vào giữa); đã dùng một cú zoom giật khác gần đó (tối đa 2 lần/video).",
+  "ten": "Đập giật phóng to khung cửa sổ",
+  "mo_ta": "Khung cửa sổ ứng dụng đứng nghiêng giữa không gian tối với ánh đèn cam ấm, bốn góc ngắm xuất hiện khóa vào vùng trung tâm. Máy quay đột ngột đập giật cực nhanh kèm vệt mờ chuyển động và chớp sáng, đưa phần ảnh phóng to chiếm trọn nửa trên khung hình. Nửa dưới lập tức xuất hiện nhãn chỉ dẫn màu cam cùng con số thống kê khổng lồ, tiêu đề và dòng giải thích dứt khoát trên nền đen tương phản cao.",
+  "hop_khi": "Phù hợp khi người nói muốn công bố một kết quả đột phá, con số thống kê gây sốc, mức giảm chi phí hoặc kỷ lục tăng trưởng cần ghi dấu ấn sâu đậm trong tâm trí người xem. Nhịp điệu mạnh mẽ, tạo cú hích cảm xúc bùng nổ hoặc khẳng định hiệu quả vượt trội. Ví dụ: 'Chúng tôi đã cắt giảm được hơn 40% chi phí vận hành ngay tháng đầu tiên', 'Nhìn vào con số này bạn sẽ hiểu vì sao giải pháp này lại hiệu quả đến vậy', 'Chỉ với một điều chỉnh nhỏ, tỷ lệ thành công đã thay đổi ngoạn mục'.",
+  "mo_rong": "Đổi ảnh màn hình thành ảnh giỏ hàng hoặc hóa đơn, số lớn đổi thành mức giảm giá sâu (-50%, -70%) -> dùng cho bán hàng online và livestream kích thích chốt đơn; Đổi ảnh thành bảng điểm hoặc chứng chỉ quốc tế, số lớn đổi thành điểm số xuất sắc (8.5 IELTS, 990 TOEIC) -> dùng cho giáo dục và trung tâm đào tạo để tôn vinh thành tích học viên; Đổi ảnh thành ảnh so sánh vóc dáng trước và sau, số lớn đổi thành số cân nặng đã giảm -> dùng cho gym, thể thao và làm đẹp để chứng minh hiệu quả liệu trình; Đổi ảnh thành giao diện báo cáo chi phí, số lớn đổi thành số tiền tiết kiệm được -> dùng cho tài chính doanh nghiệp và khởi nghiệp; Đổi ảnh thành dự án nghỉ dưỡng, số lớn đổi thành tỷ suất sinh lời cam kết -> dùng cho đầu tư bất động sản.",
   "nang_luong": "cao",
   "chu_de": [
-   "số liệu",
-   "dashboard",
-   "app",
-   "website",
-   "kết quả",
-   "tăng trưởng",
-   "chi tiết",
-   "điện thoại",
-   "báo cáo"
+   "đập giật",
+   "crash zoom",
+   "con số ấn tượng",
+   "thống kê",
+   "tiết kiệm chi phí",
+   "tăng trưởng doanh số",
+   "bán hàng online",
+   "giáo dục",
+   "thể thao làm đẹp",
+   "bất động sản"
   ]
  },
  "backdrop": true

@@ -56,20 +56,23 @@
   }
  ],
  "vi": {
-  "ten": "Kéo thông số khoảng cách — giao diện giãn ra rồi bật về",
-  "mo_ta": "Nền tối kiểu phần mềm thiết kế (Figma): một hàng nút menu (khung dọc: cột nút xếp chồng) có khung chọn trắng + 8 tay nắm, phía trên là con số px rất to và thước xoay. Con số nhảy từ 12 lên 104, các nút bị đẩy giãn cách CÙNG LÚC, đường đo vàng và nhãn số giữa các khe kéo dài theo; giữ một nhịp rồi bật lò xo co về chặt hơn lúc đầu và ổn định ở 12.",
-  "hop_khi": "Nói về thiết kế giao diện, app, website, công cụ no-code / thiết kế, 'chỉ cần chỉnh một thông số là cả giao diện tự cập nhật', tuỳ biến, căn chỉnh khoảng cách, tự động hoá bố cục; video cho designer / dev / người làm sản phẩm.",
-  "tranh_khi": "Khán giả phổ thông không biết công cụ thiết kế; nội dung không liên quan giao diện / phần mềm; cần hiện con số thật (số trên màn hình chỉ là px minh hoạ).",
+  "ten": "Thước xoay dãn cách danh sách đa mục",
+  "mo_ta": "Giao diện tối phong cách công cụ thiết kế với thước xoay ngang và con số kích thước pixel cực lớn ở phía trên, bên dưới là khung chọn 5 nút menu xếp dọc bo góc. Khi con số xoay vút từ 12px lên 104px, các nút menu lập tức bị đẩy dãn cách đồng loạt ra xa nhau kèm các nhãn đo khoảng cách màu vàng hiện rõ giữa từng khe. Con số sau đó xoay lùi nhanh về 10px rồi dừng nhịp nhàng ở 12px, kéo các nút đàn hồi thu gọn về vị trí cân bằng với nhịp điệu chuyển động nhanh, mượt mà.",
+  "hop_khi": "Phù hợp khi diễn giả nói về việc nới lỏng hoặc thu gọn khoảng cách, phân bổ lại thời gian, tái cấu trúc nguồn lực, tối ưu hóa bố cục giao diện hoặc so sánh mật độ dày và thưa. Thích hợp với cảm xúc hào hứng, giải thích mẹo vặt, chia sẻ kinh nghiệm thực chiến hoặc hướng dẫn kỹ thuật. Ví dụ câu nói: 'Nếu thấy lịch trình của mình quá dày đặc, bạn buộc phải giãn khoảng cách giữa các đầu việc ra như thế này', 'Chỉ cần tăng khoảng cách giữa các phần tử lên một chút là giao diện nhìn sang và thoáng hơn hẳn', 'Khi quản trị dòng tiền, hãy nới rộng biên độ an toàn giữa các khoản chi dự phòng'.",
+  "mo_rong": "Đổi 5 nút thành 5 đầu việc trong ngày, số px thành số phút nghỉ ngơi -> dùng cho video hướng dẫn năng suất và quản lý thời gian; đổi 5 nút thành các tài sản đầu tư (BĐS, Vàng, Cổ phiếu, Tiền mặt), số px thành tỷ trọng phân bổ -> dùng cho video tài chính cá nhân; đổi các nút thành các bước trong quy trình dịch vụ, số px thành thời gian chờ của khách -> dùng cho video tối ưu trải nghiệm khách hàng ngành spa hoặc F&B; đổi các nút thành các món ăn trong thực đơn, số px thành lượng calo hoặc khoảng thời gian nhịn ăn -> dùng cho video sức khỏe, giảm cân; đổi chữ thành các tính năng nổi bật của phần mềm -> dùng cho video review công nghệ và demo app.",
   "nang_luong": "vua",
   "chu_de": [
-   "thiết kế",
-   "giao diện",
-   "app",
-   "website",
-   "no-code",
-   "Figma",
-   "công cụ",
-   "tuỳ chỉnh"
+   "giao diện app",
+   "công nghệ",
+   "thiết kế UI UX",
+   "quản lý thời gian",
+   "phân bổ nguồn lực",
+   "tối ưu hóa",
+   "hướng dẫn mẹo",
+   "tài chính",
+   "danh sách",
+   "thước xoay",
+   "năng suất"
   ]
  },
  "backdrop": true

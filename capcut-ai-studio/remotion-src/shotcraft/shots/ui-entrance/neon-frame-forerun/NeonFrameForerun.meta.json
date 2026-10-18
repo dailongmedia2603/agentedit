@@ -105,20 +105,22 @@
   }
  ],
  "vi": {
-  "ten": "Khung neon vẽ trước — giao diện app sáng lên, thẻ rơi xuống",
-  "mo_ta": "Nền tối tím hồng. Hai đốm sáng chạy từ cạnh trái theo hai ngả vẽ nên một khung neon chữ nhật nghiêng phối cảnh mạnh, gặp nhau ở cạnh phải và lóe sáng; phía sau là đường hầm nhiều khung neon lùi sâu lần lượt bật đèn. Trong khung, trang chủ của một app sáng dần lên; logo, menu, lời chào lớn, 3 thẻ số liệu và danh sách việc lơ lửng có bóng rồi lần lượt rơi xuống dán vào trang. Cuối cảnh đường hầm neon tắt dần, giao diện còn lại sáng rõ.",
-  "hop_khi": "Giới thiệu / ra mắt app, phần mềm, dashboard, nền tảng SaaS lần đầu; \"đây là màn hình chính của…\"; đoạn nói về số liệu kinh doanh + việc cần làm trong ngày; mở đầu phần demo sản phẩm số tone công nghệ, cyber.",
-  "tranh_khi": "Nội dung không liên quan app / phần mềm; tone ấm áp đời thường, sáng màu; câu nói ngắn dưới 3 giây.",
+  "ten": "Bảng điều khiển viền neon phối cảnh 3D",
+  "mo_ta": "Mở đầu với hai tia sáng neon tím hồng chạy dọc viền khung chữ nhật nghiêng 3D, kích hoạt dãy khung ánh sáng lùi sâu tạo hiệu ứng đường hầm công nghệ ấn tượng. Ở trung tâm, bảng giao diện ứng dụng màu sáng hiện rõ với thanh điều hướng, lời chào cá nhân hóa, 3 ô chỉ số thống kê nổi bật và danh sách nhiệm vụ được gắn nhãn trạng thái rõ ràng. Nhịp vào cuốn hút, camera zoom nhẹ theo góc nghiêng 3D hiện đại và giữ hình tĩnh sắc nét giúp người xem nắm trọn dữ liệu.",
+  "hop_khi": "Dùng cho khoảnh khắc tổng kết kết quả kinh doanh, khoe doanh thu, ra mắt tính năng phần mềm mới, báo cáo hiệu suất công việc hoặc bắt đầu ngày làm việc mới với tâm thế tràn đầy năng lượng và chuyên nghiệp. Phù hợp với các câu nói kiểu: 'Sau đúng một tháng triển khai hệ thống mới, đây là kết quả kinh doanh ngoài mong đợi của cả đội ngũ', 'Mỗi buổi sáng mình chỉ mất đúng 5 phút để kiểm tra toàn bộ chỉ số vận hành cửa hàng', 'Để mình mở cho các bạn thấy bên trong trang quản trị của một kênh triệu view có những gì'.",
+  "mo_rong": "Đổi 3 ô số liệu thành số lượng học viên, điểm số đầu ra và tỷ lệ đỗ chứng chỉ -> dùng cho trung tâm ngoại ngữ hoặc khóa học online; đổi giao diện thành bảng phân tích thị trường bất động sản với số căn hộ, giá bán và tỷ lệ tăng trưởng -> dùng cho môi giới nhà đất; đổi danh sách công việc thành liệu trình chăm sóc da gồm các bước và thời gian thực hiện -> dùng cho ngành spa và thẩm mỹ viện; đổi số liệu thành calo tiêu thụ, cân nặng giảm và số buổi tập -> dùng cho huấn luyện viên thể hình hoặc tư vấn giảm cân; đổi giao diện thành hệ thống đặt món và doanh thu theo bàn -> dùng cho chủ kinh doanh nhà hàng, quán cà phê.",
   "nang_luong": "cao",
   "chu_de": [
-   "app",
-   "dashboard",
-   "ra mắt",
-   "phần mềm",
-   "số liệu",
-   "danh sách",
-   "giao diện",
-   "công nghệ"
+   "bảng điều khiển",
+   "viền neon",
+   "phối cảnh 3D",
+   "chỉ số thống kê",
+   "báo cáo doanh thu",
+   "công nghệ",
+   "kinh doanh",
+   "quản lý công việc",
+   "giáo dục",
+   "bất động sản"
   ]
  },
  "backdrop": true

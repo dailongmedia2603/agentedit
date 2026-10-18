@@ -50,20 +50,22 @@
   }
  ],
  "vi": {
-  "ten": "Lưới chấm gợn sóng từ tâm — hệ thống bật nguồn",
-  "mo_ta": "Nền đen, một lưới chấm xanh dương phủ kín màn hình. Từ tâm, một làn sóng lan ra: từng chấm phồng lên rồi sáng đều, như cả hệ thống được cấp điện; sau đó một làn sóng thứ hai màu xanh băng phát sáng chạy ngược từ mép vào tâm. Chữ (nếu có) hiện mờ-rõ ở giữa với quầng tối phía sau.",
-  "hop_khi": "Khoảnh khắc \"bật lên / khởi động / kết nối toàn bộ\": hệ thống đi vào hoạt động, mạng lưới phủ rộng, độ bao phủ (63 tỉnh thành, hàng nghìn điểm), dữ liệu lớn, AI vận hành; mở đầu một phần về công nghệ, nền cho một con số ấn tượng.",
-  "tranh_khi": "Video tông sáng; nội dung cảm xúc / đời thường; cần nhiều chữ hoặc danh sách.",
-  "nang_luong": "vua",
+  "ten": "Sóng xung kích lưới chấm lan tỏa",
+  "mo_ta": "Toàn màn hình bao phủ bởi một ma trận lưới chấm tròn xanh dương tinh tế trên nền tối mờ huyền bí. Một làn sóng năng lượng phát sáng bùng nổ từ tâm lan tỏa ra viền ngoài làm các chấm sáng rực đồng tâm, đồng thời tiêu đề chữ lớn cùng nhãn phụ mờ dần hiện rõ kiêu hãnh ở chính giữa. Sau đó một xung sóng ánh sáng thứ hai tiếp tục quét ngược nhẹ nhàng tạo chiều sâu thị giác công nghệ cao.",
+  "hop_khi": "Phù hợp cho các khoảnh khắc công bố dấu mốc lớn, tuyên bố độ phủ sóng quy mô toàn quốc, khởi động chiến dịch trọng điểm hoặc khẳng định vị thế dẫn đầu công nghệ. Cảm xúc bùng nổ, quyền lực, vững chãi và đáng tin cậy. Ví dụ câu nói: 'Chúng tôi chính thức phủ sóng dịch vụ đến toàn bộ 63 tỉnh thành', 'Hệ thống hạ tầng đám mây thế hệ mới đã sẵn sàng phục vụ hàng triệu người dùng', 'Sau 5 năm nỗ lực, mạng lưới đối tác đã chạm mốc 10.000 điểm bán'.",
+  "mo_rong": "Đổi chữ thành số lượng người dùng hoặc doanh thu kỷ lục -> video báo cáo tăng trưởng doanh nghiệp; đổi nhãn thành tên thành phố hoặc chi nhánh mới -> thông báo khai trương mạng lưới bán lẻ; đổi thành tuyên bố bảo mật hoặc tính năng AI mới -> giới thiệu sản phẩm phần mềm đột phá; đổi thành khẩu hiệu truyền cảm hứng của ban lãnh đạo -> video văn hóa doanh nghiệp hoặc kỷ niệm thành lập; đổi sang chủ đề tuyển sinh hoặc tuyển dụng toàn quốc -> chiến dịch mở rộng quy mô tổ chức.",
+  "nang_luong": "cao",
   "chu_de": [
-   "mạng lưới",
-   "kết nối",
-   "khởi động",
-   "công nghệ",
-   "dữ liệu",
-   "AI",
-   "độ phủ",
-   "con số"
+   "sóng lan tỏa",
+   "lưới chấm công nghệ",
+   "công bố cột mốc",
+   "mạng lưới phủ sóng",
+   "khởi động hệ thống",
+   "công nghệ thông tin",
+   "doanh nghiệp",
+   "thành tựu",
+   "bùng nổ năng lượng",
+   "toàn quốc"
   ]
  },
  "hidden": true,

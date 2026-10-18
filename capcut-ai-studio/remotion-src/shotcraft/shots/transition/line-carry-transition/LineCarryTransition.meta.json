@@ -104,20 +104,23 @@
   }
  ],
  "vi": {
-  "ten": "Đường kẻ dẫn đường — từ tiến độ 100% sang thành quả",
-  "mo_ta": "Nền giấy màu cát. Thẻ tiến độ: thanh mực đen chạy 0→100% (số % to đếm theo), đầy thì hiện dấu tích + trạng thái; ngay đó đầu bút cam kéo thanh mực vươn ra khỏi thẻ, máy quay lia ngang theo đường kẻ sang cảnh mới; đường kẻ rẽ vuông góc vẽ thành một khung tranh, khung khép lại thì ảnh / tranh phẳng (mặt trời, đồi) hiện ra, bên cạnh là tiêu đề chạy lên. Một đường liền, không có cú cắt.",
-  "hop_khi": "Chuyển từ \"đang làm / chuẩn bị\" sang \"kết quả / ra mắt\": hoàn thành dự án, khóa học lên sóng, sản phẩm ra mắt, trước-sau, từ kế hoạch tới thành quả; chuyển cảnh chủ đạo duy nhất của video.",
-  "tranh_khi": "Dùng hơn 1 lần trong video; nội dung không có ý \"hoàn thành → kết quả\"; video tông tối; cần cảnh ngắn dưới 5 giây.",
+  "ten": "Kéo nét tiến độ mở thẻ ra mắt",
+  "mo_ta": "Thẻ thông tin nổi bật giữa phông nền mờ hiển thị thanh tiến độ chạy nhanh từ 80% lên 100% kèm nhãn trạng thái sẵn sàng và biểu tượng tích cam. Điểm tròn ở đầu thanh mực kéo dài vươn ra khỏi thẻ, dẫn máy quay lia ngang theo đường kẻ liền mạch để vẽ thành khung hình chữ nhật ở phân cảnh kế tiếp. Khung viền hoàn tất mở ra tiêu đề ra mắt lớn bên trên cùng một tấm poster kèm nút bấm kêu gọi hành động trồi lên dứt khoát.",
+  "hop_khi": "Dùng trong khoảnh khắc công bố thành quả sau một quá trình dài ấp ủ: ra mắt sản phẩm mới, khai trương cơ sở, thông báo khóa học lên sóng, hoặc chuyển từ khâu chuẩn bị sang hành động thực tế. Cảm xúc mong chờ, hào hứng và thúc giục khán giả tham gia. Ví dụ câu nói: 'Sau hơn 3 tháng miệt mài chuẩn bị, dự án tâm huyết này đã chính thức hoàn thiện 100%.', 'Mọi khâu chuẩn bị đã hoàn tất, khóa học thực chiến dành cho bạn chính thức lên sóng ngay hôm nay!', 'Toàn bộ quy trình kiểm định chất lượng đã xong, cổng đặt hàng trước đã chính thức mở cho 50 người đầu tiên.'",
+  "mo_rong": "Đổi thẻ tiến độ chuẩn bị quán thành thông báo khai trương cơ sở mới kèm poster ưu đãi -> ngành F&B, nhà hàng, quán cafe; Đổi thành tiến độ hoàn thiện liệu trình spa và mở đặt lịch trải nghiệm -> ngành làm đẹp, thẩm mỹ viện; Đổi thành tiến độ cập nhật tính năng phần mềm và nút dùng thử miễn phí -> công nghệ, ứng dụng di động, SaaS; Đổi thành tiến độ thi công bàn giao căn hộ và thông tin mở bán đợt cuối -> bất động sản, đầu tư căn hộ; Đổi thành số lượng quà tặng hoặc suất mua ưu đãi đã được giữ chỗ đạt 100% -> bán hàng online, chốt đơn livestream.",
   "nang_luong": "vua",
   "chu_de": [
    "chuyển cảnh",
-   "tiến độ",
-   "hoàn thành",
-   "ra mắt",
-   "kết quả",
-   "trước sau",
-   "dự án",
-   "khóa học"
+   "thanh tiến độ",
+   "ra mắt sản phẩm",
+   "kêu gọi hành động",
+   "đường nét liền mạch",
+   "thông báo",
+   "giáo dục",
+   "F&B",
+   "công nghệ",
+   "bất động sản",
+   "bán hàng"
   ]
  },
  "backdrop": true

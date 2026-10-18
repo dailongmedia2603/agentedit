@@ -146,20 +146,22 @@
   }
  ],
  "vi": {
-  "ten": "Chia 4 ô — bốn cảnh chạy song song",
-  "mo_ta": "Màn hình chia 4 ô bo góc (khung dọc: 4 dải xếp dọc), mỗi ô một cảnh nhỏ chạy cùng lúc, nhịp lệch nhau vài khung: trình duyệt gõ địa chỉ rồi tải trang có tiêu đề lớn; terminal gõ lệnh rồi zoom giật vào dòng kết quả; nền cam với 2–3 từ khổng lồ đập xuống lần lượt; thẻ chờ duyệt có con trỏ bấm 'Duyệt' → 'Đăng ngay' rồi thông báo lượt xem bật lên. Ô nào có ảnh/video thật thì ảnh/video đập vào lấp đầy ô đó.",
-  "hop_khi": "Liệt kê nhiều việc / nhiều kênh diễn ra cùng lúc ('vừa làm web, vừa xuất video, vừa duyệt nội dung'); khoe quy trình làm việc / một ngày ra mắt sản phẩm; montage nhiều cảnh B-roll (4 ảnh hoặc clip) cho đoạn nói dồn dập, năng lượng cao.",
-  "tranh_khi": "Chỉ có một ý duy nhất cần tập trung; đoạn nói chậm, cảm xúc sâu lắng; nội dung không liên quan công việc số / sản phẩm mà không có ảnh thật để thay.",
+  "ten": "Màn hình bốn dải hành động song song",
+  "mo_ta": "Màn hình dọc được chia thành 4 dải nằm ngang bo góc riêng biệt, mỗi dải chứa một lát cắt hành động độc lập chạy cùng lúc với nhịp lệch nhau. Từ trên xuống dưới gồm thanh duyệt web gõ địa chỉ, cửa sổ dòng lệnh gõ mã xuất file, khung cam đập chữ từ khóa kích thước lớn, và thẻ tương tác bấm nút phê duyệt xuất bản kèm thông báo nổi. Cả bốn dải đồng loạt tăng tốc và kết thúc ăn khớp tạo cảm giác một dây chuyền làm việc khép kín siêu tốc.",
+  "hop_khi": "Dùng khi người nói đúc kết quy trình làm việc tốc độ cao, chứng minh khả năng đa nhiệm, hoặc thể hiện quá trình từ khâu ý tưởng đến khi ra thành phẩm chỉ trong nháy mắt; cảm xúc hào hứng, tốc độ, hiện đại và năng suất. Phù hợp với các câu nói như: 'Toàn bộ quy trình từ lên ý tưởng, viết code đến lúc bấm xuất bản chỉ mất đúng một buổi chiều', 'Thay vì mất cả tuần, công nghệ mới giúp bạn tự động hóa 4 bước này cùng một lúc', 'Xem cách chúng mình biến một ý tưởng thô thành sản phẩm thực tế phủ sóng khắp mạng xã hội'.",
+  "mo_rong": "1. Đổi 4 dải thành: 01-Chuẩn bị nguyên liệu, 02-Chế biến bếp, 03-Đóng gói món, 04-Giao shipper -> F&B/Nhà hàng phô diễn quy trình làm món sạch sẽ và giao hàng hỏa tốc. 2. Đổi 4 dải thành: 01-Soi da chẩn đoán, 02-Bắn laser điều trị, 03-Đắp mặt nạ phục hồi, 04-Khách hàng soi gương hài lòng -> Spa/Thẩm mỹ viện giới thiệu 4 bước liệu trình chuyên sâu. 3. Đổi 4 dải thành: 01-Bản vẽ thiết kế 3D, 02-Gia công xưởng gỗ, 03-Thi công hoàn thiện, 04-Bàn giao chìa khóa -> Xây dựng/Kiến trúc chứng minh năng lực hoàn thiện công trình trọn gói. 4. Đổi 4 dải thành: 01-Lên dàn ý kịch bản, 02-Quay bằng điện thoại, 03-Dựng trên ứng dụng, 04-Video triệu view -> Đào tạo sáng tạo nội dung chia sẻ quy trình sản xuất video viral siêu nhanh. 5. Đổi 4 dải thành: 01-Tìm mẫu quần áo, 02-Thử đồ lên dáng, 03-So sánh giá sale, 04-Bấm thanh toán chốt đơn -> Thời trang/Review mua sắm hướng dẫn mẹo săn hàng hiệu giá hời.",
   "nang_luong": "cao",
   "chu_de": [
-   "montage",
-   "song song",
-   "quy trình",
-   "ra mắt",
-   "app",
-   "code",
-   "đa nhiệm",
-   "B-roll"
+   "chia bốn màn hình",
+   "quy trình song song",
+   "tự động hóa",
+   "tốc độ làm việc",
+   "năng suất cao",
+   "đa nhiệm hiện đại",
+   "sản xuất nội dung",
+   "quy trình dịch vụ",
+   "công nghệ phần mềm",
+   "trình diễn hành động"
   ]
  },
  "backdrop": false

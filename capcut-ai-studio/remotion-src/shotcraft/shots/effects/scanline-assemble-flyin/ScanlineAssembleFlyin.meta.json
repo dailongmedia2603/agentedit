@@ -168,21 +168,23 @@
   }
  ],
  "vi": {
-  "ten": "Trang web tự lắp ráp — vạch quét gọi từng khối bay vào",
-  "mo_ta": "Bản vẽ kỹ thuật xanh đêm (lưới + khung nét đứt ghi tên từng khối). Một vạch sáng quét đều từ trên xuống; quét tới đâu, khối ở đó (thanh điều hướng, nhãn 'MỚI', tiêu đề lớn hai dòng, đoạn mô tả, nút bấm, thẻ hình, hàng số liệu) bay vụt từ ngoài khung vào, nảy nhẹ khớp chỗ, góc lóe sáng. Quét xong là trang hoàn chỉnh, dòng trạng thái báo 'Đã dựng xong' và đồng hồ dừng.",
-  "hop_khi": "Nói về AI / công cụ tự tạo website, landing page, giao diện, bài đăng, thiết kế 'chỉ trong vài giây'; giới thiệu sản phẩm số / app / SaaS với tiêu đề + lợi ích + con số; quy trình từ trống trơn tới thành phẩm, tự động hóa.",
-  "tranh_khi": "Chủ đề đời thường, cảm xúc, không liên quan sản phẩm số; chỉ cần nêu một câu ngắn; video tone sáng ấm.",
+  "ten": "Quét tia sáng dựng giao diện website",
+  "mo_ta": "Khung hình hiển thị bản vẽ khung dây công nghệ mờ ảo với chỉ số tiến độ đếm giờ ở góc trên. Một vạch sáng quét dọc từ trên xuống dưới, tia sáng đi qua đến đâu thì thanh điều hướng, tiêu đề lớn, đoạn mô tả, hai nút bấm, khung ảnh xem trước và ba cột số liệu lần lượt lắp ráp hoàn thiện mượt mà vào vị trí. Nhịp chuyển động nhanh, hiện đại và chuẩn xác, kết thúc bằng bố cục landing page hoàn chỉnh, sắc nét.",
+  "hop_khi": "Phù hợp khi người nói giới thiệu tính năng tự động hóa, công bố giải pháp trọn gói, quy trình tạo lập siêu tốc hoặc ra mắt sản phẩm công nghệ mới nhằm chứng minh sự nhanh gọn và chuyên nghiệp. Cảm xúc hiện đại, đột phá, đáng tin cậy. Ví dụ câu nói: 'Chỉ sau 3 giây, toàn bộ trang bán hàng đã được tạo sẵn cho bạn.', 'Bạn không cần biết lập trình, hệ thống tự động hoàn thiện từng khối nội dung.', 'Tất cả chỉ cần một cú click chuột là xong toàn bộ quy trình.'",
+  "mo_rong": "Đổi ảnh xem trước thành biểu đồ tài chính, đổi các khối chữ thành doanh thu và chi phí -> báo cáo tăng trưởng tài chính hoặc kêu gọi đầu tư; đổi giao diện web thành thực đơn điện tử, 3 số liệu thành số món, chi nhánh, thời gian phục vụ -> quảng bá nhà hàng, F&B; đổi ảnh thành mặt bằng căn hộ, số liệu thành diện tích, số phòng ngủ, giá bán -> môi giới bất động sản giới thiệu dự án; đổi thành lộ trình khóa học trực tuyến, số liệu thành số bài giảng và thời lượng học -> giáo dục EdTech ra mắt lớp học mới; đổi thành quy trình chăm sóc da 7 bước, ảnh thành bộ mỹ phẩm -> spa hoặc thẩm mỹ viện tư vấn liệu trình.",
   "nang_luong": "cao",
   "chu_de": [
+   "công nghệ",
    "AI",
-   "website",
-   "landing page",
-   "app",
-   "giao diện",
    "tự động hóa",
-   "ra mắt",
-   "sản phẩm số",
-   "công nghệ"
+   "giao diện website",
+   "ra mắt sản phẩm",
+   "báo cáo số liệu",
+   "bất động sản",
+   "giáo dục",
+   "F&B",
+   "marketing",
+   "quét tia sáng"
   ]
  },
  "backdrop": true

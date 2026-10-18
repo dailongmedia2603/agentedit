@@ -17,11 +17,11 @@
  "brand": "none",
  "sfx": [{"at": 35, "type": "click"}, {"at": 70, "type": "click"}],
  "vi": {
-  "ten": "Nhảy cắt phóng to 3 nấc",
-  "mo_ta": "Một màn hình dashboard sáng (hoặc ảnh / ảnh chụp màn hình thật) đứng yên, rồi bị cắt cứng phóng to 2 lần liền — 1x → 1,6x → 2,6x, cùng một tâm — mỗi cú nhảy có nháy tối 2 khung như tiếng tích. Ô mục tiêu có viền chọn màu nhấn, viền đậm lên ở cú nhảy cuối; góc tối siết dần hướng mắt vào giữa, cuối cảnh đứng yên.",
-  "hop_khi": "Nhấn mạnh kiểu \"nhìn đây — gần hơn — chính là nó\": chỉ số quan trọng trên báo cáo, một chi tiết trong ảnh chụp màn hình, con số gây sốc; nhịp dứt khoát, phong cách phóng sự / tài liệu.",
-  "tranh_khi": "Ảnh độ phân giải thấp (phóng 2,6x sẽ vỡ); chi tiết cần nhấn không nằm giữa ảnh; tone mềm mại, cảm xúc chậm.",
-  "nang_luong": "vua",
-  "chu_de": ["phóng to", "nhấn mạnh", "dashboard", "số liệu", "ảnh chụp màn hình", "chi tiết", "jump cut"]
+  "ten": "Phóng to dồn dập soi chi tiết số liệu",
+  "mo_ta": "Màn hình ban đầu hiển thị giao diện tổng quan gồm nhiều bảng biểu số liệu dữ liệu dày đặc. Khung hình lập tức thực hiện hai cú cắt phóng to liên tiếp dứt khoát thẳng vào một widget trung tâm. Thẻ mục tiêu được làm nổi bật với viền màu bo góc và đổ bóng rõ nét để người xem tập trung tuyệt đối vào chi tiết quan trọng.",
+  "hop_khi": "Phù hợp khoảnh khắc người nói muốn bóc tách, chỉ thẳng vào một con số ấn tượng, bằng chứng xác thực, biểu đồ doanh thu hoặc lỗi sai cụ thể trên màn hình. Nhịp điệu dồn dập, bất ngờ, tạo cảm giác gay cấn và lôi cuốn sự chú ý cao độ. Ví dụ câu nói: 'Các bạn nhìn kỹ vào đúng con số này cho mình!', 'Chỉ sau một đêm, lượng truy cập của trang này đã tăng đột biến.', 'Điểm mấu chốt quyết định toàn bộ doanh thu nằm ngay tại đây.'",
+  "mo_rong": "Đổi màn hình dashboard thành ảnh chụp bảng sao kê hoặc tài khoản ngân hàng, zoom sâu vào dòng tiền về -> Bằng chứng thu nhập, MMO, tài chính cá nhân; đổi thành ảnh chụp màn hình tin nhắn hoặc bình luận của khách, zoom thẳng vào câu khen ngợi -> Review uy tín, feedback khách hàng cho ngành bán lẻ hoặc spa; đổi thành trang tài liệu hợp đồng hoặc bản vẽ kỹ thuật, zoom vào điều khoản hoặc chi tiết lỗi -> Phân tích pháp lý, bất động sản, kiến trúc; đổi thành giao diện mã nguồn hoặc lỗi phần mềm, zoom vào đoạn code trọng tâm -> Video hướng dẫn lập trình, mẹo công nghệ; đổi thành bảng kết quả xét nghiệm/dinh dưỡng, zoom vào chỉ số calo/đường huyết -> Sức khỏe, giảm cân.",
+  "nang_luong": "cao",
+  "chu_de": ["phóng to", "jump cut", "soi số liệu", "bảng điều khiển", "bằng chứng", "nhấn mạnh", "phân tích dữ liệu", "công nghệ", "tài chính", "review"]
  }
 }

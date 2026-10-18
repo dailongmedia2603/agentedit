@@ -82,11 +82,21 @@ Day la quy trinh CHUAN, user da dong y tu truoc — lam du cac buoc, khong hoi l
   `capcut-ai-studio/skills/motionmaxxing` (BAN CHINH — `~/.claude/skills/motionmaxxing` la lien ket toi day). Test:
   `cd capcut-ai-studio && node tests/test_motion.mts`; tu kiem that (ton han muc Claude + Saydi): `env -u ELECTRON_RUN_AS_NODE
   STUDIO_LICENSE=off STUDIO_MOTION_TEST=<brief.json> <app binary> . --user-data-dir=<tmp>`.
+- QUY TRINH motion-video-director (THU NGHIEM CA NHAN, PROJECT_OVERVIEW 28): skill THUONG MAI 1 NGUOI — KHONG chep vao repo /
+  ban dong goi; app chi symlink ban o `~/.claude/skills/motion-video-director` vao job (`electron/services/motion/mvd.ts`). Anh AI
+  + tach nen: `skills/motionmaxxing/scripts/illustrate.py` (`--dry-run`, `--cut-only IN OUT --split`).
 - DAO DIEN Edit Video (director.py / director_guard.py) DA GO 2026-10-18 theo yeu cau user (lam video edit kem hon) —
   PROJECT_OVERVIEW 23. Bo tieng "the gioi" (`sfx_kit.WORLDS` + `sfx_kit.sound_catalog`) van giu cho luong Tao video.
 - KHO SHOT & MOTION (video-shotcraft, 152 mau, PROJECT_OVERVIEW 24): `remotion-src/shotcraft/` + `sidecar/shot_lib.py`. Sua /
   them meta -> `cd capcut-ai-studio && node scripts/shotcraft-sync.mjs` (sinh registry.ts + references/shotcraft_catalog.json).
   Test: `HOME=$(mktemp -d) ../CapCutAPI/.venv/bin/python tests/test_shotcraft.py`; xem 1 mau: `node scripts/shot-still.mjs <file.tsx>`.
+- BO TAO AM THANH earshot (PROJECT_OVERVIEW 26): moi SFX khong loi do B7 TAO bang `sidecar/sfx_gen.py` + `sidecar/vendor/earshot`
+  (MIT, chi phan render); kho SFX chi con tieng co giong noi. Test: `HOME=$(mktemp -d) ../CapCutAPI/.venv/bin/python
+  tests/test_earshot_sfx.py`; nhan Gemini nghe: `../CapCutAPI/.venv/bin/python scripts/earshot-label.py` -> references/earshot_labels.json.
+- DANG VIDEO QUA PHONE AGENT (iPhone, PROJECT_OVERVIEW 27): `electron/services/phoneagent/` + `license-server/src/post.js`
+  (luu tam MP4 tren R2 -> link cong khai cho iPhone tai). Test: `cd capcut-ai-studio && node tests/test_phoneagent.mts` (may chu
+  Phone Agent gia); worker: license-server `npm test`; app tai len: `HOME=$(mktemp -d) node tests/test_license.mts`. Sua post.js ->
+  `cd license-server && npm run deploy:api`. Soat UI that: them `--use-mock-keychain` (khong thi hop thoai Keychain chan app).
 - Mac INTEL (x64): CI `macos-15-intel`. Tren may Apple Silicon: Node x64 + `arch -x86_64 npm ci` (roi
   `npm_config_arch=x64 node node_modules/electron/install.js` — electron tu tai ban ARM khi thay Rosetta) + `arch -x86_64 node
   scripts/dist.mjs --mac` -> `release/mac/`. onnxruntime Intel ghim 1.22.0 trong requirements.lock (marker platform_machine).

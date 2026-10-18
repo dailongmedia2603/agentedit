@@ -77,20 +77,23 @@
   }
  ],
  "vi": {
-  "ten": "Chồng thẻ xòe quạt — rút thẻ chủ lực",
-  "mo_ta": "Nền trắng sáng kiểu giao diện app: 5–9 thẻ mẫu (mỗi thẻ có hình biểu đồ / bảng / lịch nhỏ và tên) lần lượt bật từ dưới lên, càng lúc càng nhanh, chồng thành một xấp; rồi cả xấp xòe ra như tay cầm bài, thẻ giữa màu xanh đậm được rút lên có viền sáng, tiêu đề chạy lên phía trên và câu phụ hiện bên dưới.",
-  "hop_khi": "Nói về \"chúng tôi có cả một bộ / nhiều lựa chọn\": thư viện mẫu, các gói dịch vụ, bộ tính năng của app, danh sách khóa học, nhiều sản phẩm — rồi chốt vào lựa chọn nổi bật nhất; giới thiệu kho template, bộ công cụ, menu sản phẩm.",
-  "tranh_khi": "Chỉ có 1–2 thứ để nói; nội dung cảm xúc / đời thường không liên quan sản phẩm; cần nền tối; tên mục dài cả câu.",
-  "nang_luong": "vua",
+  "ten": "Xấp thẻ xòe quạt chọn mẫu nổi bật",
+  "mo_ta": "Các thẻ bài giao diện bo góc chứa số liệu và biểu đồ lần lượt phóng nhanh từ đáy màn hình lên rồi xếp chồng thành một xấp, sau đó tự động xòe rộng dạng nan quạt. Thẻ xanh trung tâm được nhấc cao nổi bật khỏi hàng, đồng thời tiêu đề lớn và phụ đề hướng dẫn lần lượt xuất hiện mượt mà ở phía trên và dưới bộ thẻ.",
+  "hop_khi": "Rất phù hợp khi người nói giới thiệu kho mẫu dựng sẵn, bộ giải pháp đa dạng, danh mục sản phẩm, hoặc khi so sánh nhiều phương án để đưa ra đề xuất tối ưu nhất. Nhịp điệu sôi nổi, trực quan, tạo cảm giác phong phú và chuyên nghiệp. Ví dụ câu nói: 'Chúng mình đã chuẩn bị sẵn kho tài nguyên gồm rất nhiều mẫu để bạn chọn dùng ngay.', 'Trong số 8 giải pháp này, đây là công cụ đem lại doanh thu cao nhất cho bạn.', 'Không cần bắt đầu từ con số không, bạn chỉ cần chọn một mẫu có sẵn phù hợp.'",
+  "mo_rong": "Thay các thẻ số liệu thành hình ảnh các combo sản phẩm và làm nổi bật combo bán chạy nhất -> video bán hàng online, giới thiệu combo Best Seller; thay nội dung thẻ thành danh sách khóa học hoặc lộ trình đào tạo với khóa cốt lõi ở giữa -> video tuyển sinh, giáo dục đào tạo; thay nội dung thẻ thành các dự án bất động sản tiêu biểu trong phân khúc -> video môi giới bất động sản so sánh và gợi ý căn đẹp nhất; đổi thẻ thành menu món ăn đặc sắc của nhà hàng -> video review ẩm thực F&B giới thiệu món 'signature'.",
+  "nang_luong": "cao",
   "chu_de": [
-   "danh sách",
-   "bộ sưu tập",
+   "xấp thẻ xòe quạt",
+   "giao diện app",
    "thư viện mẫu",
-   "gói dịch vụ",
-   "tính năng",
-   "app",
-   "sản phẩm",
-   "lựa chọn"
+   "kho tài nguyên",
+   "lựa chọn tối ưu",
+   "danh mục sản phẩm",
+   "giải pháp phần mềm",
+   "dịch vụ nổi bật",
+   "bán hàng online",
+   "bất động sản",
+   "ẩm thực"
   ]
  },
  "backdrop": true

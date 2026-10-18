@@ -63,20 +63,23 @@
   }
  ],
  "vi": {
-  "ten": "Mở màn dòng chảy dữ liệu, nhánh đổ về trục chính",
-  "mo_ta": "Nền tối, một mặt đất phối cảnh 3D thật: một dòng sáng xanh vàng chói (trục chính) uốn từ sát ống kính chạy về điểm tụ ở chân trời, hơn mười nhánh xám mọc từ hai bên và đổ vào nó; các thẻ nhãn nhỏ (#01 Đơn hàng, #02 Khách hàng...) cắm trên các nhánh, xung sáng chạy dọc dòng chảy. Máy quay bay thấp chậm rãi tiến về phía trước rồi dừng êm; điểm tụ bừng sáng và tiêu đề lớn hai phần hiện từng từ trên bầu trời.",
-  "hop_khi": "Mở đầu video / mở chương về dữ liệu, hệ thống, nền tảng gom nhiều thứ về một chỗ: 'tất cả dữ liệu của bạn về một nơi', 'kết nối mọi kênh bán hàng', AI tổng hợp thông tin, giới thiệu phần mềm quản lý, dashboard, tự động hóa quy trình; tone công nghệ, điềm tĩnh, sang.",
-  "tranh_khi": "Khoảnh khắc cần nhanh / đập mạnh (đây là đoạn không khí chậm 6 giây); video tone sáng, đời thường; nội dung không liên quan dữ liệu / hệ thống; dùng quá 1 lần mỗi video.",
-  "nang_luong": "thap",
+  "ten": "Dòng chảy dữ liệu 3D mở màn",
+  "mo_ta": "Không gian chiều sâu 3D trên nền tối mở ra với một luồng sáng vàng chanh chủ đạo uốn lượn hướng về điểm tụ rực rỡ ở đường chân trời. Các nhánh sáng phụ từ hai bên liên tục đổ dồn vào trục chính kèm theo các thẻ nhãn số thứ tự phát sáng lần lượt hiển thị danh mục thông tin. Máy quay trôi mượt mà về phía trước trong khi cụm tiêu đề lớn màu trắng và vàng chanh xuất hiện trang trọng ở góc trái, tạo nhịp điệu mở đầu cuốn hút và hiện đại.",
+  "hop_khi": "Phù hợp làm cảnh mở màn (hook hoặc intro) cho video khi người nói đặt vấn đề về việc tổng hợp thông tin, hợp nhất nguồn lực, chuyển đổi số hoặc quản lý tập trung nhiều luồng công việc phức tạp. Cảm xúc mang tính gợi mở, khơi dậy sự tò mò và định hình tầm nhìn vĩ mô. Ví dụ: 'Nếu bạn vẫn đang để các kênh bán hàng vận hành rời rạc, video này là dành cho bạn', 'Đây là cách chúng tôi gom toàn bộ dữ liệu kinh doanh phức tạp về đúng một màn hình duy nhất', 'Chào mừng bạn đến với bức tranh tổng quan toàn diện nhất về thị trường trong năm nay'.",
+  "mo_rong": "Đổi các thẻ nhãn thành các kênh bán lẻ (TikTok Shop, Shopee, Website, Cửa hàng trực tiếp) -> dùng cho thương mại điện tử và bán lẻ khi chia sẻ về mô hình bán hàng đa kênh; Đổi các thẻ nhãn thành các nguồn thu nhập thụ động và chủ động -> dùng cho tài chính cá nhân khi mở màn video hướng dẫn tự do tài chính; Đổi các thẻ nhãn thành các điểm dừng chân trong hành trình -> dùng cho du lịch và lữ hành khi mở đầu video giới thiệu tour khám phá; Đổi các thẻ nhãn thành các kỹ năng chuyên môn cần có -> dùng cho tuyển dụng và hướng nghiệp khi chia sẻ về lộ trình thăng tiến nhân sự; Đổi các thẻ nhãn thành các nhóm chi phí sản xuất -> dùng cho quản trị doanh nghiệp khi nói về tối ưu hóa dòng tiền.",
+  "nang_luong": "vua",
   "chu_de": [
-   "dữ liệu",
-   "mở đầu",
-   "nền tảng",
-   "kết nối",
-   "hệ thống",
-   "AI",
-   "tự động hóa",
-   "công nghệ"
+   "mở màn",
+   "intro hook",
+   "dòng chảy dữ liệu",
+   "đồ họa 3d",
+   "cinematic",
+   "hợp nhất dữ liệu",
+   "chuyển đổi số",
+   "thương mại điện tử",
+   "tài chính cá nhân",
+   "quản trị kinh doanh",
+   "tổng quan"
   ]
  },
  "backdrop": true

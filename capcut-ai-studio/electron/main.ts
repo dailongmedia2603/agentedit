@@ -4,6 +4,9 @@ import { homedir, tmpdir } from 'os'
 import { appendFileSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'fs'
 import { registerIpc } from './ipc'
 import { registerMotionIpc } from './motion-ipc'
+import { registerPhoneAgentIpc } from './phoneagent-ipc'
+import { startPosts, stopPosts } from './services/phoneagent/posts'
+import { startAutoPosting } from './services/phoneagent/auto'
 import { startMotion, stopAllMotion } from './services/motion/runner'
 import { startAutomation, stopAutomation } from './services/motion/automation'
 import { stopSidecar } from './services/sidecar'
@@ -224,6 +227,7 @@ app.whenReady().then(async () => {
   setAppMenu()
   registerIpc(() => mainWindow)
   registerMotionIpc(() => mainWindow)
+  registerPhoneAgentIpc(() => mainWindow)
   initUpdater()
 
   // Tu kiem TU CAP NHAT (ban dong goi): --update-selftest=<json> — khong mo cua so (scripts/selftest-update.mjs)
@@ -397,6 +401,9 @@ app.whenReady().then(async () => {
   // Tao video (skill) + Automation Video: xep hang lai video dang cho tu lan truoc, bat chu ky kiem tin moi
   startMotion()
   startAutomation()
+  // Dang video qua Phone Agent: tiep tuc luot dang do dang + lich dang; video Automation xong -> tu len lich dang
+  startPosts()
+  startAutoPosting()
   createWindow()
 
   app.on('activate', () => {
@@ -416,6 +423,7 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', () => {
   stopAutomation()
+  stopPosts()
   stopAllMotion()
   stopSidecar()
   stopRender()

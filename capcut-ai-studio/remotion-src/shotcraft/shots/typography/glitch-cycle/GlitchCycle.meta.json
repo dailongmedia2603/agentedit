@@ -60,20 +60,23 @@
   }
  ],
  "vi": {
-  "ten": "Màn hình trạng thái nhiễu glitch — các bước lần lượt",
-  "mo_ta": "Nền tím đen có vạch quét như màn hình máy: một dòng chữ in hoa kiểu mono rất lớn ở giữa luân phiên đổi qua 3-5 bước, mỗi lần đổi chữ vỡ thành ký tự nhiễu, giật ngang, tách màu hồng/xanh rồi đông lại thành bước tiếp theo; thanh tiến trình chạy đều tới 100% với 'BƯỚC n/N', cuối cùng bước cuối đứng yên sáng lên và trạng thái chuyển 'HOÀN TẤT'.",
-  "hop_khi": "Kể một quy trình/các bước máy móc, AI hoặc phần mềm đang chạy (xử lý, phân tích, xuất video, triển khai, cài đặt); đoạn 'hệ thống tự làm từng bước'; video công nghệ, AI, lập trình, automation.",
-  "tranh_khi": "Chủ đề đời sống nhẹ nhàng, cảm xúc; các bước dài cả câu; cần người xem đọc kỹ nhiều chữ; video tone sáng.",
+  "ten": "Quy trình chuyển bước giật nhiễu công nghệ",
+  "mo_ta": "Khung giao diện công nghệ góc cạnh kiểu cyberpunk hiển thị dòng chữ in hoa lớn ở trung tâm, liên tục đổi qua từng bước với hiệu ứng giật nhiễu glitch tách màu RGB sống động. Phía trên có nhãn phân loại cùng thẻ trạng thái động, phía dưới là thanh tiến trình phần trăm chạy tăng dần từ bước đầu đến hoàn tất 100%. Chuyển động cắt dứt khoát, nhịp nhanh và mang đậm hơi thở kỹ thuật số hiện đại.",
+  "hop_khi": "Phù hợp khi liệt kê các bước hành động, quy trình thực hiện theo thứ tự, quá trình tải và xử lý tự động hoặc các giai đoạn triển khai dự án trong video công nghệ, thủ thuật số. Nhịp điệu dứt khoát, logic, tạo cảm giác chuyên nghiệp và chuẩn xác. Ví dụ câu nói: 'Quy trình 4 bước tạo video tự động chuẩn chỉnh.', 'Hệ thống sẽ quét và xử lý toàn bộ dữ liệu trong vài giây.', 'Từ khâu kịch bản đến video hoàn chỉnh chỉ cần làm đúng các bước này.'.",
+  "mo_rong": "Đổi 4 bước thành các bước chăm sóc da (Tẩy trang -> Rửa mặt -> Serum -> Kem dưỡng), đổi màu sang tím pastel -> dùng cho video hướng dẫn làm đẹp, spa; đổi các bước thành quy trình mua bán nhà đất (Khảo sát -> Định giá -> Đặt cọc -> Công chứng) -> dùng cho ngành bất động sản, tư vấn đầu tư; đổi các bước thành lộ trình tự học (Nhập môn -> Luyện đề -> Thực chiến -> Nhận chứng chỉ) -> dùng cho video giáo dục, khóa học ngoại ngữ hoặc lập trình; đổi nhãn mã lệnh thành tên chiến dịch quảng cáo và các bước ra mắt sản phẩm mới -> dùng cho marketing, khởi nghiệp kinh doanh online.",
   "nang_luong": "cao",
   "chu_de": [
-   "AI",
+   "typography",
+   "glitch",
    "quy trình",
-   "các bước",
-   "phần mềm",
-   "tự động hoá",
+   "liệt kê bước",
    "công nghệ",
-   "danh sách",
-   "đang xử lý"
+   "tiến độ",
+   "cyberpunk",
+   "hướng dẫn",
+   "giáo dục",
+   "bất động sản",
+   "làm đẹp"
   ]
  },
  "backdrop": true

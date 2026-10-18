@@ -118,20 +118,22 @@
   }
  ],
  "vi": {
-  "ten": "Du hành trục thời gian — lướt qua các mốc rồi phanh gấp ở hiện tại",
-  "mo_ta": "Nền sáng, một trục thời gian ngang có các nút mốc và vạch nhỏ. Máy quay khởi động chậm rồi lao nhanh dọc trục (nhòe chuyển động), mỗi khi tới một mốc thì một thẻ trắng (nhãn mốc, ngày, tiêu đề, mô tả) bật lò xo dựng đứng lên từ trục; chữ mốc khổng lồ mờ trôi phía sau. Đến mốc cuối máy phanh gấp và đẩy sát vào thẻ cuối (tô màu nhấn).",
-  "hop_khi": "Kể lịch sử / hành trình theo thời gian: các phiên bản sản phẩm, cột mốc công ty, quá trình phát triển kênh, hành trình cá nhân qua các năm, lộ trình học; câu kiểu 'năm 2019 bắt đầu... đến nay...', 'từ phiên bản đầu tiên tới giờ'.",
-  "tranh_khi": "Không có trình tự thời gian; hơn 5 mốc; cần đọc kỹ từng mốc giữa chừng (các mốc giữa lướt nhanh, chỉ mốc cuối dừng lâu).",
+  "ten": "Lao nhanh dọc trục thời gian cột mốc",
+  "mo_ta": "Trên nền mờ văn phòng hiện đại, một trục thời gian ngang thanh mảnh định hình các mốc phát triển chính của câu chuyện. Thẻ mốc ban đầu bật nảy vững chắc với đầy đủ thông tin phiên bản, sau đó máy quay lập tức lao nhanh vun vút dọc theo trục với hiệu ứng nhòe chuyển động tốc độ cao. Máy quay phanh gấp dừng lại ấn tượng tại thẻ mốc hiện tại kèm chữ số mờ khổng lồ trôi phía sau, tạo nhịp điệu dồn dập đầy hứng khởi.",
+  "hop_khi": "Phù hợp khi người kể chia sẻ hành trình vượt khó, lịch sử phát triển sản phẩm qua từng thời kỳ, câu chuyện khởi nghiệp từ số không hoặc vạch ra lộ trình tương lai rõ ràng. Cảm xúc hào hứng, truyền cảm hứng và bứt phá. Ví dụ câu nói: \"Nhìn lại chặng đường từ phiên bản đầu tiên cho đến ngày hôm nay là cả một sự lột xác\", \"Chỉ trong vòng 4 tháng ngắn ngủi, đội ngũ đã đi qua từng cột mốc đáng nhớ này\", \"Hành trình từ con số không đến khi đạt được mục tiêu diễn ra theo từng bước sau\".",
+  "mo_rong": "Đổi các mốc phiên bản thành các chặng học tập từ mất gốc đến giao tiếp tự tin -> dùng cho đào tạo ngoại ngữ, giáo dục kỹ năng; đổi thành các giai đoạn thi công từ lúc đặt móng đến khi bàn giao nhà -> dùng cho xây dựng, kiến trúc, bất động sản; đổi các mốc thành tiến trình phục hồi da theo tuần -> dùng cho da liễu, spa làm đẹp; đổi thành lộ trình thăng tiến nghề nghiệp qua từng năm -> dùng cho tuyển dụng, định hướng nghề nghiệp; đổi thành lịch trình các điểm đến trong chuyến du lịch -> dùng cho du lịch, trải nghiệm.",
   "nang_luong": "cao",
   "chu_de": [
    "dòng thời gian",
-   "lịch sử",
-   "cột mốc",
-   "hành trình",
-   "phiên bản",
-   "phát triển",
-   "changelog",
-   "năm"
+   "cột mốc phát triển",
+   "hành trình khởi nghiệp",
+   "lộ trình đào tạo",
+   "phiên bản sản phẩm",
+   "kể chuyện",
+   "tua nhanh",
+   "bứt phá",
+   "công nghệ",
+   "tiến độ"
   ]
  },
  "backdrop": true

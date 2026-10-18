@@ -20,11 +20,11 @@
  "brand": "optional",
  "sfx": [{"at": 8, "type": "typing"}, {"at": 108, "type": "swoosh"}, {"at": 162, "type": "click"}],
  "vi": {
-  "ten": "Hai từ đối xứng rồi ghép lại, công bố tên sản phẩm",
-  "mo_ta": "Nền đen lạnh, chữ đơn cách nhỏ kiểu bảng thông số: từ 'RA MẮT' đứng yên bên trái, bên phải các từ khóa tính năng thay nhau cắt cứng theo nhịp máy (mỗi lần đổi chớp sáng 1 khung), hai bên cách mép đúng bằng nhau. Đến từ cuối (tên sản phẩm) thì dừng một nhịp, rồi hai từ trượt êm vào giữa ghép thành một cụm 'RA MẮT PHIÊN BẢN 2.0', dòng nghiêng nhỏ hiện ngay bên dưới.",
-  "hop_khi": "Đoạn tổng kết liệt kê tính năng rồi chốt bằng tên sản phẩm / phiên bản / ngày ra mắt: 'có phụ đề tự động, xuất 4K, nhạc AI... tất cả trong phiên bản 2.0'; kết video kiểu sự kiện ra mắt, tone công nghệ tối giản.",
-  "tranh_khi": "Cần chữ to đập mạnh; không có tên / thông điệp chốt cuối; nội dung cảm xúc đời thường; video tone sáng.",
-  "nang_luong": "thap",
-  "chu_de": ["ra mắt", "tính năng", "tên sản phẩm", "tổng kết", "phiên bản mới", "công nghệ", "kết video"]
+  "ten": "Chữ hội tụ lướt nhanh phong cách công nghệ",
+  "mo_ta": "Bố cục chữ ngang kiểu màn hình số trên nền tối lạnh, gồm cụm từ dẫn cố định bên trái và các từ khóa phụ bên phải thay đổi liên tục theo nhịp cắt giật nhanh. Ở điểm cao trào, hai bên trượt hội tụ vào chính giữa màn hình thành một dòng tiêu đề hoàn chỉnh duy nhất, sau đó hiển thị phụ đề thời gian chữ nghiêng ở bên dưới. Nhịp chuyển động sắc bén, dồn dập, đậm chất sự kiện ra mắt công nghệ cao cấp.",
+  "hop_khi": "Phù hợp khi người nói điểm nhanh hàng loạt tính năng nổi bật, liệt kê các vấn đề hoặc kích thích tò mò trước khi công bố một sản phẩm, tính năng, hoặc cột mốc đặc biệt với nhịp nói dồn dập và hào hứng. Ví dụ: 'Tự động tạo phụ đề, xuất 4K, nhạc nền AI - tất cả đã có trong phiên bản 2.0 ra mắt hôm nay.', 'Ba kỹ năng bạn bắt buộc phải có nếu muốn làm chủ AI trong năm nay.', 'Sau nhiều tháng ấp ủ, dự án tâm huyết nhất của mình chính thức ra mắt.'",
+  "mo_rong": "Đổi từ dẫn thành 'BẬT MÍ' và các mục bên phải thành các bước kiếm tiền online hội tụ về tên phương pháp -> dùng cho video tài chính cá nhân, MMO; đổi các mục thành tên các dịch vụ mới hội tụ về tên gói combo ưu đãi -> dùng cho nhà hàng F&B, spa làm đẹp; đổi thành các lỗi sai thường gặp hội tụ về giải pháp khắc phục -> dùng cho giáo dục, dạy học tiếng Anh hoặc lập trình; đổi thành các tính năng xe mới hội tụ về tên dòng xe -> dùng cho review ô tô, xe máy; đổi thành đếm ngược ngày hội tụ về tên sự kiện khai trương -> dùng cho bán lẻ, livestream bán hàng.",
+  "nang_luong": "cao",
+  "chu_de": ["ra mắt sản phẩm", "công nghệ AI", "liệt kê tính năng", "chữ hội tụ", "hiệu ứng cắt giật", "teaser sự kiện", "bán hàng", "giáo dục", "tuyển dụng", "khởi nghiệp", "đổi mới sáng tạo"]
  }
 }

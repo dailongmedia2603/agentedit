@@ -93,20 +93,23 @@
   }
  ],
  "vi": {
-  "ten": "Lia máy phanh gấp — lướt hành lang thẻ rồi dừng đúng thẻ cần xem",
-  "mo_ta": "Nền giấy sáng: một hàng thẻ ảnh nằm ngang trên 'hành lang' có thước kẻ và đầu phát đỏ cố định giữa khung. Giữ yên ~0.8s, rồi máy lia vụt sang ngang (nhòe chuyển động mạnh, bộ đếm số kiểu bánh xe quay tít), phanh gấp và trượt chậm dừng đúng thẻ số 09; thẻ đó nhấc lên phóng to 1.2× để đọc, các thẻ khác mờ đi, tên thẻ hiện dưới đầu phát.",
-  "hop_khi": "Chọn ra MỘT thứ nổi bật trong nhiều lựa chọn: 'trong hàng chục mẫu, đây là cái tốt nhất', tìm đúng tính năng / sản phẩm / dự án / bài viết; chuyển nhanh tới màn hình cần nói tiếp; khoe portfolio rồi dừng ở case nổi bật.",
-  "tranh_khi": "Chỉ có 1 ảnh và không cần cảm giác 'nhiều lựa chọn'; nội dung trầm, chậm; ảnh đích không đủ nét để phóng to.",
+  "ten": "Lia nhanh danh mục chọn thẻ tiêu biểu",
+  "mo_ta": "Hàng thẻ nội dung trượt ngang trên trục thước đo mỏng với bộ đếm số trang trọng ở góc trên và vạch đỏ định vị giữa khung hình. Toàn bộ dải thẻ lia vụt sang ngang với độ nhòe chuyển động cao và số thứ tự nhảy tít, sau đó phanh gấp rồi trượt chậm dừng lại chính xác ở thẻ đích. Thẻ được chọn phóng to ở vị trí trung tâm kèm nhãn chú thích màu đỏ xuất hiện bên dưới vạch chỉ số.",
+  "hop_khi": "Phù hợp cho khoảnh khắc chuyển ý đột ngột, lướt qua hàng loạt danh mục để chốt lại giải pháp nổi bật nhất, công bố quán quân hoặc điểm nhấn đắt giá trong video review công nghệ, chia sẻ kinh nghiệm kinh doanh hay phân tích dự án. Nhịp điệu nhanh, dứt khoát, đẩy cao sự kịch tính và tò mò trước khi tiết lộ kết quả. Ví dụ câu nói: 'Trong số hơn 10 mô hình mình từng thử nghiệm, đây là phương án tối ưu chi phí nhất', 'Bỏ qua các bước rườm rà, đây mới là tính năng then chốt bạn cần tập trung', 'Lướt qua hàng chục mẫu thiết kế, mình chọn ngay phương án số 9'.",
+  "mo_rong": "Đổi các thẻ thành hình ảnh sản phẩm thời trang, dừng ở mẫu bán chạy nhất -> video bán hàng online, thương mại điện tử; đổi thẻ thành các căn hộ và sơ đồ mặt bằng, dừng ở căn VIP -> video bất động sản, review nhà đẹp; đổi thẻ thành các món ăn trong thực đơn, dừng ở món đặc sản kèm nhãn giá -> video F&B, ẩm thực; đổi thẻ thành CV hoặc ảnh nhân sự, dừng ở ứng viên nổi bật -> video tuyển dụng, quản trị nhân sự; đổi thẻ thành các địa danh du lịch, dừng ở điểm check-in hấp dẫn nhất -> video du lịch, trải nghiệm lữ hành.",
   "nang_luong": "cao",
   "chu_de": [
    "chuyển cảnh",
-   "lựa chọn",
-   "portfolio",
-   "danh mục",
-   "sản phẩm",
-   "app",
-   "nổi bật",
-   "tìm kiếm"
+   "whip pan",
+   "lia nhanh",
+   "danh mục dự án",
+   "case study",
+   "chọn lọc",
+   "review sản phẩm",
+   "bất động sản",
+   "thương mại điện tử",
+   "chuyển ý",
+   "top lựa chọn"
   ]
  },
  "backdrop": true

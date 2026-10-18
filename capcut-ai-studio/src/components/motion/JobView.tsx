@@ -16,6 +16,7 @@ import { Badge, Button, Card, CardBody, Spinner } from '@/components/ui/primitiv
 import { cn } from '@/lib/utils'
 import { useFullUi } from '@/lib/clientUi'
 import { REVEAL_LABEL } from '@/lib/platform'
+import { PostButton } from '@/components/phoneagent/PostDialog'
 import { ASPECTS, MOTION_STAGES, aspectCls, fmtBytes, fmtDateTime, fmtDuration, isBusy, motionStageLabel } from '@/lib/motion'
 
 function useNow(active: boolean): number {
@@ -32,8 +33,15 @@ function Stepper({ job }: { job: MotionJob }) {
   const seen = new Set(job.stages || [])
   const done = job.status === 'done'
   const cur = job.stage
-  // bo buoc giong doc khi video khong loi
-  const steps = MOTION_STAGES.filter((s) => s.id !== 'voice' || job.brief.voice?.enabled)
+  // bo buoc giong doc khi video khong loi; 'images' / 'sound' chi co o quy trinh motion-video-director ('brand' thi khong,
+  // tru khi AI co lam)
+  const mvd = job.brief.engine === 'mvd'
+  const steps = MOTION_STAGES.filter(
+    (s) =>
+      (s.id !== 'voice' || job.brief.voice?.enabled) &&
+      (mvd || (s.id !== 'images' && s.id !== 'sound')) &&
+      (!mvd || s.id !== 'brand' || seen.has('brand'))
+  )
   return (
     <div className="flex flex-wrap items-center gap-x-1 gap-y-2">
       {steps.map((s, i) => {
@@ -237,6 +245,13 @@ export function JobView({ job, onNew, onDeleted, onDuplicate }: { job: MotionJob
                     </Button>
                   )}
                 </div>
+                <PostButton
+                  video={job.output}
+                  title={job.title}
+                  origin={{ kind: job.kind === 'auto' ? 'auto' : 'motion', refId: job.id, automationId: job.automationId }}
+                  defaultCaption={job.brief.source?.title || job.title}
+                  className="w-full"
+                />
                 {notice && <div className="text-xs text-emerald-700">{notice}</div>}
                 {onNew && (
                   <div className="flex justify-end pt-1">

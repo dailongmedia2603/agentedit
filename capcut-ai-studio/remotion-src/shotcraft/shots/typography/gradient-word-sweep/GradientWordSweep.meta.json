@@ -19,11 +19,11 @@
  "brand": "none",
  "sfx": [{"at": 12, "type": "riser"}, {"at": 30, "type": "ding"}, {"at": 35, "type": "pop"}],
  "vi": {
-  "ten": "Từ khóa được nạp điện — dải màu quét sáng",
-  "mo_ta": "Nền đen, câu khẩu hiệu chữ trắng nghiêng to giữa khung (1-2 dòng hiện lên từ mờ). Riêng TỪ KHÓA bị một dải màu gradient xanh–tím–hồng–cam quét rất nhanh từ trái sang phải như được nạp năng lượng, mép quét sáng chói nhất; sau đó từ khóa phát sáng 'thở' và thỉnh thoảng lóe những tia chớp tím hồng mảnh giữa các chữ.",
-  "hop_khi": "Câu nói có MỘT từ đắt cần nhấn mạnh: tốc độ ('nhanh gấp 10 lần'), sức mạnh AI, 'miễn phí', 'tự động', 'siêu', con số ấn tượng; cao trào năng lượng, khẩu hiệu sản phẩm công nghệ.",
-  "tranh_khi": "Câu dài nhiều ý; nội dung buồn / nghiêm túc / nhẹ nhàng; không có từ nào nổi bật để nhấn.",
-  "nang_luong": "cao",
-  "chu_de": ["khẩu hiệu", "nhấn mạnh", "AI", "công nghệ", "tốc độ", "điểm bán hàng"]
+  "ten": "Quét dải màu neon sáng từ khóa",
+  "mo_ta": "Khối văn bản ba dòng chữ trắng nghiêng thanh thoát nằm ngay giữa khung hình, nổi bật trên nền tối mờ ảo. Một luồng sáng cầu vồng neon rực rỡ lướt mượt mà từ trái sang phải xuyên qua từ khóa tiêu đề, tạo hiệu ứng phát sáng lấp lánh như được nạp năng lượng. Chuyển động êm ái, nhịp vừa phải, tập trung tối đa sự chú ý của mắt người xem vào trọng tâm thông điệp.",
+  "hop_khi": "Phù hợp để mở đầu video (hook), giới thiệu tính năng vượt trội, nhấn mạnh khẩu hiệu (slogan) hoặc định vị giá trị quan trọng nhất của sản phẩm và dịch vụ. Cảm xúc hiện đại, tinh tế, sang trọng và đầy tính thuyết phục. Ví dụ câu nói: 'Dựng video siêu tốc chỉ với một câu lệnh.', 'Bí quyết giúp bạn nhân đôi doanh số trong một tháng.', 'Giải pháp tối ưu nhất dành riêng cho doanh nghiệp của bạn.'.",
+  "mo_rong": "Đổi từ khóa thành 'ĐỘT PHÁ' hoặc tên công nghệ AI mới, giữ dải màu xanh tím -> dùng cho video review đồ công nghệ, giới thiệu phần mềm hoặc ứng dụng di động; đổi thành 'TRẺ HÓA' hoặc 'CĂNG BÓNG', đổi dải sáng sang ánh vàng hồng -> dùng cho video quảng cáo liệu trình spa, mỹ phẩm dưỡng da; đổi thành 'TIẾT KIỆM' hoặc 'LỢI NHUẬN', dải sáng xanh ngọc -> dùng cho video chia sẻ kinh nghiệm tài chính cá nhân, đầu tư tích lũy; đổi thành 'MIỄN PHÍ' kèm tên quà tặng hoặc tài liệu -> dùng cho video bán hàng, phễu thu hút khách hàng tiềm năng.",
+  "nang_luong": "vua",
+  "chu_de": ["typography", "quét màu", "gradient", "nhấn mạnh từ khóa", "hook", "slogan", "công nghệ", "mỹ phẩm", "tài chính", "bán hàng", "sang trọng"]
  }
 }

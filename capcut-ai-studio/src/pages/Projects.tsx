@@ -7,6 +7,9 @@ import { cn, fmtTime } from '@/lib/utils'
 import RunLogPanel from '@/components/RunLogPanel'
 import { REVEAL_LABEL } from '../lib/platform'
 import { isFullUi, useFullUi } from '@/lib/clientUi'
+import { PostButton } from '@/components/phoneagent/PostDialog'
+import { PostList } from '@/components/phoneagent/PostList'
+import { usePosts } from '@/components/phoneagent/usePhoneAgent'
 
 function statusBadge(status: string) {
   // ban cai cho may khac: nhan trang thai khong neu buoc (src/lib/clientUi.ts)
@@ -43,7 +46,7 @@ function projectVideos(project: Project): SourceVideo[] {
 }
 
 /** Video MP4 da render — phat qua may chu media cuc bo cua app */
-function RenderedVideo({ info, wide }: { info: RemotionRenderInfo; wide?: boolean }) {
+function RenderedVideo({ info, wide, project }: { info: RemotionRenderInfo; wide?: boolean; project: Project }) {
   const [url, setUrl] = useState('')
   useEffect(() => {
     window.studio.remotionMediaUrl(info.output).then((u) => setUrl(`${u}&v=${info.at}`))
@@ -79,6 +82,13 @@ function RenderedVideo({ info, wide }: { info: RemotionRenderInfo; wide?: boolea
             <Button variant="outline" size="sm" onClick={() => window.studio.showItemInFolder(info.output)}>
               <FolderOpen className="h-4 w-4" /> {REVEAL_LABEL}
             </Button>
+            <PostButton
+              size="sm"
+              video={info.output}
+              title={project.topic || projectVideos(project)[0]?.name || project.id}
+              origin={{ kind: 'edit', refId: project.id }}
+              defaultCaption={project.topic || ''}
+            />
           </div>
         </div>
       </CardBody>
@@ -255,6 +265,9 @@ export default function ProjectsPage({
   // ban cai cho may khac: an nhat ky + ket qua tung buoc (src/lib/clientUi.ts)
   const fullUi = useFullUi()
 
+  const [tab, setTab] = useState<'projects' | 'posts'>('projects')
+  const allPosts = usePosts()
+  const pendingPosts = allPosts.filter((x) => !['success', 'error', 'cancelled'].includes(x.status)).length
   const [confirmDel, setConfirmDel] = useState<Project | null>(null)
   const deleted = (id: string) => {
     setConfirmDel(null)
@@ -362,7 +375,7 @@ export default function ProjectsPage({
         </div>
 
         {p.rmRender?.output && (
-          <RenderedVideo info={p.rmRender} wide={(p.rmSpec?.width || 0) > (p.rmSpec?.height || 0)} />
+          <RenderedVideo info={p.rmRender} project={p} wide={(p.rmSpec?.width || 0) > (p.rmSpec?.height || 0)} />
         )}
 
         {confirmDel && <DeleteDialog project={confirmDel} onClose={() => setConfirmDel(null)} onDone={deleted} />}
@@ -392,12 +405,34 @@ export default function ProjectsPage({
             {hidden > 0 && ` (Ẩn ${hidden} dự án CapCut cũ — dữ liệu vẫn giữ nguyên.)`}
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={load}>
-          <RefreshCw className="h-4 w-4" /> Tải lại
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="inline-flex rounded-lg border border-black/10 bg-ink-50 p-0.5">
+            {(['projects', 'posts'] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={cn('no-drag rounded-md px-3 py-1.5 text-[12.5px] font-medium', tab === t ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-800/50')}
+              >
+                {t === 'projects' ? 'Dự án' : `Lịch đăng${pendingPosts ? ` (${pendingPosts})` : ''}`}
+              </button>
+            ))}
+          </div>
+          {tab === 'projects' && (
+            <Button variant="outline" size="sm" onClick={load}>
+              <RefreshCw className="h-4 w-4" /> Tải lại
+            </Button>
+          )}
+        </div>
       </div>
 
-      {loading ? (
+      {tab === 'posts' ? (
+        <div>
+          <p className="mb-3 text-[12.5px] text-ink-800/50">
+            Mọi lượt đăng qua Phone Agent (Edit Video, Tạo video, Automation Video). App cần đang mở tới giờ đăng; bấm vào một lượt để xem biến đã gửi, từng bước trên iPhone và ảnh màn hình.
+          </p>
+          <PostList posts={allPosts} showTitle empty="Chưa có lượt đăng nào — mở một video đã xuất rồi bấm “Đăng video”." />
+        </div>
+      ) : loading ? (
         <div className="flex justify-center py-16">
           <Spinner className="h-7 w-7" />
         </div>

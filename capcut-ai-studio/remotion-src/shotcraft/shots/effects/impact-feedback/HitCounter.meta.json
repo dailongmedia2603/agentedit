@@ -21,11 +21,11 @@
  "brand": "optional",
  "sfx": [{"at": 30, "type": "boom"}, {"at": 60, "type": "boom"}, {"at": 90, "type": "boom"}, {"at": 104, "type": "whoosh"}],
  "vi": {
-  "ten": "Combo 3 cú đập — thẻ tính năng rơi xuống kiểu game đối kháng",
-  "mo_ta": "Nền xanh coban rực kiểu poster game: 3 thẻ trắng lần lượt RƠI ĐẬP vào 3 ô (mỗi cú đập khựng hình 2 khung, thẻ nén bẹp, vòng sóng trắng + tia lửa vàng), con số 'sát thương' vàng nghiêng to dần bay lên, bộ đếm COMBO ×1 ×2 ×3 ở góc nảy mạnh dần. Cuối cùng câu chốt hiện từng từ, 2 từ cuối màu vàng.",
-  "hop_khi": "Kể liền 3 tính năng / 3 lợi ích / 3 bước / 3 lý do có con số đi kèm (tiết kiệm thời gian, tăng %, gấp mấy lần) — 'thứ nhất... thứ hai... và cú chốt'; giới thiệu app, phần mềm, sản phẩm mới, mẹo hiệu quả; giọng hào hứng, vui.",
-  "tranh_khi": "Không đủ 3 ý; chủ đề nghiêm túc / buồn / sang trọng (ngôn ngữ game rất đậm); không có con số nào để đặt vào.",
+  "ten": "Thẻ va đập tích lũy điểm combo",
+  "mo_ta": "Trên nền góc làm việc tối, 3 ô khung định vị sẵn lần lượt đón 3 tấm thẻ trắng dập mạnh từ trên xuống kèm hiệu ứng rung lắc và chỉ số trừ thời gian nổi bay lên. Bộ đếm COMBO ở góc trên bên phải nảy tăng dần từ x1 lên x3 theo từng cú đập, tạo hiệu ứng tích lũy thị giác đầy năng lượng. Kết màn bằng dòng tiêu đề đúc kết xuất hiện ở cạnh dưới với cụm từ kết quả then chốt được tô sáng màu vàng nổi bật.",
+  "hop_khi": "Dùng cho khoảnh khắc đếm dồn các lợi ích vượt trội, liệt kê tính năng ăn tiền hoặc đưa ra các bằng chứng kết quả liên tiếp khiến người xem bị thuyết phục hoàn toàn. Cực kỳ thích hợp với nhịp nói dồn dập, hào hứng, tự tin của video giới thiệu công cụ số, quảng bá giải pháp dịch vụ hoặc review sản phẩm công nghệ. Ví dụ: 'Bạn nhận được không chỉ 1, mà là 3 nâng cấp cực lớn!', 'Tính năng một: tự động hóa, tính năng hai: dịch tức thì, tính năng ba: tối ưu chi phí.', 'Vừa tiết kiệm thời gian, vừa cắt giảm nhân sự, lại tăng gấp ba doanh thu.'.",
+  "mo_rong": "Đổi 3 thẻ thành 3 tầng ưu đãi giảm giá kèm số tiền tiết kiệm (−500k, −1 triệu, Miễn phí ship) kết hợp combo x3 để chốt đơn bán hàng livestream hoặc flash sale; đổi 3 thẻ thành 3 nguyên nhân cốt lõi gây sụt giảm doanh thu kèm số liệu phần trăm để làm video phân tích kinh doanh, tài chính; đổi 3 thẻ thành 3 bước liệu trình làm đẹp kèm thời gian phục hồi để giới thiệu gói dịch vụ nha khoa, thẩm mỹ viện; đổi 3 thẻ thành 3 kỹ năng thực chiến được đào tạo kèm số giờ thực hành cho video tuyển sinh khóa học; đổi số nổi thành số liệu tăng trưởng (+300% traffic, +50% khách hàng) cho video báo cáo case study doanh nghiệp.",
   "nang_luong": "cao",
-  "chu_de": ["danh sách", "3 tính năng", "lợi ích", "con số", "app", "ra mắt", "game", "so sánh"]
+  "chu_de": ["thẻ va đập", "combo đếm số", "liệt kê lợi ích", "tính năng vượt trội", "bán hàng", "khuyến mãi", "công nghệ", "tiết kiệm thời gian", "marketing", "đột phá", "chốt sale", "case study"]
  }
 }

@@ -119,21 +119,23 @@
   }
  ],
  "vi": {
-  "ten": "Đàn chấm tụ lại thành con số tổng",
-  "mo_ta": "Nền trắng infographic: 320 chấm tròn bung ra rải khắp khung, rồi di cư theo 3 màn có lò xo — gom thành 2-3 cụm có tên nhóm và số, xếp thành các cột so sánh, cuối cùng tụ lại thành CON SỐ TỔNG khổng lồ ghép bằng chấm; tiêu đề đổi câu theo từng màn, chú thích nhóm và 'mỗi chấm ≈ X' hiện ở dưới.",
-  "hop_khi": "Nói về con số tổng có cấu thành: tổng người dùng / khách hàng / học viên / đơn hàng chia theo nguồn hoặc theo loại, 'mỗi con số là một con người', báo cáo quý, cột mốc cộng đồng, kết quả khảo sát chia nhóm.",
-  "tranh_khi": "Chỉ có một con số không có nhóm cấu thành; số liệu theo thời gian (dùng biểu đồ đường); tổng là chữ (vd '2 tỷ đồng' — chỉ ghép được chữ số và K/M/%); video tone tối, gắt.",
-  "nang_luong": "vua",
+  "ten": "Hạt dữ liệu gom nhóm ghép số tổng",
+  "mo_ta": "Hàng trăm hạt chấm tròn ba màu bung tỏa bay lơ lửng trên nền video mờ với tiêu đề định nghĩa quy mô đơn vị ở góc trên. Tiếp đó, các chấm tách ra chuyển động thành ba cụm hình cầu kèm số liệu cụ thể, rồi rơi xuống xếp chồng thành các cột biểu đồ so sánh trên một trục ngang. Ở màn kết, toàn bộ đàn hạt bùng lên rồi tụ lại ghép thành một con số tổng khổng lồ nổi bật cùng bảng chú giải chi tiết bên dưới, nhịp diễn hoạt biến hóa đa dạng và lôi cuốn.",
+  "hop_khi": "Dùng khi người nói công bố dữ liệu lớn, bóc tách cơ cấu chỉ số từ chi tiết đến toàn cảnh, hoặc phân tích quy mô tệp khách hàng và doanh số ấn tượng; nhịp điệu chuẩn xác, khoa học và đầy sức thuyết phục. Phù hợp với các câu nói như: 'Đằng sau mỗi con số này là hàng ngàn khách hàng thực tế...', 'Nhìn vào cơ cấu phân bổ, bạn sẽ thấy nhóm khách hàng nào đang mang lại giá trị cao nhất...', 'Và khi cộng dồn toàn bộ lại, đây chính là con số kỷ lục trong quý vừa qua...'.",
+  "mo_rong": "Đổi người dùng thành số đơn hàng đa kênh (Shopee, TikTok, Website) -> thương mại điện tử, báo cáo tổng doanh số bán lẻ; đổi thành số lượng học viên theo từng phân ban (Online, Offline, Doanh nghiệp) -> giáo dục, chứng minh quy mô đào tạo; đổi thành lượt khách lưu trú theo nguồn (Nội địa, Quốc tế, Khách đoàn) -> du lịch / khách sạn, tổng kết mùa cao điểm; đổi thành phân loại lưu lượng truy cập (Tự nhiên, Quảng cáo, Giới thiệu) -> marketing / công nghệ, phân tích kênh tăng trưởng; đổi thành số lượng sản phẩm căn hộ đã bàn giao theo từng phân khu -> bất động sản, báo cáo tiến độ dự án.",
+  "nang_luong": "cao",
   "chu_de": [
-   "số liệu",
-   "người dùng",
-   "cộng đồng",
-   "tổng số",
-   "cơ cấu",
-   "so sánh",
-   "biểu đồ cột",
    "infographic",
-   "báo cáo"
+   "dữ liệu chấm",
+   "biểu đồ cột",
+   "số liệu",
+   "tổng kết",
+   "báo cáo tài chính",
+   "thống kê",
+   "tăng trưởng",
+   "kinh doanh",
+   "thương mại điện tử",
+   "phân tích khách hàng"
   ]
  },
  "backdrop": true

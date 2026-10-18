@@ -6,33 +6,145 @@
  "duration": 170,
  "kind": "insert",
  "dark": true,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
  "hold": 142,
  "slots": [
-  {"id": "intro", "role": "title", "sample": "Ba bước\nđể bứt phá.", "max": 30, "note": "câu mở trên nền đen (chương 0); '\\n' = ngắt dòng"},
-  {"id": "intro_sub", "role": "subtitle", "sample": "Làm ít hơn, hiệu quả hơn. Bắt đầu từ hôm nay.", "max": 70, "optional": true},
-  {"id": "intro_label", "role": "kicker", "sample": "Giới thiệu", "max": 20, "optional": true, "note": "nhãn nhỏ, tự in hoa"},
-  {"id": "title1", "role": "title", "sample": "Một kế hoạch.\nCả nhóm rõ.", "max": 32, "note": "ý / bước 1 (nền xanh coban)"},
-  {"id": "sub1", "role": "subtitle", "sample": "Mọi việc được chia rõ ràng cho từng người ngay từ đầu.", "max": 80, "optional": true},
-  {"id": "label1", "role": "label", "sample": "Lên kế hoạch", "max": 20, "optional": true, "note": "tên chương 1, 1-3 từ"},
-  {"id": "title2", "role": "title", "sample": "Họp ngắn,\nchốt nhanh.", "max": 32, "note": "ý / bước 2 (nền cam đỏ)"},
-  {"id": "sub2", "role": "subtitle", "sample": "Mười lăm phút mỗi sáng là đủ để cả nhóm cùng nhịp.", "max": 80, "optional": true},
-  {"id": "label2", "role": "label", "sample": "Phối hợp", "max": 20, "optional": true},
-  {"id": "title3", "role": "title", "sample": "Việc lặp lại,\ncứ để máy lo.", "max": 32, "note": "ý / bước 3 (nền xanh chanh, chữ tối)"},
-  {"id": "sub3", "role": "subtitle", "sample": "Email, báo cáo, nhắc việc chạy tự động không cần chạm tay.", "max": 80, "optional": true},
-  {"id": "label3", "role": "label", "sample": "Tự động hóa", "max": 20, "optional": true}
+  {
+   "id": "intro",
+   "role": "title",
+   "sample": "Ba bước\nđể bứt phá.",
+   "max": 30,
+   "note": "câu mở trên nền đen (chương 0); '\\n' = ngắt dòng"
+  },
+  {
+   "id": "intro_sub",
+   "role": "subtitle",
+   "sample": "Làm ít hơn, hiệu quả hơn. Bắt đầu từ hôm nay.",
+   "max": 70,
+   "optional": true
+  },
+  {
+   "id": "intro_label",
+   "role": "kicker",
+   "sample": "Giới thiệu",
+   "max": 20,
+   "optional": true,
+   "note": "nhãn nhỏ, tự in hoa"
+  },
+  {
+   "id": "title1",
+   "role": "title",
+   "sample": "Một kế hoạch.\nCả nhóm rõ.",
+   "max": 32,
+   "note": "ý / bước 1 (nền xanh coban)"
+  },
+  {
+   "id": "sub1",
+   "role": "subtitle",
+   "sample": "Mọi việc được chia rõ ràng cho từng người ngay từ đầu.",
+   "max": 80,
+   "optional": true
+  },
+  {
+   "id": "label1",
+   "role": "label",
+   "sample": "Lên kế hoạch",
+   "max": 20,
+   "optional": true,
+   "note": "tên chương 1, 1-3 từ"
+  },
+  {
+   "id": "title2",
+   "role": "title",
+   "sample": "Họp ngắn,\nchốt nhanh.",
+   "max": 32,
+   "note": "ý / bước 2 (nền cam đỏ)"
+  },
+  {
+   "id": "sub2",
+   "role": "subtitle",
+   "sample": "Mười lăm phút mỗi sáng là đủ để cả nhóm cùng nhịp.",
+   "max": 80,
+   "optional": true
+  },
+  {
+   "id": "label2",
+   "role": "label",
+   "sample": "Phối hợp",
+   "max": 20,
+   "optional": true
+  },
+  {
+   "id": "title3",
+   "role": "title",
+   "sample": "Việc lặp lại,\ncứ để máy lo.",
+   "max": 32,
+   "note": "ý / bước 3 (nền xanh chanh, chữ tối)"
+  },
+  {
+   "id": "sub3",
+   "role": "subtitle",
+   "sample": "Email, báo cáo, nhắc việc chạy tự động không cần chạm tay.",
+   "max": 80,
+   "optional": true
+  },
+  {
+   "id": "label3",
+   "role": "label",
+   "sample": "Tự động hóa",
+   "max": 20,
+   "optional": true
+  }
  ],
  "images": [],
  "brand": "optional",
- "sfx": [{"at": 22, "type": "whoosh"}, {"at": 48, "type": "pop"}, {"at": 66, "type": "whoosh"}, {"at": 110, "type": "whoosh"}, {"at": 126, "type": "click"}],
+ "sfx": [
+  {
+   "at": 22,
+   "type": "whoosh"
+  },
+  {
+   "at": 48,
+   "type": "pop"
+  },
+  {
+   "at": 66,
+   "type": "whoosh"
+  },
+  {
+   "at": 110,
+   "type": "whoosh"
+  },
+  {
+   "at": 126,
+   "type": "click"
+  }
+ ],
  "vi": {
-  "ten": "Đẩy chương từ đáy — 3 ý, 3 màu nền",
-  "mo_ta": "Mở bằng câu tiêu đề lớn trên nền đen, rồi 3 lần cả màn hình màu (xanh coban → cam đỏ → xanh chanh) đẩy từ dưới lên, hất màn cũ ra khỏi khung. Mỗi chương: số 01/02/03 + tiêu đề chữ đậm rất to trồi lên + câu phụ, kèm một thẻ giao diện minh họa (khung chat nhóm có tin nhắn bật lên / cuộc họp trực tuyến có sóng âm / quy trình tự động đánh dấu từng bước). Khung dọc: chữ to phía trên, thẻ phóng lớn phía dưới.",
-  "hop_khi": "Người nói liệt kê đúng 3 bước / 3 lợi ích / 3 tính năng liên tiếp (vd \"thứ nhất… thứ hai… thứ ba\"), tóm tắt quy trình làm việc nhóm, giới thiệu app / phần mềm quản lý công việc, năng suất, tự động hóa.",
-  "tranh_khi": "Chỉ có 1 ý hoặc nhiều hơn 3 ý; nội dung cảm xúc, đời tư, không liên quan công việc / sản phẩm; đoạn nói quá ngắn (< 5 giây) vì cần thời gian đọc 3 chương.",
-  "nang_luong": "vua",
-  "chu_de": ["danh sách", "3 bước", "quy trình", "tính năng", "app", "làm việc nhóm", "tự động hóa", "năng suất", "chuyển chương"]
+  "ten": "Đẩy lớp ba bước kèm thẻ minh họa",
+  "mo_ta": "Mở đầu với tiêu đề giới thiệu trên nền đen, tiếp nối là ba màn hình màu sắc tương phản mạnh mẽ liên tục trồi từ dưới lên đẩy màn hình trước ra khỏi khung hình. Mỗi phân đoạn hiển thị số thứ tự lớn, tiêu đề đậm nét, phụ đề giải thích cùng một thẻ giao diện đồ họa sống động như khung chat, cuộc họp thoại hay danh sách tích chọn tự động. Chuyển động chuyển cảnh diễn ra dứt khoát, mang lại cảm giác tiến trình tăng tốc và mạch lạc.",
+  "hop_khi": "Phù hợp khi người nói chia sẻ quy trình từng bước, tóm lược lộ trình hành động hoặc phân loại ba luận điểm then chốt với nhịp điệu nhanh, dứt khoát và tràn đầy năng lượng thúc đẩy. Thích hợp cho các video hướng dẫn làm việc, xây dựng chiến lược, mẹo phát triển bản thân. Ví dụ: 'Chỉ cần làm đúng ba bước này, công việc của bạn sẽ nhẹ đi một nửa.', 'Đây là lộ trình ba giai đoạn giúp bạn xây kênh từ con số không.', 'Ba nguyên tắc quản lý thời gian mà bất kỳ ai cũng nên áp dụng ngay hôm nay.'",
+  "mo_rong": "Thay 3 bước thành 3 chiến lược quản lý tài chính (Ghi chép thu chi | Quỹ khẩn cấp | Đầu tư định kỳ) kèm thẻ biểu đồ -> video tài chính cá nhân; đổi thành 3 bước skincare chuẩn y khoa (Làm sạch | Đặc trị | Phục hồi) kèm thẻ quy trình -> video làm đẹp, da liễu; đổi thành 3 khâu chốt đơn bán hàng (Tạo thiện cảm | Nêu giải pháp | Đóng deal) kèm thẻ hội thoại -> video đào tạo kinh doanh; thay bằng 3 kỹ năng học ngoại ngữ (Nghe ngấm | Nói nhại | Phản xạ) kèm thẻ bài tập -> video giáo dục, ngoại ngữ; đổi thành 3 bước mua nhà an toàn (Kiểm tra quy hoạch | Khảo sát thực địa | Ký hợp đồng) -> video bất động sản.",
+  "nang_luong": "cao",
+  "chu_de": [
+   "đẩy lớp",
+   "chuyển cảnh ba bước",
+   "quy trình hành động",
+   "lộ trình",
+   "thẻ giao diện",
+   "quản lý công việc",
+   "tài chính",
+   "bán hàng",
+   "giáo dục",
+   "bất động sản",
+   "năng suất"
+  ]
  },
  "backdrop": false
 }

@@ -10,11 +10,13 @@ import { basename, extname, join } from 'path'
 import { randomBytes } from 'crypto'
 import { cmdQuote, killTree, needsShell, IS_WIN } from '../env'
 import { readState, writeState, motionJobsOf, MOTION_JOB_MAX } from '../state'
+import { loadProviders } from '../secrets'
 import { ENGINE_HOME, TOOLS_BIN } from '../paths'
 import { sidecarRequest } from '../sidecar'
 import { bundledSkillDir, MOTION_HOME, MOTION_JOBS_DIR } from './paths'
 import { installSkill, linkSkill } from './skill'
-import { briefMarkdown, briefTitle, runPrompt, validateBrief } from './prompt'
+import { briefMarkdown, briefTitle, runPrompt, runPromptMvd, validateBrief } from './prompt'
+import { elevenLabsKey, linkMvd, mvdSkillDir, MVD_NAME } from './mvd'
 import { prepareSound, type SoundSummary } from './sound'
 import { parseStreamLine, stageLabel } from './stages'
 import { allJobs, getJob, patchJob, putJob, recoverOnStart, removeJob } from './store'
@@ -22,6 +24,8 @@ import { claudeRun, ensureChrome, ensureShims, skillEnv } from './tools'
 import { getSaydiKey } from './saydi'
 import { assertLicensed, licenseDisabled, licenseState, onLicenseChange, requireLicense } from '../license'
 import type { MotionBrief, MotionJob } from './types'
+
+const MVD_MISSING = 'Máy này chưa cài skill motion-video-director (~/.claude/skills/motion-video-director) — chọn quy trình motionmaxxing.'
 
 /** Tran thoi gian 1 video (Claude dung + render + sua) */
 const MAX_RUN_MS = 2.5 * 3600 * 1000
@@ -135,6 +139,7 @@ export async function createMotionJob(
 ): Promise<MotionJob> {
   const err = validateBrief(brief)
   if (err) throw new Error(err)
+  if (brief.engine === 'mvd' && !mvdSkillDir()) throw new Error(MVD_MISSING)
   // Ban quyen (luat 13g): bam "Tao video" = hoi may chu (nhu "Phan tich video" cua Edit Video); video Automation tu tao
   // KHONG hoi may chu dinh ky — chi can lan kiem gan nhat (mo app / lan bam gan nhat) con hop le.
   if (opts.kind === 'auto') assertLicensed()
@@ -335,8 +340,19 @@ async function runJob(job: MotionJob, r: Running): Promise<void> {
   log('Chuẩn bị video: ' + job.title)
 
   const sk = skill()
-  linkSkill(dir, sk.dir)
+  const mmLink = linkSkill(dir, sk.dir)
   log(`Skill motionmaxxing ${sk.version}`)
+  // Quy trinh motion-video-director (ca nhan, motion/mvd.ts): skill tren may nay lam dao dien, motionmaxxing = bo cong cu
+  const mvd = job.brief.engine === 'mvd'
+  const mvdLink = join(dir, '.claude', 'skills', MVD_NAME)
+  let eleven: string | null = null
+  if (mvd) {
+    const mdir = mvdSkillDir()
+    if (!mdir) throw new Error(MVD_MISSING)
+    linkMvd(dir, mdir)
+    eleven = elevenLabsKey()
+    log(`Quy trình motion-video-director (skill trên máy: ${mdir}) · nhạc / SFX: ${eleven ? 'ElevenLabs' : 'kho âm thanh của app'}`)
+  } else rmSync(mvdLink, { recursive: true, force: true })
   const assets = readdirSync(join(dir, 'inputs')).filter((f) => !f.startsWith('.'))
   writeFileSync(join(dir, 'brief.md'), briefMarkdown(job.brief, assets))
   // Am thanh: bo tieng the gioi + SFX kho + nhac nen (sidecar) -> <job>/sound/ (khong co -> video chi co loi doc / cam)
@@ -349,7 +365,7 @@ async function runJob(job: MotionJob, r: Running): Promise<void> {
   } catch (e) {
     log('Không lấy được thư viện âm thanh: ' + String((e as Error).message || e).slice(0, 200))
   }
-  const prompt = runPrompt(job.brief, { sound: !!sound })
+  const prompt = mvd ? runPromptMvd(job.brief, { sound: !!sound, eleven: !!eleven }) : runPrompt(job.brief, { sound: !!sound })
   writeFileSync(join(dir, 'prompt.txt'), prompt)
   const mcp = join(dir, '.mcp-empty.json')
   writeFileSync(mcp, '{"mcpServers":{}}')
@@ -366,6 +382,17 @@ async function runJob(job: MotionJob, r: Running): Promise<void> {
     saydi = { key, voice: job.brief.voice.voiceId }
   }
   const env = skillEnv(cl.env, chrome, saydi)
+  if (mvd) {
+    env.MM = mmLink
+    env.MVD = mvdLink
+    if (eleven) env.ELEVENLABS_API_KEY = eleven
+    // Python cua sidecar (numpy + scipy + soundfile) cho script am thanh cua MVD; anh AI (illustrate.py) qua Codex
+    const st = readState()
+    if (st.venv_python && existsSync(st.venv_python)) env.MVD_AUDIO_PYTHON = st.venv_python
+    // model Codex o Cai dat API > GPT (anh tao bang tai khoan ChatGPT, nhu asset_gen.py)
+    const imgModel = loadProviders().gpt?.sub_model || ''
+    if (imgModel) env.AE_IMAGE_MODEL = imgModel
+  }
   if (r.cancelled) throw new Error('Đã huỷ.')
 
   // Video Automation doc noi dung tu web (khong tin cay): bo WebFetch / WebSearch. Moi video: cam lenh mang / truyen file
@@ -420,7 +447,7 @@ async function runJob(job: MotionJob, r: Running): Promise<void> {
         } catch {
           /* bo qua */
         }
-        const info = parseStreamLine(line)
+        const info = parseStreamLine(line, mvd ? ['motionmaxxing', MVD_NAME] : ['motionmaxxing'])
         for (const l of info.lines) log(l)
         if (info.result) result = info.result
         if (info.stage) {

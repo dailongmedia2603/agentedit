@@ -60,19 +60,24 @@
   }
  ],
  "vi": {
-  "ten": "Ba từ lợi ích tiếp sức — mỗi từ một hình học",
-  "mo_ta": "Nền tối kiểu phim, ba cụm từ lớn lần lượt thay nhau ở giữa màn hình (mỗi cụm ~2 giây): chữ hiện viền trước rồi tô trắng quét ngang, cụm cũ thu nhỏ mờ đi. Cụm 1 có vòng tròn nét đứt + vành vạch chia quay và một vệt sao chổi chạy vòng; cụm 2 có ba vòng tròn tự vẽ rồi xích lại khoá vào nhau; cụm 3 (kết luận) được quét ánh kim loại rồi bừng trắng, có vệt sáng dưới chân. Dưới mỗi cụm là câu giải thích, góc dưới có thanh tiến độ 01/02/03.",
-  "hop_khi": "Người nói nêu 3 lợi ích / 3 giá trị / 3 điểm song song: 'nhanh hơn, rẻ hơn, hiệu quả hơn', 'uy tín, tận tâm, chuyên nghiệp'; tóm tắt 3 ý chính, giá trị cốt lõi thương hiệu, phần giữa video cần nhịp đều có cao trào ở ý thứ ba.",
-  "tranh_khi": "Không phải đúng 3 ý; các ý dài (> 2 từ) hoặc không cùng cú pháp; cần hình ảnh sản phẩm cụ thể.",
-  "nang_luong": "vua",
+  "ten": "Tiếp sức từ khóa kèm đồ họa hình học",
+  "mo_ta": "Nền tối mờ hiện đại với từ khóa tiêu đề lớn ở trung tâm lần lượt xuất hiện theo hiệu ứng viền rỗng quét tô trắng đặc sắc, lồng ghép các chuyển động hình học tự vẽ như vòng tròn radar xoay và ba đường tròn khóa chặt. Phía dưới là thanh tiến độ 3 nấc nhảy bước nhịp nhàng, bên dưới mỗi từ khóa là câu giải nghĩa ngắn gọn lướt hiện đồng điệu. Nhịp chuyển động dứt khoát, sắc bén và mang đậm phong cách ra mắt sản phẩm công nghệ.",
+  "hop_khi": "Phù hợp khi người nói đưa ra tuyên ngôn cốt lõi, nhấn mạnh 3 ưu điểm cạnh tranh vượt trội, hoặc so sánh sự nâng cấp thần tốc so với phương pháp cũ. Hợp với cảm xúc hào hứng, mạnh mẽ, khẳng định đanh thép; ví dụ: 'Phiên bản mới này nhanh hơn, chặt chẽ hơn và mạnh mẽ hơn bao giờ hết', '3 lý do khiến giải pháp này đánh bại mọi đối thủ trên thị trường', 'Tiết kiệm thời gian, tối ưu chi phí và gia tăng lợi nhuận đột phá'.",
+  "mo_rong": "Đổi 3 từ thành 'An toàn hơn | Tiết kiệm hơn | Sinh lời cao' -> tư vấn tài chính bảo hiểm; đổi thành 'Trắng sáng | Căng bóng | Mờ thâm' -> giới thiệu bộ mỹ phẩm làm đẹp; đổi thành 'Vị chuẩn tươi | Đậm đà | Giao hỏa tốc' -> thương hiệu F&B thực phẩm; đổi thành 'Vị trí vàng | Chuẩn pháp lý | Giá trực tiếp' -> bán buôn bất động sản; đổi thành 'Dễ hiểu | Thực chiến | Hỗ trợ 1-1' -> tuyển sinh khóa học kỹ năng số.",
+  "nang_luong": "cao",
   "chu_de": [
-   "lợi ích",
-   "giá trị",
-   "3 ý",
-   "danh sách",
-   "thương hiệu",
-   "tóm tắt",
-   "câu chốt"
+   "typography hình học",
+   "tuyên ngôn",
+   "ưu điểm cạnh tranh",
+   "so sánh nâng cấp",
+   "đồ họa chữ",
+   "công nghệ",
+   "tài chính",
+   "bất động sản",
+   "mỹ phẩm",
+   "ẩm thực",
+   "giáo dục",
+   "bán hàng"
   ]
  },
  "backdrop": true

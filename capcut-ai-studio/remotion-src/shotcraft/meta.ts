@@ -81,9 +81,10 @@ export interface ShotMeta {
     ten: string
     /** trong thay gi, chuyen dong ra sao (2-3 cau) */
     mo_ta: string
-    /** dung khi nao trong video edit (noi dung loi noi / khoanh khac) */
+    /** DUNG KHI / PHU HOP: khoanh khac / noi dung loi noi / cam xuc mau truyen tai tot (Gemini xem preview viet) */
     hop_khi: string
-    tranh_khi: string
+    /** MO RONG khi tuy bien: doi chu / anh / mau / so muc -> dung cho nganh / chu de khac */
+    mo_rong: string
     nang_luong: 'thap' | 'vua' | 'cao'
     /** tu khoa chu de (vd "dien thoai", "so lieu", "so sanh", "ra mat") */
     chu_de: string[]

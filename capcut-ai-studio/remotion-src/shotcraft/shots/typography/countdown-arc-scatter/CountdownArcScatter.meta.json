@@ -67,19 +67,22 @@
   }
  ],
  "vi": {
-  "ten": "Mặt đồng hồ quay rồi dừng ở con số",
-  "mo_ta": "Nền giấy trắng ấm kiểu đồng hồ đo: một vòng số lớn xếp theo cung tròn (45, 35, 28… giảm dần) quét nhanh rồi phanh gấp, khựng nhẹ đúng ở con số chính trên đỉnh cung; các số khác nhòe tan, con số chính trượt xuống phóng to thành chữ đầu của câu tiêu đề, các từ còn lại hiện mờ → rõ, từ cuối đổi sang màu nhấn; một dòng phụ trong khung hiện bên dưới.",
-  "hop_khi": "Nhấn mạnh một con số NHỎ đáng kinh ngạc: 'chỉ 5 phút là xong', 'giảm còn 3 bước', 'chỉ 99 nghìn', 'ra kết quả trong 10 giây'; khoảnh khắc chốt lợi ích về thời gian / chi phí / công sức.",
-  "tranh_khi": "Con số tăng trưởng (số lớn mới là điểm nhấn), không có con số; số quá dài (> 6 ký tự).",
+  "ten": "Vòng số đo tốc độ cài đặt",
+  "mo_ta": "Trên nền kính mờ tối giản nhìn xuyên hậu cảnh làm việc, một vòng cung thước đo kỹ thuật số chứa dãy số lớn quay lướt nhanh rồi phanh gấp tại con số tâm điểm. Các số phụ lập tức tan biến, con số chính trượt vào giữa kết hợp thành dòng tiêu đề lớn nổi bật từ khóa chính, đồng thời thanh phụ đề thẻ mờ bung ra phía dưới. Nhịp chuyển động nhanh, dứt khoát và tạo điểm nhấn thị giác cực mạnh vào thời gian hoặc mốc số lượng then chốt.",
+  "hop_khi": "Phù hợp khi người nói nhấn mạnh tốc độ xử lý nhanh, thời gian hoàn thành siêu ngắn hoặc cam kết kết quả tức thì nhằm xóa bỏ rào cản sợ phức tạp của người xem; nhịp điệu sôi nổi, dứt khoát và giàu sức sống. Ví dụ: 'Chỉ đúng 5 phút là bạn đã cài đặt xong mà không cần biết cấu hình phức tạp', 'Chưa đầy 30 giây để tạo ngay một trang bán hàng chuyên nghiệp cho riêng bạn', 'Cam kết chỉ sau 7 ngày kiên trì bạn sẽ thấy sự thay đổi rõ rệt trên vóc dáng'.",
+  "mo_rong": "Đổi số và chữ thành thời gian giao đồ ăn như 15 phút -> ứng dụng F&B cam kết giao hàng nhanh nóng hổi; đổi thành số ngày lộ trình như 14 ngày siết cơ -> fitness cam kết hiệu quả giảm cân; đổi thành số bước như 3 bước mở tài khoản -> ngân hàng số hướng dẫn thao tác online nhanh gọn; đổi thành số phút nấu ăn như 10 phút chuẩn bị bữa sáng -> kênh ẩm thực hướng dẫn món ăn nhanh lành mạnh; đổi thành số giây thanh toán -> thương mại điện tử giới thiệu tính năng mua hàng một chạm.",
   "nang_luong": "cao",
   "chu_de": [
-   "số liệu",
-   "con số",
-   "đếm ngược",
-   "thời gian",
-   "tốc độ",
-   "tiết kiệm",
-   "giá"
+   "đếm số thước đo",
+   "tốc độ nhanh",
+   "vòng cung kỹ thuật",
+   "cam kết thời gian",
+   "kinetic typography",
+   "tiêu đề ấn tượng",
+   "hướng dẫn nhanh",
+   "f&b giao hàng",
+   "fitness giảm cân",
+   "fintech công nghệ"
   ]
  },
  "backdrop": true

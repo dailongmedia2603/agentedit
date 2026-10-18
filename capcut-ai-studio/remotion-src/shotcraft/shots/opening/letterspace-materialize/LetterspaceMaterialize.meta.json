@@ -6,22 +6,55 @@
  "duration": 105,
  "kind": "insert",
  "dark": true,
- "portrait": {"mode": "native"},
- "rate": [0.8, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.8,
+  1.2
+ ],
  "hold": 70,
  "slots": [
-  {"id": "name", "role": "name", "sample": "sáng tạo mỗi ngày", "max": 24, "note": "1-4 từ được 'viết' ra bằng nét mảnh, chữ thường giãn rộng: tên sản phẩm / kênh / thương hiệu hoặc một từ khóa chủ đề; trống -> tên thương hiệu video. Chữ hoa sẽ thành chữ thường"}
+  {
+   "id": "name",
+   "role": "name",
+   "sample": "sáng tạo mỗi ngày",
+   "max": 24,
+   "note": "1-4 từ được 'viết' ra bằng nét mảnh, chữ thường giãn rộng: tên sản phẩm / kênh / thương hiệu hoặc một từ khóa chủ đề; trống -> tên thương hiệu video. Chữ hoa sẽ thành chữ thường"
+  }
  ],
  "images": [],
  "brand": "optional",
- "sfx": [{"at": 16, "type": "riser"}, {"at": 68, "type": "ding"}],
+ "sfx": [
+  {
+   "at": 16,
+   "type": "riser"
+  },
+  {
+   "at": 68,
+   "type": "ding"
+  }
+ ],
  "vi": {
-  "ten": "Chữ kết tinh — nét mảnh tự viết trên mặt hồ hoàng hôn",
-  "mo_ta": "Trên ảnh nền theo chủ đề (không có ảnh nền: phong cảnh hồ lúc chạng vạng, trời tím hồng, dải núi, mặt nước lấp lánh, chậm rãi tiến gần). Một dòng chữ thường giãn rộng, nét đơn mảnh phát sáng tự VIẾT ra: mọi chữ cái (kể cả dấu tiếng Việt) cùng bắt đầu và cùng hoàn thành một lúc, rồi lóe sáng nhẹ (cảnh hồ: bóng chữ in mờ dưới mặt nước). Tĩnh lặng, sang trọng.",
-  "hop_khi": "Mở đầu / kết video bằng tên thương hiệu, tên kênh, tên sản phẩm; chốt một từ khóa cảm xúc (vd 'bình yên', 'khởi đầu mới'); khoảnh khắc chậm, truyền cảm hứng, du lịch, lifestyle, chữa lành.",
-  "tranh_khi": "Câu dài (hơn ~4 từ), số liệu, danh sách; nhịp nhanh / năng lượng cao; nội dung kỹ thuật cần đọc kỹ.",
+  "ten": "Chữ nét mảnh phát sáng hiện dần",
+  "mo_ta": "Trên nền tối mờ ảo của góc bàn làm việc ban đêm, dòng chữ thường giãn cách nét thanh mảnh bắt đầu tự vẽ viền đồng loạt. Toàn bộ chữ cái và dấu thanh tiếng Việt sáng bừng lên cùng lúc với hiệu ứng viền neon trắng tinh khôi, tạo cảm giác thanh lịch và bay bổng giữa khung hình. Ánh sáng giữ nguyên độ tỏa nhẹ và trôi chậm rãi trong không gian tĩnh mịch trước khi kết thúc cảnh.",
+  "hop_khi": "Dùng làm intro mở đầu video, khoảnh khắc lắng đọng đưa ra thông điệp triết lý, định vị slogan kênh, hoặc nhấn mạnh một cụm từ truyền cảm hứng trước khi vào câu chuyện. Hợp với tông giọng trầm ấm, chậm rãi, tạo không gian thư giãn hoặc nghệ thuật. Ví dụ câu nói: 'Hôm nay mình muốn chia sẻ với bạn một thói quen nhỏ đã thay đổi cách mình làm việc.', 'Sáng tạo không phải là năng khiếu bẩm sinh, mà là sự kỷ luật mỗi ngày.', 'Nếu bạn đang cảm thấy bế tắc, hãy dừng lại một nhịp và lắng nghe chính mình.'",
+  "mo_rong": "Đổi dòng chữ thành tên thương hiệu hoặc tên kênh -> intro mở màn nhận diện kênh podcast, vlog đời sống; Đổi chữ thành danh ngôn hoặc thông điệp ngắn -> video chữa lành, thiền định, phát triển bản thân; Đổi chữ thành tên món đặc trưng hoặc thông điệp quán -> intro nghệ thuật cho quán cafe, quầy bar, ẩm thực; Đổi chữ thành tên bộ sưu tập hoặc định vị sang trọng -> quảng cáo tối giản cho thời trang, trang sức, nước hoa; Đổi chữ thành tên studio kiến trúc hoặc thông điệp sống đẹp -> video thiết kế nội thất, bất động sản nghỉ dưỡng.",
   "nang_luong": "thap",
-  "chu_de": ["logo", "tên thương hiệu", "mở đầu", "kết thúc", "chữ viết tay", "thiên nhiên", "cảm hứng", "lifestyle"]
+  "chu_de": [
+   "mở màn",
+   "intro",
+   "chữ phát sáng",
+   "tối giản",
+   "châm ngôn",
+   "thương hiệu cá nhân",
+   "podcast",
+   "vlog",
+   "thư giãn",
+   "nghệ thuật",
+   "thời trang",
+   "nội thất"
+  ]
  },
  "backdrop": true
 }

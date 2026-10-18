@@ -6,25 +6,76 @@
  "duration": 75,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.8, 1.25],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.8,
+  1.25
+ ],
  "hold": 44,
  "slots": [
-  {"id": "before", "role": "title", "sample": "Chào đón phiên bản", "max": 40, "note": "phần câu đứng TRƯỚC từ được nhấn"},
-  {"id": "highlight", "role": "title", "sample": "mới", "max": 18, "note": "1–3 từ then chốt: in nghiêng + nét bút dạ gạch chân (luôn nằm trọn 1 dòng)"},
-  {"id": "after", "role": "title", "sample": "", "max": 30, "optional": true, "note": "phần câu SAU từ được nhấn (thường để trống)"},
-  {"id": "line2", "role": "name", "sample": "", "max": 30, "optional": true, "note": "dòng thứ hai (tên sản phẩm / vế sau); bỏ trống = logo + tên thương hiệu của video, không có thương hiệu thì chỉ còn dòng 1"}
+  {
+   "id": "before",
+   "role": "title",
+   "sample": "Chào đón phiên bản",
+   "max": 40,
+   "note": "phần câu đứng TRƯỚC từ được nhấn"
+  },
+  {
+   "id": "highlight",
+   "role": "title",
+   "sample": "mới",
+   "max": 18,
+   "note": "1–3 từ then chốt: in nghiêng + nét bút dạ gạch chân (luôn nằm trọn 1 dòng)"
+  },
+  {
+   "id": "after",
+   "role": "title",
+   "sample": "",
+   "max": 30,
+   "optional": true,
+   "note": "phần câu SAU từ được nhấn (thường để trống)"
+  },
+  {
+   "id": "line2",
+   "role": "name",
+   "sample": "",
+   "max": 30,
+   "optional": true,
+   "note": "dòng thứ hai (tên sản phẩm / vế sau); bỏ trống = logo + tên thương hiệu của video, không có thương hiệu thì chỉ còn dòng 1"
+  }
  ],
  "images": [],
  "brand": "optional",
- "sfx": [{"at": 0, "type": "swoosh"}, {"at": 32, "type": "swoosh"}],
+ "sfx": [
+  {
+   "at": 0,
+   "type": "swoosh"
+  },
+  {
+   "at": 32,
+   "type": "swoosh"
+  }
+ ],
  "vi": {
-  "ten": "Tiêu đề lớn — bút dạ gạch chân từ khoá",
-  "mo_ta": "Nền giấy trắng ấm, tiêu đề chữ đậm rất lớn ở giữa hiện từ mờ trượt lên từng dòng; khi chữ đứng yên, một nét bút dạ màu đen (đầu nét thon, mép hơi xơ, hơi xéo lên) quét nhanh từ trái sang phải dưới từ khoá in nghiêng. Dòng hai có thể là tên sản phẩm hoặc logo + tên thương hiệu.",
-  "hop_khi": "Câu chốt có MỘT từ khoá cần nhấn ('cách làm MỚI', 'quan trọng NHẤT', 'MIỄN PHÍ', 'chỉ 5 phút'); giới thiệu phiên bản / tính năng mới; định nghĩa, khẳng định ngắn; tone tối giản, sạch, kiểu Notion / Apple.",
-  "tranh_khi": "Câu dài nhiều ý (> 2 dòng) hoặc không có từ khoá rõ; cần năng lượng cao, hiệu ứng mạnh; video tone tối.",
-  "nang_luong": "thap",
-  "chu_de": ["tiêu đề", "từ khoá", "nhấn mạnh", "tính năng mới", "ra mắt", "thông điệp", "tối giản"]
+  "ten": "Tiêu đề gạch chân bút dạ nổi bật",
+  "mo_ta": "Trên nền mờ tối giản, cụm tiêu đề chữ in đậm kích thước lớn xuất hiện ở chính giữa khung hình với hiệu ứng trượt nhẹ từ mờ đến rõ. Ngay khi chữ vừa đứng yên, một nét bút dạ đen vẽ nhanh từ trái sang phải gạch chân dứt khoát dưới từ khóa in nghiêng then chốt, phía dưới kèm logo và tên thương hiệu hiện ra tinh tế. Nhịp chuyển động nhanh, gọn gàng, lập tức khóa chặt thị giác người xem vào thông điệp trọng tâm.",
+  "hop_khi": "Dùng cho khoảnh khắc mở đầu tạo câu hook giữ chân người xem, công bố tin tức quan trọng, giới thiệu tên khóa học hay sản phẩm mới, hoặc nhấn mạnh một từ khóa vàng mang tính cốt lõi trong bài chia sẻ. Phù hợp với các câu nói kiểu: 'Đây chính là phương pháp mới giúp bạn nhân ba doanh số trong tháng này', 'Đừng bỏ lỡ chương trình ưu đãi đặc biệt chỉ diễn ra duy nhất hôm nay', 'Điều quan trọng nhất khi đầu tư bất động sản chính là vị trí'.",
+  "mo_rong": "Đổi từ khóa gạch chân thành mức giá sốc hoặc phần trăm giảm giá -> dùng cho video livestream bán hàng thời trang hoặc khuyến mại F&B; đổi thành tên thương hiệu và slogan doanh nghiệp -> dùng cho video giới thiệu dịch vụ spa, thẩm mỹ viện hoặc studio ảnh; đổi nét vẽ gạch chân sang màu đỏ nổi bật cùng tiêu đề cảnh báo -> dùng cho video tư vấn sức khỏe, dinh dưỡng hoặc pháp luật; đổi dòng chữ thành câu trích dẫn đắt giá -> dùng cho video chia sẻ phát triển bản thân và triết lý sống.",
+  "nang_luong": "vua",
+  "chu_de": [
+   "tiêu đề gạch chân",
+   "bút dạ quang",
+   "từ khóa nổi bật",
+   "hook mở đầu",
+   "thông báo mới",
+   "bán hàng",
+   "giáo dục",
+   "phát triển bản thân",
+   "giới thiệu thương hiệu",
+   "khuyến mãi"
+  ]
  },
  "backdrop": true
 }

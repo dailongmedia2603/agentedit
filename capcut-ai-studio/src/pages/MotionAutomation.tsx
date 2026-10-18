@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Bot, Globe, Pencil, Play, Plus, Power, RefreshCw, Rss, Trash2, X } from 'lucide-react'
+import { ArrowLeft, Bot, Globe, Pencil, Play, Plus, Power, RefreshCw, Rss, Send, Trash2, X } from 'lucide-react'
 import { Badge, Button, Card, CardBody, Input, Spinner } from '@/components/ui/primitives'
 import { cn } from '@/lib/utils'
 import { BriefForm, Field, Section } from '@/components/motion/BriefForm'
 import { JobView } from '@/components/motion/JobView'
 import { ReadinessBanner, StatusIcon } from '@/pages/MotionCreate'
 import { emptyBrief, fmtDateTime, statusText, useMotionJobs } from '@/lib/motion'
+import { PostTargetPicker, type PickerMeta } from '@/components/phoneagent/PostTargetPicker'
+import { PostList } from '@/components/phoneagent/PostList'
+import { usePosts } from '@/components/phoneagent/usePhoneAgent'
 
 /**
  * "AUTOMATION VIDEO" (2026-10-14): du an = thong tin chung + nguon tin (website / RSS / trang Facebook). App dang mo thi
@@ -23,9 +26,13 @@ interface Draft {
   maxPerCheck: number
   maxPerDay: number
   skipExisting: boolean
+  post: AutoPostConfig
 }
 
 const skey = () => 's' + Math.random().toString(36).slice(2, 8)
+
+const newPost = (): AutoPostConfig => ({ enabled: false, deviceId: '', scriptId: '', variables: {}, timing: 'now', delayMin: 30, slots: ['08:00', '12:00', '19:00'] })
+const TOKEN_HINT = 'Mẫu: {title} tiêu đề tin · {summary} tóm tắt · {link} link bài · {source} tên nguồn · {channel} tên kênh · {date} ngày'
 
 function newDraft(): Draft {
   const d = emptyBrief()
@@ -37,7 +44,8 @@ function newDraft(): Draft {
     intervalMin: 30,
     maxPerCheck: 2,
     maxPerDay: 10,
-    skipExisting: true
+    skipExisting: true,
+    post: newPost()
   }
 }
 
@@ -51,8 +59,99 @@ function fromProject(p: AutoProject): Draft {
     intervalMin: p.intervalMin,
     maxPerCheck: p.maxPerCheck,
     maxPerDay: p.maxPerDay,
-    skipExisting: p.skipExisting
+    skipExisting: p.skipExisting,
+    post: p.post ? { ...newPost(), ...p.post } : newPost()
   }
+}
+
+/** "Tu dong dang" cua du an Automation: video tao xong -> iPhone + kich ban Phone Agent dang len kenh theo lich. */
+function AutoPostSection({ post, onChange, onMeta }: { post: AutoPostConfig; onChange: (p: AutoPostConfig) => void; onMeta: (m: PickerMeta) => void }) {
+  const [slotDraft, setSlotDraft] = useState('')
+  const slots = post.slots || []
+  const addSlot = () => {
+    const m = /^(\d{1,2}):(\d{2})$/.exec(slotDraft.trim())
+    if (!m || Number(m[1]) > 23 || Number(m[2]) > 59) return
+    const v = `${m[1].padStart(2, '0')}:${m[2]}`
+    if (!slots.includes(v)) onChange({ ...post, slots: [...slots, v].sort() })
+    setSlotDraft('')
+  }
+  return (
+    <Section title="Tự động đăng lên kênh (Phone Agent)" icon={<Send className="h-4 w-4 text-brand-500" />}>
+      <label className="flex cursor-pointer items-start gap-2 text-[13px] text-ink-800/70">
+        <input type="checkbox" checked={post.enabled} onChange={(e) => onChange({ ...post, enabled: e.target.checked })} className="mt-0.5 accent-brand-500" />
+        <span>
+          Video tạo xong thì <b>tự đăng</b>: app tải video lên, truyền vào iPhone và chạy kịch bản Phone Agent để đăng lên kênh (TikTok / Facebook…).
+          Chỉ video tạo xong <b>sau khi bật</b> mới tự đăng.
+        </span>
+      </label>
+      {post.enabled && (
+        <>
+          <PostTargetPicker
+            value={{ deviceId: post.deviceId, deviceName: post.deviceName, scriptId: post.scriptId, scriptName: post.scriptName, videoVar: post.videoVar, variables: post.variables || {} }}
+            onChange={(t) => onChange({ ...post, ...t })}
+            onMeta={onMeta}
+            defaultCaption="{title}"
+            tokenHint={TOKEN_HINT}
+          />
+          <div>
+            <div className="mb-1 text-xs font-medium text-ink-800/60">Lịch đăng</div>
+            <div className="inline-flex rounded-lg border border-black/10 bg-ink-50 p-0.5">
+              {(
+                [
+                  ['now', 'Đăng ngay khi xong'],
+                  ['delay', 'Sau một khoảng'],
+                  ['slots', 'Theo khung giờ']
+                ] as const
+              ).map(([k, l]) => (
+                <button
+                  key={k}
+                  onClick={() => onChange({ ...post, timing: k })}
+                  className={cn('no-drag rounded-md px-3 py-1.5 text-[12.5px] font-medium', post.timing === k ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-800/50')}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
+            {post.timing === 'delay' && (
+              <div className="mt-2 flex items-center gap-2 text-[13px] text-ink-800/70">
+                Đăng sau
+                <Input type="number" min={0} className="h-9 w-24" value={post.delayMin ?? 30} onChange={(e) => onChange({ ...post, delayMin: Number(e.target.value) || 0 })} />
+                phút kể từ khi video tạo xong
+              </div>
+            )}
+            {post.timing === 'slots' && (
+              <div className="mt-2 space-y-2">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {slots.map((sl) => (
+                    <span key={sl} className="inline-flex items-center gap-1 rounded-full bg-brand-500/10 px-2.5 py-1 text-[12.5px] font-medium text-brand-700">
+                      {sl}
+                      <button className="no-drag text-brand-700/60 hover:text-brand-700" onClick={() => onChange({ ...post, slots: slots.filter((x) => x !== sl) })}>
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  ))}
+                  <Input
+                    className="h-8 w-24"
+                    placeholder="HH:MM"
+                    value={slotDraft}
+                    onChange={(e) => setSlotDraft(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && addSlot()}
+                  />
+                  <Button variant="outline" size="sm" onClick={addSlot}>
+                    <Plus className="h-3.5 w-3.5" /> Thêm giờ
+                  </Button>
+                </div>
+                <div className="text-[11.5px] text-ink-800/45">
+                  Mỗi khung giờ đăng 1 video / ngày: video xong sẽ vào khung giờ trống gần nhất (hết khung hôm nay thì sang ngày mai).
+                </div>
+              </div>
+            )}
+            <div className="mt-1.5 text-[11.5px] text-ink-800/45">Lịch đăng do app giữ — app cần đang mở tới giờ đăng. iPhone đang bận / ngoại tuyến thì lượt đăng tự chờ (tối đa 6 giờ).</div>
+          </div>
+        </>
+      )}
+    </Section>
+  )
 }
 
 function SourceRow({
@@ -141,6 +240,7 @@ function SourceRow({
 
 function ProjectForm({ initial, onSaved, onCancel }: { initial: Draft; onSaved: (p: AutoProject) => void; onCancel: () => void }) {
   const [d, setD] = useState<Draft>(initial)
+  const [postMeta, setPostMeta] = useState<PickerMeta>({ ok: false })
   const [err, setErr] = useState('')
   const [saving, setSaving] = useState(false)
   const save = async () => {
@@ -149,6 +249,7 @@ function ProjectForm({ initial, onSaved, onCancel }: { initial: Draft; onSaved: 
     if (!d.defaults.name.trim()) return setErr('Nhập tên kênh / thương hiệu.')
     if (!d.sources.some((s) => s.url.trim())) return setErr('Thêm ít nhất một nguồn tin.')
     if (d.defaults.voice.enabled && !d.defaults.voice.voiceId) return setErr('Chọn giọng đọc (hoặc chọn “Không lời”).')
+    if (d.post.enabled && !postMeta.ok) return setErr('Tự động đăng: ' + (postMeta.problem || 'chưa đủ thông tin.'))
     setSaving(true)
     const { message, source, ...defaults } = d.defaults
     void source
@@ -161,7 +262,8 @@ function ProjectForm({ initial, onSaved, onCancel }: { initial: Draft; onSaved: 
       intervalMin: d.intervalMin,
       maxPerCheck: d.maxPerCheck,
       maxPerDay: d.maxPerDay,
-      skipExisting: d.skipExisting
+      skipExisting: d.skipExisting,
+      post: d.post
     })
     setSaving(false)
     if (!r.ok || !r.project) return setErr(r.error || 'Không lưu được dự án.')
@@ -229,6 +331,8 @@ function ProjectForm({ initial, onSaved, onCancel }: { initial: Draft; onSaved: 
 
         <div className="pt-1 text-[13px] font-semibold uppercase tracking-wide text-ink-800/40">Thông tin chung cho mọi video của dự án</div>
         <BriefForm value={d.defaults} onChange={(b) => setD({ ...d, defaults: b })} mode="auto" />
+
+        <AutoPostSection post={d.post} onChange={(post) => setD((cur) => ({ ...cur, post }))} onMeta={setPostMeta} />
       </div>
       <div className="sticky bottom-0 -mx-8 mt-4 flex items-center justify-end gap-3 border-t border-black/6 bg-[rgba(250,249,247,0.92)] px-8 py-3 backdrop-blur">
         {err && <div className="mr-auto text-[13px] text-red-600">{err}</div>}
@@ -245,6 +349,7 @@ function ProjectForm({ initial, onSaved, onCancel }: { initial: Draft; onSaved: 
 
 function ProjectDetail({ p, onBack, onEdit }: { p: AutoProject; onBack: () => void; onEdit: () => void }) {
   const jobs = useMotionJobs({ kind: 'auto', automationId: p.id })
+  const posts = usePosts({ automationId: p.id })
   const [sel, setSel] = useState<string | null>(null)
   const [checking, setChecking] = useState(false)
   const [msg, setMsg] = useState('')
@@ -295,6 +400,14 @@ function ProjectDetail({ p, onBack, onEdit }: { p: AutoProject; onBack: () => vo
           {msg && <div className="col-span-2 font-medium text-brand-700">{msg}</div>}
         </CardBody>
       </Card>
+      {(p.post?.enabled || posts.length > 0) && (
+        <div className="mb-4">
+          <div className="mb-2 text-[13px] font-semibold text-ink-900">
+            Lịch đăng ({posts.length}){p.post?.enabled ? ` · tự đăng qua ${p.post.deviceName || 'iPhone'} / ${p.post.scriptName || 'kịch bản'}` : ' · tự động đăng đang tắt'}
+          </div>
+          <PostList posts={posts.slice(0, 30)} showTitle empty="Chưa có lượt đăng — video tạo xong sẽ tự lên lịch đăng." />
+        </div>
+      )}
       <div className="mb-2 text-[13px] font-semibold text-ink-900">Video đã tạo ({jobs.length})</div>
       {!jobs.length ? (
         <div className="card-surface rounded-2xl p-6 text-center text-[13px] text-ink-800/45">

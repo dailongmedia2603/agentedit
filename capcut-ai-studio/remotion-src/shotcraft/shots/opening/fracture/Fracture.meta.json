@@ -18,11 +18,11 @@
  "brand": "optional",
  "sfx": [{"at": 4, "type": "riser"}, {"at": 62, "type": "boom"}, {"at": 109, "type": "whoosh"}],
  "vi": {
-  "ten": "Mảnh vỡ ghép thành poster rồi nổ tung",
-  "mo_ta": "Nền tối xanh: 25 mảnh vuông bay xoay lộn trong không gian 3D rồi lần lượt hút về chỗ từ tâm ra ngoài, ghép thành một tấm poster phát sáng (dọc ở khung 9:16); tiêu đề và nhãn nhỏ sáng lên trên poster, dừng ~1 giây; sau đó mọi mảnh vỡ văng tung ra khỏi khung, mang chữ theo.",
-  "hop_khi": "Mở màn / tung ra một tên sản phẩm, tên chương, chủ đề lớn ('hôm nay mình giới thiệu...', 'ra mắt...'); khoảnh khắc 'từ hỗn loạn thành hình'; chuyển đoạn mạnh khớp nhịp nhạc.",
-  "tranh_khi": "Câu dài cần đọc kỹ (chữ chỉ hiện ~1 giây); tone nhẹ nhàng, tâm sự; video tông sáng.",
+  "ten": "Mảnh ghép 3D hợp nhất bung nổ",
+  "mo_ta": "Trên nền không gian làm việc tối mờ, hàng chục mảnh khối chữ nhật 3D bay xoay lộn rồi hút chặt vào nhau tạo thành tấm bảng dọc phát sáng giữa khung hình. Huy hiệu, dòng nhãn phụ và tiêu đề lớn lóe sáng nổi bật trên nền bảng cùng dải sáng cong chân trời, dừng lại tạo ấn tượng thị giác mạnh mẽ. Cuối cùng, toàn bộ các mảnh vỡ cùng chữ đồng loạt nổ tung văng ra khỏi khung hình với tốc độ nhanh.",
+  "hop_khi": "Phù hợp cho khoảnh khắc mở đầu video, tuyên bố chủ đề đinh, giới thiệu dịch vụ/công cụ mới hoặc tạo điểm nhấn kịch tính khi người nói chuẩn bị hé lộ bí mật lớn với tông giọng hào hứng, cuốn hút. Ví dụ: 'Hôm nay tôi sẽ giới thiệu một công cụ AI thay đổi hoàn toàn cách bạn làm việc', 'Đây chính là giải pháp cứu cánh cho toàn bộ dân kinh doanh online', 'Bí mật đằng sau chiến dịch triệu view mà chưa ai nói cho bạn'.",
+  "mo_rong": "Đổi tiêu đề thành tên khóa học và thương hiệu giảng viên -> video giới thiệu khóa học, giáo dục; Đổi thành tên dịch vụ làm đẹp kèm logo thẩm mỹ viện -> video ra mắt dịch vụ spa, thẩm mỹ; Đổi thành tên bất động sản siêu hot và phân khu dự án -> video mở bán căn hộ, bất động sản; Đổi thành tên món ăn đặc biệt kèm tag khai trương -> video quảng bá nhà hàng F&B; Đổi thành tên tính năng mới của phần mềm -> video giới thiệu sản phẩm công nghệ.",
   "nang_luong": "cao",
-  "chu_de": ["mở đầu", "ra mắt", "giới thiệu", "tên sản phẩm", "chương mới", "công nghệ"]
+  "chu_de": ["mở màn kịch tính", "mảnh ghép 3d", "vỡ vụn nổ tung", "giới thiệu công cụ", "ra mắt sản phẩm", "tiêu đề ấn tượng", "công nghệ", "kinh doanh", "đồ họa toàn màn hình"]
  }
 }

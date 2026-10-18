@@ -18,11 +18,11 @@
  "brand": "none",
  "sfx": [{"at": 9, "type": "riser"}, {"at": 78, "type": "swoosh"}, {"at": 86, "type": "boom"}],
  "vi": {
-  "ten": "Biểu đồ cột xanh-tím mọc dần rồi nảy từ giữa",
-  "mo_ta": "Nền tối, 16 cột phát sáng màu chuyển từ xanh dương sang tím mọc lên lần lượt từ trái sang phải (cột trái cao nhất, thấp dần về phải, hiện từ mờ nhoè sang rõ, có bóng phản chiếu dưới sàn). Nhịp 2 các cột ở GIỮA nảy vọt lên sáng bừng rồi lan ra hai bên. Phía trên là thẻ chữ kính mờ: câu 1 hiện từ đầu, đổi sang câu 2 đúng lúc cột nảy.",
-  "hop_khi": "Nói về tăng trưởng, doanh số, lượt xem, số liệu đi lên theo thời gian; nhịp điệu / âm nhạc / sóng âm / equalizer; 'từ từ rồi bùng nổ', 'đỉnh điểm'; minh hoạ dữ liệu chung chung khi không có số cụ thể; chủ đề công nghệ, AI, phân tích.",
-  "tranh_khi": "Cần biểu đồ có con số / trục / nhãn cụ thể (cột không có giá trị); video tone sáng, nhẹ nhàng; nội dung giảm sút, tiêu cực (cột thấp dần về phải dễ hiểu nhầm là đi xuống).",
-  "nang_luong": "vua",
-  "chu_de": ["số liệu", "biểu đồ", "tăng trưởng", "dữ liệu", "âm nhạc", "sóng âm", "công nghệ", "đỉnh điểm"]
+  "ten": "Cột neon tăng trưởng bùng nổ đỉnh",
+  "mo_ta": "Nền tối có bóng phản chiếu sàn sang trọng, phía trên là tiêu đề chữ hai dòng nổi bật với các từ khóa phát sáng theo dải màu gradient. Dưới chân chữ là mười sáu cột phát sáng neon bo tròn chuyển sắc từ xanh lam sang hồng tím mọc so le từ trái sang phải theo hình bậc thang. Ở nhịp cao trào, cụm cột ở giữa bật nảy vọt lên cực đại với ánh sáng bừng rực rỡ rồi lan tỏa dần sang hai bên theo tiết tấu dứt khoát, sôi động.",
+  "hop_khi": "Phù hợp khi người nói diễn giải về quá trình tích lũy âm thầm rồi bứt phá ngoạn mục, nhấn mạnh điểm rơi phong độ, đỉnh doanh thu hoặc hiệu ứng đòn bẩy tăng trưởng. Cảm xúc hứng khởi, tạo động lực mạnh mẽ, chứa đựng bất ngờ và thuyết phục. Ví dụ câu nói: 'Mỗi tháng bạn tích lũy thêm một chút, rồi tài khoản sẽ bùng nổ đúng lúc thị trường vào sóng', 'Doanh số giữ đều suốt cả quý, nhưng tuần lễ khuyến mãi đã tạo nên kỷ lục chưa từng có', 'Kênh vẫn tăng trưởng chậm rãi cho đến khi video này chạm đúng điểm nổ thuật toán'.",
+  "mo_rong": "Đổi chữ thành chu kỳ gom hàng và chốt lời chứng khoán, cột sáng đại diện cho khối lượng giao dịch đột biến -> ngành tài chính, crypto, đầu tư; Đổi chữ thành chỉ số calo tiêu hao và khối lượng tạ, cột giữa bật cao đại diện cho giai đoạn siết cơ thành công -> ngành thể hình, fitness, sức khỏe; Đổi chữ thành số lượng đơn hàng qua các tháng và cú nổ doanh số ngày siêu sale -> ngành thương mại điện tử, bán hàng online; Đổi chữ thành tiến độ tích lũy từ vựng và điểm số nhảy vọt vào kỳ thi -> ngành giáo dục, luyện thi cấp tốc; Đổi chữ và đổi dải màu sang sắc vàng ánh kim cho cột mốc nhân rộng chi nhánh -> ngành F&B, chuỗi cửa hàng, nhượng quyền.",
+  "nang_luong": "cao",
+  "chu_de": ["cột phát sáng", "biểu đồ tăng trưởng", "bùng nổ cao điểm", "gradient neon", "kinh doanh", "tài chính", "thương mại điện tử", "động lực", "thống kê", "công nghệ"]
  }
 }

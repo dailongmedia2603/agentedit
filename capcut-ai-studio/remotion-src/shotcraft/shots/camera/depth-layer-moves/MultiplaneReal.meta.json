@@ -116,20 +116,23 @@
   }
  ],
  "vi": {
-  "ten": "Trượt ngang nhiều lớp chiều sâu — dừng ở ảnh chính",
-  "mo_ta": "Nền be ấm như mặt bàn: một hàng thẻ ảnh (ảnh màn hình / sản phẩm / ảnh minh họa) trượt ngang qua như máy quay đặt trên ray, lớp nền phía sau trôi chậm và mờ, vài viên nhãn to mờ ở lớp gần lướt vụt qua nhanh hơn — tạo cảm giác chiều sâu thật. Tiêu đề lớn đứng yên ở trên. Khi dừng, ảnh chính nằm đúng giữa, nổi lên có viền cam và nhãn nhỏ rơi xuống.",
-  "hop_khi": "Giới thiệu một loạt dự án / sản phẩm / ảnh màn hình rồi dừng ở cái nổi bật nhất: “đây là các sản phẩm của chúng tôi”, portfolio, các tính năng của app, bộ sưu tập, trước khi đi sâu vào một thứ cụ thể; có sẵn vài ảnh B-roll / ảnh chụp màn hình.",
-  "tranh_khi": "Không có ảnh nào phù hợp; cần nhấn mạnh số liệu / chữ; nội dung cảm xúc mạnh hoặc gấp gáp; tone tối.",
+  "ten": "Băng chuyền thẻ ảnh chiều sâu đa tầng",
+  "mo_ta": "Cụm tiêu đề và nhãn chủ đề đứng yên vững chãi ở góc trên, phía dưới là hàng thẻ ảnh dọc lướt ngang mượt mà theo trục camera không gian chiều sâu. Các viên nhãn tag nổi trôi ở lớp tiền cảnh và hậu cảnh với vận tốc khác nhau tạo hiệu ứng parallax đa tầng rõ rệt, trước khi một thẻ tiêu điểm dừng ngay chính giữa màn hình với huy hiệu nổi bật. Nhịp lướt êm ái, hiện đại và tạo cảm giác không gian 3D sống động.",
+  "hop_khi": "Phù hợp khi người nói muốn giới thiệu danh mục sản phẩm, lướt qua các dự án tiêu biểu hoặc so sánh nhiều giải pháp trước khi chốt lại một tâm điểm giá trị nhất. Rất ăn khớp với nhịp nói tự tin, chuyên nghiệp khi phô diễn danh mục hoạt động hoặc khoảnh khắc tìm ra lựa chọn tối ưu. Ví dụ câu nói: 'Mình đã thử nghiệm qua hàng loạt công cụ khác nhau, nhưng đây mới là lựa chọn số một.', 'Dưới đây là những dự án nổi bật nhất mà đội ngũ vừa hoàn thành.', 'Trong toàn bộ bộ sưu tập năm nay, đây là mẫu thiết kế được săn đón nhất.'",
+  "mo_rong": "Thay thẻ ảnh thành video phản hồi khách hàng kèm tag dịch vụ -> chứng thực chất lượng phòng khám hoặc spa; thay thẻ thành video cận cảnh món ăn kèm tag giá -> giới thiệu combo ẩm thực nhà hàng; thay các thẻ thành hình ảnh nhà phố kèm tag khu vực -> điểm tin môi giới bất động sản; thay ảnh thành bìa khóa học kèm tag kỹ năng -> giới thiệu chương trình đào tạo; thay thẻ thành các thiết bị số kèm tag cấu hình -> so sánh và tư vấn công nghệ.",
   "nang_luong": "vua",
   "chu_de": [
+   "chiều sâu đa tầng",
+   "parallax",
+   "băng chuyền thẻ",
+   "tâm điểm",
    "portfolio",
-   "sản phẩm",
-   "dự án",
-   "ảnh chụp màn hình",
-   "app",
-   "bộ sưu tập",
-   "giới thiệu",
-   "chiều sâu"
+   "review sản phẩm",
+   "thương mại điện tử",
+   "bất động sản",
+   "khóa học đào tạo",
+   "công nghệ",
+   "spa làm đẹp"
   ]
  },
  "backdrop": true

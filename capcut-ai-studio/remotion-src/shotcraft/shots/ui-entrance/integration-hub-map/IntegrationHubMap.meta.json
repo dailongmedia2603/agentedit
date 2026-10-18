@@ -6,26 +6,101 @@
  "duration": 150,
  "kind": "insert",
  "dark": true,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
  "hold": 80,
  "slots": [
-  {"id": "old_title", "role": "label", "sample": "Quy trình thủ công", "max": 28, "note": "tên trang CŨ (cách làm cũ / vấn đề) — đọc được ở cận cảnh đầu"},
-  {"id": "old_note", "role": "subtitle", "sample": "Mỗi ngày phải mở năm ứng dụng khác nhau, sao chép dữ liệu bằng tay rồi gửi báo cáo qua email. Mất hàng giờ mà vẫn dễ sai sót, thông tin nằm rải rác khắp nơi.", "max": 200, "optional": true, "note": "đoạn mô tả nỗi khổ cách cũ (tối đa 4 dòng nhỏ)"},
-  {"id": "title", "role": "title", "sample": "Trung tâm bán hàng", "max": 28, "note": "tên trang MỚI = nơi gom mọi thứ (tên sản phẩm / tính năng)"},
-  {"id": "items", "role": "item", "sample": "Đơn hàng mới #1024|Tin nhắn khách hàng|Tồn kho cập nhật|Chiến dịch email tháng 10|Báo cáo doanh thu tuần|Hoá đơn đã lưu trữ|Đồng bộ dữ liệu cửa hàng", "max": 40, "list": {"min": 3, "max": 7}, "optional": true, "note": "các dòng trong trang mới"},
-  {"id": "apps", "role": "label", "sample": "", "max": 18, "list": {"min": 5, "max": 5}, "optional": true, "note": "5 tên nguồn/ứng dụng được nối vào, theo thứ tự icon: web, giỏ hàng, email, tin nhắn, biểu đồ (vd Website|Shopee|Email|Zalo|Báo cáo); bỏ trống = không nhãn"}
+  {
+   "id": "old_title",
+   "role": "label",
+   "sample": "Quy trình thủ công",
+   "max": 28,
+   "note": "tên trang CŨ (cách làm cũ / vấn đề) — đọc được ở cận cảnh đầu"
+  },
+  {
+   "id": "old_note",
+   "role": "subtitle",
+   "sample": "Mỗi ngày phải mở năm ứng dụng khác nhau, sao chép dữ liệu bằng tay rồi gửi báo cáo qua email. Mất hàng giờ mà vẫn dễ sai sót, thông tin nằm rải rác khắp nơi.",
+   "max": 200,
+   "optional": true,
+   "note": "đoạn mô tả nỗi khổ cách cũ (tối đa 4 dòng nhỏ)"
+  },
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Trung tâm bán hàng",
+   "max": 28,
+   "note": "tên trang MỚI = nơi gom mọi thứ (tên sản phẩm / tính năng)"
+  },
+  {
+   "id": "items",
+   "role": "item",
+   "sample": "Đơn hàng mới #1024|Tin nhắn khách hàng|Tồn kho cập nhật|Chiến dịch email tháng 10|Báo cáo doanh thu tuần|Hoá đơn đã lưu trữ|Đồng bộ dữ liệu cửa hàng",
+   "max": 40,
+   "list": {
+    "min": 3,
+    "max": 7
+   },
+   "optional": true,
+   "note": "các dòng trong trang mới"
+  },
+  {
+   "id": "apps",
+   "role": "label",
+   "sample": "",
+   "max": 18,
+   "list": {
+    "min": 5,
+    "max": 5
+   },
+   "optional": true,
+   "note": "5 tên nguồn/ứng dụng được nối vào, theo thứ tự icon: web, giỏ hàng, email, tin nhắn, biểu đồ (vd Website|Shopee|Email|Zalo|Báo cáo); bỏ trống = không nhãn"
+  }
  ],
  "images": [],
  "brand": "optional",
- "sfx": [{"at": 14, "type": "whoosh"}, {"at": 21, "type": "boom"}, {"at": 52, "type": "pop"}, {"at": 62, "type": "riser"}],
+ "sfx": [
+  {
+   "at": 14,
+   "type": "whoosh"
+  },
+  {
+   "at": 21,
+   "type": "boom"
+  },
+  {
+   "at": 52,
+   "type": "pop"
+  },
+  {
+   "at": 62,
+   "type": "riser"
+  }
+ ],
  "vi": {
-  "ten": "Lật trang cũ thành trung tâm — 5 ứng dụng nối ống sáng",
-  "mo_ta": "Trên ảnh nền chủ đề (hoặc nền tối tím neon), cận cảnh một trang tài liệu 'cách làm cũ'; trang lật nhanh 180° (chớp sáng ở cạnh) thành trang quản lý mới và lùi máy ra. Năm biểu tượng ứng dụng (web, giỏ hàng, email, tin nhắn, biểu đồ) cùng bật lên quanh trang, rồi năm ống sáng cầu vồng cùng lúc nối vào, các chấm sáng chạy liên tục theo ống vào trang như đang truyền dữ liệu. Khung dọc: trang to giữa, 3 biểu tượng trên, 2 dưới.",
-  "hop_khi": "Nói về TÍCH HỢP / kết nối mọi công cụ về một nơi (\"quản lý tất cả trong một app\", \"đồng bộ Shopee, Zalo, website\"), chuyển từ cách làm thủ công sang hệ thống mới, ra mắt phiên bản mới, tự động hoá, AI gom dữ liệu.",
-  "tranh_khi": "Không nói về phần mềm / công cụ / quy trình; cần hiện logo thật của các ứng dụng (đây là icon chung); video tone sáng nhẹ nhàng.",
+  "ten": "Thẻ lật quy trình kết nối mạng lưới",
+  "mo_ta": "Bắt đầu bằng một thẻ ghi chú trắng mô tả quy trình cũ thủ công, sau đó xoay lật 180 độ chớp sáng thành giao diện trung tâm điều hành hiện đại với danh sách công việc tự động. Ngay sau đó, năm đường ống ánh sáng neon đa sắc bắn ra từ thẻ trung tâm để kết nối tới năm biểu tượng ứng dụng lơ lửng xung quanh với luồng dữ liệu chạy liên tục. Nhịp điệu chuyển cảnh nhanh, phối cảnh 3D mượt mà và trực quan hóa luồng kết nối cực kỳ rõ nét.",
+  "hop_khi": "Phù hợp cho khoảnh khắc so sánh trước - sau (before/after), giải quyết triệt để nỗi đau (pain point) của khách hàng, hoặc giới thiệu giải pháp tích hợp toàn diện tất cả trong một (all-in-one). Cảm xúc bừng sáng, giải tỏa vấn đề, tạo niềm tin mạnh mẽ về sự tiện lợi và chuyên nghiệp. Ví dụ câu nói: 'Trước đây làm thủ công mất cả ngày, giờ gom hết về một nơi duy nhất!', 'Hệ thống tự động đồng bộ từ bán hàng, kho bãi đến chăm sóc khách hàng.', 'Quản lý toàn bộ công việc kinh doanh chỉ trên một màn hình.'.",
+  "mo_rong": "Đổi thẻ cũ thành 'Sổ sách ghi chép', thẻ mới thành 'Phần mềm quản lý bán hàng', 5 nhánh nối Shopee, TikTok Shop, Lazada, Facebook, Zalo -> dùng cho ngành bán lẻ, thương mại điện tử; đổi thẻ cũ thành 'Phương pháp học thụ động', thẻ mới thành 'Hệ sinh thái học tập thông minh', 5 nhánh nối Bài giảng, Flashcard, Thi thử, Luyện nói, Cố vấn -> dùng cho ngành giáo dục trực tuyến, EdTech; đổi thẻ cũ thành 'Khám bệnh xếp hàng', thẻ mới thành 'Bệnh viện số thông minh', 5 nhánh nối Đặt lịch, Hồ sơ bệnh án, Tư vấn từ xa, Đơn thuốc, Bảo hiểm -> dùng cho y tế, chăm sóc sức khỏe số; đổi thẻ cũ thành 'Quản lý chuỗi nhà hàng rối rắm', thẻ mới thành 'Hệ thống vận hành F&B', 5 nhánh nối Gọi món, Bếp, Thu ngân, Giao hàng, Tồn kho nguyên liệu -> dùng cho ngành ẩm thực F&B, kinh doanh nhà hàng quán cafe.",
   "nang_luong": "cao",
-  "chu_de": ["tích hợp", "kết nối", "app", "phần mềm", "tự động hoá", "chuyển đổi số", "dashboard", "AI", "phiên bản mới"]
+  "chu_de": [
+   "giao diện",
+   "so sánh",
+   "before after",
+   "tích hợp",
+   "dashboard",
+   "bán hàng online",
+   "thương mại điện tử",
+   "công nghệ",
+   "quản lý",
+   "F&B",
+   "giáo dục"
+  ]
  },
  "backdrop": true
 }

@@ -5,8 +5,11 @@ kho de chon dung mau cho tung phan cua video; khi phu hop thi co Full-screen B-r
 
 Kho: 150 mau Remotion cua video-shotcraft (Apache-2.0, github.com/Vincentwei1021/video-shotcraft), port vao
 remotion-src/shotcraft/ (moi mau nhan chu THAT cua video qua o chu, anh B-roll qua o anh, tu bo cuc khung doc 9:16).
-Mo ta tung mau (tieng Viet: trong thay gi / hop khi / tranh khi / o chu / o anh / do dai...) nam o
+Mo ta tung mau (tieng Viet: trong thay gi / dung khi / mo rong / o chu / o anh / do dai...) nam o
 references/shotcraft_catalog.json — sinh boi scripts/shotcraft-sync.mjs tu <Component>.meta.json canh tung mau.
+Mo ta do GEMINI XEM video xem truoc (references/shot_previews/<id>.mp4, scripts/shotcraft-previews.mjs) roi viet
+(scripts/shotcraft-label.py -> label() o day; user 2026-10-18: chi ghi "dung khi / phu hop" + huong MO RONG khi tuy bien,
+khong ghi "tranh khi"). Tab "Kho shot" (Tai nguyen) xem preview + tat / bat tung mau (shot_prefs.json).
 
 Luong:
   R4 (motion_design.gpt_rm_design) nhan TOAN BO danh muc (prompt_block) + luat dung (rules_text) -> scene co "shot":
@@ -29,7 +32,9 @@ import providers
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CATALOG_FILE = os.path.join(HERE, "references", "shotcraft_catalog.json")
+PREVIEW_DIR = os.path.join(HERE, "references", "shot_previews")
 CLIP_DIR = os.path.join(os.path.expanduser("~"), ".capcut-studio", "cache", "shot_clips")
+PREFS_FILE = os.path.join(os.path.expanduser("~"), ".capcut-studio", "shot_prefs.json")
 FPS = 30                    # cac mau viet theo 30fps
 
 SHOT_VERSION = 2            # doi cach kiem / dung shot -> tang (khoa cache R4 doi theo). 2 = nen anh AI cho canh shot
@@ -64,19 +69,66 @@ def load():
     return _cache["data"] or []
 
 
+def disabled():
+    """Mau nguoi dung TAT o tab Kho shot (khong dua vao danh muc R4)."""
+    try:
+        with open(PREFS_FILE, encoding="utf-8") as f:
+            return set(str(x) for x in (json.load(f).get("disabled") or []))
+    except (OSError, ValueError, AttributeError):
+        return set()
+
+
+def set_disabled(sid, off):
+    if sid not in {s["id"] for s in load()}:
+        return {"ok": False, "error": "khong co mau %s" % sid}
+    cur = disabled()
+    (cur.add if off else cur.discard)(sid)
+    os.makedirs(os.path.dirname(PREFS_FILE), exist_ok=True)
+    tmp = PREFS_FILE + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump({"disabled": sorted(cur)}, f, ensure_ascii=False, indent=1)
+    os.replace(tmp, PREFS_FILE)
+    return {"ok": True, "disabled": sorted(cur)}
+
+
+def _usable(s, off):
+    return not s.get("hidden") and s["id"] not in off
+
+
 def by_id():
-    """Mau DUNG DUOC (bo mau an: meta hidden — vd luoi cham phu kin khung, user 2026-10-18 khong dung nen dang luoi)."""
-    return {s["id"]: s for s in load() if not s.get("hidden")}
+    """Mau DUNG DUOC (bo mau an: meta hidden — vd luoi cham phu kin khung, user 2026-10-18 khong dung nen dang luoi;
+    bo mau nguoi dung tat o tab Kho shot)."""
+    off = disabled()
+    return {s["id"]: s for s in load() if _usable(s, off)}
 
 
 def fingerprint():
-    """Doi danh muc / luat -> khoa cache R4 doi (R4 chay lai voi kho moi)."""
+    """Doi danh muc / luat / mau bi tat -> khoa cache R4 doi (R4 chay lai voi kho moi)."""
     try:
         with open(CATALOG_FILE, "rb") as f:
             raw = f.read()
     except OSError:
         raw = b""
+    raw += ("|" + ",".join(sorted(disabled()))).encode()
     return hashlib.sha1(raw + str(SHOT_VERSION).encode()).hexdigest()[:16]
+
+
+def list_view():
+    """Cho tab Kho shot: moi mau + duong dan video xem truoc + trang thai tat / an."""
+    off = disabled()
+    out = []
+    for m in load():
+        pv = os.path.join(PREVIEW_DIR, m["id"] + ".mp4")
+        out.append({"id": m["id"], "category": m.get("category"), "kind": m.get("kind"), "dark": bool(m.get("dark")),
+                    "backdrop": bool(m.get("backdrop")), "duration": round(float(m.get("duration") or 0) / FPS, 1),
+                    "brand": m.get("brand"), "vi": m.get("vi") or {}, "hidden": bool(m.get("hidden")),
+                    "hidden_reason": m.get("hidden_reason"), "disabled": m["id"] in off,
+                    "slots": [{"id": s.get("id"), "role": s.get("role"), "max": s.get("max"), "list": s.get("list"),
+                               "optional": bool(s.get("optional"))} for s in m.get("slots") or [] if isinstance(s, dict)],
+                    "images": [{"id": i.get("id"), "role": i.get("role"), "optional": bool(i.get("optional"))}
+                               for i in m.get("images") or [] if isinstance(i, dict)],
+                    "preview": pv if os.path.isfile(pv) else None})
+    return {"ok": True, "shots": out, "categories": _CAT_VI}
 
 
 def available():
@@ -127,11 +179,12 @@ def _slot_txt(s):
 
 def prompt_block():
     """TOAN BO danh muc cho R4 (1 muc / mau, nhom theo loai). Moi mau: id, loai, nen, nang luong, do dai, mo ta,
-    hop / tranh, o chu, o anh, thuong hieu."""
+    dung khi, mo rong, o chu, o anh, thuong hieu."""
     rows = []
     cur = None
+    off = disabled()
     for m in load():
-        if m.get("hidden"):
+        if not _usable(m, off):
             continue
         if m.get("category") != cur:
             cur = m.get("category")
@@ -144,7 +197,9 @@ def prompt_block():
             "; can thuong hieu" if m.get("brand") == "required" else "")
         lines = [head + " " + _cap(vi.get("ten"), 80)]
         lines.append("  thay: " + _cap(vi.get("mo_ta"), 300))
-        lines.append("  hop: " + _cap(vi.get("hop_khi"), 240) + " | tranh: " + _cap(vi.get("tranh_khi"), 150))
+        lines.append("  dung khi: " + _cap(vi.get("hop_khi"), 260))
+        if vi.get("mo_rong"):
+            lines.append("  mo rong: " + _cap(vi.get("mo_rong"), 240))
         if vi.get("chu_de"):
             lines.append("  chu de: " + ", ".join(str(x) for x in vi["chu_de"][:10]))
         slots = [s for s in m.get("slots") or [] if isinstance(s, dict)]
@@ -167,8 +222,11 @@ _RULES = """
 
 # KHO SHOT & MOTION (motion graphic toan man hinh — FULL-SCREEN B-ROLL)
 Ben duoi la TOAN BO kho mau chuyen dong chuyen nghiep (moi mau: id, loai, nen, nang luong, do dai hop ly, nguoi xem
-THAY gi, khi nao hop / tranh, cac o chu, o anh). Doc HET kho truoc khi chon — chon mau HOP NHAT voi tung khoanh khac,
-khong chon theo thu tu liet ke, khong dung lai cung kieu cho moi video.
+THAY gi, dung khi nao, mo rong / tuy bien ra sao, cac o chu, o anh). Doc HET kho truoc khi chon — chon mau HOP NHAT
+voi tung khoanh khac, khong chon theo thu tu liet ke, khong dung lai cung kieu cho moi video.
+Chu / anh / mau trong mo ta chi la VI DU: moi mau la mot HINH THUC truyen tai (dem so, liet ke, so sanh, giao dien,
+trich dan...) — doi chu, anh, mau, so muc la dung duoc cho CHU DE KHAC (xem "mo rong"). Chon theo hinh thuc hop khoanh
+khac, roi dien noi dung THAT cua video; dung bo qua mau chi vi vi du cua no khac nganh.
 KHI NAO dung canh shot (scene layout "graphic" co "shot"): khoanh khac loi noi CAN MINH HOA hon la nhin mat nguoi noi —
 neu con so / so lieu, liet ke cac buoc / tinh nang, so sanh truoc-sau, nhac toi app / phan mem / dien thoai / dashboard /
 AI / quy trinh, cau chot can doc tron, mo dau chu de, CTA cuoi, chuyen sang y moi. KHONG dung khi nguoi noi dang bo lo
@@ -584,15 +642,16 @@ def sfx(scenes, changes):
             t = s["start"] + providers._f(x.get("at")) / FPS / rate
             if t >= s["end"] - 0.05:
                 continue
-            sid, path = sfx_kit.family_file(x.get("type"))
-            if not sid:
-                continue
-            if lib is None or sid not in lib:
+            if lib is None:
                 lib = {e["id"]: e for e in engine.sfx_list()}
-            e = lib.get(sid) or {}
-            out.append({"sfx_id": sid, "file": path, "start": round(t, 3), "purpose": MD._sfx_purpose(x.get("type")),
-                        "_name": e.get("name"), "tags": e.get("tags") or [], "_lufs": e.get("lufs_m"),
-                        "_from_layer": "%s:%s" % (s["id"], m["id"]), "_shot": True})
+            # ref co gio -> moi nhip cua mau mot take (bo tieng earshot cua video)
+            item = sfx_kit.auto_item(x.get("type"), round(t, 3), "%s:%s@%.2f" % (s["id"], m["id"], t),
+                                     MD._sfx_purpose(x.get("type")), lib=lib)
+            if not item:
+                continue
+            item["_from_layer"] = "%s:%s" % (s["id"], m["id"])
+            item["_shot"] = True
+            out.append(item)
     if out:
         changes.append("canh shot: %d SFX theo nhip mau" % len(out))
     return out
@@ -619,3 +678,110 @@ def theme(p):
     if len(cols) > 1:
         out["accent2"] = cols[1]
     return out
+
+
+# ---------------------------------------------------------------------------
+# GEMINI XEM VIDEO XEM TRUOC -> MO TA (scripts/shotcraft-label.py goi; ket qua ghi vao <Component>.meta.json "vi")
+# ---------------------------------------------------------------------------
+LABEL_BATCH = 4             # so video / luot Gemini
+
+_GEMINI_SHOT_PROMPT = """Ban la MOTION DESIGNER dang VIET MO TA cho KHO MAU SHOT (motion graphic toan man hinh / lop phu) dung lai
+khi dung video short-form tieng Viet (TikTok / Reels / Shorts) — chu yeu la video NGUOI NOI (chia se kinh nghiem, ban
+hang, review, huong dan, ke chuyen, gioi thieu dich vu...). AI lap ke hoach se chen mau vao dung khoanh khac loi noi.
+
+Moi file dinh kem la VIDEO XEM TRUOC cua 1 mau, kem: id, nhom, kieu (toan man hinh / lop phu), do dai, cac O CHU (vai
+tro, so ky tu toi da, chu mau), O ANH (vai tro), mo ta cu (chi tham khao — co the sai; CHI TIN nhung gi THAY trong video).
+
+QUAN TRONG — MAU LA KHUON, KHONG PHAI NOI DUNG CO DINH:
+- Chu, so, anh, mau sac, ten thuong hieu trong preview chi la VI DU. Khi dung that, he thong THAY bang noi dung that
+  cua video: chu lay tu loi noi, anh = anh minh hoa AI / khung cat tu video nguon / anh nguoi dung, mau nhan theo tone
+  video, so muc danh sach thay doi trong gioi han.
+- Vi vay hay nhin mau nhu mot HINH THUC TRUYEN TAI (dem so, liet ke buoc, so sanh, giao dien app, tin nhan, trich dan,
+  bang gia, ban do, dong thoi gian, tiet lo, chuyen y...) va nghi RONG: cung hinh thuc do con phuc vu duoc nhung
+  nganh / chu de / dang video nao khac neu tuy bien (ban hang online, giao duc, bat dong san, spa / lam dep, F&B, tai
+  chinh, cong nghe / AI, suc khoe, du lich, tuyen dung, ca nhan / doi song...).
+- KHONG viet "tranh khi", dieu cam, canh bao hay han che. Chi viet: dung khi nao, phu hop voi gi, mo rong ra sao.
+
+AI lap ke hoach KHONG xem duoc video — chi doc mo ta cua ban. Viet tieng Viet CO DAU, cu the, de hinh dung.
+
+# TRA VE CHI JSON
+{"shots": [
+  {"id": "<dung id da cho>",
+   "ten": "ten ngan 3-8 tu (vd: Dem so lon kem thanh tien do)",
+   "mo_ta": "2-3 cau: nguoi xem THAY gi — bo cuc, hinh khoi, chu dat o dau, chuyen dong vao -> dinh -> ra, nhip nhanh/cham",
+   "hop_khi": "DUNG KHI / PHU HOP: loai khoanh khac va noi dung loi noi ma mau truyen tai tot nhat, cam xuc / nhip hop, kem 2-3 vi du cau noi kieu '...'",
+   "mo_rong": "MO RONG KHI TUY BIEN: 3-6 huong dung khac, moi huong noi ro thay gi (chu / anh / so muc / mau) -> dung cho nganh / chu de / khoanh khac nao. Vd: 'doi anh chup man hinh thanh anh san pham -> gioi thieu san pham moi; doi 3 muc thanh 3 buoc -> huong dan quy trinh'",
+   "nang_luong": "thap|vua|cao",
+   "chu_de": ["8-14 tu khoa tieng Viet: ca chu de goc lan chu de mo rong, hinh thuc truyen tai, nganh hop"],
+   "chat_luong": 1,
+   "loi_hien_thi": "loi THAY trong preview neu co (chu tran / bi cat / de len nhau / khung trong / giat / sai dau tieng Viet), khong loi -> \\"\\""}
+]}
+"chat_luong": 1 (hong / trong / xau) .. 5 (dep, ro, chuyen nghiep).
+⚠️ TRA VE CHI JSON GOC. Ky tu dau la {, ky tu cuoi la }."""
+
+_LABEL_TEXT = ("ten", "mo_ta", "hop_khi", "mo_rong")
+
+
+def preview_path(sid):
+    p = os.path.join(PREVIEW_DIR, sid + ".mp4")
+    return p if os.path.isfile(p) else None
+
+
+def _label_item(m):
+    vi = m.get("vi") or {}
+    slots = "; ".join("%s(%s, <=%s ky tu%s, mau: %s)" % (
+        s.get("id"), s.get("role"), s.get("max"), ", danh sach %d-%d muc" % (s["list"]["min"], s["list"]["max"])
+        if s.get("list") else "", _cap(s.get("sample"), 60)) for s in m.get("slots") or [] if isinstance(s, dict)) or "khong"
+    imgs = "; ".join("%s(%s)" % (i.get("id"), i.get("role")) for i in m.get("images") or [] if isinstance(i, dict)) or "khong"
+    return {"path": preview_path(m["id"]), "label": "id=%s | nhom=%s (%s) | %s | dai %.1fs | o chu: %s | o anh: %s | mo ta cu: %s" % (
+        m["id"], m.get("category"), _CAT_VI.get(m.get("category"), ""),
+        "LOP PHU trong suot de len canh nguoi noi" if m.get("kind") == "overlay" else "toan man hinh (thay canh nguoi noi)",
+        _secs(m.get("duration") or 0), slots, imgs, _cap(vi.get("mo_ta"), 300))}
+
+
+def clean_label(r):
+    out = {}
+    for k in _LABEL_TEXT:
+        out[k] = re.sub(r"\s+", " ", str(r.get(k) or "")).strip()[:900]
+    out["nang_luong"] = r.get("nang_luong") if r.get("nang_luong") in ("thap", "vua", "cao") else "vua"
+    tags = r.get("chu_de") if isinstance(r.get("chu_de"), list) else []
+    out["chu_de"] = list(dict.fromkeys(str(x).strip()[:40] for x in tags if str(x).strip()))[:14]
+    try:
+        out["chat_luong"] = max(1, min(5, int(r.get("chat_luong"))))
+    except (TypeError, ValueError):
+        out["chat_luong"] = 3
+    out["loi_hien_thi"] = re.sub(r"\s+", " ", str(r.get("loi_hien_thi") or "")).strip()[:400]
+    return out
+
+
+def label(ids, call=None, log=None):
+    """Gemini XEM video xem truoc (LABEL_BATCH / luot) -> {id: nhan da lam sach}. KHONG ghi file (nguoi goi quyet dinh).
+    call(items, prompt) -> dict JSON; mac dinh providers.gemini_files (theo cach ket noi dang chon trong app)."""
+    call = call or (lambda items, prompt: providers.gemini_files(items, prompt, step_label="Gemini-shot", log=log))
+    cat = {s["id"]: s for s in load()}
+    rows = [cat[i] for i in ids or [] if i in cat and preview_path(i)]
+    out, errors = {}, {}
+    for i in range(0, len(rows), LABEL_BATCH):
+        part = rows[i:i + LABEL_BATCH]
+        try:
+            res = call([_label_item(m) for m in part], _GEMINI_SHOT_PROMPT)
+        except Exception as ex:
+            for m in part:
+                errors[m["id"]] = str(ex).split("\n")[0][:200]
+            continue
+        got = res.get("shots") if isinstance(res, dict) else None
+        if not isinstance(got, list) and isinstance(res, dict) and res.get("id"):
+            got = [res]
+        pid = [m["id"] for m in part]
+        for j, r in enumerate(got or []):
+            if not isinstance(r, dict):
+                continue
+            rid = r.get("id") if r.get("id") in pid else (pid[j] if j < len(pid) else None)
+            if rid and rid not in out:
+                lb = clean_label(r)
+                if lb["mo_ta"] and lb["hop_khi"]:
+                    out[rid] = lb
+        for rid in pid:
+            if rid not in out and rid not in errors:
+                errors[rid] = "Gemini khong tra mo ta cho mau nay"
+    return {"labels": out, "errors": errors}

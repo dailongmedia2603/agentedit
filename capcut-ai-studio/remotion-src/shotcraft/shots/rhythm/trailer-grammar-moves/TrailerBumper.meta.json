@@ -6,28 +6,95 @@
  "duration": 140,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.9, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.9,
+  1.2
+ ],
  "hold": 52,
  "slots": [
-  {"id": "title", "role": "name", "sample": "Trợ Lý Bán Hàng", "max": 28, "note": "tên thương hiệu / sản phẩm / chương trình; bỏ trống thì dùng tên thương hiệu của video"},
-  {"id": "kicker", "role": "kicker", "sample": "CHÍNH THỨC RA MẮT", "max": 28, "optional": true, "note": "dòng nhỏ trên tiêu đề, in hoa"},
-  {"id": "subtitle", "role": "subtitle", "sample": "Chốt đơn nhanh gấp đôi, không cần thêm người.", "max": 70, "optional": true}
+  {
+   "id": "title",
+   "role": "name",
+   "sample": "Trợ Lý Bán Hàng",
+   "max": 28,
+   "note": "tên thương hiệu / sản phẩm / chương trình; bỏ trống thì dùng tên thương hiệu của video"
+  },
+  {
+   "id": "kicker",
+   "role": "kicker",
+   "sample": "CHÍNH THỨC RA MẮT",
+   "max": 28,
+   "optional": true,
+   "note": "dòng nhỏ trên tiêu đề, in hoa"
+  },
+  {
+   "id": "subtitle",
+   "role": "subtitle",
+   "sample": "Chốt đơn nhanh gấp đôi, không cần thêm người.",
+   "max": 70,
+   "optional": true
+  }
  ],
  "images": [
-  {"id": "shot1", "role": "photo", "optional": true, "note": "khoảnh khắc bắt mắt thứ 1 (cắt nhanh 0,3 giây); không có thì dùng giao diện dashboard giả"},
-  {"id": "shot2", "role": "photo", "optional": true, "note": "khoảnh khắc thứ 2, bố cục khác hẳn ảnh 1"},
-  {"id": "shot3", "role": "photo", "optional": true, "note": "khoảnh khắc thứ 3, cận cảnh"}
+  {
+   "id": "shot1",
+   "role": "photo",
+   "optional": true,
+   "note": "khoảnh khắc bắt mắt thứ 1 (cắt nhanh 0,3 giây); không có thì dùng giao diện dashboard giả"
+  },
+  {
+   "id": "shot2",
+   "role": "photo",
+   "optional": true,
+   "note": "khoảnh khắc thứ 2, bố cục khác hẳn ảnh 1"
+  },
+  {
+   "id": "shot3",
+   "role": "photo",
+   "optional": true,
+   "note": "khoảnh khắc thứ 3, cận cảnh"
+  }
  ],
  "brand": "optional",
- "sfx": [{"at": 0, "type": "boom"}, {"at": 9, "type": "boom"}, {"at": 18, "type": "boom"}, {"at": 33, "type": "riser"}],
+ "sfx": [
+  {
+   "at": 0,
+   "type": "boom"
+  },
+  {
+   "at": 9,
+   "type": "boom"
+  },
+  {
+   "at": 18,
+   "type": "boom"
+  },
+  {
+   "at": 33,
+   "type": "riser"
+  }
+ ],
  "vi": {
-  "ten": "Mở màn kiểu trailer: 3 cú cắt nhanh, đen một nhịp, hiện tên",
-  "mo_ta": "Ba cảnh cắt cực nhanh mỗi cảnh 0,3 giây (ảnh/khung hình thật nếu có, không thì là giao diện dashboard toàn trang → trang khác → cận cảnh một thẻ), mỗi cảnh hơi tiến vào; rồi màn hình đen tuyền im lặng 0,2 giây; sau đó nền sáng bừng lên, dòng nhỏ màu nhấn + tên lớn đậm hiện mờ → rõ và nhích lên, khoảng cách chữ thu dần, câu phụ hiện theo và đứng yên.",
-  "hop_khi": "Mở đầu video kiểu trailer / teaser: giới thiệu sản phẩm, khóa học, sự kiện, chương trình khuyến mãi; 'và đây là …'; nhấn mạnh khoảnh khắc ra mắt.",
-  "tranh_khi": "Giữa đoạn chia sẻ nhẹ nhàng; không có tên riêng để giới thiệu; nội dung nghiêm túc / buồn.",
+  "ten": "Chớp cảnh dồn dập lộ diện tiêu đề",
+  "mo_ta": "Mở màn bằng chuỗi 3 khung hình cắt cực nhanh giật theo từng nhịp bass với hiệu ứng phóng nhẹ kích thích thị giác tối đa. Sau khoảng lặng chớp nhoáng, màn hình bùng nổ thẻ chữ trung tâm với nhãn phụ màu sắc, tiêu đề chính khổ lớn đậm nét và dòng phụ đề sắc gọn trên nền tối có chiều sâu. Nhịp điệu dồn dập mang phong cách trailer điện ảnh, thu hút sự tập trung tuyệt đối vào thông điệp đinh.",
+  "hop_khi": "Thích hợp làm cú hích mở đầu (hook) giữ chân người xem ngay 3 giây đầu, hoặc đặt tại điểm cao trào khi chính thức công bố một dự án, sản phẩm mới, giải pháp mang tính cách mạng. Cảm xúc bùng nổ, tò mò và quyết liệt. Ví dụ câu nói: \"Và đây chính là siêu phẩm mà mọi người đã chờ đợi suốt thời gian qua!\", \"Chính thức ra mắt giải pháp giúp bạn tăng gấp đôi doanh số mà không cần tuyển thêm người\", \"Dừng lại 3 giây để đón xem bất ngờ lớn nhất hôm nay!\".",
+  "mo_rong": "Đổi 3 khung chớp thành các góc chụp cận cảnh chi tiết nội thất căn hộ cao cấp -> dùng cho bất động sản, review nhà đẹp; đổi 3 ảnh thành các góc quay món ăn hấp dẫn bốc khói -> dùng cho review ẩm thực, F&B; đổi 3 khung hình thành feedback tin nhắn chốt đơn liên tục của khách hàng -> dùng cho bán hàng online, livestream; đổi thành những bức ảnh khoảnh khắc biến đổi ngoại hình -> dùng cho thẩm mỹ, làm đẹp; đổi thành các bằng khen và chứng nhận uy tín -> dùng cho xây dựng thương hiệu cá nhân, luật sư, chuyên gia cố vấn.",
   "nang_luong": "cao",
-  "chu_de": ["ra mắt", "mở đầu", "trailer", "giới thiệu", "thương hiệu", "sản phẩm", "sự kiện"]
+  "chu_de": [
+   "trailer giới thiệu",
+   "cắt cảnh dồn dập",
+   "ra mắt chính thức",
+   "tiết lộ sản phẩm",
+   "bật tiêu đề lớn",
+   "hook video ngắn",
+   "bán hàng",
+   "quảng cáo",
+   "điện ảnh",
+   "thương mại điện tử"
+  ]
  },
  "backdrop": true
 }

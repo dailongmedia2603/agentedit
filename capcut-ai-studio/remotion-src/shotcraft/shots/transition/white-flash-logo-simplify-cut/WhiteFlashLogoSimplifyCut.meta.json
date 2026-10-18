@@ -49,20 +49,22 @@
   }
  ],
  "vi": {
-  "ten": "Tên kim loại lỏng chớp trắng thành logo phẳng",
-  "mo_ta": "Nền tối tím có bụi sáng: tên sản phẩm cỡ rất lớn bằng chất kim loại lỏng óng ánh cầu vồng, có vệt sáng chạy qua, bóng phản chiếu dưới chân. Chữ sáng dần, một vệt lóe ngang kéo ra rồi một chớp trắng nổ từ tâm chữ phủ kín màn hình; khi sáng dịu xuống, cùng vị trí đó là tên ở dạng phẳng màu mực trên nền giấy sáng, kèm logo (nếu có), gạch nhấn hổ phách và khẩu hiệu chạy lên.",
-  "hop_khi": "Khoảnh khắc công bố tên: ra mắt sản phẩm, giới thiệu thương hiệu / kênh / chiến dịch, chốt cuối video bằng tên + khẩu hiệu; chuyển từ phần trình diễn hoành tráng sang thông điệp chính thức.",
-  "tranh_khi": "Không có tên cụ thể để xướng; tên dài hơn 3–4 từ; nội dung nhẹ nhàng / buồn; ngay sau đó là cảnh tối (cảnh kết thúc trên nền sáng).",
+  "ten": "Chớp lóe tinh giản logo thương hiệu",
+  "mo_ta": "Mở đầu là tên thương hiệu cỡ lớn bằng chất liệu kim loại ba chiều ngũ sắc bóng bẩy, lơ lửng trên nền tím tối với bụi sáng huyền ảo và bóng phản chiếu dưới sàn. Một luồng chớp trắng lóe sáng cực mạnh bất ngờ bùng nổ từ tâm chữ phủ kín màn hình, chuyển cảnh dứt khoát sang tông màu be sáng sạch sẽ. Tên thương hiệu chuyển thành phông chữ phẳng màu đen tinh giản kèm huy hiệu nhỏ phía trên và dòng khẩu hiệu thanh lịch phía dưới, tạo nhịp tương phản đầy ấn tượng.",
+  "hop_khi": "Phù hợp cho khoảnh khắc chuyển đoạn từ giới thiệu hoa mỹ sang khẳng định giá trị cốt lõi, công bố tên thương hiệu mới, tôn vinh triết lý thiết kế tối giản hoặc tạo điểm nhấn outro quyền lực cuối video. Cảm xúc sang trọng, bất ngờ, bừng sáng và tinh tế. Ví dụ câu nói: 'Giữa vô vàn sự phô trương hào nhoáng, chúng tôi chọn quay về với giá trị tinh gọn nhất', 'Thương hiệu của bạn không cần quá cầu kỳ, bởi đỉnh cao của tinh tế chính là đơn giản', 'Sau tất cả những kỹ xảo lấp lánh, điều đọng lại sâu sắc nhất chính là chất lượng thực sự'.",
+  "mo_rong": "Đổi tên thành tên bộ sưu tập thời trang, chuyển từ sàn diễn lộng lẫy sang phong cách đời thường tinh giản -> ngành thời trang cao cấp, local brand; Đổi tên thành tên dự án bất động sản, chuyển từ phối cảnh 3D rực rỡ sang phong cách sống an nhiên bền vững -> ngành bất động sản, kiến trúc nội thất; Đổi tên thành tên ứng dụng công nghệ, chuyển từ hạ tầng thuật toán phức tạp sang giao diện một chạm đơn giản -> ngành phần mềm, SaaS, AI; Đổi tên thành tên dòng mỹ phẩm hữu cơ, chuyển từ công thức phòng thí nghiệm sang chiết xuất thiên nhiên thuần khiết -> ngành spa, mỹ phẩm organic; Đổi tên thành tên kênh cá nhân của chuyên gia hoặc KOL để tạo màn kết nhận diện thương hiệu cá nhân -> ngành truyền thông, đào tạo, xây kênh.",
   "nang_luong": "cao",
   "chu_de": [
-   "logo",
-   "ra mắt",
-   "thương hiệu",
-   "tên sản phẩm",
-   "khẩu hiệu",
-   "kết thúc",
-   "công bố",
-   "chuyển cảnh"
+   "chớp trắng",
+   "chuyển cảnh",
+   "nhận diện thương hiệu",
+   "kim loại 3D",
+   "tối giản",
+   "logo reveal",
+   "sang trọng",
+   "thời trang",
+   "công nghệ",
+   "bất động sản"
   ]
  },
  "backdrop": false

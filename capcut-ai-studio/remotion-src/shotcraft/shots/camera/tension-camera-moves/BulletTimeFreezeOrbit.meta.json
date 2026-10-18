@@ -86,19 +86,24 @@
   }
  ],
  "vi": {
-  "ten": "Thời gian ngừng trôi — máy quay vòng quanh biểu đồ đóng băng",
-  "mo_ta": "Bảng dữ liệu kính xanh đêm lơ lửng trong không gian 3D (sàn lưới, tường chấm): các cột tăng dần lệch nhịp, đỉnh cột phun tia lửa xanh trắng, bộ đếm số lớn cuộn nhanh. Giữa chừng thời gian phanh gấp và ĐỨNG HẲN — cột dừng nửa chừng, tia lửa treo lơ lửng giữa không trung — trong khi máy quay vòng sang hông ~52° rồi trở về (kiểu Ma Trận); rồi thời gian chạy tiếp, cột mọc đủ, nhãn giá trị bật lên, cột cuối sáng rực.",
-  "hop_khi": "Khoảnh khắc khoe con số / tăng trưởng đáng 'dừng lại để nhìn': doanh thu kỷ lục, lượt xem bùng nổ, kết quả chiến dịch; 'và đây là điều xảy ra…' trước khi chốt số; video tài chính, kinh doanh online, báo cáo dữ liệu, AI.",
-  "tranh_khi": "Không có số liệu; đoạn nói nhẹ nhàng cảm xúc; dùng nhiều lần trong một video (chỉ 1 lần là đắt).",
+  "ten": "Biểu đồ cột xoay 3D bullet time",
+  "mo_ta": "Bảng số liệu kính tối lơ lửng trong không gian chiều sâu với bộ đếm số lớn cuộn nhảy dữ dội ở trên và các cột biểu đồ thi nhau tăng vọt kèm tia sáng bắn ra từ đỉnh cột. Ở cao trào, toàn bộ biểu đồ và tia sáng đột ngột đóng băng thời gian (bullet-time) trong khi góc máy quay lượn vòng 3D quanh tấm kính rồi trả về chính diện. Cảnh kết thúc bằng con số kỷ lục phát sáng tĩnh tại đầy kiêu hãnh.",
+  "hop_khi": "Phù hợp cho khoảnh khắc khoe thành tích bùng nổ, kỷ lục doanh thu, số liệu chứng minh uy tín hoặc bước ngoặt tăng trưởng vượt bậc; cảm xúc tự hào, kịch tính và gây choáng ngợp. Ví dụ câu nói: 'Chỉ trong tuần vừa rồi, chúng mình đã cán mốc hơn một trăm tám mươi nghìn đơn hàng!', 'Nhìn vào biểu đồ tăng trưởng này, bạn sẽ hiểu vì sao dự án lại tạo nên cơn sốt lớn đến vậy.', 'Doanh thu chạm đỉnh lịch sử ngay trong ngày đầu tiên mở bán.'",
+  "mo_rong": "Đổi 7 cột ngày thành 7 tháng tăng trưởng doanh thu cửa hàng, giữ bộ đếm số đơn hàng -> dùng khoe kết quả kinh doanh, gọi vốn cho F&B hoặc thời trang; Đổi bộ đếm số thành số học viên đỗ chứng chỉ và các cột thành các khóa học -> dùng cho trung tâm ngoại ngữ, tuyển sinh du học; Đổi số lớn thành lượng calo tiêu hao hoặc số bước chân mỗi ngày trong tuần, cột màu cam neon -> dùng cho thể hình, sức khỏe, giảm cân; Đổi tiêu đề thành Lượt xem video hoặc Người theo dõi mới kèm cột tăng trưởng các kênh -> dùng cho sáng tạo nội dung, marketing online; Đổi số thành giá trị bất động sản tăng trưởng qua các năm, thanh biểu đồ màu vàng ánh kim -> dùng cho môi giới bất động sản, đầu tư tài chính.",
   "nang_luong": "cao",
   "chu_de": [
-   "số liệu",
-   "tăng trưởng",
-   "biểu đồ",
-   "doanh thu",
-   "dashboard",
-   "kỷ lục",
-   "dữ liệu"
+   "biểu đồ tăng trưởng",
+   "bullet time",
+   "xoay 3d",
+   "đếm số kỷ lục",
+   "doanh số",
+   "thành tích",
+   "bán hàng online",
+   "tài chính",
+   "thể hình",
+   "giáo dục",
+   "bất động sản",
+   "marketing"
   ]
  },
  "backdrop": true

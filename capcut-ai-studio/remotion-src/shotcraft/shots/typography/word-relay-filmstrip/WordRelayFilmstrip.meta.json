@@ -85,19 +85,24 @@
   }
  ],
  "vi": {
-  "ten": "Cuộn phim bằng chứng + chữ lớn tiếp sức",
-  "mo_ta": "Nền tối điện ảnh: một cột các thẻ trang (ảnh chụp màn hình / trang giả sáng tối xen kẽ) đứng yên, thẻ ở giữa sáng rõ, thẻ trên dưới mờ và nhòe. Bên cạnh (khung dọc: bên dưới) là chữ serif lớn hai dòng: chủ ngữ cố định ('Trợ lý AI') và động từ in nghiêng thay nhau ('lên kịch bản.' → 'dựng video.' → 'đăng bài.', chấm vàng); mỗi lần đổi từ, cuộn phim nhích đúng một thẻ, chữ cũ bay lên khỏi mặt nạ, chữ mới trồi lên từng ký tự, đường dẫn vàng nối thẻ với chữ, chú thích nhỏ đổi theo.",
-  "hop_khi": "Một chủ thể làm được nhiều việc, mỗi việc có bằng chứng hình ảnh: 'app này giúp bạn viết bài, làm ảnh, đăng bài', 'AI lên kịch bản, dựng video, đăng lên mạng', giới thiệu các tính năng kèm ảnh chụp màn hình, case study / portfolio nhiều dự án; tone biên tập, sang, chậm rãi.",
-  "tranh_khi": "Động từ dài hơn ~3 từ; hơn 3 ý; không có chủ thể chung; khoảnh khắc cần năng lượng cao; video tone sáng; dùng gần mẫu câu có ô trống lăn chữ.",
+  "ten": "Cuộn thẻ filmstrip tráo đổi từ khóa",
+  "mo_ta": "Nửa trên màn hình là chuỗi thẻ ảnh chụp giao diện cuộn dọc như dải phim điện ảnh, thẻ ở giữa sáng rõ nổi bật trong khi thẻ trên dưới mờ tối nghệ thuật. Nửa dưới hiển thị chủ ngữ cố định bằng phông chữ serif sang trọng, bên dưới lần lượt tráo đổi các động từ in nghiêng kèm chỉ số thứ tự và dòng phụ đề chi tiết. Nhịp trượt thẻ và đổi chữ diễn ra nhịp nhàng, êm ái, tạo cảm giác chuyên nghiệp và liền mạch.",
+  "hop_khi": "Phù hợp khi người nói liệt kê các tính năng cốt lõi của một sản phẩm, giới thiệu quy trình giải quyết vấn đề tự động từng bước, hoặc chuỗi hành động khép kín của một gói dịch vụ. Hợp với phong cách điềm tĩnh, chỉn chu, mang tính định vị chuyên gia; ví dụ: 'Quy trình 3 bước tự động hóa toàn bộ công việc cho bạn', 'Một nền tảng duy nhất giúp bạn từ khâu ý tưởng đến khi ra đơn', 'Hệ thống sẽ thay bạn tìm kiếm, chăm sóc và chốt đơn tự động'.",
+  "mo_rong": "Đổi ảnh màn hình thành ảnh món ăn, động từ thành 'chọn nguyên liệu -> sơ chế -> nấu nướng' -> ẩm thực nhà hàng F&B; đổi ảnh thành căn hộ mẫu, động từ thành 'chọn căn -> duyệt hồ sơ -> nhận nhà' -> môi giới bất động sản; đổi ảnh thành sản phẩm chăm sóc da, động từ thành 'làm sạch -> cấp ẩm -> phục hồi' -> spa mỹ phẩm; đổi ảnh thành portfolio, động từ thành 'tiếp nhận -> lên chiến lược -> thực thi' -> agency truyền thông; đổi ảnh thành giáo trình, động từ thành 'học lý thuyết -> thực hành -> nhận chứng chỉ' -> khóa học đào tạo.",
   "nang_luong": "vua",
   "chu_de": [
-   "tính năng",
-   "app",
-   "AI",
-   "ảnh chụp màn hình",
-   "portfolio",
-   "danh sách",
-   "giới thiệu sản phẩm"
+   "cuộn thẻ",
+   "filmstrip",
+   "tiếp sức từ khóa",
+   "quy trình",
+   "typography",
+   "công nghệ",
+   "dịch vụ",
+   "bất động sản",
+   "spa làm đẹp",
+   "ẩm thực",
+   "giáo dục",
+   "tính năng"
   ]
  },
  "backdrop": true

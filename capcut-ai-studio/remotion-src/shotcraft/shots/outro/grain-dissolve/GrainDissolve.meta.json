@@ -48,20 +48,11 @@
   }
  ],
  "vi": {
-  "ten": "Câu chữ vỡ hạt rồi ngưng tụ thành 1 từ phát sáng",
-  "mo_ta": "Nền tối kiểu HUD có 4 góc khung. Một câu chữ trắng trong ngoặc { } đứng yên rồi đột ngột sôi lên thành hạt nhiễu, khung chọn sọc chéo hiện quanh nó; giữa lúc sôi nhất, mây hạt hút mạnh về giữa và ngưng tụ thành một từ ngắn to, phát sáng trắng, có vệt sáng ngang lóe một lần rồi đứng yên. Ngắn (2 giây), dứt khoát.",
-  "hop_khi": "Kết video / chốt thông điệp: gói cả câu thành một từ (\"tất cả gói gọn trong ___\"), công bố ra mắt / lên sóng, hiện tên sản phẩm hay tên kênh ở cuối; tone công nghệ, AI, sản phẩm số.",
-  "tranh_khi": "Cần người xem đọc kỹ câu dài (câu chỉ hiện ~0,5 giây trước khi vỡ); từ chốt dài hơn 2-3 từ; tone nhẹ nhàng, ấm áp, đời thường; video nền sáng.",
+  "ten": "Chữ tan biến hạt tụ thành từ khóa",
+  "mo_ta": "Khung nhìn tối có 4 góc ngắm HUD, dòng thông điệp nằm trong dấu ngoặc nhọn ở giữa màn hình rồi bất ngờ sôi lên tan rã thành đám mây hạt nhiễu li ti. Đám hạt lập tức bị hút xoáy về trung tâm, ngưng tụ thành một từ khóa lớn phát sáng trắng rực rỡ kèm tia chớp lóe ngang. Nhịp chuyển động dứt khoát, bùng nổ và mang phong cách công nghệ điện ảnh hiện đại.",
+  "hop_khi": "Dùng cho khoảnh khắc hé lộ từ khóa đắt giá, công bố tính năng đột phá hoặc tung cú chốt hạ bất ngờ ở cuối video khi người nói đưa ra kết luận then chốt. Rất hợp với nhịp nói dứt khoát, ngắt nghỉ tạo kịch tính hoặc khoảnh khắc vỡ lẽ trong video công nghệ, kinh doanh, phát triển bản thân. Ví dụ: 'Và giải pháp duy nhất bạn cần chính là...', 'Tất cả gói gọn trong một từ: TỰ ĐỘNG.', 'Sau 6 tháng thử nghiệm, bí quyết thực sự là...'.",
+  "mo_rong": "Đổi câu dẫn thành câu hỏi nhức nhối và từ khóa thành tên giải pháp để chốt hạ điểm đau cho video bán hàng B2B hoặc khóa học; đổi câu dẫn thành thông số cũ và từ khóa thành kết quả nhảy vọt (vd: x10, KỶ LỤC) để khoe thành tích tài chính hoặc tăng trưởng kinh doanh; đổi câu dẫn thành định kiến sai lầm và từ khóa thành sự thật để tạo điểm nhấn bẻ khóa tư duy trong video giáo dục; đổi sang tone màu neon hoặc cyberpunk với từ khóa là tên sản phẩm mới để làm outro ra mắt ấn tượng cho ngành gaming, thời trang đường phố.",
   "nang_luong": "cao",
-  "chu_de": [
-   "kết video",
-   "ra mắt",
-   "logo",
-   "tên sản phẩm",
-   "công nghệ",
-   "AI",
-   "câu chốt",
-   "outro"
-  ]
+  "chu_de": ["từ khóa chốt", "công bố ra mắt", "outro", "kêu gọi hành động", "công nghệ", "kinh doanh", "hiệu ứng hạt", "điểm nhấn kịch tính", "hé lộ bí mật", "phát triển bản thân", "giải pháp"]
  }
 }

@@ -21,11 +21,11 @@
  "brand": "none",
  "sfx": [{"at": 14, "type": "whoosh"}, {"at": 30, "type": "click"}],
  "vi": {
-  "ten": "So sánh trước / sau — thanh trượt quét ảnh",
-  "mo_ta": "Hai phiên bản của CÙNG một ảnh chồng lên nhau, phủ kín khung: bên phải là bản 'Trước' (mờ, xám, nhạt), bên trái là bản 'Sau' (rõ, đủ màu). Một thanh chia dọc có nút tròn trắng vụt mạnh từ mép trái sang 3/4 khung (nảy lại), dừng một nhịp rồi trượt chậm về 40% để người xem soi kỹ khác biệt; chip nhãn 'Trước' / 'Sau' ở phía trên mỗi bên.",
-  "hop_khi": "Khoe hiệu quả trước/sau: AI làm nét / chỉnh màu ảnh, xóa phông, trang điểm, cải tạo phòng, giao diện app cũ vs mới, kết quả trước và sau khi áp dụng một mẹo; câu nói kiểu 'nhìn sự khác biệt này', 'trước đây thì như vậy, còn bây giờ...'.",
-  "tranh_khi": "Không có ảnh minh họa đúng chủ đề; hai thứ cần so sánh KHÁC bố cục (hai sản phẩm khác nhau, hai người khác nhau) — khi đó dùng mẫu so sánh hai cột; so sánh bằng con số.",
+  "ten": "Thanh trượt so sánh trước và sau",
+  "mo_ta": "Hai khung hình trước và sau được xếp chồng toàn màn hình, phân tách bởi một đường kẻ dọc có nút kéo tròn hai chiều ở giữa. Thanh chia lướt dứt khoát từ trái sang phải làm lộ rõ phiên bản sau đã được tối ưu màu sắc rực rỡ, sau đó trượt chậm rãi về gần giữa màn hình để người xem quan sát chi tiết. Góc trên hai bên đính kèm nhãn trạng thái đối chiếu rõ ràng giúp người xem nắm bắt ngay lập tức.",
+  "hop_khi": "Phù hợp khi người nói muốn chứng minh kết quả biến đổi rõ rệt, so sánh hiệu quả giữa giải pháp cũ và mới, hoặc tạo sự tương phản trực quan đầy thuyết phục với nhịp điệu phân tích chậm rãi, chắc chắn. Thích hợp cho thời điểm đưa ra minh chứng thực tế trong video bán hàng, review. Ví dụ: 'Hãy xem chất lượng video thay đổi kinh ngạc thế nào trước và sau khi xử lý AI.', 'Đây là sự khác biệt giữa bức ảnh chụp thông thường và sau khi chỉnh màu.', 'Làn da của khách hàng đã cải thiện rõ rệt sau đúng một liệu trình.'",
+  "mo_rong": "Thay bằng ảnh không gian phòng từ cũ kỹ, bừa bộn sang nội thất sang trọng, tiện nghi -> video thiết kế kiến trúc, bất động sản; đổi ảnh vóc dáng trước và sau giảm cân -> video thể hình, gym, thực phẩm chức năng; đổi ảnh phác thảo bản vẽ thô sang mô hình 3D hoàn chỉnh -> video sáng tạo nghệ thuật, đồ họa; thay ảnh làn da mụn sang mịn màng -> video spa, mỹ phẩm, da liễu; đổi ảnh đoạn mã thô sang giao diện website hoàn thiện -> video lập trình, công nghệ.",
   "nang_luong": "vua",
-  "chu_de": ["so sánh", "trước sau", "AI chỉnh ảnh", "kết quả", "nâng cấp", "hiệu quả"]
+  "chu_de": ["thanh trượt", "so sánh trước sau", "đối chiếu trực quan", "biến đổi", "chỉnh sửa ảnh", "làm đẹp", "bất động sản", "thể hình", "công nghệ AI", "review dịch vụ"]
  }
 }

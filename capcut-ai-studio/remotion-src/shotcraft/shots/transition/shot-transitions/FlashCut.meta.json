@@ -6,20 +6,41 @@
  "duration": 12,
  "kind": "overlay",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.8, 1.25],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.8,
+  1.25
+ ],
  "hold": 5,
  "slots": [],
  "images": [],
  "brand": "none",
- "sfx": [{"at": 3, "type": "swoosh"}],
+ "sfx": [
+  {
+   "at": 3,
+   "type": "swoosh"
+  }
+ ],
  "vi": {
-  "ten": "Chớp sáng che cắt — lóe trắng ấm",
-  "mo_ta": "Lớp trong suốt đặt ĐÈ lên điểm cắt cứng giữa hai cảnh: một quầng sáng trắng ấm (đậm ở giữa, mờ ra mép) bừng lên trong ~5 khung rồi tắt trong ~7 khung, che mất cú cắt nên chuyển cảnh mượt, không thấy 'kéo'. Không có chữ hay hình.",
-  "hop_khi": "Nối hai đoạn có năng lượng tương đương (A-roll → B-roll, màn hình này sang màn hình khác, nhảy cóc trong cùng câu nói); nhấn một nhịp chuyển ý nhanh, 'bùm' một cái sang ý mới; cắt ghép nhiều đoạn quay liên tiếp cho liền mạch.",
-  "tranh_khi": "Dùng liên tục ở mọi điểm cắt (rẻ tiền, mỏi mắt); chồng lên một hiệu ứng chuyển cảnh khác cùng chỗ; cảnh tối, trầm lắng cần cắt nhẹ.",
+  "ten": "Chớp sáng che điểm cắt",
+  "mo_ta": "Lớp trong suốt đặt đè lên điểm cắt giữa hai cảnh: một quầng sáng trắng ấm (đậm ở giữa, mờ ra mép) bừng lên trong khoảng 5 khung rồi tắt trong khoảng 7 khung, che mất cú cắt nên chuyển cảnh liền mạch. Không có chữ hay hình, chỉ là một nhịp lóe sáng rất ngắn.",
+  "hop_khi": "Dùng khi nối hai đoạn có năng lượng tương đương: từ người nói sang cảnh minh họa, từ màn hình này sang màn hình khác, nhảy cóc trong cùng một câu nói; khi cần một nhịp chuyển ý nhanh, dứt khoát sang ý mới. Ví dụ câu nói: 'Và đây là phần quan trọng nhất', 'Chuyển sang bước tiếp theo nhé', 'Nhưng chưa hết đâu'.",
+  "mo_rong": "Đặt đúng điểm cắt vào cảnh shot toàn màn hình hoặc lúc trở lại người nói -> làm cú vào / ra cảnh minh họa mềm hơn; đặt trên nhịp phách nhạc -> video bán hàng, review sản phẩm nhịp nhanh; đặt ngay trước con số hay kết quả được tiết lộ -> tạo cảm giác 'bùm' khi khoe thành quả; đặt giữa các cảnh trước / sau -> làm đẹp, cải tạo nhà, chỉnh ảnh; nối chuỗi nhiều cảnh quay ngắn liên tiếp -> vlog du lịch, ẩm thực, sự kiện.",
   "nang_luong": "vua",
-  "chu_de": ["chuyển cảnh", "cắt", "chớp sáng", "nhịp nhanh", "nối cảnh"]
+  "chu_de": [
+   "chuyển cảnh",
+   "điểm cắt",
+   "chớp sáng",
+   "nhịp nhanh",
+   "chuyển ý",
+   "tiết lộ",
+   "trước sau",
+   "vlog",
+   "bán hàng",
+   "review"
+  ]
  },
  "backdrop": false
 }

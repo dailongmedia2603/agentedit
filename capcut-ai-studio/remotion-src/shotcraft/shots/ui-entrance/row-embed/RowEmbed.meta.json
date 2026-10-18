@@ -6,27 +6,87 @@
  "duration": 68,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.75, 1.1],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.75,
+  1.1
+ ],
  "hold": 60,
  "slots": [
-  {"id": "kicker", "role": "kicker", "sample": "HỒ SƠ DỰ ÁN", "max": 26, "optional": true, "note": "nhãn nhỏ in hoa trên tiêu đề trang"},
-  {"id": "title", "role": "title", "sample": "Thông tin dự án", "max": 36, "note": "tiêu đề trang chi tiết"},
-  {"id": "subtitle", "role": "subtitle", "sample": "Cập nhật tự động · vừa xong", "max": 44, "optional": true},
-  {"id": "rows", "role": "item", "sample": "Khách hàng: Công ty Minh An|Ngân sách: 450 triệu đồng|Thời gian: 12 tuần|Phụ trách: Nhóm Sáng tạo|Trạng thái: Đang triển khai", "max": 44, "list": {"min": 3, "max": 6}, "note": "các hàng thông tin; dạng “Nhãn: giá trị” (nhãn trái mờ, giá trị phải đậm) hoặc một câu ngắn (có số thứ tự)"}
+  {
+   "id": "kicker",
+   "role": "kicker",
+   "sample": "HỒ SƠ DỰ ÁN",
+   "max": 26,
+   "optional": true,
+   "note": "nhãn nhỏ in hoa trên tiêu đề trang"
+  },
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Thông tin dự án",
+   "max": 36,
+   "note": "tiêu đề trang chi tiết"
+  },
+  {
+   "id": "subtitle",
+   "role": "subtitle",
+   "sample": "Cập nhật tự động · vừa xong",
+   "max": 44,
+   "optional": true
+  },
+  {
+   "id": "rows",
+   "role": "item",
+   "sample": "Khách hàng: Công ty Minh An|Ngân sách: 450 triệu đồng|Thời gian: 12 tuần|Phụ trách: Nhóm Sáng tạo|Trạng thái: Đang triển khai",
+   "max": 44,
+   "list": {
+    "min": 3,
+    "max": 6
+   },
+   "note": "các hàng thông tin; dạng “Nhãn: giá trị” (nhãn trái mờ, giá trị phải đậm) hoặc một câu ngắn (có số thứ tự)"
+  }
  ],
  "images": [
-  {"id": "screen", "role": "screen", "aspect": "any", "optional": true, "note": "nếu có: ảnh chụp màn hình / trang (tỉ lệ bất kỳ) thay trang vẽ sẵn — 5 dải ngang của chính ảnh bay xuống ghép vào (khi đó chữ trong rows không hiện)"}
+  {
+   "id": "screen",
+   "role": "screen",
+   "aspect": "any",
+   "optional": true,
+   "note": "nếu có: ảnh chụp màn hình / trang (tỉ lệ bất kỳ) thay trang vẽ sẵn — 5 dải ngang của chính ảnh bay xuống ghép vào (khi đó chữ trong rows không hiện)"
+  }
  ],
  "brand": "none",
- "sfx": [{"at": 10, "type": "swoosh"}, {"at": 58, "type": "click"}],
+ "sfx": [
+  {
+   "at": 10,
+   "type": "swoosh"
+  },
+  {
+   "at": 58,
+   "type": "click"
+  }
+ ],
  "vi": {
-  "ten": "Các hàng thông tin rơi xuống cài vào trang",
-  "mo_ta": "Trang chi tiết nền kem sáng kiểu phần mềm (thanh menu, tiêu đề lớn); các hàng thông tin “nhãn – giá trị” lần lượt từ trên cao rơi xuống, nghiêng rồi nằm phẳng và khớp “cạch” vào đúng ô trống có viền nét đứt, mỗi lần khớp có một đường sáng cam chạy dọc mép dưới; hàng rơi càng lúc càng nhanh, máy quay lia xuống và đẩy nhẹ. Cảnh ngắn (~2 giây).",
-  "hop_khi": "Liệt kê nhanh thông tin / thông số / đặc điểm: hồ sơ dự án, thông số sản phẩm, chi tiết gói dịch vụ, các bước đã hoàn thành, dữ liệu được hệ thống tự điền; nói “mọi thông tin được cập nhật tự động”, “chỉ cần nhập là có đủ”.",
-  "tranh_khi": "Cần thời gian đọc lâu (cảnh rất ngắn); nội dung cảm xúc; chỉ có 1–2 ý; tone tối.",
+  "ten": "Bảng thông tin thẻ trượt giao diện app",
+  "mo_ta": "Bố cục thẻ thông tin dạng bảng điều khiển phần mềm hiện đại trên nền mờ, phía trên gồm kicker cam, tiêu đề lớn và phụ đề cập nhật. Các hàng dữ liệu bo góc trắng lần lượt rơi và trượt khớp vào vị trí từ trên xuống, kèm vệt sáng vàng cam quét ngang mép dưới mỗi hàng. Nhịp chuyển động nhanh, dứt khoát, tạo cảm giác thông tin được hệ thống nạp và đồng bộ tự động.",
+  "hop_khi": "Phù hợp khi người nói tóm tắt hồ sơ dự án, công bố bảng giá dịch vụ, thông số kỹ thuật hoặc báo cáo các hạng mục công việc với phong thái chuyên nghiệp, minh bạch. Ví dụ: 'Dự án này bên mình hoàn thiện cho khách hàng trong đúng 12 tuần với 450 triệu ngân sách.', 'Bảng giá dịch vụ trọn gói của bên mình bao gồm 4 hạng mục sau.', 'Hồ sơ năng lực của bạn cần chuẩn bị đầy đủ 4 phần này.'",
+  "mo_rong": "Đổi thông tin dự án thành cấu hình kỹ thuật (Chip, RAM, Pin, Màn hình) -> dùng cho video review đồ công nghệ; đổi 4 hàng thành menu bảng giá dịch vụ -> dùng cho spa, thẩm mỹ viện hoặc salon tóc; đổi thành tiêu chí tuyển dụng (Vị trí, Kinh nghiệm, Mức lương, Nơi làm việc) -> dùng cho video nhân sự và việc làm; đổi thành thông tin chi tiết căn hộ (Diện tích, Giá bán, Pháp lý, Hướng nhà) -> dùng cho môi giới bất động sản; đổi thành lộ trình học 4 tuần -> dùng cho giáo dục và đào tạo kỹ năng.",
   "nang_luong": "vua",
-  "chu_de": ["danh sách", "thông số", "thông tin", "dữ liệu", "app", "tự động hóa", "hồ sơ", "dashboard"]
+  "chu_de": [
+   "giao diện phần mềm",
+   "bảng thông số",
+   "hồ sơ dự án",
+   "bảng giá dịch vụ",
+   "công nghệ",
+   "bất động sản",
+   "tuyển dụng",
+   "đào tạo",
+   "tài chính",
+   "danh sách thẻ"
+  ]
  },
  "backdrop": true
 }

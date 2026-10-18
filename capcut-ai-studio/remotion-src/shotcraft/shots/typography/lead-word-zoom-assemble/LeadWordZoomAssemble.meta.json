@@ -6,24 +6,76 @@
  "duration": 84,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
  "hold": 48,
  "slots": [
-  {"id": "title", "role": "title", "sample": "Giới thiệu Trợ lý AI", "max": 32, "note": "câu giới thiệu 1 dòng; TỪ ĐẦU TIÊN được phóng to chiếm màn hình nên phải ngắn (vd 'Giới thiệu', 'Chào', 'Đây', 'Gặp')"},
-  {"id": "highlight", "role": "name", "sample": "Trợ lý AI", "max": 24, "optional": true, "note": "cụm từ có sẵn trong title (thường là tên sản phẩm) được tô màu nhấn"},
-  {"id": "subtitle", "role": "subtitle", "sample": "Một câu lệnh, một video hoàn chỉnh: gõ, duyệt, xuất bản.", "max": 80, "optional": true}
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Giới thiệu Trợ lý AI",
+   "max": 32,
+   "note": "câu giới thiệu 1 dòng; TỪ ĐẦU TIÊN được phóng to chiếm màn hình nên phải ngắn (vd 'Giới thiệu', 'Chào', 'Đây', 'Gặp')"
+  },
+  {
+   "id": "highlight",
+   "role": "name",
+   "sample": "Trợ lý AI",
+   "max": 24,
+   "optional": true,
+   "note": "cụm từ có sẵn trong title (thường là tên sản phẩm) được tô màu nhấn"
+  },
+  {
+   "id": "subtitle",
+   "role": "subtitle",
+   "sample": "Một câu lệnh, một video hoàn chỉnh: gõ, duyệt, xuất bản.",
+   "max": 80,
+   "optional": true
+  }
  ],
  "images": [],
  "brand": "optional",
- "sfx": [{"at": 0, "type": "boom"}, {"at": 12, "type": "whoosh"}, {"at": 32, "type": "swoosh"}, {"at": 72, "type": "whoosh"}],
+ "sfx": [
+  {
+   "at": 0,
+   "type": "boom"
+  },
+  {
+   "at": 12,
+   "type": "whoosh"
+  },
+  {
+   "at": 32,
+   "type": "swoosh"
+  },
+  {
+   "at": 72,
+   "type": "whoosh"
+  }
+ ],
  "vi": {
-  "ten": "Từ đầu phóng to rồi ráp thành câu giới thiệu",
-  "mo_ta": "Nền sáng nhẹ: từ đầu tiên hiện TO GẤP 2,3 LẦN giữa màn hình và còn tiến dần về phía người xem; rồi trong một nhịp liền nó thu về cỡ chữ thường và trượt sang trái về đúng chỗ, các từ còn lại lần lượt được 'đẩy' vào khe bên phải, tên sản phẩm đổi màu nhấn; cả dòng nhích lên, dòng phụ hiện bên dưới, giữ yên ~1 giây rồi cả khung phóng to nhòe đi để chuyển cảnh.",
-  "hop_khi": "Giới thiệu tên sản phẩm / tính năng / chương trình: 'Giới thiệu …', 'Đây là …', 'Chào mừng đến với …'; câu chủ đề ngắn mở đầu một phần mới; khoảnh khắc ra mắt.",
-  "tranh_khi": "Câu dài hơn 1 dòng (> 32 ký tự) hoặc từ đầu dài; cần kết thúc yên tĩnh (cảnh tự nhòe đi ở cuối như chuyển cảnh).",
+  "ten": "Từ đầu phóng to ghép tiêu đề",
+  "mo_ta": "Từ khóa đầu tiên xuất hiện với kích thước khổng lồ ở giữa màn hình rồi lao nhanh về phía người xem tạo cú hích thị giác giật gân. Ngay sau đó, chữ nhanh chóng thu nhỏ và lướt sang trái để các từ tiếp theo trượt vào lắp ghép thành dòng tiêu đề hoàn chỉnh, trong đó từ khóa chính đổi sang màu xanh tím neon phát sáng. Kết thúc bằng dòng mô tả phụ mờ hiện êm ái ở bên dưới với tiết tấu dứt khoát, hiện đại.",
+  "hop_khi": "Dùng khi mở đầu video cần một cú giật tít (hook) cực mạnh, hoặc khoảnh khắc người nói tung ra một giải pháp mới, công bố sản phẩm mang tính đột phá; cảm xúc hào hứng, nhịp nhanh và ấn tượng mạnh mẽ. Ví dụ: 'Giới thiệu Trợ lý AI thế hệ mới.', 'Bí mật đằng sau doanh số trăm triệu mỗi tháng.', 'Đột phá công nghệ thay đổi hoàn toàn cách bạn làm việc.'",
+  "mo_rong": "Đổi từ khóa thành tên tính năng phần mềm mới -> video review công nghệ hoặc giới thiệu ứng dụng; đổi thành tên liệu trình làm đẹp mới -> video quảng bá dịch vụ spa hoặc thẩm mỹ viện; đổi thành tên dự án bất động sản trọng điểm -> video chào bán căn hộ cao cấp; đổi từ đầu thành con số giật tít kèm cụm từ khóa doanh thu -> video chia sẻ kinh nghiệm kinh doanh; đổi màu neon sang đỏ vàng -> video thông báo chương trình khuyến mãi chớp nhoáng.",
   "nang_luong": "cao",
-  "chu_de": ["ra mắt", "giới thiệu", "tên sản phẩm", "tiêu đề", "mở đầu", "tính năng mới"]
+  "chu_de": [
+   "phóng to chữ",
+   "lắp ghép tiêu đề",
+   "mở đầu thu hút",
+   "giới thiệu sản phẩm",
+   "công nghệ phần mềm",
+   "kinh doanh",
+   "quảng cáo bán hàng",
+   "dịch vụ spa",
+   "bất động sản",
+   "tạo tò mò"
+  ]
  },
  "backdrop": true
 }

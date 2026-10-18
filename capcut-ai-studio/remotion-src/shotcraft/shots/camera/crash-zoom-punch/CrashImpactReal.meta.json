@@ -98,23 +98,23 @@
   }
  ],
  "vi": {
-  "ten": "Zoom giật đập khựng + rung màn hình (HUD chiến thuật)",
-  "mo_ta": "Sân khấu tối, ảnh (màn hình app/web, ảnh điện thoại, ảnh chụp) đặt thẳng như một màn hình giám sát viền xanh chanh; khung ngắm xanh chanh nhảy quét 2 điểm trong ảnh rồi KHOÁ vào vùng giữa kèm nhãn 'ĐÃ KHOÁ'. Máy quay lùi nhẹ lấy đà rồi ĐẬP thẳng vào cực nhanh (6 khung, nhoè chuyển động) và KHỰNG LẠI như vật nặng rơi: một khung chớp xanh chanh toàn màn hình, xung quanh tối đen, hai vòng sóng xung kích toả ra, màn hình rung mạnh rồi tắt hẳn. Một vạch quét sáng chạy qua chi tiết, rồi các thông số HUD (nhãn: giá trị) và một con số rất to màu nhấn + tiêu đề + câu giải thích hiện lần lượt (khung ngang: hai cột trái/phải; khung dọc: dưới ảnh).",
-  "hop_khi": "Khoảnh khắc chốt mạnh 'chính là nó', 'đây là thứ quan trọng nhất', 'lỗi nằm ở đây', 'chỉ cần bấm nút này': chỉ thẳng vào MỘT chi tiết trên màn hình app/web/dashboard/điện thoại hoặc sản phẩm rồi đọc con số, mức ưu tiên, kết quả; tone công nghệ, dữ liệu, kiểm tra, phát hiện.",
-  "tranh_khi": "Không có ảnh chi tiết phù hợp hoặc chi tiết nằm sát mép ảnh (máy luôn đập vào giữa); nội dung nhẹ nhàng, cảm xúc, đời thường; video tone sáng ấm; đã dùng zoom giật khác gần đó (tối đa 2 lần/video, không dùng cạnh 'crash-zoom-punch').",
+  "ten": "Quét khóa mục tiêu và phóng to HUD",
+  "mo_ta": "Màn hình giao diện ứng dụng hiển thị chính giữa trong khung ngắm công nghệ cao, các điểm quét màu xanh chanh liên tục dò tìm rồi khóa chặt vào vị trí tâm điểm kèm nhãn báo. Ngay sau đó, máy quay thực hiện cú giật đập cực nhanh phóng lớn khu vực đã chọn lên nửa trên, đồng thời nửa dưới bật sáng cụm thông số HUD gồm số lớn, tiêu đề và danh sách ba dòng trạng thái. Chuyển động mang nhịp điệu dồn dập, sắc bén và đậm chất công nghệ, giữ cố định tại điểm đỉnh để nhấn mạnh thao tác then chốt.",
+  "hop_khi": "Dùng khi người nói muốn chỉ đích danh một tính năng mấu chốt, vị trí nút bấm thao tác hoặc một điểm phát hiện quan trọng trên màn hình sản phẩm mà người xem cần đặc biệt lưu tâm. Phù hợp với nhịp nói dứt khoát, cảm xúc khẳng định chắc nịch hoặc chứng minh sự nhanh gọn. Ví dụ: 'Bạn chỉ cần bấm đúng một nút duy nhất này trên màn hình là xong', 'Đây chính là tính năng ăn tiền nhất mà rất nhiều người dùng bỏ qua', 'Điểm mấu chốt nằm ngay tại góc này, giải quyết toàn bộ vấn đề cho bạn'.",
+  "mo_rong": "Đổi ảnh màn hình thành ảnh tài liệu hoặc hợp đồng, khung ngắm khóa vào điều khoản phí ẩn -> dùng cho tài chính hoặc tư vấn luật khi cảnh báo rủi ro; Đổi ảnh app thành ảnh cận cảnh chi tiết may và chất vải của sản phẩm thời trang -> dùng cho bán hàng online để chứng minh độ tinh xảo cao cấp; Đổi ảnh sang bản đồ quy hoạch phân lô, khóa vào lô đất đẹp kèm 3 dòng thông số diện tích, hướng và giá bán -> dùng cho môi giới bất động sản khi giới thiệu sản phẩm tiêu biểu; Đổi ảnh thành bảng thành phần mỹ phẩm, khóa vào hoạt chất chính -> dùng cho spa và làm đẹp khi giải thích công dụng sản phẩm; Đổi ảnh thành thực đơn nhà hàng, khóa vào món signature -> dùng cho review F&B khi gợi ý món nhất định phải thử.",
   "nang_luong": "cao",
   "chu_de": [
-   "chi tiết",
-   "app",
-   "dashboard",
-   "website",
-   "điện thoại",
-   "số liệu",
-   "ưu tiên",
-   "phát hiện",
-   "HUD",
    "công nghệ",
-   "kết quả"
+   "quét tiêu điểm",
+   "zoom giật",
+   "hud",
+   "hướng dẫn phần mềm",
+   "tính năng nổi bật",
+   "bán hàng online",
+   "bất động sản",
+   "tài chính",
+   "làm đẹp",
+   "review"
   ]
  },
  "backdrop": true

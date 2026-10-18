@@ -4,6 +4,10 @@
 
 export type MotionAspect = '9:16' | '16:9' | '1:1'
 
+/** Quy trinh dung: motionmaxxing (dong goi trong app, mac dinh) | mvd = skill motion-video-director CA NHAN tren may nay
+ *  (pipeline B: anh AI nhat quan + nhac theo nhip — motion/mvd.ts; khong dong goi cho khach). */
+export type MotionEngine = 'motionmaxxing' | 'mvd'
+
 /** Thong tin skill can de tao 1 video hoan chinh (form "Tao video" / thong tin chung du an Automation + 1 tin). */
 export interface MotionBrief {
   /** Ten san pham / thuong hieu / kenh */
@@ -37,6 +41,8 @@ export interface MotionBrief {
   notes?: string
   /** Automation: tin lay ve (tieu de, noi dung, link, anh) */
   source?: MotionSourceItem
+  /** Quy trinh dung (trong = motionmaxxing) */
+  engine?: MotionEngine
 }
 
 export interface MotionVoice {
@@ -132,4 +138,26 @@ export interface AutoProject {
   primed: Record<string, boolean>
   /** ngay (YYYY-MM-DD) -> so video da tao */
   daily?: Record<string, number>
+  /** Tu dong dang video xong len kenh qua Phone Agent (iPhone + kich ban) — electron/services/phoneagent/auto.ts */
+  post?: AutoPostConfig
+}
+
+/** Cau hinh tu dong dang cua 1 du an Automation (2026-10-19) */
+export interface AutoPostConfig {
+  enabled: boolean
+  deviceId: string
+  deviceName?: string
+  scriptId: string
+  scriptName?: string
+  /** ten bien chua id video (send_file) — trong = tu do luc dang */
+  videoVar?: string
+  /** bien cua kich ban (mau) — {title} {summary} {link} {source} {channel} {date} thay theo tung video */
+  variables: Record<string, string>
+  /** now = dang ngay khi video xong; delay = sau delayMin phut; slots = khung gio co dinh trong ngay */
+  timing: 'now' | 'delay' | 'slots'
+  delayMin?: number
+  /** "HH:MM" — moi khung 1 video / ngay */
+  slots?: string[]
+  /** luc bat tu dong dang — video xong TRUOC moc nay khong tu dang */
+  enabledAt?: number
 }

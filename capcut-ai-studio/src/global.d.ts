@@ -195,6 +195,8 @@ interface StudioBridge {
     error?: string
   }>
   // ---- Kho hieu ung tu viet (sidecar fx_lib.py) ----
+  shotlibList(): Promise<{ ok: boolean; shots?: ShotLibItem[]; categories?: Record<string, string>; error?: string }>
+  shotlibToggle(id: string, disabled: boolean): Promise<{ ok: boolean; disabled?: string[]; error?: string }>
   fxlibList(): Promise<{ ok: boolean; effects?: FxLibItem[]; pending?: FxLibPending; error?: string }>
   fxlibRenderPreview(id: string): Promise<{ ok: boolean; busy?: boolean; cancelled?: boolean; error?: string }>
   fxlibLabel(ids: string[]): Promise<{
@@ -344,6 +346,23 @@ interface StudioBridge {
   automationCheckNow(id: string): Promise<{ ok: boolean; created: number; message: string }>
   automationTestSource(s: AutoSourceInput & { projectId?: string }): Promise<{ ok: boolean; via?: string; items?: MotionSourceItem[]; error?: string }>
   onAutomationChanged(cb: (list: AutoProject[]) => void): () => void
+  // ---- Phone Agent: dang video len kenh qua iPhone (electron/phoneagent-ipc.ts) ----
+  phoneagentOpenSite(): Promise<void>
+  phoneagentGet(): Promise<PaMasked>
+  phoneagentSave(cfg: { token?: string; base?: string }): Promise<PaMasked>
+  phoneagentTest(cfg?: { token?: string; base?: string }): Promise<{ ok: boolean; detail?: string; name?: string; email?: string; error?: string }>
+  phoneagentDevices(): Promise<{ ok: boolean; devices: PaDevice[]; error?: string }>
+  phoneagentScripts(): Promise<{ ok: boolean; scripts: PaScript[]; error?: string }>
+  phoneagentScriptFields(id: string): Promise<({ ok: true } & PaScriptFields) | { ok: false; error: string }>
+  phoneagentPosts(filter?: { refId?: string; automationId?: string }): Promise<PostJob[]>
+  phoneagentCreate(input: NewPostInput): Promise<{ ok: boolean; post?: PostJob; error?: string }>
+  phoneagentCancel(id: string): Promise<{ ok: boolean; error?: string }>
+  phoneagentRetry(id: string, at?: number): Promise<{ ok: boolean; error?: string }>
+  phoneagentDelete(id: string): Promise<{ ok: boolean; error?: string }>
+  phoneagentReschedule(id: string, at: number): Promise<{ ok: boolean; error?: string }>
+  phoneagentShotUrl(file: string): Promise<string>
+  phoneagentMotionContext(jobId: string): Promise<Record<string, string> | null>
+  onPhoneagentPosts(cb: (list: PostJob[]) => void): () => void
 }
 
 declare global {
@@ -384,6 +403,8 @@ declare global {
     voice: MotionVoice
     notes?: string
     source?: MotionSourceItem
+    /** 'mvd' = skill motion-video-director ca nhan tren may nay (motion/mvd.ts); trong = motionmaxxing */
+    engine?: 'motionmaxxing' | 'mvd'
   }
   type MotionStatus = 'queued' | 'running' | 'done' | 'error' | 'cancelled' | 'interrupted'
   interface MotionJob {
@@ -413,6 +434,8 @@ declare global {
     python: { ok: boolean; path: string | null }
     ffmpeg: { ok: boolean }
     chrome: { ok: boolean; path: string | null; via: string }
+    /** skill motion-video-director ca nhan (chi may da cai) */
+    mvd: { available: boolean; version?: string; elevenlabs: boolean }
   }
   interface SaydiVoice {
     id: string
@@ -458,6 +481,7 @@ declare global {
     seenCount: number
     videoCount: number
     running: number
+    post?: AutoPostConfig
   }
   interface AutoProjectInput {
     id?: string
@@ -469,6 +493,112 @@ declare global {
     maxPerCheck: number
     maxPerDay: number
     skipExisting: boolean
+    post?: AutoPostConfig
+  }
+
+  // ---- Phone Agent — khop electron/services/phoneagent/{api,posts}.ts + motion/types.ts AutoPostConfig ----
+  interface PaMasked {
+    has_key: boolean
+    key_hint: string
+    base: string
+    default_base: string
+  }
+  interface PaDevice {
+    id: string
+    name: string
+    status: string
+    model?: string
+    iosVersion?: string
+    battery?: number
+    lastSeen?: string
+    currentScript?: string | null
+  }
+  interface PaScript {
+    id: string
+    name: string
+    description?: string
+    channel?: string
+    status?: string
+    shared?: boolean
+    runCount?: number
+    lastRun?: string
+  }
+  interface PaField {
+    name: string
+    label?: string
+    type: string
+    required?: boolean
+    default?: string | number | boolean
+    description?: string
+    options?: string[]
+    maxLength?: number
+    min?: number
+    max?: number
+    placeholder?: string
+    role: 'video' | 'caption' | 'other'
+  }
+  interface PaScriptFields {
+    scriptId: string
+    name: string
+    declared: boolean
+    fields: PaField[]
+    videoVar?: string
+    hasSendFile: boolean
+    warnings: string[]
+  }
+  type PostStatus = 'scheduled' | 'uploading' | 'registering' | 'waiting' | 'starting' | 'running' | 'success' | 'error' | 'cancelled'
+  interface PostOrigin {
+    kind: 'edit' | 'motion' | 'auto'
+    refId: string
+    automationId?: string
+  }
+  interface PostJob {
+    id: string
+    createdAt: number
+    title: string
+    video: string
+    origin: PostOrigin
+    deviceId: string
+    deviceName: string
+    scriptId: string
+    scriptName: string
+    videoVar?: string
+    variables: Record<string, string>
+    scheduledAt: number
+    status: PostStatus
+    message?: string
+    attempts: number
+    executionId?: string
+    steps?: { index: number; type: string; description?: string; status: string; error?: string }[]
+    shot?: string
+    startedAt?: number
+    finishedAt?: number
+    error?: string
+  }
+  interface NewPostInput {
+    video: string
+    title: string
+    origin: PostOrigin
+    deviceId: string
+    deviceName?: string
+    scriptId: string
+    scriptName?: string
+    videoVar?: string
+    variables?: Record<string, string>
+    scheduledAt?: number
+  }
+  interface AutoPostConfig {
+    enabled: boolean
+    deviceId: string
+    deviceName?: string
+    scriptId: string
+    scriptName?: string
+    videoVar?: string
+    variables: Record<string, string>
+    timing: 'now' | 'delay' | 'slots'
+    delayMin?: number
+    slots?: string[]
+    enabledAt?: number
   }
 
   type UpdatePhase = 'disabled' | 'idle' | 'available' | 'downloading' | 'ready' | 'applying' | 'error'
@@ -1015,6 +1145,25 @@ declare global {
     quality_note?: string
   }
 
+  /** 1 mau trong KHO SHOT & MOTION (sidecar shot_lib.list_view) */
+  interface ShotLibItem {
+    id: string
+    category: string
+    kind: 'insert' | 'overlay'
+    dark: boolean
+    backdrop: boolean
+    /** giay (do dai goc) */
+    duration: number
+    brand: 'required' | 'optional' | 'none'
+    vi: { ten?: string; mo_ta?: string; hop_khi?: string; mo_rong?: string; nang_luong?: 'thap' | 'vua' | 'cao'; chu_de?: string[] }
+    hidden: boolean
+    hidden_reason?: string | null
+    disabled: boolean
+    slots: { id: string; role: string; max: number; list?: { min: number; max: number } | null; optional: boolean }[]
+    images: { id: string; role: string; optional: boolean }[]
+    preview: string | null
+  }
+
   /** 1 hieu ung tu viet da dong goi (kho may nay + kho chung tai ve) */
   interface FxLibItem {
     id: string
@@ -1302,6 +1451,13 @@ declare global {
     audio?: Record<string, unknown>[]
     /** nhac nen ca video (B7 chon trong Kho nhac nen); track_id null = AI chon khong dung (co ly do) */
     music?: { track_id: string | null; name?: string; muc?: string; ly_do?: string; by?: 'ai' | 'code' } | null
+    /** bo tieng earshot cua video (B7 chon theo ngu canh, sfx_gen) — moi tieng tu gan dung bo nay; null = plan cu (kit-*) */
+    am_thanh?: {
+      tong?: string
+      chat?: string
+      bo?: Record<string, { sound: string; pitch?: string; level_db?: number }>
+      nguon?: 'ai' | 'ai+mac_dinh' | 'mac_dinh'
+    } | null
     _pipeline?: { story_arc?: string; tone?: string; notes?: string; [k: string]: unknown }
     [k: string]: unknown
   }

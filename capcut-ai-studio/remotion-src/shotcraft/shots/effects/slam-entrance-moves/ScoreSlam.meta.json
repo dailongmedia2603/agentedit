@@ -92,19 +92,22 @@
   }
  ],
  "vi": {
-  "ten": "Bảng tỉ số đập xuống — so sánh hai bên",
-  "mo_ta": "Sân vận động đêm, bốn đèn pha bật 'tạch tạch'; một bảng tỉ số tối (huy hiệu + tên hai bên, hai con số rất to) treo mờ sát ống kính rồi ĐẬP mạnh xuống giữa màn hình: vòng sóng xung kích trắng-vàng, mảnh kính/vàng lá bắn ra, tia lửa, rung màn hình, chớp sáng. Hai con số nảy lần hai, gạch chân vàng dưới số bên thắng, nhãn vàng trượt ra; tiêu đề hiện từng từ (từ cuối màu vàng) và câu bình luận bên dưới.",
-  "hop_khi": "So sánh kết quả hai bên bằng con số kiểu tỉ số: mình vs đối thủ, trước vs sau, năm ngoái vs năm nay ('doanh thu 12 tỷ so với 4 tỷ', 'thắng 3–2'); công bố người thắng, kết quả cuộc thi, khoảnh khắc chiến thắng cực mạnh.",
-  "tranh_khi": "Chỉ có một con số (dùng mẫu số lớn khác); con số dài (> 5 ký tự); tone nhẹ nhàng; đã có cảnh đập/rung khác gần đó (tối đa 2 lần mỗi video).",
+  "ten": "Bảng tỉ số đối đầu dập mạnh màn hình",
+  "mo_ta": "Một bảng điểm đối đầu tối màu mang phong cách thể thao phóng to cận cảnh rồi dập mạnh xuống giữa khung hình với hiệu ứng rung chấn uy lực. Bảng hiển thị rõ tên và biểu tượng hai phe kẹp giữa hai con số tỉ số ngoại cỡ, đi kèm nhãn giải đấu phía trên và thông tin trận đấu phía dưới. Ngay sau cú va chạm, tiêu đề tuyên bố kết quả và câu phụ đề súc tích xuất hiện dứt khoát bên dưới trong không gian mờ tối.",
+  "hop_khi": "Phù hợp khi người nói công bố kết quả chung cuộc, so sánh thành tích vượt trội giữa hai bên, thông báo chiến thắng hoặc tạo kịch tính khi đặt hai phương án lên bàn cân. Cảm xúc bùng nổ, quyết đoán, phấn khích và dứt khoát. Ví dụ câu nói: 'Và kết quả chung cuộc, chúng tôi đã dẫn trước đối thủ!', 'Trận so găng này đã ngã ngũ với chiến thắng thuộc về đội nhà.', 'Xem điểm số đối đầu giữa hai phương pháp này thì bạn sẽ hiểu ngay ai thắng ai thua.'",
+  "mo_rong": "Đổi tỉ số thể thao thành điểm benchmark hiệu năng giữa hai mẫu điện thoại -> review công nghệ so sánh thiết bị; đổi hai bên thành 'Trước khi dùng' và 'Sau khi dùng', số liệu thành chỉ số cân nặng hoặc vòng eo -> video làm đẹp, thẩm mỹ, fitness; đổi tên hai bên thành hai ứng viên hoặc hai nhóm kinh doanh -> quản trị doanh nghiệp, vinh danh bán hàng hoặc cuộc đua doanh số; đổi hai bên thành 'Chi phí bỏ ra' và 'Doanh thu thu về' -> khóa học kinh doanh, tư vấn tài chính cá nhân; đổi điểm số thành phần trăm khảo sát sự hài lòng của khách hàng -> phân tích thị trường hoặc nghiên cứu tiêu dùng.",
   "nang_luong": "cao",
   "chu_de": [
-   "so sánh",
-   "số liệu",
-   "kết quả",
-   "chiến thắng",
+   "bảng tỉ số",
+   "so sánh đối đầu",
+   "kết quả chung cuộc",
    "thể thao",
-   "trước sau",
-   "đối thủ"
+   "review công nghệ",
+   "thành tích doanh số",
+   "kịch tính",
+   "thắng thua",
+   "đo lường",
+   "case study"
   ]
  },
  "backdrop": true

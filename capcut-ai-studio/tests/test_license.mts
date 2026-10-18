@@ -8,6 +8,7 @@
 //  3. Quan tri khoa key -> lan "Phan tich video" ke tiep bi chan ngay (khong dung ket qua cu)
 //  4. Thu muc app copy sang may khac (safeStorage khong giai ma duoc) -> need_key
 //  5. Dong bo kho: manifest kem link tai; key bi khoa -> tu choi
+//  6. Luu tam video dang Phone Agent: tai len nhieu phan -> link cong khai dung byte -> xoa
 import { register } from 'node:module'
 import { mkdtempSync, readFileSync, existsSync } from 'fs'
 import { tmpdir } from 'os'
@@ -118,6 +119,22 @@ check('Python: ve bi sua chu ky -> tu choi', !pyForged.ok, pyForged)
 console.log('Dong bo kho')
 const man = (await L.libraryManifest()) as { sfx: { url: string }[] }
 check('manifest co link tai', Array.isArray(man.sfx) && (man.sfx.length === 0 || /\/v1\/lib\/sfx\//.test(man.sfx[0].url)), man)
+
+console.log('Luu tam video de dang qua Phone Agent')
+{
+  const { writeFileSync: wf } = await import('fs')
+  const vf = join((globalThis as any).__USERDATA, 'post-test.mp4')
+  const vb = Buffer.alloc(16 * 1024 * 1024 + 777)
+  for (let i = 0; i < vb.length; i += 997) vb[i] = i & 255
+  wf(vf, vb)
+  const prog: number[] = []
+  const up = await L.postVideoUpload(vf, (sent, total) => prog.push(Math.round((sent / total) * 100)))
+  check('tai len 2 phan -> link .mp4 + tien do toi 100%', /\/v1\/post\/f\/.+\/video\.mp4$/.test(up.url) && up.size === vb.length && prog[prog.length - 1] === 100, { up, prog })
+  const got = Buffer.from(await (await fetch(up.url)).arrayBuffer())
+  check('link cong khai tai ve dung byte (khong can key)', got.equals(vb))
+  await L.postVideoDelete(up.id)
+  check('xoa file tam -> 404', (await fetch(up.url)).status === 404)
+}
 
 console.log('Khoa key -> phan tich bi chan ngay')
 await L.requireLicense()

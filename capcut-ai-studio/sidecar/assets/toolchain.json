@@ -45,6 +45,8 @@
       "json5",
       "numpy",
       "pillow",
+      "scipy",
+      "soundfile",
       "faster-whisper",
       "onnxruntime",
       "pyobjc-core (macOS)",
@@ -52,7 +54,8 @@
       "pyobjc-framework-quartz (macOS)",
       "pyobjc-framework-vision (macOS)",
       "resvg-py (Windows)",
-      "pillow-heif (Windows)"
+      "pillow-heif (Windows)",
+      "numba (Mac ARM + Windows)"
     ]
   },
   "ffmpeg": {

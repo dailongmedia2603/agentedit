@@ -169,6 +169,14 @@ PROMPTS = [
              "rất nhỏ / nhỏ / vừa. Độ to THẬT do code tính theo giọng nói của chính video (thanh trượt ở Kho nhạc nền), "
              "không bao giờ lấn giọng; nhạc bắt đầu SAU hook, tự giảm khi meme cắt vào, fade ở cuối. AI không chọn / "
              "chọn sai id → hệ thống tự chọn bài hợp nhãn nhất."},
+    {"id": "_EARSHOT_RULE", "group": "plan", "module": "sfx_gen", "own_key": True,
+     "title": "B7 · Bộ tạo âm thanh (earshot)",
+     "used_in": "Bước Plan — B7 (cùng lượt chọn SFX) + tiếng tự gắn khi dựng (chữ hiện, lớp đồ hoạ, cảnh shot, hiệu ứng, hook)",
+     "info": "Mọi tiếng KHÔNG có giọng nói được TẠO bằng earshot (201 tiếng lưu dạng code, render theo id — sạch, không "
+             "bản quyền). Hệ thống tự nối luật này + danh mục tiếng (nhóm theo loại, nhãn Gemini đã nghe) vào cuối prompt "
+             "B7: AI chọn BỘ TIẾNG của cả video theo tone / chủ đề (whoosh, swoosh, pop, click, boom, riser, ding, typing) "
+             "+ tạo từng SFX đúng sự kiện với độ dài / đỉnh / nốt / take. Kho SFX chỉ còn cấp tiếng CÓ GIỌNG NÓI (meme). "
+             "Sửa ở đây → B7 chạy lại ở lần lập plan sau."},
     {"id": "_CREATIVE_RULE", "group": "plan", "module": "creative",
      "title": "Luật sáng tạo + cảm xúc (chung)",
      "used_in": "Hệ thống tự nối vào B3 hook, R4 thiết kế, R5 chữ, FX hiệu ứng, B6 meme, B7 SFX",

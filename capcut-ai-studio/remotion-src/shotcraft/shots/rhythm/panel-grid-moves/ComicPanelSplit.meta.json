@@ -6,26 +6,91 @@
  "duration": 156,
  "kind": "insert",
  "dark": true,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
  "hold": 110,
  "slots": [
-  {"id": "captions", "role": "label", "sample": "Toàn cảnh rõ nét.|Chi tiết sắc sảo.|Đẹp đến từng điểm.", "max": 22, "list": {"min": 3, "max": 3}, "note": "3 câu rất ngắn trong 3 khung lời thoại kiểu truyện tranh (toàn cảnh / cận / đặc tả)"},
-  {"id": "title", "role": "title", "sample": "Ba góc máy, một câu chuyện.", "max": 40, "note": "tiêu đề poster cuối; TỪ CUỐI tô đỏ"},
-  {"id": "subtitle", "role": "subtitle", "sample": "Mỗi góc nhìn cắt đúng nhịp.", "max": 50, "optional": true}
+  {
+   "id": "captions",
+   "role": "label",
+   "sample": "Toàn cảnh rõ nét.|Chi tiết sắc sảo.|Đẹp đến từng điểm.",
+   "max": 22,
+   "list": {
+    "min": 3,
+    "max": 3
+   },
+   "note": "3 câu rất ngắn trong 3 khung lời thoại kiểu truyện tranh (toàn cảnh / cận / đặc tả)"
+  },
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Ba góc máy, một câu chuyện.",
+   "max": 40,
+   "note": "tiêu đề poster cuối; TỪ CUỐI tô đỏ"
+  },
+  {
+   "id": "subtitle",
+   "role": "subtitle",
+   "sample": "Mỗi góc nhìn cắt đúng nhịp.",
+   "max": 50,
+   "optional": true
+  }
  ],
  "images": [
-  {"id": "photo", "role": "photo", "aspect": "any", "optional": true, "note": "ảnh MỘT chủ thể (sản phẩm / người / món ăn) đủ nét: 3 ô là 3 góc cắt từ cùng ảnh (toàn cảnh, cận phần trên, đặc tả giữa) rồi phủ kín làm poster; không có ảnh -> ống kính máy ảnh vẽ vector"}
+  {
+   "id": "photo",
+   "role": "photo",
+   "aspect": "any",
+   "optional": true,
+   "note": "ảnh MỘT chủ thể (sản phẩm / người / món ăn) đủ nét: 3 ô là 3 góc cắt từ cùng ảnh (toàn cảnh, cận phần trên, đặc tả giữa) rồi phủ kín làm poster; không có ảnh -> ống kính máy ảnh vẽ vector"
+  }
  ],
  "brand": "optional",
- "sfx": [{"at": 20, "type": "click"}, {"at": 24, "type": "click"}, {"at": 28, "type": "click"}, {"at": 64, "type": "whoosh"}, {"at": 82, "type": "swoosh"}],
+ "sfx": [
+  {
+   "at": 20,
+   "type": "click"
+  },
+  {
+   "at": 24,
+   "type": "click"
+  },
+  {
+   "at": 28,
+   "type": "click"
+  },
+  {
+   "at": 64,
+   "type": "whoosh"
+  },
+  {
+   "at": 82,
+   "type": "swoosh"
+  }
+ ],
  "vi": {
-  "ten": "Chia khung truyện tranh — 3 góc máy rồi thành poster",
-  "mo_ta": "Kiểu truyện tranh đen đỏ (có ảnh nền chủ đề thì hiện sau các ô): hình toàn màn hình bị 3 nhát cắt xiên 'cạch cạch cạch' chia thành 3 ô, mỗi ô là một góc nhìn của CÙNG chủ thể (toàn cảnh, cận, đặc tả) kèm khung lời thoại nghiêng; dừng một nhịp rồi ô cuối quét xiên ăn hết màn hình, thành poster với tiêu đề lớn trồi lên (từ cuối màu đỏ). Không có ảnh thì chủ thể là ống kính máy ảnh vẽ đẹp, ống kính tự xoay lấy nét, khép khẩu. Khung dọc: 3 ô xếp chồng dọc.",
-  "hop_khi": "Giới thiệu MỘT sản phẩm / món đồ / nhân vật từ nhiều góc (\"nhìn tổng thể, chi tiết, cận cảnh chất liệu\"); review sản phẩm, unbox; chủ đề quay phim, máy ảnh, nhiếp ảnh, góc máy; đoạn có nhịp mạnh cần cắt theo beat.",
-  "tranh_khi": "Ba ý khác nhau không cùng một chủ thể (dùng mẫu lưới / bento); ảnh nhỏ, mờ (bị phóng 1.8x); video tone sáng nhẹ nhàng; đã dùng một mẫu chia khung khác trong video.",
+  "ten": "Cắt ba khung truyện tranh đa góc nhìn",
+  "mo_ta": "Màn hình bị cắt dứt khoát thành 3 ô xiên phong cách truyện tranh với đường viền tương phản cao, mỗi ô hiển thị một góc máy cận cảnh khác nhau của sản phẩm kèm nhãn mô tả. Ngay sau đó, bố cục chuyển sang màn hình tổng kết với nửa trên là cụm tiêu đề lớn hai màu đậm chất điện ảnh, nửa dưới giữ góc nhìn đặc tả cận cảnh. Nhịp chuyển động nhanh, sắc bén và kịch tính, tạo ấn tượng thị giác mạnh mẽ ngay lập tức.",
+  "hop_khi": "Dùng khi người nói muốn phân tích chi tiết sản phẩm từ nhiều khía cạnh, chỉ ra các góc nhìn độc đáo hoặc tạo cú hích thị giác chuyển đoạn đầy năng lượng. Phù hợp với khoảnh khắc khoe độ hoàn thiện, bóc tách cấu tạo, so sánh 3 tính năng đắt giá với nhịp điệu hào hứng, sắc sảo. Ví dụ: 'Cùng một sản phẩm nhưng khi soi ở 3 góc máy này bạn mới thấy độ hoàn thiện đỉnh cao.', 'Từ tổng thể bên ngoài đến từng đường kim mũi chỉ đều được làm tỉ mỉ đến từng milimet.', 'Ba yếu tố sống còn quyết định một video triệu view mà bạn phải nhớ.'",
+  "mo_rong": "Đổi 3 góc máy lens thành 3 góc chụp xe hơi hoặc không gian căn hộ cao cấp -> dùng cho showroom xe hơi, bất động sản, công nghệ xa xỉ; Đổi 3 ô thành 3 giai đoạn 'Trước điều trị - Đang xử lý - Kết quả' -> dùng cho nha khoa thẩm mỹ, spa trị liệu, chăm sóc da; Đổi 3 khung thành 3 món ăn đặc trưng hoặc 3 tầng nguyên liệu -> dùng cho F&B, review quán ăn, nhà hàng cao cấp; Đổi nội dung thành 3 bước thao tác phần mềm kèm nhãn hướng dẫn -> dùng cho giáo dục, công nghệ, hướng dẫn thủ thuật; Đổi ảnh thành 3 cách phối đồ của cùng một bộ sưu tập -> dùng cho thời trang, phụ kiện, lifestyle giới trẻ.",
   "nang_luong": "cao",
-  "chu_de": ["sản phẩm", "review", "nhiều góc", "truyện tranh", "máy ảnh", "quay phim", "poster", "nhịp beat"]
+  "chu_de": [
+   "truyện tranh",
+   "comic panel",
+   "đa góc nhìn",
+   "so sánh chi tiết",
+   "cận cảnh sản phẩm",
+   "review công nghệ",
+   "thời trang",
+   "nhịp nhanh",
+   "chuyển cảnh kịch tính",
+   "điểm nhấn thị giác"
+  ]
  },
  "backdrop": true
 }

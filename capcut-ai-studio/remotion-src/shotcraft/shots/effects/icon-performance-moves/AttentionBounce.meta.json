@@ -99,20 +99,23 @@
   }
  ],
  "vi": {
-  "ten": "Icon app nhảy đòi chú ý — bật panel tính năng mới",
-  "mo_ta": "Tường màu cát có nắng chiều qua rèm, thanh Dock kiểu macOS chạy ngang: icon app chính nhảy tại chỗ 4 lần mỗi lần cao hơn, chạm đất bị ép dẹt, tóe gợn sóng; các icon bên cạnh mờ dần, máy quay đẩy lại gần ở cú nhảy cao nhất. Đáp xong bật chấm đỏ thông báo, rồi một panel trắng bung ra với nhãn, tiêu đề và 2-4 dòng tính năng mới.",
-  "hop_khi": "Giới thiệu tính năng mới / bản cập nhật của app, phần mềm, sản phẩm số: 'app vừa ra tính năng…', 'bản cập nhật mới có gì', có thông báo mới, khoe điểm mới của sản phẩm; tone vui, tò mò, mở màn một phần giới thiệu.",
-  "tranh_khi": "Nội dung không liên quan app/sản phẩm số; số liệu nặng; tone nghiêm túc / tin buồn.",
-  "nang_luong": "vua",
+  "ten": "Icon nảy đàn hồi bung thẻ tính năng",
+  "mo_ta": "Khung cảnh bàn làm việc làm mờ phía sau với thanh Dock ứng dụng đặt ở cạnh dưới; icon trung tâm nhún nhảy tại chỗ với độ đàn hồi tăng dần qua từng nhịp nảy. Đến cú bật cao nhất, một huy hiệu thông báo đỏ xuất hiện kèm thẻ thông tin trắng bo góc bung mở mượt mà ở nửa trên. Thẻ thông tin hiển thị rõ ràng nhãn danh mục, tiêu đề chính nổi bật cùng danh sách các mục đánh số kèm nhãn phụ bên phải.",
+  "hop_khi": "Phù hợp khi người nói muốn giật sự chú ý vào một cập nhật mới, bí quyết bất ngờ, thông báo ưu đãi đặc biệt hoặc danh sách các điểm nổi bật; nhịp điệu tươi vui, hào hứng, kích thích sự tò mò của người xem. Ví dụ: 'Ứng dụng vừa ra mắt một tính năng cực kỳ xịn mà ít người biết', 'Nhận ngay ba đặc quyền độc quyền khi đăng ký trong hôm nay', 'Bật mí cho bạn ba mẹo tối ưu công việc vừa được cập nhật'.",
+  "mo_rong": "Đổi icon app thành logo thương hiệu/cửa hàng và danh sách 3 mục thành 3 mã giảm giá/quà tặng cho bán hàng online; đổi icon thành biểu tượng học tập và 3 mục thành 3 kỹ năng cốt lõi cho video đào tạo / kỹ năng mềm; đổi icon thành biểu tượng trái tim/sức khỏe và 3 mục thành 3 thói quen buổi sáng cho kênh sức khỏe / đời sống; đổi icon thành vali du lịch và 3 mục thành lịch trình tour nổi bật cho ngành lữ hành; đổi icon thành hồ sơ ứng viên và 3 mục thành quyền lợi đãi ngộ cho video tuyển dụng.",
+  "nang_luong": "cao",
   "chu_de": [
-   "app",
+   "icon nảy",
+   "thanh dock",
+   "bung thẻ thông báo",
    "tính năng mới",
-   "cập nhật",
-   "thông báo",
-   "điện thoại",
-   "máy tính",
-   "ra mắt",
-   "phần mềm"
+   "bật mí mẹo",
+   "thông báo ưu đãi",
+   "công nghệ",
+   "bán hàng online",
+   "tuyển dụng",
+   "du lịch",
+   "mẹo vặt đời sống"
   ]
  },
  "backdrop": true

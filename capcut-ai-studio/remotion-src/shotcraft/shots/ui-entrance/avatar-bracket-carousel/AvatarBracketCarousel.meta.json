@@ -25,11 +25,11 @@
  "brand": "none",
  "sfx": [{"at": 4, "type": "click"}, {"at": 37, "type": "swoosh"}, {"at": 71, "type": "swoosh"}, {"at": 105, "type": "swoosh"}],
  "vi": {
-  "ten": "Câu điền ô trống — ảnh đại diện xoay vòng trong khung ngắm",
-  "mo_ta": "Nền tối, một câu ngắn có ô trống ở giữa (khung dọc: câu xếp dọc, ô to ở giữa): khung ngắm 4 góc màu nhấn khoá vào ô, bên trong một hàng ảnh đại diện tròn (biểu tượng / chữ cái / ảnh thật) trượt bật lò xo thay nhau vào ô 2-4 lần — vào ô to rõ, ra ô nhỏ mờ nhoè; nhãn vai trò dưới ô đổi theo, khung ngắm 'nảy' nhẹ mỗi lần đổi.",
-  "hop_khi": "Liệt kê nhiều vai trò / công dụng cho CÙNG một thứ: 'một app làm được kế toán, bán hàng, chăm sóc khách', 'AI có thể là trợ lý, giáo viên, đầu bếp của bạn', đội ngũ / thành viên, các gói / phiên bản, đối tượng khách hàng ('dành cho sinh viên, mẹ bỉm, dân văn phòng').",
-  "tranh_khi": "Chỉ có một ý duy nhất; danh sách dài hơn 5 mục; cần giải thích chi tiết từng mục (mỗi mục chỉ là nhãn ngắn); video tone sáng.",
+  "ten": "Khung ngắm quét xoay vòng đại diện",
+  "mo_ta": "Bố cục tiêu điểm với khung ngắm 4 góc màu xanh công nghệ nổi bật ở chính giữa màn hình, kẹp giữa hai cụm chữ cố định phía trên và phía dưới. Một hàng huy hiệu tròn chứa biểu tượng hoặc ảnh chân dung trượt ngang liên tục theo nhịp bật nảy lò xo, mỗi khi một mục lọt vào tâm khung ngắm sẽ phóng to sắc nét kèm nhãn tên bên dưới, các mục còn lại mờ nhoè sang hai biên. Nhịp chuyển động đàn hồi, dứt khoát và kết thúc khi dừng lại cố định ở mục trọng tâm.",
+  "hop_khi": "Phù hợp cho khoảnh khắc giới thiệu đội ngũ nhân sự, liệt kê các vai trò chuyên môn trong một dự án, hoặc điểm qua các gói dịch vụ tùy chọn mà thương hiệu cung cấp. Tạo cảm giác chuyên nghiệp, hiện đại, đa năng và đáng tin cậy. Ví dụ câu nói: 'Đằng sau một video triệu view là cả một ê-kíp đầy đủ các khâu chuyên biệt', 'Bạn không chỉ có một trợ lý mà sở hữu cả một đội ngũ chuyên gia đồng hành', 'Chúng tôi hỗ trợ bạn trọn gói từ tư vấn chiến lược, thiết kế cho đến triển khai'.",
+  "mo_rong": "Đổi icon thành ảnh chân dung chuyên gia kèm nhãn chức danh -> giới thiệu đội ngũ y bác sĩ hoặc chuyên viên spa làm đẹp; đổi icon thành ảnh món ăn kèm nhãn tên món -> trình bày thực đơn combo ẩm thực F&B; đổi icon thành logo các ứng dụng tích hợp -> giới thiệu hệ sinh thái công nghệ phần mềm; đổi icon thành ảnh mặt bằng căn hộ (1PN, 2PN, Penthouse) kèm diện tích -> tư vấn phân khúc bất động sản; đổi icon thành các phụ kiện hoặc set đồ thời trang -> gợi ý phong cách phối đồ cá nhân.",
   "nang_luong": "vua",
-  "chu_de": ["danh sách", "vai trò", "đội ngũ", "AI", "trợ lý", "app", "đối tượng", "lựa chọn"]
+  "chu_de": ["giao diện đội ngũ", "khung ngắm tiêu điểm", "xoay vòng đại diện", "danh sách vai trò", "nhân sự chuyên gia", "spa làm đẹp", "ẩm thực F&B", "công nghệ phần mềm", "bất động sản", "thời trang phong cách", "trưng bày tính năng"]
  }
 }

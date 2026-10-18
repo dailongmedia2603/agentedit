@@ -81,21 +81,23 @@
   }
  ],
  "vi": {
-  "ten": "Vòng thẻ quay quanh tiêu đề — tô bút dạ quang",
-  "mo_ta": "Nền tối than chì: 8 thẻ giao diện app nhỏ (biểu đồ tăng, danh sách tích, bản đồ lộ trình, cửa sổ lệnh, chữ RA MẮT…) bung ra thành một vòng elip rồi quay chậm quanh tâm, thẻ gần to và sáng, thẻ xa mờ. Ở giữa, dòng chữ nhỏ rồi dòng chữ rất to hiện dần từ mờ; một vệt bút dạ quang xanh lá quét ngang tô kín dòng to (chữ đổi màu đen), cuối cùng hiện tên thương hiệu + nhãn nhỏ. Khung dọc: vòng elip đứng bao quanh tiêu đề.",
-  "hop_khi": "Mở đầu video / mở đầu một phần lớn: giới thiệu sản phẩm, app, nền tảng “tất cả trong một”, bộ công cụ, khóa học; câu tuyên ngôn ngắn của kênh; ra mắt tính năng mới. Hợp tone công nghệ, AI, phần mềm.",
-  "tranh_khi": "Giữa mạch kể chuyện cá nhân, cảm xúc; video tone sáng ấm; câu chốt dài (dòng chính > 3–4 từ sẽ nhỏ đi).",
-  "nang_luong": "vua",
+  "ten": "Tiêu đề mở màn vòng xoay tính năng",
+  "mo_ta": "Ở trung tâm màn hình, dòng phụ đề nhỏ cùng dòng tiêu đề lớn hiện lên nổi bật với từ khóa chính được đóng khung dạ quang màu vàng chanh bắt mắt, bên dưới kèm nhãn danh mục. Xung quanh tiêu đề, nhiều thẻ giao diện nhỏ bay lượn và xoay chậm quanh tâm theo một quỹ đạo elip 3D có chiều sâu rõ rệt trên nền văn phòng tối mờ. Chuyển động xoay vòng êm ái kết hợp phóng to nhẹ mang lại cảm giác bề thế và toàn diện cho giải pháp được giới thiệu.",
+  "hop_khi": "Dùng cho đoạn mở đầu video (hook 3-5 giây đầu), tuyên bố giá trị cốt lõi, ra mắt gói dịch vụ trọn gói 'tất cả trong một' (all-in-one) hoặc tổng quan hệ sinh thái giải pháp; nhịp điệu tự tin, đắt giá và khơi gợi sự tò mò. Ví dụ câu nói: 'Tất cả công cụ bạn cần để xây kênh triệu view đều gói gọn trong một ứng dụng duy nhất.', 'Nếu bạn đang tìm kiếm một giải pháp quản trị toàn diện cho doanh nghiệp thì đây là câu trả lời.', 'Toàn bộ bí quyết làm chủ tài chính cá nhân chỉ nằm trong một bộ cẩm nang này.'",
+  "mo_rong": "Thay các thẻ giao diện bằng ảnh bìa sách/giáo trình -> giới thiệu trọn bộ tài liệu học tập ngành giáo dục; đổi các thẻ thành ảnh các món ăn đặc trưng -> giới thiệu combo thực đơn trọn gói cho nhà hàng, F&B; đổi các thẻ thành ảnh dịch vụ trị liệu -> quảng bá gói combo làm đẹp toàn diện cho spa, thẩm mỹ viện; đổi các thẻ thành hình ảnh tiện ích nội khu (hồ bơi, gym, công viên) -> giới thiệu dự án bất động sản cao cấp; đổi các thẻ thành ảnh các sản phẩm thuộc bộ sưu tập mới -> video thời trang, phụ kiện.",
+  "nang_luong": "cao",
   "chu_de": [
-   "mở đầu",
-   "giới thiệu",
-   "app",
-   "sản phẩm",
+   "mở màn ấn tượng",
+   "tiêu đề mở đầu",
+   "quỹ đạo xoay 3d",
    "tất cả trong một",
-   "công nghệ",
-   "AI",
-   "ra mắt",
-   "tiêu đề"
+   "hệ sinh thái công cụ",
+   "ra mắt sản phẩm mới",
+   "phần mềm công nghệ",
+   "bất động sản",
+   "ẩm thực fnb",
+   "spa làm đẹp",
+   "bán hàng thời trang"
   ]
  },
  "backdrop": true

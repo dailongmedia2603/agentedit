@@ -78,20 +78,22 @@
   }
  ],
  "vi": {
-  "ten": "Bung tách lớp 3D giao diện (exploded view) có chú thích",
-  "mo_ta": "Nền trắng xanh sạch, một bảng điều khiển phần mềm nằm nghiêng 3D như bo mạch trên bàn; 5 thành phần (menu, biểu đồ doanh thu, trợ lý AI, thẻ số liệu, thanh tìm kiếm) lần lượt bật lên cao tách lớp có bóng đổ, máy quay xoay chậm, các đường chú thích đánh số kéo ra kèm tên + mô tả; sau đó các lớp sập lại khớp vào nhau 'cạch', ánh sáng lướt qua và câu chốt lớn hiện ở góc.",
-  "hop_khi": "Giải thích một sản phẩm/app/hệ thống GỒM NHỮNG PHẦN NÀO (cấu trúc, các module, kiến trúc); \"bên trong có gì\", \"gồm 5 phần chính\"; video công nghệ, SaaS, giới thiệu tính năng kiểu Apple.",
-  "tranh_khi": "Không nói về phần mềm/sản phẩm số; chỉ có 1 ý; cần nhịp nhanh (cảnh dài ~5,7 giây, nhiều chữ nhỏ); video tone tối.",
-  "nang_luong": "cao",
+  "ten": "Tách lớp 3D bóc tách chi tiết",
+  "mo_ta": "Giao diện bảng điều khiển 3D nằm nghiêng bất ngờ bung tách thành 5 tầng lớp lơ lửng xếp chồng có bóng đổ mềm mại, gắn liền các thẻ số tròn đánh dấu từng bộ phận. Danh sách chú thích bên dưới xuất hiện tuần tự giải thích công năng từng thành phần, trước khi các lớp nhập lại thành thể thống nhất kèm tiêu đề tổng kết xuất hiện phía trên. Chuyển động cơ khí chuẩn xác, nhịp độ vừa phải, thể hiện trọn vẹn sự tinh xảo và tính cấu trúc vững chắc.",
+  "hop_khi": "Dùng khi người nói bóc tách các bộ phận cấu thành một giải pháp, phân tích các trụ cột trong mô hình kinh doanh, hoặc giới thiệu các tính năng cốt lõi của một hệ thống, sản phẩm dịch vụ. Phù hợp giọng điệu chuyên gia, phân tích sâu sắc, đĩnh đạc và thuyết phục; ví dụ: 'Một hệ thống vận hành tự động thực chất được cấu thành từ 5 mảnh ghép này', 'Để xây dựng một thương hiệu cá nhân bền vững, bạn cần phân tách rõ từng tầng', 'Bên trong một dịch vụ chăm sóc da chuyên sâu gồm có những bước nào?'.",
+  "mo_rong": "Đổi 5 lớp thành các tầng thành phần dưỡng chất trong một hũ mỹ phẩm hoặc phác đồ trị liệu -> giới thiệu sản phẩm làm đẹp, spa; đổi 5 lớp thành các hạng mục tiện ích, mặt bằng căn hộ -> video bất động sản, thiết kế nội thất kiến trúc; đổi các tầng thành các lớp giá trị gia tăng trong gói dịch vụ tiệc cưới -> ngành ẩm thực F&B, sự kiện; đổi các thành phần thành cấu trúc hợp đồng bảo hiểm hoặc danh mục đầu tư -> tư vấn tài chính, bảo hiểm; đổi các lớp thành linh kiện phần cứng hoặc các khâu đóng gói sản phẩm -> review công nghệ, quy trình sản xuất.",
+  "nang_luong": "vua",
   "chu_de": [
-   "app",
-   "phần mềm",
-   "dashboard",
-   "cấu trúc",
-   "tính năng",
-   "kiến trúc",
-   "danh sách",
-   "3D"
+   "tách lớp 3D",
+   "exploded view",
+   "bóc tách tính năng",
+   "giải phẫu cấu trúc",
+   "mô hình kinh doanh",
+   "công nghệ phần mềm",
+   "phân tích chuyên sâu",
+   "thiết kế nội thất",
+   "bất động sản",
+   "mỹ phẩm làm đẹp"
   ]
  },
  "backdrop": true

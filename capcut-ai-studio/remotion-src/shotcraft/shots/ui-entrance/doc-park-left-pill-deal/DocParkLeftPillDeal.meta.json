@@ -21,11 +21,11 @@
  "brand": "none",
  "sfx": [{"at": 45, "type": "pop"}, {"at": 83, "type": "pop"}, {"at": 121, "type": "pop"}],
  "vi": {
-  "ten": "Tài liệu dạt sang bên, AI rút ra 3 kết luận từng viên một",
-  "mo_ta": "Nền sáng; một trang tài liệu / báo cáo trắng đang tự cuộn chậm (như đang được đọc) rồi trượt dạt sang trái (khung dọc: lên trên) và thu nhỏ lại. Bên cạnh lần lượt bật ra 2-3 viên kết luận bo tròn có biểu tượng; mỗi viên vừa đáp xuống thì câu bằng chứng trong tài liệu được tô sáng, có đường nối tới viên đó, và một câu giải thích hiện bên dưới đậm dần từng chữ rồi mờ đi trước viên kế tiếp.",
-  "hop_khi": "Người nói tóm tắt kết luận / insight rút ra từ một tài liệu, báo cáo, khảo sát, hợp đồng, CV, review khách hàng; AI đọc tài liệu và đưa ra nhận định; liệt kê 2-3 điểm chính có căn cứ; tone phân tích, tư vấn.",
-  "tranh_khi": "Không có nguồn tài liệu / dữ liệu để dẫn chứng; hơn 3 ý; cần năng lượng cao (cảnh chậm, nhẹ ~6 giây); video tone tối.",
-  "nang_luong": "thap",
-  "chu_de": ["AI", "phân tích tài liệu", "báo cáo", "khảo sát", "kết luận", "danh sách", "insight", "tóm tắt"]
+  "ten": "Trang báo cáo trích xuất viên kết luận",
+  "mo_ta": "Một trang báo cáo màu trắng bo góc xuất hiện ở trung tâm rồi tự cuộn nội dung lên trên và dạt lên nửa trên màn hình. Nửa dưới lần lượt bật nảy ra 3 viên nang bo tròn (pill cards) màu trắng chứa biểu tượng, từ khóa kết luận và chỉ số phần trăm nổi bật, đồng thời đoạn văn bản liên quan phía trên được highlight màu tương ứng. Nhịp chuyển động mượt mà, gãy gọn, mang tính phân tích chuyên sâu.",
+  "hop_khi": "Dùng khi người nói tóm tắt kết quả nghiên cứu, báo cáo số liệu khảo sát, trích dẫn phản hồi khách hàng hoặc chốt lại các luận điểm/lợi ích cốt lõi sau một đoạn phân tích dài; cảm xúc tin cậy, khách quan, chuyên nghiệp. Ví dụ: 'Sau khi khảo sát hơn 1.000 khách hàng thì đây là ba điểm họ đánh giá cao nhất', 'Nhìn vào báo cáo tài chính quý vừa qua, chúng ta thấy rõ ba chỉ số tăng trưởng vượt bậc', 'Đọc qua tài liệu này, bạn chỉ cần nhớ đúng ba kết luận then chốt sau'.",
+  "mo_rong": "Đổi văn bản thành hồ sơ khám da và 3 viên thành chỉ số phục hồi, độ ẩm, độ đàn hồi -> spa, thẩm mỹ viện, da liễu báo cáo hiệu quả liệu trình; đổi văn bản thành báo cáo phân tích thị trường và 3 viên thành tỷ suất sinh lời, pháp lý, vị trí -> tư vấn đầu tư tài chính, bất động sản; đổi văn bản thành khảo sát khách hàng và 3 viên thành đánh giá chất lượng vải, form dáng, độ bền -> thương hiệu thời trang, đồ gia dụng; đổi văn bản thành nghiên cứu khoa học và 3 viên thành ba phát hiện quan trọng -> giáo dục, chia sẻ kiến thức phát triển bản thân; đổi văn bản thành bản mô tả công việc và 3 viên thành ba kỹ năng then chốt cùng mức lương -> tuyển dụng nhân sự, định hướng nghề nghiệp.",
+  "nang_luong": "vua",
+  "chu_de": ["trích xuất dữ liệu", "báo cáo phân tích", "chỉ số phần trăm", "viên kết luận", "phản hồi khách hàng", "nghiên cứu thị trường", "tài chính", "spa làm đẹp", "bất động sản", "tuyển dụng"]
  }
 }

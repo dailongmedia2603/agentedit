@@ -76,3 +76,15 @@ desktop app (capcut-ai-studio/skills/motionmaxxing). Changes from upstream commi
     SFX / music.
   - runtime/vendor/gsap.min.js: GSAP 3.12.5 replaced by GSAP 3.15.0.
   - docs/media, docs/hero and .git removed (showcase media, not used by the skill).
+  - scripts/illustrate.py (Agent Edit, 2026-10-19): illustrated cast (consistent
+    character poses, props, plates) via the Codex CLI + plain-background cut-out.
+  - runtime/fonts/BeVietnamPro, runtime/fonts/Fraunces: added Vietnamese-capable
+    display fonts (see below).
+
+--------------------------------------------------------------------------------
+Be Vietnam Pro (runtime/fonts/BeVietnamPro)
+  Copyright 2021 The Be Vietnam Pro Project Authors. SIL Open Font License 1.1,
+  full text: runtime/fonts/BeVietnamPro/OFL.txt
+Fraunces (runtime/fonts/Fraunces)
+  Copyright 2018 The Fraunces Project Authors. SIL Open Font License 1.1,
+  full text: runtime/fonts/Fraunces/OFL.txt

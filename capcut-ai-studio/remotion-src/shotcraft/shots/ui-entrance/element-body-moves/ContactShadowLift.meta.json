@@ -85,19 +85,23 @@
   }
  ],
  "vi": {
-  "ten": "3 thẻ trên bàn — nhấc lên điểm danh, chốt thẻ thứ 3",
-  "mo_ta": "Mặt bàn trắng nhìn chéo từ trên xuống, 3 thẻ trắng (nhãn, con số lớn, câu mô tả) nằm phẳng; tiêu đề hiện từng từ phía trên. Thẻ 1 rồi thẻ 2 lần lượt nhấc khỏi bàn (bóng đổ to ra, nhạt dần) rồi đặt xuống; thẻ 3 nhấc cao hơn, nảy nhẹ và lơ lửng lại, viền xanh + dấu tick bật ra — lựa chọn được chốt. Khung dọc: 3 thẻ nằm ngang xếp dọc.",
-  "hop_khi": "So sánh 3 gói giá / 3 phương án / 3 mức (cơ bản–nâng cao–cao cấp) rồi chốt cái tốt nhất; 'có 3 lựa chọn, mình khuyên chọn cái thứ ba'; giới thiệu 3 tính năng, 3 con số và nhấn mạnh cái cuối.",
-  "tranh_khi": "Không có đúng 3 mục để so; nội dung không có lựa chọn nổi bật; cần năng lượng mạnh / tone tối.",
-  "nang_luong": "thap",
+  "ten": "Nâng thẻ chọn gói tối ưu",
+  "mo_ta": "Góc nhìn phối cảnh chéo từ trên xuống mặt bàn sáng tinh gọn, tiêu đề hiện từng từ phía trên ba thẻ tùy chọn màu trắng xếp thẳng hàng. Lần lượt thẻ thứ nhất rồi thẻ thứ hai nhấc nhẹ lên tạo bóng đổ chân thực rồi đặt xuống, đến lượt thẻ thứ ba nhấc bổng cao hơn, nổi bật viền xanh dương cùng dấu tick xác nhận để chốt phương án. Chuyển động mượt mà, bóng đổ 3D sống động tạo cảm giác chạm vật lý rất hiện đại và tinh tế.",
+  "hop_khi": "Phù hợp khi người nói phân tích các phương án, so sánh bảng giá dịch vụ và định hướng người xem chốt lựa chọn tốt nhất; nhịp điệu thong thả, rõ ràng, giàu tính thuyết phục. Ví dụ: 'Bên mình có 3 mức giá, nhưng gói thứ ba này là tối ưu chi phí và đầy đủ nhất cho bạn', 'Nếu bạn muốn làm chuyên nghiệp lâu dài, đây chính là sự lựa chọn hoàn hảo nhất', 'Hãy so sánh 3 phân khúc này để chọn ra giải pháp vừa vặn nhất với ngân sách của bạn'.",
+  "mo_rong": "Đổi 3 thẻ thành 3 gói liệu trình chăm sóc da kèm mức giá -> spa thẩm mỹ tư vấn chốt gói điều trị chuyên sâu; đổi thành 3 hạng phòng khách sạn từ cơ bản đến cao cấp -> du lịch khách sạn kích cầu nâng hạng phòng; đổi thành 3 gói tập thể hình từ 1 tháng đến 1 năm -> phòng gym thúc đẩy hội viên đăng ký gói dài hạn; đổi thành 3 phiên bản cấu hình thiết bị điện tử -> review công nghệ khuyên chọn bản đáng tiền nhất; đổi thành 3 combo tiệc ẩm thực -> nhà hàng gợi ý set ăn đầy đủ nhất cho nhóm khách.",
+  "nang_luong": "vua",
   "chu_de": [
-   "so sánh",
-   "bảng giá",
-   "lựa chọn",
-   "gói dịch vụ",
-   "danh sách",
-   "app",
-   "con số"
+   "so sánh 3 lựa chọn",
+   "bảng giá dịch vụ",
+   "bóng đổ vật lý",
+   "chốt sale",
+   "nâng cấp gói",
+   "spa thẩm mỹ",
+   "du lịch khách sạn",
+   "thể hình gym",
+   "review công nghệ",
+   "nhà hàng f&b",
+   "tư vấn giải pháp"
   ]
  },
  "backdrop": true

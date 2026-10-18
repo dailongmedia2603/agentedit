@@ -74,17 +74,23 @@
   }
  ],
  "vi": {
-  "ten": "Tiêu đề tạp chí — chữ hiện từ mờ từng từ",
-  "mo_ta": "Trang giấy sáng kiểu tạp chí: tiêu đề serif lớn hiện TỪNG TỪ từ vùng mờ (trượt lên + rõ dần), từ cuối nghiêng màu nhấn; câu phụ hiện nối theo, đường kẻ mảnh và số lớn mờ phía sau tạo chiều sâu. Nhẹ nhàng, sang, dễ đọc.",
-  "hop_khi": "Câu chốt / thông điệp chính cần người xem ĐỌC trọn (định nghĩa, kết luận, lời khuyên); mở một phần mới; tone tri thức, chia sẻ kinh nghiệm, doanh nghiệp.",
-  "tranh_khi": "Khoảnh khắc sốc / năng lượng cao cần đập mạnh; video tone tối, gắt; câu quá dài (> 2 dòng).",
+  "ten": "Tiêu đề tạp chí trượt mờ thanh lịch",
+  "mo_ta": "Nền mờ sáng phủ nhẹ lên cảnh người nói; thanh kicker màu cam xuất hiện trước ở góc trên, theo sau là dòng tiêu đề serif lớn trượt lên và rõ dần từng từ từ vùng nhòe mờ, kết thúc bằng từ khóa in nghiêng mang màu nhấn. Dòng phụ đề nhỏ và thông tin ngày tháng/số ấn bản ở viền ngoài cùng hiện ra đồng thời, toàn bộ bố cục giữ tĩnh trang nhã ở nửa trên màn hình với nhịp điệu êm ái.",
+  "hop_khi": "Phù hợp khi người nói công bố chủ đề chính của video, đúc kết một quan điểm triết lý sống hoặc nhấn mạnh thông điệp đắt giá cần sự lắng đọng, uy tín và chuẩn mực thẩm mỹ cao. Nhịp điệu khoan thai, tinh tế, sang trọng. Ví dụ câu nói: 'Mỗi sản phẩm chúng tôi làm ra đều phải chạm tới cảm xúc.', 'Đây là bài học đắt giá nhất sau 5 năm khởi nghiệp của mình.', 'Một công thức đơn giản giúp bạn thay đổi hoàn toàn tư duy làm nội dung.'",
+  "mo_rong": "Đổi tiêu đề thành tên bộ sưu tập hoặc sản phẩm mới và đổi từ in nghiêng thành tính từ nổi bật -> màn ra mắt thời trang, mỹ phẩm, trang sức cao cấp; đổi kicker thành 'BÀI HỌC TUẦN NÀY' và câu chính thành triết lý đầu tư -> video chia sẻ tài chính cá nhân, bất động sản; đổi số folio thành số tập (Tập 01, Mùa 2) và tiêu đề thành câu dẫn chuyện -> mở đầu video kể chuyện podcast, vlog phong cách sống tối giản; thay đổi màu nhấn sang xanh ngọc hoặc be nude -> video giới thiệu liệu trình spa, clinic chăm sóc sức khỏe.",
   "nang_luong": "vua",
   "chu_de": [
-   "tiêu đề",
-   "câu chốt",
-   "thông điệp",
-   "chương mới",
-   "tạp chí"
+   "tiêu đề tạp chí",
+   "typography",
+   "chữ trượt mờ",
+   "chữ nghệ thuật",
+   "công bố thông điệp",
+   "triết lý sống",
+   "thời trang cao cấp",
+   "bài học kinh doanh",
+   "lifestyle",
+   "kể chuyện",
+   "chăm sóc sắc đẹp"
   ]
  },
  "backdrop": true

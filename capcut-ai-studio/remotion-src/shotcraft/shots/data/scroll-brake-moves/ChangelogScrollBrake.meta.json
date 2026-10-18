@@ -25,11 +25,11 @@
  "brand": "optional",
  "sfx": [{"at": 14, "type": "riser"}, {"at": 62, "type": "boom"}, {"at": 68, "type": "pop"}],
  "vi": {
-  "ten": "Nhật ký cập nhật cuộn nhanh rồi phanh gấp",
-  "mo_ta": "Nền sáng, một cột dài các thẻ cập nhật (mã phiên bản, nhãn Tính năng / Cải tiến / Sửa lỗi, tên, ngày) vụt lên rất nhanh đến mức nhòe thành dải, rồi giảm tốc dài và phanh đúng vào thẻ chính giữa màn hình: thẻ đó nổi lên, viền màu nhấn, nhãn 'Ra mắt' và huy hiệu 'MỚI', các thẻ khác mờ đi; tiêu đề trang cố định ở trên.",
-  "hop_khi": "Nói về việc liên tục cập nhật rồi nhấn vào bản / tính năng mới nhất: 'chúng tôi ra hơn 40 bản cập nhật năm nay, và đây là bản lớn nhất', công bố tính năng mới của app / phần mềm, cột mốc trong hành trình dự án, tìm thấy 'cái quan trọng nhất' giữa một danh sách dài.",
-  "tranh_khi": "Không có một mục chính để dừng lại; nội dung cảm xúc / đời thường không liên quan sản phẩm số; video tone tối; dùng liền với mẫu dòng thời gian ngang.",
+  "ten": "Cuộn nhật ký cập nhật phanh gấp",
+  "mo_ta": "Cột danh sách các phiên bản trên nền sáng cuộn vút lên với tốc độ cực nhanh tạo hiệu ứng vệt mờ chuyển động dồn dập. Danh sách hãm phanh chuẩn xác vào đúng một thẻ phiên bản ở trung tâm, thẻ này phóng to nổi bật với viền sáng và nhãn Ra mắt. Chuyển động có độ giật dứt khoát, các mục xung quanh mờ đi làm bật lên thông tin tiêu đề và mô tả chính.",
+  "hop_khi": "Phù hợp khi người nói muốn tạo kịch tính, bất ngờ công bố một tính năng đột phá, kết quả được chọn sau nhiều lần thử nghiệm, hoặc khoảnh khắc chốt hạ một quyết định quan trọng. Hợp với nhịp nói dồn dập rồi nhấn mạnh điểm rơi then chốt. Ví dụ: 'Sau hàng chục phiên bản thử nghiệm thì đây chính là tính năng đáng giá nhất', 'Trong vô vàn lựa chọn, mình đã tìm ra được giải pháp tối ưu nhất cho bạn', 'Và tính năng mới cập nhật ngày hôm nay sẽ thay đổi hoàn toàn cách bạn làm việc'.",
+  "mo_rong": "Đổi danh sách phiên bản thành danh mục sản phẩm lướt nhanh -> video bán hàng chốt deal xả kho sản phẩm bán chạy nhất; đổi thành danh sách địa điểm du lịch -> vlogger chốt địa điểm du lịch hot nhất mùa hè; đổi thành danh sách kỹ năng nghề nghiệp -> chuyên gia tuyển dụng chỉ ra kỹ năng quan trọng nhất; đổi thành các mã cổ phiếu -> phân tích tài chính chọn mã đầu tư sinh lời cao nhất; đổi thành các thực phẩm ăn kiêng -> video sức khỏe nhấn mạnh món ăn giảm mỡ hiệu quả.",
   "nang_luong": "cao",
-  "chu_de": ["cập nhật", "ra mắt", "tính năng mới", "app", "phần mềm", "danh sách", "cột mốc", "lịch sử"]
+  "chu_de": ["cập nhật tính năng", "nhật ký thay đổi", "phanh gấp", "chọn lọc nổi bật", "công nghệ phần mềm", "ra mắt sản phẩm", "đầu tư tài chính", "bán hàng online", "tuyển dụng", "đánh giá review"]
  }
 }

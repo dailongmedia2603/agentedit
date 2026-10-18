@@ -6,29 +6,107 @@
  "duration": 130,
  "kind": "insert",
  "dark": true,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
  "hold": 90,
  "slots": [
-  {"id": "kicker_a", "role": "kicker", "sample": "01 · Khó khăn", "max": 24, "optional": true, "note": "nhãn nhỏ cảnh trước"},
-  {"id": "title_a", "role": "title", "sample": "Đêm nào rồi cũng qua,", "max": 34, "note": "nửa đầu câu (trước khoảnh khắc chuyển)"},
-  {"id": "kicker_b", "role": "kicker", "sample": "02 · Bước ngoặt", "max": 24, "optional": true},
-  {"id": "title_b", "role": "title", "sample": "bình minh sẽ tới.", "max": 34, "note": "nửa sau câu (sau khi lóe sáng)"},
-  {"id": "modes", "role": "label", "sample": "Đêm|Hoàng hôn|Chân dung", "max": 12, "list": {"min": 2, "max": 3}, "optional": true, "note": "nhãn núm xoay chế độ máy ảnh; con trỏ trượt từ mục 1 sang mục 2"}
+  {
+   "id": "kicker_a",
+   "role": "kicker",
+   "sample": "01 · Khó khăn",
+   "max": 24,
+   "optional": true,
+   "note": "nhãn nhỏ cảnh trước"
+  },
+  {
+   "id": "title_a",
+   "role": "title",
+   "sample": "Đêm nào rồi cũng qua,",
+   "max": 34,
+   "note": "nửa đầu câu (trước khoảnh khắc chuyển)"
+  },
+  {
+   "id": "kicker_b",
+   "role": "kicker",
+   "sample": "02 · Bước ngoặt",
+   "max": 24,
+   "optional": true
+  },
+  {
+   "id": "title_b",
+   "role": "title",
+   "sample": "bình minh sẽ tới.",
+   "max": 34,
+   "note": "nửa sau câu (sau khi lóe sáng)"
+  },
+  {
+   "id": "modes",
+   "role": "label",
+   "sample": "Đêm|Hoàng hôn|Chân dung",
+   "max": 12,
+   "list": {
+    "min": 2,
+    "max": 3
+   },
+   "optional": true,
+   "note": "nhãn núm xoay chế độ máy ảnh; con trỏ trượt từ mục 1 sang mục 2"
+  }
  ],
  "images": [
-  {"id": "photo_a", "role": "photo", "aspect": "9:16", "optional": true, "note": "ảnh 'trước' (tối, khó khăn); không có thì vẽ cảnh núi đêm sao"},
-  {"id": "photo_b", "role": "photo", "aspect": "9:16", "optional": true, "note": "ảnh 'sau' (ấm, tươi sáng); không có thì vẽ núi hoàng hôn"}
+  {
+   "id": "photo_a",
+   "role": "photo",
+   "aspect": "9:16",
+   "optional": true,
+   "note": "ảnh 'trước' (tối, khó khăn); không có thì vẽ cảnh núi đêm sao"
+  },
+  {
+   "id": "photo_b",
+   "role": "photo",
+   "aspect": "9:16",
+   "optional": true,
+   "note": "ảnh 'sau' (ấm, tươi sáng); không có thì vẽ núi hoàng hôn"
+  }
  ],
  "brand": "optional",
- "sfx": [{"at": 24, "type": "riser"}, {"at": 52, "type": "whoosh"}, {"at": 62, "type": "swoosh"}],
+ "sfx": [
+  {
+   "at": 24,
+   "type": "riser"
+  },
+  {
+   "at": 52,
+   "type": "whoosh"
+  },
+  {
+   "at": 62,
+   "type": "swoosh"
+  }
+ ],
  "vi": {
-  "ten": "Lóe sáng phim ấm — từ đêm sang hoàng hôn",
-  "mo_ta": "Khung ngắm máy ảnh trên cảnh núi đêm đầy sao, một câu chữ trắng lớn trồi lên; rồi một luồng sáng phim màu cam hổ phách tràn chéo từ góc trên phải, đốt cháy gần hết hình, đúng đỉnh sáng cảnh đổi sang núi hoàng hôn rực cam và nửa câu sau trồi lên trong ánh sáng còn sót; con trỏ chế độ máy ảnh trượt sang mục kế. Ấm, điện ảnh, có hướng.",
-  "hop_khi": "Khoảnh khắc chuyển: trước/sau, khó khăn → bước ngoặt, đêm → ngày, thất bại → thành công, chương mới; câu nói chia hai vế có cảm xúc (\"…nhưng rồi…\"); kể chuyện hành trình, truyền cảm hứng, du lịch, nhiếp ảnh.",
-  "tranh_khi": "Nội dung số liệu / giao diện app; đã dùng hiệu ứng chớp sáng khác gần đó (chỉ một lần mỗi video); tone sáng sủa vui nhộn.",
+  "ten": "Vệt sáng cháy phim chuyển cảnh tương phản",
+  "mo_ta": "Mở đầu với giao diện khung ngắm máy ảnh chụp ảnh đêm tĩnh mịch, tiêu đề phần một cùng thông số kỹ thuật trồi lên rõ ràng ở nửa dưới màn hình. Một vệt sáng phim màu hổ phách ấm tràn quét chéo qua khung hình tạo hiệu ứng cháy sáng rực rỡ, đồng thời nấc chế độ và thông số máy ảnh chuyển đổi nhịp nhàng. Khi ánh sáng chói dịu dần, cảnh ảnh bình minh trên đồi cát rực rỡ hiện ra cùng câu chữ phần hai tiếp nối thông điệp một cách ấn tượng.",
+  "hop_khi": "Dùng cho khoảnh khắc chuyển giao tương phản mạnh: từ khó khăn sang giải pháp, từ quá khứ thất bại sang thành quả hiện tại, từ thực trạng đến tầm nhìn mới trong video kể chuyện hoặc bán hàng khơi gợi nỗi đau. Cảm xúc sâu lắng, thắp lên hy vọng và truyền cảm hứng. Ví dụ câu nói: 'Những ngày đầu khởi nghiệp là chuỗi ngày tăm tối nhất, nhưng chính cú vấp ngã đó đã mở ra bước ngoặt mới.', 'Bạn có thể đã thất bại rất nhiều lần, cho đến khoảnh khắc bạn tìm ra công thức này.', 'Đừng vội bỏ cuộc trước khó khăn hiện tại, bởi giải pháp đột phá đang ở ngay phía trước.'",
+  "mo_rong": "Đổi ảnh A thành da mụn/thâm, ảnh B thành da căng bóng khỏe mạnh -> video spa, thẩm mỹ, review mỹ phẩm trước và sau; Đổi ảnh A thành căn nhà cũ nát, ảnh B thành không gian sống hiện đại sau cải tạo -> video kiến trúc, nội thất, bất động sản; Đổi ảnh A thành biểu đồ suy thoái, ảnh B thành biểu đồ tăng trưởng doanh số -> video tài chính, quản trị kinh doanh, đầu tư; Đổi ảnh A thành lúc mệt mỏi thừa cân, ảnh B thành vóc dáng săn chắc -> video gym, fitness, giảm cân và sức khỏe; Đổi 2 ảnh thành 2 khoảnh khắc đối lập của một chuyến đi xa -> video du lịch trải nghiệm, khám phá thiên nhiên.",
   "nang_luong": "vua",
-  "chu_de": ["chuyển cảnh", "trước sau", "bước ngoặt", "truyền cảm hứng", "hành trình", "điện ảnh", "lóe sáng", "chương mới"]
+  "chu_de": [
+   "chuyển cảnh",
+   "vệt sáng cháy phim",
+   "khung ngắm máy ảnh",
+   "so sánh trước sau",
+   "bước ngoặt",
+   "kể chuyện",
+   "truyền cảm hứng",
+   "làm đẹp",
+   "bất động sản",
+   "tài chính",
+   "du lịch"
+  ]
  },
  "backdrop": false
 }

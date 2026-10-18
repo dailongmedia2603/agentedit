@@ -2087,6 +2087,22 @@ dien thoai; buoc plan doc duoc toan bo kho de chon mau phu hop tung phan; khi ph
   overlay ve tren A-roll; `hideSubs` an phu de khi mau co chu.
 - **Xem thu 1 mau**: `node scripts/shot-still.mjs <file.tsx> [--props p.json] [--video]` (bundle rieng mau do -> sheet doc +
   ngang; anh mau trong `remotion-src/shotcraft/.preview-public/`, khong len git).
+- **Tab "Kho shot"** (Tai nguyen, `src/pages/ShotLibrary.tsx`, user 2026-10-18): moi mau = video xem truoc (re chuot de
+  chay) + ten / mo ta / **Dung khi** / **Mo rong** / chu de / o noi dung; loc theo nhom + tim khong dau; nut Power TAT / BAT
+  mau -> `~/.capcut-studio/shot_prefs.json` (`shot_lib.disabled()`): mau tat khong vao `prompt_block` / `by_id`, khoa cache
+  R4 (`fingerprint`) doi theo. Route `/shotlib/list` + `/shotlib/toggle`, IPC `shotlib:*`.
+- **Video xem truoc**: `node scripts/shotcraft-previews.mjs [--all | --only a,b] [--jobs 3]` -> `sidecar/references/
+  shot_previews/<id>.mp4` (540x960, khong tieng, ~0.1-0.2MB; chu `sample` + anh mau `.preview-public`; mau `backdrop` ->
+  nen mau bg_dark / bg_tech). DI KEM ban cai (thu muc references). `index.json` = van tay meta (tru `vi`) + .tsx -> chi
+  render lai mau da sua (~25s / mau).
+- **Mo ta do GEMINI XEM video viet** (user: "chi ghi dung khi / phu hop, khong ghi tranh khi; prompt cho Gemini hieu mau
+  dung duoc cho nhieu truong hop neu tuy bien"): `../CapCutAPI/.venv/bin/python scripts/shotcraft-label.py [--all | --only
+  a,b] [--jobs 3]` (goi `agy` tai khoan Google cua may, 4 video / luot ~80s; prompt `shot_lib._GEMINI_SHOT_PROMPT`) ->
+  ghi `vi` {ten, mo_ta, hop_khi = DUNG KHI / PHU HOP (kem vi du cau noi), mo_rong = 3-6 huong dung khac khi doi chu / anh /
+  mau / so muc, nang_luong, chu_de} vao meta.json, BO `tranh_khi`. Gemini cham `chat_luong` + `loi_hien_thi` ->
+  `remotion-src/shotcraft/.preview/label-report.json` (khong len git; nhieu bao loi la khung giua hieu ung chu hien dan —
+  xem lai truoc khi sua). Xong -> `node scripts/shotcraft-sync.mjs` (bat buoc `mo_rong`). R4 doc "dung khi" + "mo rong";
+  luat R4: chu / anh trong mo ta chi la vi du — chon theo HINH THUC truyen tai roi dien noi dung that.
 - **Kiem**: `HOME=$(mktemp -d) ../CapCutAPI/.venv/bin/python tests/test_shotcraft.py` + `node scripts/shotcraft-sync.mjs --check`.
 
 ## 25. SUA LOI EDIT sau video test IMG_4608 (2026-10-18)
@@ -2114,6 +2130,132 @@ ke o nhin AI", "lam dung zoom". Nguyen nhan + sua:
   `ShotStage` ve anh (cover, mo 5-7px, lop toi / sang) duoi mau; runtime `useBackdrop()`; `<Stage>` bo gradient / quang,
   `<GridFloor>` an; tung mau tu bo nen rieng khi co backdrop (meta `backdrop`).
 - **Kiem**: `HOME=$(mktemp -d) ../CapCutAPI/.venv/bin/python tests/test_edit_fixes.py`.
+
+## 26. BO TAO AM THANH earshot — moi tieng khong loi do AI TAO theo ngu canh (2026-10-18, `sidecar/sfx_gen.py`)
+
+User: "dung am thanh trong kho chua thong minh / phu hop — add repo github.com/Leonxlnx/earshot de TAO am thanh (chu hien
+len...) — TOAN BO am thanh, tru tieng co giong noi trong thu vien; luc lam plan goi voi ngu canh + muc tieu".
+
+- **Vendor** `sidecar/vendor/earshot/` (MIT, commit 925ebe5, `NOTICE.md`): CHI phan ngan hang am thanh — 201 tieng LUU
+  BANG CODE (cong thuc tong hop + tham so, khong file ghi am), render theo id bang DSP thuan (numpy / scipy / soundfile; numba
+  ~25x nhanh: ~0.1s / tieng). KHONG keo torch / model nghe (CLAP, AST). 16 tieng audit cua earshot bao loi -> `UNCLEAN`, con
+  185. Nut chinh moi lan render: `dur` (do dai dung giay), `apex` (dinh whoosh roi dung giay, sai <= 5ms), `pitch` (not, do
+  lai cents), `take` (seed khac, cung chat); audit hong -> doi seed (nhu earshot kit). Tieng > 3.5s (impact) -> dur 3.5.
+- **Thu vien**: `requirements.lock` them scipy, soundfile (+ cffi, pycparser); numba + llvmlite chi Mac ARM + Windows (khong
+  co wheel Mac Intel -> Intel chay ban Python thuan: tieng UI / whoosh 0-3s, riser / shimmer 10-25s, van dung). Dong goi:
+  `compile-sidecar.mjs` chep them `vendor/` (source + giay phep). `sfx_gen._load` nap SAN moi module earshot duoi
+  `sys.dont_write_bytecode` + `NUMBA_CACHE_DIR=~/.capcut-studio/cache/numba` -> khong ghi gi vao trong .app (giu chu ky).
+- **Nhan**: `scripts/earshot-label.py` (Gemini NGHE that tung tieng, 5 tieng / luot, cach ket noi Gemini cua app) ->
+  `sidecar/references/earshot_labels.json` {nghe, hop, cam_xuc, manh} — di kem ban cai. Them / doi tieng -> chay lai.
+- **B7** (`providers.gpt_audio(gen_catalog=...)`): kho SFX chi con tieng CO GIONG NOI (`sfx_gen.speech_only`); system prompt
+  noi BANG CODE `sfx_gen.rules_text()` (prompt `_EARSHOT_RULE`, sua duoc o menu Prompt & quy tac, own_key) + `catalog()`
+  (40 nhom theo loai: mo ta, ho, nut chinh duoc; moi tieng: dai, dinh, am sac, not goc, nhan Gemini). AI tra:
+  `bo_am_thanh` = BO TIENG ca video theo tone / chu de (8 ho: whoosh, swoosh, pop, click, boom, riser, ding, typing) + muc
+  `{"gen": {sound, dur, apex, pitch, take}}` cho tung su kien (src_time / start = THOI DIEM SU KIEN; code tu canh: whoosh
+  -> dinh roi dung luc do, riser -> ket thuc dung luc do, con lai onset). Khoa cache B7 them `sfx_gen.fingerprint()`.
+- **Code kiem** (server sau B7): `normalize_palette` (ho thieu / id sai -> bo mac dinh theo tone `TONES`: nhe / gon /
+  toi_gian / manh / vui — dung theo 3 preset calm / crisp / minimal cua earshot); `clean_audio` (gen sai id -> bo; sfx_id
+  khong phai tieng co giong noi -> bo). `plan["am_thanh"]` = bo tieng; UI Ke hoach hien dong "Bo am thanh".
+- **Tieng tu gan** (`sfx_kit.auto_item`, dung chung cho `MD.layer_sfx`, `MD.ensure_text_sfx`, `shot_lib.sfx`, `fx_flow.fx_sfx`):
+  build_spec chay trong `sfx_gen.use(plan["am_thanh"])` -> tieng cua ho trong bo cua video, take theo su kien (4 take, khong
+  lap y het); `place`: onset dung su kien, whoosh dinh ~0.12s sau (bat dau som <= 0.25s), riser ket thuc dung su kien.
+  Plan CU (khong `am_thanh`) -> kit-* nhu truoc (du an cu mo lai khong doi tieng).
+- **Luat hook**: Hook-SFX nhan `gen_catalog` (`hook_catalog`: loai hop hook) + bo tieng; du phong = whoosh (nhe) / boom
+  (vua, manh) CUA bo tieng video.
+- **Muc to**: `resolve` gan `_es` (impact / whoosh / ui / riser theo nhom tieng) -> `plan_guard.sfx_family` khong doan theo
+  ten (id 'pro_hover_tick/air' tung bi doan la whoosh); `level_db` cua ho -> `_gen_db` cong nhu `_world_db`. Con lai van
+  `mix_sfx` (can theo giong noi).
+- **Cache**: `~/.capcut-studio/cache/earshot/<sha1(id + nut + ban ngan hang)>.wav/.json` (48k 16-bit). build_spec thay file
+  mat -> tao lai (tat dinh, cung tieng). Tao video (motion/sound.ts, the gioi kw-*) CHUA doi.
+- **Kiem**: `HOME=$(mktemp -d) ../CapCutAPI/.venv/bin/python tests/test_earshot_sfx.py` (vendor, danh muc, render + dong bo,
+  bo tieng, loc B7, resolve + mix, tu gan, hook, prompt B7, build_spec); `test_info_flow.py` (Hook-SFX + B7 nhan earshot);
+  ban dong goi: `selftest-packaged` muc [2b].
+
+## 27. DANG VIDEO LEN KENH QUA PHONE AGENT (iPhone) (2026-10-19, `electron/services/phoneagent/`)
+
+User: "Cai dat API them muc API Phone Agent (nhap key, luu, kiem tra ket noi); Automation Video chon duoc phone + kich ban
+de video tao xong tu dang len kenh theo kich ban + lich; Video da tao co nut Dang video" (tai lieu API-v2.md + source
+github.com/dailongmedia2603/phoneclaw-dashboard, da doi chieu tung route `server/routes/external-api.ts`).
+
+**Su that cua External API v1 (doc tu source, KHAC tai lieu o vai cho — dung quen):**
+- KHONG co endpoint tai file len, tao lich (schedule), dung execution. Node `send_file` chi doc `params.videoId` -> may chu
+  POST `{url}` cua video da dang ky (`/videos/register`) xuong iPhone (`/api/save-to-photos`), **iPhone tu tai URL** (qua
+  tunnel -> internet). => video phai co LINK CONG KHAI; link LAN / localhost cua may khach khong dung duoc.
+- `/scripts/:id/run` chi nhan may `online` (running / connecting -> 400), tra loi NGAY, KHONG tra executionId; execution tao
+  SAU, `scheduleName = "API: <ten kich ban>"`, `targetName = ten iPhone`. Kich ban dung chung + khong bien -> may chu khong
+  tao execution (loi cua may chu). Execution ket thuc `success` CA KHI buoc send_file loi (chi launch loi moi dung).
+- `/scripts` khong co `inputs` -> goi `/scripts/:id/inputs`; kich ban khong khai bao inputs: bien chu HOA bi bo im lang.
+  Escape bien chi \ " \n \r \t -> ky tu dieu khien khac lam hong JSON (500). ID khong co tien to (`vid_`... la vi du bia).
+- Gioi han 60 lan / phut / user (+ 300 / 15 phut theo IP, sau nginx = chung moi client) -> hoi cham (20s), lui khi 429.
+
+**Luong** (`posts.ts`, ~/.capcut-studio/phoneagent/posts.json, anh man hinh `phoneagent/shots/`):
+1. Toi gio (lich do APP giu — app phai mo, giong Automation): tai MP4 len **may chu ban quyen** (`license-server/src/post.js`,
+   R2 `posts/<license>/<id>.mp4`, multipart 16 MiB/phan, ky bang khoa thiet bi nhu fx_upload) -> link `.../v1/post/f/<lid>/<id>
+   /<exp>/<hmac>/video.mp4` (HEAD + Range, het han 48h; moi lan start tu xoa file > 3 ngay; 300 lan / key / ngay, <= 2 GB).
+   App: `license.postVideoUpload / postVideoDelete`. Toi da 2 video tai len cung luc.
+2. `/videos/register` (TUAN TU — may chu doc-sua-ghi ca danh sach) -> videoId.
+3. Cho iPhone `online` (hoi moi phut, toi da 6h); moi iPhone 1 luot 1 luc (khoa trong app).
+4. Chup id /executions -> `/run` {bien video = videoId (luon gui -> tranh loi kich ban dung chung), caption...}; KHONG tu
+   thu lai /run (mat phan hoi = co the da chay -> dang trung) -> tim execution MOI khop ten kich ban + ten iPhone.
+5. Hoi /executions/:id moi 20s (tran 75 phut). THANH CONG = status success VA khong buoc nao `error`. Luu buoc + anh man
+   hinh cuoi. 6. Don: DELETE /videos/:id + xoa file R2. Loi tam (mang / 429 / 5xx) -> thu lai 5 lan (lui 1..30 phut).
+- Mo lai app: uploading/registering -> chay lai; `starting` -> LOI ("kiem tra truoc khi dang lai" — khong dang trung);
+  `running` + executionId -> theo doi tiep. Nut cap nhat app bi chan khi con luot dang tai len / gui lenh (`busyPosts`).
+- Bien kich ban (`api.paScriptFields`): inputs khai bao (type video / caption) hoac do `{{bien}}` trong steps (ke ca
+  children); bien video = bien cua send_file; 1 o caption (uu tien caption > noi dung > mo ta > text > tieu de); canh bao:
+  khong co send_file / send_file chon video co dinh (phai sua thanh `{{video_id}}` — editor cua dashboard chi cho chon
+  video trong thu vien, phai sua JSON) / bien chu HOA.
+
+**Automation** (`AutoProject.post: AutoPostConfig`, `phoneagent/auto.ts`): bat "Tu dong dang" + iPhone + kich ban + bien
+MAU (`{title} {summary} {link} {source} {channel} {date}` thay theo tin) + lich: ngay / sau X phut / khung gio HH:MM (moi
+khung 1 video / du an / ngay, `posts.nextSlot`). Chi video xong SAU moc bat (`enabledAt`), <= 24h, 1 luot / video (khoa = id job).
+
+**UI**: `components/phoneagent/` — `PhoneAgentSettingsCard` (Cai dat API: token pa_live_ ma hoa safeStorage o
+`<userData>/phoneagent.enc`, dia chi may chu nang cao, Kiem tra ket noi = /me + danh sach iPhone), `PostTargetPicker`
+(chon iPhone / kich ban + o bien), `PostDialog` (`PostButton` "Dang video": Dang ngay / Hen gio; o Video da tao (du an Edit
+Video da xuat), the Tao video, video Automation), `PostList` (trang thai, doi gio, huy, dang lai, buoc tren iPhone, anh man
+hinh). Video da tao them tab "Lich dang" (moi luot). IPC `electron/phoneagent-ipc.ts` (phoneagent:*; su kien phoneagent:posts).
+
+**Kiem**: `node tests/test_phoneagent.mts` (may chu Phone Agent GIA mo phong dung hanh vi source: send_file tai that link,
+success-du-buoc-loi, may ban, 2 luot 1 may, hen gio / huy / dang lai, Automation khung gio + bien mau, mo lai app);
+license-server `npm test` muc "Luu tam video" (13 muc); `HOME=$(mktemp -d) node tests/test_license.mts` muc 6 (app tai len
+2 phan -> link cong khai dung byte -> xoa). Worker da deploy 2026-10-19 (version 2719bd41; ban truoc 32b15d34).
+Soat UI that: chay app voi `--use-mock-keychain` (KHONG thi luu token = safeStorage -> hop thoai Keychain "auto-capcut Safe
+Storage" chan main process) + `--inspect` de goi `win.showInactive()` + `webContents.capturePage()` (cua so an -> CDP chup treo).
+CHUA thu voi tai khoan Phone Agent / iPhone that (can token cua user).
+
+## 28. QUY TRINH motion-video-director cho Tao video / Automation (THU NGHIEM CA NHAN, 2026-10-19, `motion/mvd.ts`)
+
+User thu skill motion-video-director (MVD, Miftahul Islam, v3.5.2) o ~/Desktop/Test-tao-video (pipeline B: anh GPT 3D nhan vat
++ do vat tach nen ghep code, nhac 128 bpm co build/drop, cat theo phach, SFX theo tung su kien) -> hay hon Tao video
+(motionmaxxing). Them lua chon **"Quy trinh dung"** (form Tao video + thong tin chung du an Automation): motionmaxxing (mac dinh)
+| motion-video-director.
+
+- **BAN QUYEN — DOC TRUOC KHI SUA**: MVD la giay phep THUONG MAI 1 NGUOI (LICENSE.md cua skill): CAM phan phoi lai / dong goi
+  vao san pham cho nguoi khac, ke ca ban sua / viet lai bang AI. User chi dung CA NHAN tren may nay, se xin tac gia truoc khi
+  dua cho khach. Vi vay: KHONG chep skill vao repo / electron-builder / ~/.capcut-studio; app chi DOC ban cai o
+  `~/.claude/skills/motion-video-director` (hoac `$AGENT_EDIT_MVD_DIR`) va SYMLINK vao `<job>/.claude/skills/` (link loi -> bao
+  loi, khong chep). May khong co skill (may khach) -> `mvdStatus().available=false` -> form khong hien lua chon, brief
+  engine=mvd bi tu choi. Prompt chi NHAC ten skill + cong cu, khong chep noi dung skill.
+- **Brief** `engine?: 'motionmaxxing' | 'mvd'` (types.ts + global.d.ts; nho lua chon cuoi trong localStorage). `motion:check`
+  tra them `mvd {available, version, elevenlabs}`.
+- **Prompt** `runPromptMvd` (prompt.ts): MVD = DAO DIEN (quy trinh, TASTE.md / PROGRESS.md / LOG.md, plan/beats.json la nguon
+  thoi gian duy nhat), motionmaxxing = BO CONG CU ($MM: voice.py Saydi + nhac/SFX ElevenLabs, illustrate.py, render.mjs, look.py,
+  mix.py, font). Tu chay (bo moi cong duyet cua MVD), khong cai gi them. Render bang render.mjs (MVD template can Playwright —
+  khong co): film/index.html phai co window.__seek / __duration / __ready / __events; final --shutter 180 --subframes 6.
+  Co key ElevenLabs (bien moi truong / ~/.elevenlabs) -> nhac tao theo BPM co drop + SFX, ngan sach ~100 giay audio / video;
+  khong co -> kho am thanh cua app (sound/catalog.json) + do tempo bai nhac.
+- **Anh AI** `skills/motionmaxxing/scripts/illustrate.py` (code CUA APP, ghi o NOTICE): cast.json (character / prop / plate,
+  refs theo id -> chay theo dot, nhan vat goc truoc, cac tu the gui kem anh goc -> giu nguyen nhan dang) qua `codex exec`
+  (image_generation, model = Cai dat API > GPT sub_model qua AE_IMAGE_MODEL); tach nen trang bang flood-fill tu vien (Pillow,
+  ca lo trong giua tay/ghe) + vien mem + khu vien trang; `--cut-only IN OUT [--split]` cho anh cua nguoi dung (tach 1 anh nhieu
+  vat thanh tung file); cast-sheet.jpg de AI tu soi. Chi can numpy + Pillow (Python nhung). Da chay that: 2 anh ~2 phut, giu
+  dung nhan vat; tach anh test cua user (nhan vat, ghe, 6 do vat) sach.
+- **Font** them Be Vietnam Pro + Fraunces (OFL, co tieng Viet) vao `skills/motionmaxxing/runtime/fonts/`.
+- **Runner**: engine mvd -> linkMvd + env `MM`, `MVD`, `ELEVENLABS_API_KEY` (chi engine nay), `MVD_AUDIO_PYTHON` = venv sidecar
+  (scipy), `AE_IMAGE_MODEL`; motionmaxxing thi xoa link MVD cu. Buoc moi `images` (Tao anh AI) + `sound` (Nhac & am thanh) chi
+  hien o job mvd (stages.ts + src/lib/motion.ts + JobView).
+- **Kiem**: `node tests/test_motion.mts` muc [2c] + runner claude gia (tu choi khi chua cai skill, link khong chep, env).
 
 ## 12. CodeGraph
 

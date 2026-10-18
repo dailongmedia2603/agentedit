@@ -6,23 +6,68 @@
  "duration": 150,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.25],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.25
+ ],
  "hold": 100,
  "slots": [
-  {"id": "stem", "role": "title", "sample": "Dành cho", "max": 16, "note": "vế đầu câu, đứng yên (vd \"Dành cho\", \"Phù hợp với\", \"Làm được\")"},
-  {"id": "words", "role": "item", "sample": "nhà sáng tạo|chủ shop|giáo viên|tất cả mọi người", "max": 18, "list": {"min": 3, "max": 5}, "note": "các từ thay nhau cuộn ở cuối câu; 1-4 từ mỗi mục, độ dài gần nhau; MỤC CUỐI = kết luận (thường dài nhất)"}
+  {
+   "id": "stem",
+   "role": "title",
+   "sample": "Dành cho",
+   "max": 16,
+   "note": "vế đầu câu, đứng yên (vd \"Dành cho\", \"Phù hợp với\", \"Làm được\")"
+  },
+  {
+   "id": "words",
+   "role": "item",
+   "sample": "nhà sáng tạo|chủ shop|giáo viên|tất cả mọi người",
+   "max": 18,
+   "list": {
+    "min": 3,
+    "max": 5
+   },
+   "note": "các từ thay nhau cuộn ở cuối câu; 1-4 từ mỗi mục, độ dài gần nhau; MỤC CUỐI = kết luận (thường dài nhất)"
+  }
  ],
  "images": [],
  "brand": "none",
- "sfx": [{"at": 24, "type": "click"}, {"at": 54, "type": "click"}, {"at": 84, "type": "click"}],
+ "sfx": [
+  {
+   "at": 24,
+   "type": "click"
+  },
+  {
+   "at": 54,
+   "type": "click"
+  },
+  {
+   "at": 84,
+   "type": "click"
+  }
+ ],
  "vi": {
-  "ten": "Câu khẩu hiệu — từ cuối cuộn dọc như vòng quay",
-  "mo_ta": "Nền sáng sạch, một câu ngắn: vế đầu đứng yên, từ cuối nằm trong một vòng quay dọc lật lên 2-4 lần (các dòng trên/dưới mờ nhoè như trống quay); mỗi lần dừng, từ ở giữa chuyển từ xám sang màu nhấn, từ cuối là kết luận. Cuối cảnh cả câu mờ đi. Khung dọc: vế đầu ở trên, vòng quay ngay dưới, chữ to giữa màn hình.",
-  "hop_khi": "Người nói liệt kê đối tượng / công dụng theo một khuôn câu: \"dành cho nhà sáng tạo, chủ shop, giáo viên… và tất cả mọi người\", \"làm được video, ảnh, bài viết\"; câu bán hàng ngắn gọn, giới thiệu sản phẩm/app cho nhiều nhóm người.",
-  "tranh_khi": "Không có cấu trúc liệt kê (chỉ 1 ý); các mục quá dài hoặc chênh lệch độ dài lớn; khoảnh khắc cần năng lượng cao, giật mạnh; video tone tối.",
-  "nang_luong": "vua",
-  "chu_de": ["khẩu hiệu", "liệt kê", "đối tượng khách hàng", "công dụng", "giới thiệu sản phẩm", "app"]
+  "ten": "Vòng cuộn dọc đổi nhanh từ khóa",
+  "mo_ta": "Khung hình phong cách tối giản trên nền sáng với vế mở đầu cố định màu đen đậm nằm ở nửa trên màn hình. Phía dưới, các từ khóa đơn lẻ liên tục lật cuộn theo trục dọc dạng con lăn ba chiều với hiệu ứng nhòe chuyển động và sáng rực màu xanh lam khi dừng lại. Vòng xoay lật đổi từ ba đến bốn lượt theo nhịp độ nhanh dồn dập rồi khóa lại ở từ khóa kết luận mang tính bao hàm toàn bộ thông điệp.",
+  "hop_khi": "Rất phù hợp cho câu hook mở đầu video nhằm định danh tệp khán giả mục tiêu, liệt kê dồn dập các đối tượng thụ hưởng hoặc điểm danh hàng loạt tính năng ưu việt của sản phẩm. Cảm xúc trực diện, kích thích tò mò, dứt khoát và gắn kết người xem. Ví dụ câu nói: 'Video này dành cho nhà sáng tạo, chủ shop, giáo viên và tất cả những ai muốn làm video ngắn', 'Bộ công cụ AI này thiết kế riêng cho dân văn phòng, lập trình viên, học sinh và mọi người', 'Nếu bạn đang là người kinh doanh, người làm tự do hay quản lý thì giải pháp này dành cho bạn'.",
+  "mo_rong": "Đổi vế đầu thành 'Giải pháp cho' và vòng xoay lật các vấn đề: da mụn, nám sạm, tàn nhang, da nhạy cảm -> ngành mỹ phẩm, da liễu, làm đẹp; Đổi vế đầu thành 'Thực đơn chuẩn' và vòng xoay lật: eat clean, ăn kiêng, tăng cơ, người bận rộn -> ngành F&B, ẩm thực dinh dưỡng, sức khỏe; Đổi vế đầu thành 'Tối ưu chỉ trong' và vòng xoay lật: 10 phút, 5 phút, 3 phút, 30 giây -> ngành phần mềm, mẹo vặt, công nghệ, tiện ích; Đổi vế đầu thành 'Cơ hội không cần' và vòng xoay lật: vốn lớn, kinh nghiệm, bằng cấp, nhiều thời gian -> ngành tuyển dụng, đào tạo nghề, kiếm tiền online; Đổi vế đầu thành 'Không gian lý tưởng cho' và vòng xoay lật: hẹn hò, họp nhóm, tiệc gia đình, sinh nhật -> ngành nhà hàng, du lịch, quán cafe.",
+  "nang_luong": "cao",
+  "chu_de": [
+   "cuộn chữ dọc",
+   "lật từ khóa",
+   "vòng quay chữ",
+   "hook mở đầu",
+   "đối tượng khán giả",
+   "nhà sáng tạo",
+   "bán hàng online",
+   "mỹ phẩm",
+   "công nghệ",
+   "giáo dục"
+  ]
  },
  "backdrop": true
 }

@@ -71,20 +71,22 @@
   }
  ],
  "vi": {
-  "ten": "Ba nút sáng tiếp sức — quy trình 3 bước",
-  "mo_ta": "Nền xanh đêm, ba nút tròn kính phát sáng (icon micro → lấp lánh AI → máy bay giấy) kèm tên bước. Một đường sáng có đầu sao chổi bay từ nút 1 sang nút 2; đúng khung chạm, nút 2 bừng sáng cùng quầng màu phía sau và vòng sóng lan ra; rồi tiếp sức sang nút 3. Đường bay tan thành chấm mờ, câu chốt chạy lên ở cuối (từ cuối màu nhấn). Khung dọc: ba nút xếp dọc như timeline.",
-  "hop_khi": "Trình bày quy trình 3 bước / cách hoạt động: \"bạn chỉ cần nói → AI xử lý → nhận kết quả\"; giới thiệu tính năng AI, tự động hóa, app làm hộ việc; tóm tắt các bước trước khi chốt lợi ích.",
-  "tranh_khi": "Quy trình nhiều hơn hoặc ít hơn 3 bước; nội dung đời thường không phải quy trình; video tông sáng; không có câu chốt.",
+  "ten": "Quy trình ba nút truyền tia sáng",
+  "mo_ta": "Màn hình tối hiển thị 3 nút tròn thủy tinh xếp dọc bên trái, mỗi nút kèm tiêu đề và chú thích phụ tinh tế. Một tia sáng đầu sao chổi uốn lượn bắn từ nút thứ nhất xuống nút thứ hai làm bừng sáng quầng hào quang, sau đó tiếp tục phóng xuống kích hoạt nút thứ ba theo chuỗi liên hoàn mượt mà. Ở cuối shot, dòng thông điệp chốt hạ bật sáng rõ nét ở phía đáy với từ khóa cuối đổi sang màu ngọc bích nổi bật.",
+  "hop_khi": "Dùng khi người nói giải thích quy trình 3 giai đoạn tinh gọn, lộ trình triển khai tự động hóa hoặc chuỗi thao tác liền mạch mang tính nhân quả; nhịp điệu mượt mà, đĩnh đạc và đậm chất công nghệ. Ví dụ câu nói: 'Chỉ cần đúng 3 bước đơn giản là bạn đã có ngay một video hoàn chỉnh.', 'Toàn bộ quy trình từ ý tưởng đến thành phẩm đều được xử lý tự động.', 'Đầu tiên nộp hồ sơ, hệ thống tự động thẩm định, rồi giải ngân tiền về tài khoản ngay trong ngày.'",
+  "mo_rong": "Đổi 3 nút thành 3 bước chăm sóc da (Làm sạch -> Cấp ẩm -> Chống nắng) -> video hướng dẫn làm đẹp, mỹ phẩm; đổi chữ thành 3 giai đoạn đầu tư (Tích lũy -> Phân bổ danh mục -> Tái đầu tư) -> video tài chính cá nhân; đổi chữ thành lộ trình học tập (Nền tảng -> Thực chiến dự án -> Nhận bằng) -> video giáo dục, tuyển sinh khóa học; đổi chữ thành 3 bước mua hàng siêu tốc -> video bán hàng online, thương mại điện tử; đổi chữ thành quy trình khám chữa bệnh 3 bước -> video giới thiệu dịch vụ nha khoa, phòng khám.",
   "nang_luong": "vua",
   "chu_de": [
-   "quy trình",
-   "3 bước",
-   "AI",
-   "tự động hóa",
-   "cách hoạt động",
-   "app",
-   "công nghệ",
-   "tính năng"
+   "quy trình 3 bước",
+   "lộ trình tự động hóa",
+   "truyền sáng liên hoàn",
+   "hướng dẫn từng bước",
+   "công nghệ phần mềm",
+   "tài chính đầu tư",
+   "chăm sóc sắc đẹp",
+   "giáo dục khóa học",
+   "bán hàng online",
+   "hiệu ứng ánh sáng"
   ]
  },
  "backdrop": true

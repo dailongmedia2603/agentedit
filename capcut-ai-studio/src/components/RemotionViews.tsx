@@ -263,6 +263,15 @@ export function RemotionPlanView({
           </div>
         </div>
       )}
+      {!!plan.am_thanh?.bo && (
+        <div className="text-xs text-ink-800/55">
+          Bộ âm thanh (tạo bằng earshot{plan.am_thanh.nguon === 'mac_dinh' ? ', mặc định theo tone' : ''}):{' '}
+          {plan.am_thanh.chat ? `${plan.am_thanh.chat} — ` : ''}
+          {Object.entries(plan.am_thanh.bo)
+            .map(([ho, e]) => `${ho} ${e.sound}${e.pitch ? ` (${e.pitch})` : ''}`)
+            .join(' · ')}
+        </div>
+      )}
       {!!spec?.audio.some((a) => a.role !== 'bgm') && (
         <div className="text-xs text-ink-800/55">
           SFX:{' '}

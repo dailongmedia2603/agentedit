@@ -6,27 +6,93 @@
  "duration": 144,
  "kind": "insert",
  "dark": true,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
  "hold": 112,
  "slots": [
-  {"id": "cta", "role": "cta", "sample": "Xuất bản", "max": 16, "note": "chữ trên nút được bấm — động từ kết thúc: Xuất bản, Đăng ngay, Hoàn tất, Ra mắt"},
-  {"id": "project", "role": "label", "sample": "Video ra mắt", "max": 24, "optional": true, "note": "tên dự án nhỏ trên thanh công cụ"},
-  {"id": "name", "role": "name", "sample": "", "max": 22, "optional": true, "note": "tên sản phẩm / kênh ở màn kết cạnh logo; để trống -> dùng tên thương hiệu của video"},
-  {"id": "tagline", "role": "subtitle", "sample": "Một chạm, mọi thứ đã sẵn sàng.", "max": 44, "optional": true, "note": "dòng chốt dưới tên (không có tên/thương hiệu thì thành chữ chính)"}
+  {
+   "id": "cta",
+   "role": "cta",
+   "sample": "Xuất bản",
+   "max": 16,
+   "note": "chữ trên nút được bấm — động từ kết thúc: Xuất bản, Đăng ngay, Hoàn tất, Ra mắt"
+  },
+  {
+   "id": "project",
+   "role": "label",
+   "sample": "Video ra mắt",
+   "max": 24,
+   "optional": true,
+   "note": "tên dự án nhỏ trên thanh công cụ"
+  },
+  {
+   "id": "name",
+   "role": "name",
+   "sample": "",
+   "max": 22,
+   "optional": true,
+   "note": "tên sản phẩm / kênh ở màn kết cạnh logo; để trống -> dùng tên thương hiệu của video"
+  },
+  {
+   "id": "tagline",
+   "role": "subtitle",
+   "sample": "Một chạm, mọi thứ đã sẵn sàng.",
+   "max": 44,
+   "optional": true,
+   "note": "dòng chốt dưới tên (không có tên/thương hiệu thì thành chữ chính)"
+  }
  ],
  "images": [
-  {"id": "screen", "role": "screen", "aspect": "any", "optional": true, "note": "ảnh chụp màn hình app / web / thiết kế đang nói tới; hiện trong khung trình duyệt, vỡ thành 4 mảnh khi bốc hơi; không có -> 4 thẻ số liệu giả"}
+  {
+   "id": "screen",
+   "role": "screen",
+   "aspect": "any",
+   "optional": true,
+   "note": "ảnh chụp màn hình app / web / thiết kế đang nói tới; hiện trong khung trình duyệt, vỡ thành 4 mảnh khi bốc hơi; không có -> 4 thẻ số liệu giả"
+  }
  ],
  "brand": "optional",
- "sfx": [{"at": 34, "type": "click"}, {"at": 38, "type": "whoosh"}, {"at": 58, "type": "swoosh"}, {"at": 96, "type": "ding"}],
+ "sfx": [
+  {
+   "at": 34,
+   "type": "click"
+  },
+  {
+   "at": 38,
+   "type": "whoosh"
+  },
+  {
+   "at": 58,
+   "type": "swoosh"
+  },
+  {
+   "at": 96,
+   "type": "ding"
+  }
+ ],
  "vi": {
-  "ten": "Bấm 'Xuất bản' — giao diện bốc hơi, còn logo",
-  "mo_ta": "Màn hình phần mềm chỉnh sửa sáng (thanh lớp bên trái, bảng thuộc tính, khung trình duyệt có thẻ số liệu hoặc ảnh chụp app). Con trỏ di tới bấm nút màu nhấn; ngay sau đó từng mảng giao diện lần lượt bay ra ngoài và mờ tan từ ngoài vào trong, lộ ra ảnh nền chủ đề (hoặc nền đen), chỉ còn nút trượt về giữa phóng to phát sáng, rồi nhường chỗ cho logo + tên và dòng chốt. Khung dọc: giao diện xếp dọc, logo to giữa màn hình.",
-  "hop_khi": "Kết video / kết phần với ý 'xong rồi, chỉ một cú bấm': đăng tải, xuất bản, ra mắt, hoàn tất đơn, gửi đi; giới thiệu phần mềm / app / công cụ AI làm thay mọi thứ phức tạp; outro có tên kênh / sản phẩm.",
-  "tranh_khi": "Không liên quan phần mềm / thao tác số; giữa video (đây là cảnh kết); đã có một cảnh outro khác.",
+  "ten": "Bấm nút giải phóng giao diện outro",
+  "mo_ta": "Giao diện phần mềm sáng với các bảng chỉ số thống kê và công cụ chi tiết hiện rõ, con trỏ chuột lướt tới nhấn vào nút hành động màu xanh ở góc trên. Ngay sau cú bấm, toàn bộ các mảng giao diện xung quanh bay bung tỏa ra ngoài mép màn hình và mờ tan dần, để lộ khung cảnh nền tối chiều sâu. Nút hành động thu về giữa khung hình rồi biến đổi mượt mà thành logo thương hiệu cùng câu khẩu hiệu kết thúc sắc nét, nhịp điệu từ bận rộn lắng lại thành tĩnh lặng và sang trọng.",
+  "hop_khi": "Dùng ở đoạn kết video (outro) khi người nói chốt lại giải pháp, nhấn mạnh sự tinh gọn 'chỉ một chạm là xong' và kêu gọi khán giả tải ứng dụng, đăng ký dịch vụ hoặc truy cập website; cảm xúc giải tỏa nhẹ nhõm, chuyên nghiệp và đáng tin cậy. Phù hợp với các câu nói như: 'Mọi bước phức tạp hệ thống đã tự xử lý, bạn chỉ việc bấm xuất bản...', 'Bấm đăng ký ngay hôm nay để giải phóng hoàn toàn thời gian của bạn...', 'Trải nghiệm miễn phí ngay tại liên kết bên dưới để bắt đầu ngay bây giờ...'.",
+  "mo_rong": "Đổi bảng số liệu thành giỏ hàng, nút CTA thành 'Mua ngay' và nền tối thành ảnh sản phẩm cao cấp -> thương mại điện tử, kêu gọi chốt đơn; đổi thành bảng chọn lịch hẹn, nút thành 'Đặt lịch ngay' và nền thành không gian spa -> spa / làm đẹp, thúc đẩy đăng ký tư vấn; đổi thành biểu đồ danh mục đầu tư, nút thành 'Mở tài khoản' -> tài chính / chứng khoán, thu hút nhà đầu tư mới; đổi thành giao diện bài kiểm tra, nút thành 'Nhận kết quả' -> giáo dục, kêu gọi đăng ký thi thử hoặc nhận tư vấn học tập; đổi thành màn hình hồ sơ ứng viên, nút thành 'Nộp hồ sơ ngay' -> tuyển dụng, kêu gọi ứng tuyển.",
   "nang_luong": "vua",
-  "chu_de": ["outro", "kết thúc", "app", "phần mềm", "xuất bản", "ra mắt", "logo", "AI"]
+  "chu_de": [
+   "kết thúc video",
+   "kêu gọi hành động",
+   "cta",
+   "phần mềm",
+   "tự động hóa",
+   "outro",
+   "thương mại điện tử",
+   "dịch vụ",
+   "công nghệ",
+   "chuyển cảnh thương hiệu"
+  ]
  },
  "backdrop": true
 }

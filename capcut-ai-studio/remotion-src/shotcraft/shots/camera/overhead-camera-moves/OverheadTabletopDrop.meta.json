@@ -26,11 +26,11 @@
  "brand": "optional",
  "sfx": [{"at": 0, "type": "swoosh"}, {"at": 48, "type": "click"}, {"at": 58, "type": "whoosh"}, {"at": 86, "type": "boom"}, {"at": 104, "type": "pop"}],
  "vi": {
-  "ten": "Bàn duyệt 3 trang — máy quay lướt rồi lao xuống chọn trang giữa",
-  "mo_ta": "Nhìn từ trên cao xuống một mặt bàn tối có 3 tấm trang web / ảnh nằm nghiêng dưới ba ngọn đèn. Máy quay lướt ngang qua cả 3, dừng ở tấm giữa (tấm nổi lên, đèn hai bên tối đi), rồi lao thẳng xuống, tấm giữa dựng lên phủ kín màn hình: trang chủ sáng với tiêu đề lớn 2 dòng, câu mô tả, nút bấm và bảng lịch nhỏ có ô vàng trượt vào (hoặc ảnh của tấm giữa nếu có).",
-  "hop_khi": "Giới thiệu website / landing page / app; \"trong nhiều lựa chọn, chúng tôi chọn cái này\"; so sánh vài phương án rồi chốt một; chuyển từ tổng quan vào chi tiết; khoe 3 ảnh chụp màn hình sản phẩm rồi nhấn vào cái chính.",
-  "tranh_khi": "Không có gì để \"chọn\" hay giới thiệu trang / sản phẩm; nội dung cảm xúc, đời thường; đã dùng một cảnh máy quay lớn khác ngay cạnh.",
-  "nang_luong": "cao",
-  "chu_de": ["website", "landing page", "app", "lựa chọn", "so sánh", "giới thiệu sản phẩm", "ảnh chụp màn hình", "ra mắt"]
+  "ten": "Lướt bàn ba trang phóng cận trang chủ",
+  "mo_ta": "Góc nhìn từ trên cao trong không gian tối lướt qua ba trang giao diện nằm nghiêng có đèn chiếu, sau đó camera lao thẳng vào tấm ở giữa. Tấm giữa lật thẳng đứng phủ kín màn hình nền sáng, hiển thị nổi bật tiêu đề hai dòng, phụ đề, nút kêu gọi hành động cùng bảng lịch tương tác. Chuyển động lia phối cảnh 3D kết hợp zoom cận cảnh dứt khoát, nhịp độ mượt mà và hiện đại.",
+  "hop_khi": "Dùng khi giới thiệu giải pháp tổng thể, ra mắt website hoặc phần mềm mới, cần chuyển từ góc nhìn bao quát ba khía cạnh vào tính năng cốt lõi giải quyết bài toán của khách hàng. Phù hợp với giọng chia sẻ tự tin, hào hứng, chuyên nghiệp. Ví dụ: 'Đây chính là nền tảng tất cả trong một giúp bạn vận hành kinh doanh nhàn hơn', 'Thay vì dùng nhiều phần mềm rời rạc, bạn chỉ cần trang quản trị duy nhất này', 'Cùng mình khám phá ngay giao diện mới giúp tăng gấp đôi tỷ lệ chốt đơn'.",
+  "mo_rong": "Đổi ba trang thành ba gói dịch vụ hoặc khoá học (Cơ bản, Nâng cao, VIP) rồi phóng cận vào gói bán chạy nhất -> dùng cho đào tạo, coaching; đổi ba trang thành ba bản vẽ mặt bằng căn hộ rồi phóng vào căn hộ mẫu hot nhất -> dùng cho môi giới bất động sản; đổi ba trang thành ba combo thực đơn rồi zoom vào combo đặc biệt -> dùng cho nhà hàng, F&B; đổi thành ba mẫu thiết kế trong bộ sưu tập thời trang mới -> dùng cho bán lẻ, thời trang.",
+  "nang_luong": "vua",
+  "chu_de": ["phối cảnh 3D", "giới thiệu website", "ra mắt phần mềm", "demo tính năng", "bán hàng online", "thương mại điện tử", "bất động sản", "khoá học", "F&B", "thời trang", "công nghệ"]
  }
 }

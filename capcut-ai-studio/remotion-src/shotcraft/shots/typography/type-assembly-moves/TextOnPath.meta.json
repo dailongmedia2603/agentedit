@@ -95,20 +95,23 @@
   }
  ],
  "vi": {
-  "ten": "Chữ chạy theo đường tăng trưởng rồi bay lên thành tiêu đề",
-  "mo_ta": "Nền xanh đêm kiểu biểu đồ báo cáo: một đường tăng trưởng xanh điện phát sáng vẽ dần từ trái dưới lên phải trên (vùng dưới đường tô gradient, chấm sáng xanh ngọc dẫn đầu); cả câu chữ trắng nối đuôi chạy dọc theo đường, nghiêng theo độ dốc, dừng một nhịp rồi từng chữ bay vòng cung lên góc trên trái xếp thành tiêu đề ngang. Sau đó hiện bảng số lớn ở đỉnh đường (con số + % tăng), các mốc trên đường sáng lên, câu phụ hiện dưới tiêu đề.",
-  "hop_khi": "Nói về tăng trưởng, kết quả đi lên: doanh thu tăng, số người dùng / lượt xem / follower tăng, thành tích theo thời gian, “chỉ sau 6 tháng…”, báo cáo kinh doanh, case study tăng trưởng.",
-  "tranh_khi": "Số liệu giảm / tin xấu; không có ý tăng trưởng; câu dài; video tone sáng ấm.",
-  "nang_luong": "vua",
+  "ten": "Biểu đồ tăng trưởng chữ chạy theo đường cong",
+  "mo_ta": "Bố cục đồ thị phân tích trên nền tối với đường cong phát sáng màu xanh neon vẽ vút từ góc dưới bên trái lên đỉnh phải, kết hợp cùng các nhãn mốc quý và khối số liệu tài chính nổi bật. Dòng tiêu đề ban đầu uốn lượn chạy bọc theo đường cong tăng trưởng rồi chuyển vị trí lên góc trên bên trái cùng kicker và câu phụ đề. Nhịp chuyển động hướng lên giàu năng lượng, tạo ấn tượng trực quan về sự bứt phá và đi lên mạnh mẽ.",
+  "hop_khi": "Phù hợp khi người nói báo cáo doanh thu bứt phá, chứng minh hiệu quả chiến lược, khoe thành tích tăng trưởng hoặc phân tích xu hướng thị trường với giọng điệu tự hào, thuyết phục. Ví dụ: 'Doanh thu quý này đạt 48,6 tỷ đồng, tăng trưởng hơn 300% so với cùng kỳ.', 'Đây là lộ trình tăng trưởng lượt theo dõi của kênh trong suốt một năm qua.', 'Biểu đồ này chứng minh thị trường bất động sản đang bước vào chu kỳ phục hồi rất mạnh.'",
+  "mo_rong": "Đổi số tiền thành chỉ số calo tiêu hao hoặc cân nặng giảm theo tuần -> dùng cho video huấn luyện viên fitness, giảm cân, sức khỏe; đổi các quý thành các tháng học và số liệu thành điểm số thi (IELTS/SAT) -> dùng cho trung tâm ngoại ngữ, giáo dục, luyện thi; đổi thành số lượng khách hàng hoặc lượt tải app -> dùng cho startup công nghệ, chuyển đổi số; đổi thành biên độ tăng giá đất theo từng giai đoạn quy hoạch -> dùng cho đầu tư bất động sản, tài chính; đổi thành số đơn hàng tăng vọt sau chiến dịch -> dùng cho video case study marketing, bán hàng online.",
+  "nang_luong": "cao",
   "chu_de": [
-   "tăng trưởng",
-   "số liệu",
-   "biểu đồ",
-   "doanh thu",
-   "báo cáo",
-   "kết quả",
-   "dashboard",
-   "kinh doanh"
+   "biểu đồ tăng trưởng",
+   "báo cáo tài chính",
+   "doanh thu bứt phá",
+   "chứng khoán",
+   "bất động sản",
+   "thành tích cá nhân",
+   "kinh doanh",
+   "marketing",
+   "fitness",
+   "giáo dục",
+   "phân tích dữ liệu"
   ]
  },
  "backdrop": true

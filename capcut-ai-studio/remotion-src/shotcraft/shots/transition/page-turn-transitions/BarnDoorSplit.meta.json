@@ -115,20 +115,23 @@
   }
  ],
  "vi": {
-  "ten": "Cửa đôi tách đôi, cái cũ nhường chỗ cái mới",
-  "mo_ta": "Trang CŨ màu xám lạnh như tấm kim loại (nhãn, tiêu đề lớn, câu phụ, 3 ô số liệu). Một vệt sáng mảnh chạy dọc chính giữa, khe nứt mở ra rồi trang cũ tách thành hai cánh cửa trượt vụt ra hai bên (mép cửa bắt ánh cam); trang MỚI cùng bố cục trên nền đen ấm lao tới từ ánh sáng chói: tiêu đề mới với từ cuối phát sáng cam, câu phụ hiện từng từ, các con số chạy từ giá trị cũ sang giá trị mới.",
-  "hop_khi": "Chuyển chương 'cũ → mới': ra mắt phiên bản mới, cách làm cũ vs cách làm mới, trước và sau khi dùng công cụ / AI, đổi chiến lược (phương án A → B), nâng cấp sản phẩm; nhất là khi có số liệu cải thiện (thời gian, chi phí, doanh số).",
-  "tranh_khi": "Hai thứ không có quan hệ thay thế; dùng quá 2 lần mỗi video; nội dung chỉ một ý không có 'cũ'; video tone sáng nhẹ nhàng.",
+  "ten": "Cửa trượt tách đôi so sánh nâng cấp",
+  "mo_ta": "Màn hình tối mở đầu với phiên bản cũ gồm tiêu đề trắng to bản, câu mô tả phụ và ba hàng thông số kỹ thuật xếp ngay ngắn bên dưới. Một tia sáng cam quét dọc chính giữa xé toạc màn hình, tách trang cũ thành hai cánh cửa trượt ngang dứt khoát về hai phía mép khung hình để lộ phiên bản nâng cấp ở phía sau. Phiên bản mới nổi bật với số cam điểm nhấn, câu mô tả mới xuất hiện cùng lúc với các chỉ số kỹ thuật nhảy số đồng loạt về giá trị tối ưu vượt trội theo nhịp chuyển cảnh nhanh và mạnh mẽ.",
+  "hop_khi": "Hoàn hảo khi diễn giả công bố phiên bản nâng cấp, so sánh trước và sau (before/after), chuyển giao từ phương pháp cũ sang giải pháp mới hoặc đối chiếu sự chênh lệch vượt bậc về thời gian, chi phí, công sức. Thích hợp với giọng điệu quyết đoán, dứt khoát, mang tính cách mạng và khẳng định vị thế vượt trội. Ví dụ câu nói: 'Quên cái cách làm thủ công mất cả buổi chiều đi, đây mới là giải pháp thế hệ mới cho bạn', 'Phiên bản cải tiến này đã giải quyết triệt để 3 điểm nghẽn lớn nhất mà người dùng gặp phải', 'Hãy nhìn bảng so sánh hiệu năng giữa hai cách làm, bạn sẽ hiểu vì sao phải đổi ngay hôm nay'.",
+  "mo_rong": "Đổi tiêu đề thành 'Quy trình thủ công' và 'Tự động hóa bằng AI', các chỉ số thành thời gian xử lý và chi phí nhân sự -> dùng cho video giải pháp doanh nghiệp B2B, phần mềm công nghệ; đổi tiêu đề thành 'Trước khi trị liệu' và 'Sau 2 tuần', các chỉ số thành độ ẩm da, vết thâm nám, lỗ chân lông -> dùng cho video spa, mỹ phẩm, làm đẹp; đổi tiêu đề thành 'Cách học truyền thống' và 'Phương pháp ghi nhớ siêu tốc', các chỉ số thành số giờ học và lượng kiến thức dung nạp -> dùng cho video giáo dục, khóa học kỹ năng; đổi tiêu đề thành đời máy cũ và đời máy mới, các chỉ số thành dung lượng pin, tốc độ sạc, trọng lượng -> dùng cho video review đồ công nghệ gia dụng; đổi tiêu đề thành 'Thói quen chi tiêu cũ' và 'Công thức tài chính 6 hũ', các chỉ số thành số tiền tiết kiệm và nợ tồn đọng -> dùng cho video tài chính cá nhân.",
   "nang_luong": "cao",
   "chu_de": [
-   "ra mắt",
-   "phiên bản mới",
-   "so sánh",
-   "trước sau",
-   "nâng cấp",
+   "so sánh cũ mới",
+   "phiên bản nâng cấp",
    "chuyển cảnh",
-   "số liệu",
-   "cải thiện"
+   "tách cửa",
+   "before after",
+   "tối ưu hóa",
+   "công nghệ",
+   "thông số kỹ thuật",
+   "hiệu suất",
+   "giải pháp mới",
+   "đột phá"
   ]
  },
  "backdrop": true

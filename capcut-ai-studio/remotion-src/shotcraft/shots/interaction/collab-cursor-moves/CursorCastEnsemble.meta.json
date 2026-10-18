@@ -87,20 +87,22 @@
   }
  ],
  "vi": {
-  "ten": "Bảng làm việc nhóm — 5 con trỏ có tên bay vào, một người gõ mục tiêu",
-  "mo_ta": "Bảng trắng online kiểu Figma/Miro: lưới chấm, 4-6 tờ ghi chú màu pastel, một tấm thẻ lớn ở giữa. Năm con trỏ chuột màu khác nhau kèm bảng tên lần lượt bay vào (avatar góc phải bật lên theo), lượn lờ tự nhiên; một con trỏ đứng ở dòng tiêu đề và gõ từng chữ câu mục tiêu, thẻ chuyển 'Bản nháp' → 'Sẵn sàng'; cuối cùng cả nhóm tụ lại quanh thẻ.",
-  "hop_khi": "Nói về làm việc nhóm, cộng tác online, cả team cùng lên kế hoạch, công cụ quản lý dự án / bảng trắng, làm việc từ xa, \"cả đội cùng vào làm\"; giới thiệu app cộng tác hoặc mục tiêu chung của nhóm.",
-  "tranh_khi": "Nói về một người làm một mình; nội dung không liên quan công việc / nhóm; cần năng lượng cao, nhịp nhanh (cảnh khá nhẹ nhàng, ~5 giây).",
-  "nang_luong": "thap",
+  "ten": "Bảng ý tưởng cộng tác trực tuyến",
+  "mo_ta": "Giao diện bảng trắng kỹ thuật số nền mờ với thẻ tóm tắt lớn ở trung tâm và các mẩu ghi chú pastel bao quanh. Năm con trỏ chuột mang tên người dùng đồng thời bay vào, tương tác gõ tiêu đề vào thẻ chính và đẩy thanh tiến độ từ 38% lên 72%. Nhịp chuyển động nhộn nhịp, tự nhiên và mang đậm tính cộng tác thời gian thực.",
+  "hop_khi": "Phù hợp khi người nói nhấn mạnh tinh thần làm việc nhóm, phân công dự án chung, quy trình phối hợp triển khai chiến dịch hoặc lên kế hoạch ý tưởng cùng nhiều người. Hợp với nhịp nói hào hứng, chia sẻ kinh nghiệm vận hành hoặc giới thiệu tiến độ dự án. Ví dụ: 'Cả team mình đã thức trắng đêm để chuẩn bị cho buổi ra mắt này', 'Để kịp tiến độ, chúng mình chia nhỏ từng đầu việc cho từng thành viên', 'Lên ý tưởng kịch bản thì không thể thiếu sự đóng góp của mọi người trong đội ngũ'.",
+  "mo_rong": "Đổi tên người và ghi chú thành các bước làm đẹp -> video spa chia sẻ liệu trình chăm sóc da đa bước; đổi thành các môn học và lịch ôn thi -> video giáo dục lập kế hoạch ôn thi cử; đổi các ghi chú thành danh mục chi tiêu -> chia sẻ quản lý tài chính cá nhân; đổi các thẻ thành tiêu chí chọn nhà đất -> môi giới bất động sản so sánh tiện ích dự án; đổi thành các hạng mục chuẩn bị sự kiện -> dịch vụ tổ chức tiệc cưới.",
+  "nang_luong": "cao",
   "chu_de": [
    "làm việc nhóm",
+   "kế hoạch dự án",
    "cộng tác",
-   "app",
-   "quản lý dự án",
-   "kế hoạch",
-   "làm việc từ xa",
-   "bảng trắng",
-   "mục tiêu"
+   "bảng trắng figma miro",
+   "tiến độ công việc",
+   "quản lý đội ngũ",
+   "khởi nghiệp",
+   "kinh doanh",
+   "giáo dục",
+   "quản lý thời gian"
   ]
  },
  "backdrop": true

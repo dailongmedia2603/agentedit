@@ -20,6 +20,7 @@ import {
   clientCountry,
   logEvent
 } from './shared.js'
+import { handlePostStart, handlePostPart, handlePostComplete, handlePostDelete, handlePostFile } from './post.js'
 import { FX_ID_RE, FX_FILES, FX_MAX_CODE, FX_MAX_PREVIEW, FX_MAX_META, FX_DAILY_LIMIT, sha256bytes, fxIdOf, cleanMeta } from './fx.js'
 // Kho font chung: id = font_lib.font_id (uf_ + 10 hex); file = ten an toan (font_lib._safe_name) .ttf / .otf / .woff
 const FONT_ID_RE = /^uf_[0-9a-f]{10}$/
@@ -49,7 +50,10 @@ const MSG = {
   fx_bad: 'Gói hiệu ứng không hợp lệ.',
   fx_limit: 'Đã gửi quá nhiều hiệu ứng hôm nay — thử lại ngày mai.',
   server: 'Máy chủ bản quyền gặp lỗi. Thử lại sau.',
-  no_release: 'Chưa có bản cài Agent Edit cho máy này trên máy chủ.'
+  no_release: 'Chưa có bản cài Agent Edit cho máy này trên máy chủ.',
+  forbidden: 'Phiên tải lên đã hết hạn hoặc không hợp lệ.',
+  post_big: 'Video quá lớn (tối đa 2 GB).',
+  post_limit: 'Đã tải lên quá nhiều video để đăng hôm nay — thử lại ngày mai.'
 }
 
 function fail(code, extra = {}, status = 200) {
@@ -675,6 +679,16 @@ export default {
       if (mu && (req.method === 'GET' || req.method === 'HEAD')) return await handleUpdateDownload(req, env, mu[1])
       // Cai app qua dong lenh (script agent-edit / ky nang GetTime): key hop le -> phieu ban moi nhat + link tai tam
       if (url.pathname === '/v1/download' && req.method === 'POST') return await handleCliDownload(req, env)
+      // Luu tam video de dang qua Phone Agent (src/post.js)
+      if (url.pathname.startsWith('/v1/post/')) {
+        const ctx = { fail, throttled, addFail, CLOCK_SKEW_MS }
+        if (url.pathname === '/v1/post/start' && req.method === 'POST') return await handlePostStart(req, env, ctx)
+        if (url.pathname === '/v1/post/part' && req.method === 'PUT') return await handlePostPart(req, env, ctx)
+        if (url.pathname === '/v1/post/complete' && req.method === 'POST') return await handlePostComplete(req, env, ctx)
+        if (url.pathname === '/v1/post/delete' && req.method === 'POST') return await handlePostDelete(req, env, ctx)
+        const mp = url.pathname.match(/^\/v1\/post\/f\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)\/[^/]+$/)
+        if (mp && (req.method === 'GET' || req.method === 'HEAD')) return await handlePostFile(req, env, mp[1], mp[2], mp[3], mp[4])
+      }
       if (url.pathname === '/v1/time') return json({ ok: true, server_time: Date.now() })
       return new Response('Not found', { status: 404 })
     } catch (e) {

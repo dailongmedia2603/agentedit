@@ -10,7 +10,7 @@
 import { app, net, safeStorage } from 'electron'
 import { createHash, createHmac, createPrivateKey, createPublicKey, generateKeyPairSync, sign, verify, KeyObject } from 'crypto'
 import { execFile } from 'child_process'
-import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
+import { closeSync, existsSync, openSync, readFileSync, readSync, statSync, unlinkSync, writeFileSync } from 'fs'
 import { hostname } from 'os'
 import { join } from 'path'
 import { setSidecarTicket, setTicketRefresher } from './sidecar'
@@ -478,4 +478,100 @@ export async function fxUpload(pl: {
     return { ok: !!j.ok, status: j.status, code: j.code, message, retry: !j.ok && temp }
   }
   return { ok: false, retry: true, code: 'clock', message: 'Giờ trên máy bị lệch quá nhiều.' }
+}
+
+/** Gui 1 yeu cau {p, s} ky bang khoa thiet bi toi `path` cua may chu ban quyen (tu bu gio lech 1 lan). */
+async function signedJson(path: string, op: string, extra: Record<string, unknown>): Promise<ServerReply & Record<string, any>> {
+  if (licenseDisabled()) throw new Error('Bản quyền đang tắt (bản dev) — không tải video lên máy chủ được.')
+  const s = loadStored()
+  if (!s) throw new Error('Chưa kích hoạt key bản quyền.')
+  if (apiUrl().includes('REPLACE')) throw new Error('Chưa cấu hình máy chủ bản quyền.')
+  const fp = await fingerprint()
+  const sk = privKey(s.sk)
+  let j: ServerReply & Record<string, any> = { ok: false }
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const p = JSON.stringify({ op, key: s.key, dev: s.pub, fp, ts: Date.now() + clockOffset, ...extra })
+    const body = JSON.stringify({ p, s: sign(null, Buffer.from(p), sk).toString('base64') })
+    try {
+      const res = await net.fetch(apiUrl() + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body, signal: AbortSignal.timeout(30000) })
+      j = (await res.json()) as typeof j
+    } catch {
+      throw new Error('Không kết nối được máy chủ lưu video (máy chủ bản quyền).')
+    }
+    if (typeof j.server_time === 'number') clockOffset = j.server_time - Date.now()
+    if (j.code === 'clock' && attempt === 0) continue
+    break
+  }
+  return j
+}
+
+/**
+ * DANG VIDEO QUA PHONE AGENT (2026-10-19): iPhone chi tai video tu link CONG KHAI -> day MP4 len may chu ban quyen
+ * (R2, license-server/src/post.js) theo tung phan, nhan link .mp4 het han 48h. Key phai dang kich hoat dung may nay.
+ */
+export async function postVideoUpload(
+  file: string,
+  onProgress?: (sent: number, total: number) => void
+): Promise<{ id: string; url: string; size: number; expires_at: number }> {
+  const size = statSync(file).size
+  if (!size) throw new Error('File video rỗng.')
+  const st = await signedJson('/v1/post/start', 'post_start', { size })
+  if (!st.ok) throw new Error(st.message || st.code || 'Máy chủ từ chối tải video lên.')
+  const partSize = Number(st.part_size) || 16 * 1024 * 1024
+  const parts: { n: number; etag: string }[] = []
+  const fd = openSync(file, 'r')
+  try {
+    let sent = 0
+    for (let n = 1, off = 0; off < size; n++, off += partSize) {
+      const len = Math.min(partSize, size - off)
+      const buf = Buffer.alloc(len)
+      readSync(fd, buf, 0, len, off)
+      let etag = ''
+      let lastErr = ''
+      for (let attempt = 0; attempt < 4 && !etag; attempt++) {
+        if (attempt) await new Promise((r) => setTimeout(r, 2000 * attempt))
+        try {
+          const url = `${apiUrl()}/v1/post/part?ut=${encodeURIComponent(st.ut)}&u=${encodeURIComponent(st.upload_id)}&n=${n}`
+          const res = await net.fetch(url, { method: 'PUT', body: buf, signal: AbortSignal.timeout(10 * 60000) })
+          const j = (await res.json().catch(() => ({}))) as { ok?: boolean; etag?: string; message?: string }
+          if (j.ok && j.etag) etag = j.etag
+          else {
+            lastErr = j.message || `HTTP ${res.status}`
+            if (res.status === 403 || res.status === 400) break
+          }
+        } catch (e) {
+          lastErr = String((e as Error)?.message || e)
+        }
+      }
+      if (!etag) throw new Error(`Tải video lên bị lỗi (phần ${n}): ${lastErr}`)
+      parts.push({ n, etag })
+      sent += len
+      onProgress?.(sent, size)
+    }
+  } finally {
+    closeSync(fd)
+  }
+  let done: { ok?: boolean; id?: string; url?: string; size?: number; expires_at?: number; message?: string } = {}
+  try {
+    const res = await net.fetch(apiUrl() + '/v1/post/complete', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ ut: st.ut, u: st.upload_id, parts }),
+      signal: AbortSignal.timeout(120000)
+    })
+    done = (await res.json()) as typeof done
+  } catch (e) {
+    throw new Error('Không hoàn tất được tải video lên: ' + String((e as Error)?.message || e))
+  }
+  if (!done.ok || !done.url) throw new Error(done.message || 'Không hoàn tất được tải video lên.')
+  return { id: String(done.id), url: done.url, size: Number(done.size) || size, expires_at: Number(done.expires_at) || 0 }
+}
+
+/** Xoa video da luu tam (dang xong / huy). Loi bo qua — may chu tu xoa sau 3 ngay. */
+export async function postVideoDelete(id: string): Promise<void> {
+  try {
+    await signedJson('/v1/post/delete', 'post_delete', { id })
+  } catch {
+    /* bo qua */
+  }
 }

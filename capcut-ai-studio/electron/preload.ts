@@ -128,6 +128,8 @@ const api = {
   remotionUnderstandMedia: (payload: unknown) => ipcRenderer.invoke('remotion:understandMedia', payload),
   remotionAutoplan: (payload: unknown) => ipcRenderer.invoke('remotion:autoplan', payload),
   // Kho hieu ung tu viet
+  shotlibList: () => ipcRenderer.invoke('shotlib:list'),
+  shotlibToggle: (id: string, disabled: boolean) => ipcRenderer.invoke('shotlib:toggle', id, disabled),
   fxlibList: () => ipcRenderer.invoke('fxlib:list'),
   fxlibRenderPreview: (id: string) => ipcRenderer.invoke('fxlib:renderPreview', id),
   fxlibLabel: (ids: string[]) => ipcRenderer.invoke('fxlib:label', ids),
@@ -246,6 +248,27 @@ const api = {
     const fn = (_e: unknown, list: unknown) => cb(list)
     ipcRenderer.on('automation:changed', fn)
     return () => ipcRenderer.removeListener('automation:changed', fn)
+  },
+  // ---- Phone Agent: dang video len kenh qua iPhone (electron/phoneagent-ipc.ts) ----
+  phoneagentOpenSite: () => ipcRenderer.invoke('phoneagent:openSite'),
+  phoneagentGet: () => ipcRenderer.invoke('phoneagent:get'),
+  phoneagentSave: (cfg: { token?: string; base?: string }) => ipcRenderer.invoke('phoneagent:save', cfg),
+  phoneagentTest: (cfg?: { token?: string; base?: string }) => ipcRenderer.invoke('phoneagent:test', cfg),
+  phoneagentDevices: () => ipcRenderer.invoke('phoneagent:devices'),
+  phoneagentScripts: () => ipcRenderer.invoke('phoneagent:scripts'),
+  phoneagentScriptFields: (id: string) => ipcRenderer.invoke('phoneagent:scriptFields', id),
+  phoneagentPosts: (filter?: unknown) => ipcRenderer.invoke('phoneagent:posts', filter),
+  phoneagentCreate: (input: unknown) => ipcRenderer.invoke('phoneagent:create', input),
+  phoneagentCancel: (id: string) => ipcRenderer.invoke('phoneagent:cancel', id),
+  phoneagentRetry: (id: string, at?: number) => ipcRenderer.invoke('phoneagent:retry', id, at),
+  phoneagentDelete: (id: string) => ipcRenderer.invoke('phoneagent:delete', id),
+  phoneagentReschedule: (id: string, at: number) => ipcRenderer.invoke('phoneagent:reschedule', id, at),
+  phoneagentShotUrl: (file: string) => ipcRenderer.invoke('phoneagent:shotUrl', file),
+  phoneagentMotionContext: (jobId: string) => ipcRenderer.invoke('phoneagent:motionContext', jobId),
+  onPhoneagentPosts: (cb: (list: unknown) => void) => {
+    const fn = (_e: unknown, list: unknown) => cb(list)
+    ipcRenderer.on('phoneagent:posts', fn)
+    return () => ipcRenderer.removeListener('phoneagent:posts', fn)
   }
 }
 

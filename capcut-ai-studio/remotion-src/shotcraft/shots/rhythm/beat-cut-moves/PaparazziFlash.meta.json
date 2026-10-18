@@ -23,11 +23,11 @@
  "brand": "optional",
  "sfx": [{"at": 30, "type": "click"}, {"at": 52, "type": "click"}, {"at": 70, "type": "click"}, {"at": 70, "type": "boom"}],
  "vi": {
-  "ten": "Chụp ảnh đèn flash, vinh danh con số",
-  "mo_ta": "Nền tối kiểu thảm đỏ lễ trao giải (tường logo lặp lại, đèn flash máy ảnh khác lóe lên), giữa là tấm thẻ giải thưởng: vòng nguyệt quế vàng, tên danh hiệu, con số cực lớn (vd 'Top 1') kèm câu giải thích và tên người nhận. Khung ngắm máy ảnh (góc ngắm, tốc độ, ISO, đèn đang sạc). Ba cú chớp trắng như bấm máy liên tiếp, mỗi cú cắt cứng vào gần hơn: toàn cảnh → tấm thẻ → cận con số, rồi đứng yên như một bức ảnh với chữ 'ĐÃ LƯU'.",
-  "hop_khi": "Khoảnh khắc đỉnh cao cần 'đăng quang': công bố thành tích, xếp hạng số 1, giải thưởng, kỷ lục doanh số, con số ấn tượng nhất của video ('chúng tôi đứng top 1', 'bán được 10.000 đơn', 'đạt 5 sao'); cao trào trước khi chốt.",
-  "tranh_khi": "Dùng quá 1 lần trong video (đây là cú đánh mạnh nhất); nội dung buồn / nghiêm túc / tin tiêu cực; không có con số hay danh hiệu rõ ràng; video không có âm thanh tiếng chụp ảnh.",
+  "ten": "Thẻ giải thưởng chớp flash phóng cận kỷ lục",
+  "mo_ta": "Khung ngắm máy ảnh chuyên nghiệp ghi lại tấm thẻ vinh danh sang trọng giữa nền tối thảm đỏ với các ánh đèn flash chớp nháy liên tục xung quanh. Một cú chớp sáng chói bất ngờ lóe lên, máy ảnh lập tức zoom cận cực đại vào con số Top 1 và dòng chữ kỷ lục chiếm trọn khung hình. Tiết tấu dồn dập, bùng nổ, mang đậm tính giật gân và không khí sự kiện danh giá.",
+  "hop_khi": "Dùng khi công bố thành tích kỷ lục, khoe giải thưởng danh giá, vinh danh vị trí dẫn đầu thị trường hoặc tạo điểm nhấn kịch tính khi đạt cột mốc quan trọng. Phù hợp với giọng nói dồn dập, hào hứng đỉnh điểm, tự hào và khẳng định vị thế. Ví dụ: 'Và sản phẩm này đã chính thức đạt vị trí Top 1 bán chạy nhất trên toàn thị trường', 'Chúng mình đã vinh dự nhận được giải thưởng danh giá do chính khách hàng bình chọn', 'Đây là con số kỷ lục mà chưa từng có thương hiệu nào đạt được trước đây'.",
+  "mo_rong": "Đổi con số Top 1 thành số lượng '100.000+' kèm chú thích 'Đơn hàng đã giao thành công' -> dùng cho bán hàng online, chứng minh uy tín thương hiệu; đổi thành 'Top 1 Livestreamer' kèm tên kênh sáng tạo -> dùng cho tuyển dụng agency, đào tạo creator, review; đổi thành giải thưởng 'Dự án nghỉ dưỡng tiêu chuẩn 5 sao' -> dùng cho bất động sản cao cấp; đổi thành 'Món ăn bán chạy nhất năm' -> dùng cho ẩm thực, chuỗi nhà hàng F&B; đổi thành 'Nhân viên xuất sắc của quý' -> dùng cho vinh danh nội bộ doanh nghiệp.",
   "nang_luong": "cao",
-  "chu_de": ["giải thưởng", "thành tích", "top 1", "kỷ lục", "con số", "vinh danh", "cao trào", "flash"]
+  "chu_de": ["thẻ vinh danh", "giải thưởng", "top 1", "kỷ lục doanh số", "đèn flash paparazzi", "bán hàng online", "uy tín thương hiệu", "thương mại điện tử", "bất động sản", "F&B", "truyền thông"]
  }
 }

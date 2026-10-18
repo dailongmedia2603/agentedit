@@ -71,18 +71,23 @@
   }
  ],
  "vi": {
-  "ten": "Chữ khổng lồ làm cửa sổ — phóng xuyên vào trong",
-  "mo_ta": "Nền trắng sứ, một từ in hoa cực đậm cỡ khổng lồ (xếp 2 dòng ở khung dọc); bên trong nét chữ lộ ra một bảng điều khiển tối đang chạy (biểu đồ xanh chảy, số đếm) hoặc ảnh thật, trôi ngang chầm chậm; dòng nhỏ phía trên và câu phụ phía dưới. Cuối cảnh chữ hít vào rồi phóng to vùn vụt xuyên qua nét chữ, hình bên trong chiếm trọn màn hình.",
-  "hop_khi": "Mở chương / chủ đề bằng MỘT từ khóa ('DỮ LIỆU', 'AI', 'TĂNG TRƯỞNG', 'BÁN HÀNG') rồi đi thẳng vào sản phẩm, dashboard, số liệu; chuyển từ khẩu hiệu sang hình ảnh sản phẩm.",
-  "tranh_khi": "Từ khóa dài (>2 từ); nội dung không có hình ảnh / dashboard liên quan; tone trầm, tâm sự.",
-  "nang_luong": "vua",
+  "ten": "Chữ mặt nạ phóng lớn mở ra giao diện",
+  "mo_ta": "Một từ khóa in hoa đậm nét cỡ lớn đặt ngay trung tâm với nền chữ đóng vai trò mặt nạ để lộ giao diện bảng điều khiển biểu đồ sống động chuyển động bên trong lòng chữ. Phía dưới có dòng phụ đề súc tích giải thích khái niệm, sau đó máy quay đột ngột lao thẳng vào lòng nét chữ mở toang toàn màn hình thành một dashboard quản trị chi tiết với biểu đồ sáng và các chỉ số thống kê trực tiếp. Nhịp độ bắt đầu chậm rãi kích thích tò mò rồi chuyển cảnh thần tốc, bùng nổ.",
+  "hop_khi": "Phù hợp làm hook mở đầu cực mạnh, chuyển tiếp từ một khái niệm tổng quát sang dữ liệu thực tế chuyên sâu, hoặc chứng minh tính minh bạch của số liệu trong kinh doanh với cảm giác sang trọng, công nghệ cao và đáng tin cậy. Ví dụ câu nói: 'Mọi quyết định kinh doanh đột phá đều phải xuất phát từ dữ liệu chính xác', 'Đằng sau doanh thu hàng chục tỷ đồng là cả một hệ thống đo lường chi tiết đến từng giây', 'Muốn tối ưu tỷ lệ chuyển đổi, đây chính là các con số bạn nhất định phải theo dõi hàng ngày'.",
+  "mo_rong": "Đổi chữ thành 'DOANH THU' và giao diện bên trong là biểu đồ tài chính thực tế -> dùng cho video chia sẻ đầu tư chứng khoán, quản lý vốn; đổi chữ thành 'SẢN PHẨM' và bên trong phóng ra video cận cảnh chi tiết chiếc xe hoặc túi xách cao cấp -> dùng cho video review ra mắt sản phẩm sang trọng; đổi chữ thành 'KẾT QUẢ' và phóng ra bảng điểm học tập hoặc chứng chỉ đạt được -> dùng cho video giáo dục tuyển sinh; đổi thành chữ 'HÀNH TRÌNH' phóng ra thước phim flycam phong cảnh thiên nhiên 4K -> dùng cho video du lịch, trải nghiệm nghỉ dưỡng; đổi thành chữ 'AI TOOL' và mở ra màn hình thao tác công cụ thông minh -> dùng cho video giới thiệu công nghệ mới.",
+  "nang_luong": "cao",
   "chu_de": [
-   "từ khóa",
-   "mở chương",
-   "dashboard",
-   "số liệu",
-   "sản phẩm",
-   "chuyển cảnh"
+   "chữ mặt nạ",
+   "text mask",
+   "phóng lớn chuyển cảnh",
+   "bảng điều khiển",
+   "dữ liệu kinh doanh",
+   "biểu đồ trực tiếp",
+   "hook mở đầu",
+   "công nghệ số",
+   "tài chính đầu tư",
+   "ra mắt sản phẩm",
+   "quản trị hiệu suất"
   ]
  },
  "backdrop": true

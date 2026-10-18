@@ -870,7 +870,10 @@ MEME_REL = 0.0                # tieng meme cat vao: khong to hon giong noi cua v
 
 
 def _world_db(item):
-    """Chinh muc to (dB) cua tieng thuoc bo 'the gioi am thanh' (sfx_kit.WORLDS); tieng khac 0."""
+    """Chinh muc to (dB) cua tieng thuoc bo 'the gioi am thanh' (sfx_kit.WORLDS) / bo tieng earshot cua video (level_db
+    AI dat cho ho, sfx_gen); tieng khac 0."""
+    if item.get("_gen_db") is not None:
+        return float(item["_gen_db"])
     try:
         import sfx_kit
         return float(sfx_kit.world_gain_db(item.get("sfx_id")))
@@ -880,6 +883,8 @@ def _world_db(item):
 
 def sfx_family(item):
     """Xep loai SFX tu ten/nhan trong kho. Khong doan duoc -> 'neutral'."""
+    if item.get("_es") in SFX_MIX:
+        return item["_es"]          # tieng earshot: loai da biet theo nhom tieng (sfx_gen.mix_family), khong doan ten
     blob = " ".join(str(item.get(k) or "")
                     for k in ("_name", "name", "sfx_id", "use_when", "_use_when"))
     blob += " " + " ".join(item.get("tags") or [])

@@ -84,20 +84,22 @@
   }
  ],
  "vi": {
-  "ten": "Chữ rỗng bật sáng, đóng đinh một từ khóa",
-  "mo_ta": "Nền đen ấm: một từ cực lớn dạng chữ rỗng (viền mảnh) lao từ sát mặt người xem co về giữa khung; vòng tròn nét đứt kiểu bản vẽ kỹ thuật thu nhỏ quanh chữ và xoay chậm, hai vạch ngang nét đứt chạy từ mép khung vào như ống ngắm, kèm số đo 'TRƯỚC 1 tuần' / 'SAU 4 giờ'. Viền chữ nóng dần rồi trong một khung hình chữ bật đặc trắng rực, lóe sáng cam, vòng tròn khóa lại; dòng nhỏ phía trên và câu phụ phía dưới hiện lên.",
-  "hop_khi": "Câu chốt một lợi ích bằng MỘT từ: 'nhanh hơn', 'rẻ hơn', 'miễn phí', 'gấp 10 lần', 'tự động'; so sánh trước / sau bằng con số (thời gian, chi phí); nhấn mạnh từ khóa đúng nhịp nhạc khi giới thiệu app, AI, công cụ.",
-  "tranh_khi": "Câu dài nhiều ý; cần đọc nhiều chữ; tone nhẹ nhàng / cảm xúc buồn; dùng liền với mẫu chữ chuyển tiếp từng từ khác; video tone sáng.",
+  "ten": "Chữ rỗng hóa đặc so sánh thông số",
+  "mo_ta": "Khung hình nền tối công nghệ với tâm điểm là vòng tròn ngắm kỹ thuật xoay chậm và hai thông số đối đầu TRƯỚC - SAU ở hai góc đối xứng. Một từ khóa viền rỗng cực lớn phóng nhanh vào giữa tầm ngắm rồi đột ngột sáng lóa, hóa chữ đặc nổi bật cùng nhãn phân loại phía trên và câu phụ đề chốt hạ phía dưới. Nhịp chuyển động dứt khoát, mang đậm phong cách HUD radar tương lai.",
+  "hop_khi": "Dùng khi người nói muốn khẳng định bước ngoặt, tuyên bố sự vượt trội, bứt phá về hiệu suất hoặc so sánh kết quả chấn động trước và sau khi có giải pháp. Phù hợp với nhịp nói dứt khoát, đanh thép, đẩy cao trào cảm xúc. Ví dụ: 'Từ lúc áp dụng công thức này, tốc độ làm việc tăng gấp ba', 'Trước mất cả tuần đau đầu, sau chỉ cần đúng 4 tiếng là xong', 'Đây chính là bước đột phá giúp doanh số bùng nổ'.",
+  "mo_rong": "Đổi chữ thành SẠCH MỤN, 2 mốc thành Trước: 3 tháng và Sau: 7 ngày -> clip review skincare, spa làm đẹp; đổi chữ thành GIẢM CHI PHÍ, 2 mốc thành Trước: 50 triệu và Sau: 15 triệu -> video tư vấn tài chính, tối ưu vận hành doanh nghiệp; đổi chữ thành LÊN ĐIỂM, 2 mốc thành Trước: 5.0 và Sau: 7.5 IELTS -> video quảng bá khóa học tiếng Anh, gia sư; đổi chữ thành X3 ĐƠN, 2 mốc thành Trước: 10 đơn/ngày và Sau: 100 đơn/ngày -> chia sẻ kinh nghiệm kinh doanh online, chạy quảng cáo; đổi chữ thành TĂNG CƠ, 2 mốc thành Trước: 58kg và Sau: 68kg -> chia sẻ hành trình tập gym, fitness, dinh dưỡng thể hình.",
   "nang_luong": "cao",
   "chu_de": [
-   "từ khóa",
-   "lợi ích",
-   "nhấn mạnh",
-   "trước sau",
-   "tốc độ",
-   "so sánh",
-   "AI",
-   "app"
+   "so sánh trước sau",
+   "hiệu suất",
+   "tăng tốc",
+   "công nghệ",
+   "bứt phá",
+   "hud radar",
+   "kinh doanh online",
+   "làm đẹp",
+   "giáo dục",
+   "tài chính"
   ]
  },
  "backdrop": true

@@ -20,6 +20,7 @@ Endpoints chinh:
   GET|POST /fonts/list|import|delete|rename      (kho font tai len: may chu -> kho chung R2, Tao video -> chi may nay)
   GET|POST /music/*                              (kho nhac nen: nhap, Gemini nghe gan nhan, bat / tat tu them nhac)
   POST /fxlib/*                                  (kho hieu ung tu viet: dong goi sau render, preview, Gemini nhan, kho chung)
+  POST /shotlib/list | /shotlib/toggle           (kho shot & motion: xem preview + mo ta, tat / bat tung mau)
   POST /remotion/understand_reference { video }  -> phan tich video mau (Gemini xem + nghe video)
   POST /remotion/autoplan { brief, ... }         -> {plan, spec, guard, summary}
   POST /remotion/spec     { plan }               -> dung lai RenderSpec tu plan da luu
@@ -1082,6 +1083,23 @@ def text_label_route():
 # KHONG tu dong goi hieu ung sau khi render nua (bo route /fxlib/harvest 2026-10-17: tac gia tu viet code hieu ung roi
 # bo sung vao kho — fx_lib.harvest van dung duoc tu script).
 # ---------------------------------------------------------------------------
+# KHO SHOT & MOTION (shot_lib.py, 2026-10-18): tab "Kho shot" xem video xem truoc + mo ta (Gemini viet san, di kem ban
+# cai) va TAT / BAT tung mau (mau tat khong vao danh muc R4).
+@app.route("/shotlib/list", methods=["GET", "POST"])
+@require_token
+def shotlib_list_route():
+    import shot_lib
+    return jsonify(shot_lib.list_view())
+
+
+@app.route("/shotlib/toggle", methods=["POST"])
+@require_token
+def shotlib_toggle_route():
+    import shot_lib
+    b = request.get_json(force=True, silent=True) or {}
+    return jsonify(shot_lib.set_disabled(str(b.get("id") or ""), bool(b.get("disabled"))))
+
+
 @app.route("/fxlib/list", methods=["GET", "POST"])
 @require_token
 def fxlib_list_route():
@@ -1412,6 +1430,18 @@ def _remotion_autoplan(b):
     try:
         source_videos, transcript_data, emotion_map_data, faces_regions, key_moments_data = _du_lieu_nguon(brief)
         sfx_catalog = engine.sfx_catalog_for_plan()
+        # BO TAO AM THANH earshot (sfx_gen, 2026-10-18): moi tieng khong co giong noi do B7 TAO theo ngu canh video;
+        # kho SFX chi con cap tieng CO GIONG NOI (meme). Thieu thu vien (scipy / soundfile) -> kho SFX nhu truoc.
+        import sfx_gen
+        gen_catalog = sfx_gen.catalog() if sfx_gen.available() else []
+        if gen_catalog:
+            sfx_catalog = sfx_gen.speech_only(sfx_catalog)
+            run_log.emit("note", "Âm thanh: bộ tạo earshot %d tiếng (B7 chọn bộ tiếng cho video + tạo từng SFX theo "
+                         "ngữ cảnh); kho SFX chỉ dùng %d tiếng có giọng nói" % (
+                             sum(len(g["tieng"]) for g in gen_catalog), len(sfx_catalog)), step="B7-audio")
+        else:
+            run_log.emit("note", "Bộ tạo âm thanh earshot không chạy được (%s) — dùng kho SFX như trước"
+                         % (sfx_gen.load_error() or "chưa có danh mục"), step="B7-audio", level="warn")
         # KHO NHAC NEN: co bai da gan nhan + bat "tu them nhac nen" -> B7 chon them 1 bai (rong = B7 y nhu truoc)
         import music_lib
         music_catalog = music_lib.catalog_for_plan()
@@ -1885,6 +1915,7 @@ def _remotion_autoplan(b):
             "hr": hook_rule.HOOK_RULE_VERSION, "hv": _hook_hinh,
             **({"music": {"kho": music_lib.catalog_fp(music_catalog), "p": music_lib.prompt_fp(),
                           "goc": _music_ctx}} if music_catalog else {}),
+            **({"gen": sfx_gen.fingerprint()} if gen_catalog else {}),
         }, lambda: providers.gpt_audio(
             key_moments_data=key_moments_data, emotion_map_data=emotion_map_data,
             sfx_catalog=sfx_catalog, segments=segs_b2, transcript_data=transcript_data, story=story,
@@ -1892,7 +1923,19 @@ def _remotion_autoplan(b):
             transitions=visual.get("transitions", []),
             captions=captions.get("captions", []) + motion_design.layers_as_heroes(design.get("layers")),
             inserts=inserts.get("inserts", []), log=logger.info, hook_visuals=_hook_hinh,
-            music_catalog=music_catalog, music_ctx=_music_ctx), optional=True) or {}
+            music_catalog=music_catalog, music_ctx=_music_ctx, gen_catalog=gen_catalog), optional=True) or {}
+        am_thanh = None
+        if gen_catalog:
+            # BO TIENG cua video (AI chon theo tone / chu de; ho thieu -> mac dinh theo tone) + kiem tung muc "gen"
+            am_thanh = sfx_gen.normalize_palette(audio.get("bo_am_thanh"),
+                                                 (story or {}).get("tone") or selection.get("tone"))
+            audio = dict(audio)
+            audio["audio"], _bo_sfx = sfx_gen.clean_audio(audio.get("audio"), {x.get("id") for x in sfx_catalog})
+            run_log.emit("result", "Bộ âm thanh của video (%s): %s" % (
+                {"ai": "AI chọn", "ai+mac_dinh": "AI chọn + mặc định", "mac_dinh": "mặc định theo tone"}[am_thanh["nguon"]],
+                am_thanh["chat"]), step="B7-audio", level="ok" if am_thanh["nguon"] != "mac_dinh" else "warn",
+                output={"bo": am_thanh["bo"], "tao": sum(1 for a in audio["audio"] if a.get("gen")),
+                        "bo_qua": _bo_sfx})
         # nhac nen: bai AI chon (kiem id) | AI bo qua / sai id -> code chon theo nhan | AI noi khong dung (co ly do)
         music_pick = music_lib.choose(audio.get("music"), music_catalog, story=story,
                                       emit=lambda m, lvl: run_log.emit("note", m, step="B7-audio", level=lvl))
@@ -1973,6 +2016,8 @@ def _remotion_autoplan(b):
             "audio": audio.get("audio", []),
             # nhac nen ca video (kho nhac nen) — build_spec dat SAU hook, can theo giong noi (music_lib.to_spec)
             "music": music_pick,
+            # BO TIENG earshot cua video (sfx_gen) — build_spec dung cho moi tieng tu gan; None = plan dung kho kit-* cu
+            "am_thanh": am_thanh,
             "speech": _khoang_loi_noi(transcript_data),
             # giong noi nho -> muc nang (dB) theo tung video nguon (voice_boost); 0 = giong da chuan, giu nguyen
             "voice_boost": voice,

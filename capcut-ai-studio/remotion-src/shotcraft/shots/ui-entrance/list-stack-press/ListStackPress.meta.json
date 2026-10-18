@@ -6,28 +6,106 @@
  "duration": 88,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.75, 1.15],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.75,
+  1.15
+ ],
  "hold": 84,
  "slots": [
-  {"id": "title", "role": "title", "sample": "Bản tin công nghệ sáng nay", "max": 40, "note": "tên danh sách / trang"},
-  {"id": "subtitle", "role": "subtitle", "sample": "Tự động tổng hợp từ 31 nguồn, chỉ giữ lại những tin liên quan tới bạn.", "max": 90, "optional": true},
-  {"id": "items", "role": "item", "sample": "AI viết code giúp lập trình viên nhanh gấp đôi|Điện thoại gập mới pin dùng trọn hai ngày|Ngân hàng số mở tài khoản chỉ trong ba phút|Xe điện giá rẻ sạc đầy trong 20 phút|Ứng dụng học tiếng Anh bằng trợ lý giọng nói", "max": 60, "list": {"min": 3, "max": 6}, "note": "tiêu đề từng thẻ, mỗi mục 1 câu ngắn"},
-  {"id": "details", "role": "subtitle", "sample": "Thử nghiệm với 500 kỹ sư, thời gian hoàn thành giảm một nửa.|Màn hình bền hơn, nếp gấp gần như biến mất.|Xác thực khuôn mặt, không cần ra quầy giao dịch.|Trạm sạc nhanh có mặt ở 63 tỉnh thành.|Luyện nói mỗi ngày, chấm phát âm ngay lập tức.", "max": 80, "list": {"min": 0, "max": 6}, "optional": true, "note": "dòng mô tả nhỏ dưới mỗi thẻ, cùng thứ tự với items"},
-  {"id": "counter_label", "role": "label", "sample": "Tin mới", "max": 18, "optional": true, "note": "nhãn trên bộ đếm (bộ đếm tự đếm tới số thẻ)"},
-  {"id": "counter_note", "role": "label", "sample": "Trên 31 tin hôm nay", "max": 26, "optional": true}
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Bản tin công nghệ sáng nay",
+   "max": 40,
+   "note": "tên danh sách / trang"
+  },
+  {
+   "id": "subtitle",
+   "role": "subtitle",
+   "sample": "Tự động tổng hợp từ 31 nguồn, chỉ giữ lại những tin liên quan tới bạn.",
+   "max": 90,
+   "optional": true
+  },
+  {
+   "id": "items",
+   "role": "item",
+   "sample": "AI viết code giúp lập trình viên nhanh gấp đôi|Điện thoại gập mới pin dùng trọn hai ngày|Ngân hàng số mở tài khoản chỉ trong ba phút|Xe điện giá rẻ sạc đầy trong 20 phút|Ứng dụng học tiếng Anh bằng trợ lý giọng nói",
+   "max": 60,
+   "list": {
+    "min": 3,
+    "max": 6
+   },
+   "note": "tiêu đề từng thẻ, mỗi mục 1 câu ngắn"
+  },
+  {
+   "id": "details",
+   "role": "subtitle",
+   "sample": "Thử nghiệm với 500 kỹ sư, thời gian hoàn thành giảm một nửa.|Màn hình bền hơn, nếp gấp gần như biến mất.|Xác thực khuôn mặt, không cần ra quầy giao dịch.|Trạm sạc nhanh có mặt ở 63 tỉnh thành.|Luyện nói mỗi ngày, chấm phát âm ngay lập tức.",
+   "max": 80,
+   "list": {
+    "min": 0,
+    "max": 6
+   },
+   "optional": true,
+   "note": "dòng mô tả nhỏ dưới mỗi thẻ, cùng thứ tự với items"
+  },
+  {
+   "id": "counter_label",
+   "role": "label",
+   "sample": "Tin mới",
+   "max": 18,
+   "optional": true,
+   "note": "nhãn trên bộ đếm (bộ đếm tự đếm tới số thẻ)"
+  },
+  {
+   "id": "counter_note",
+   "role": "label",
+   "sample": "Trên 31 tin hôm nay",
+   "max": 26,
+   "optional": true
+  }
  ],
  "images": [],
  "brand": "none",
- "sfx": [{"at": 28, "type": "pop"}, {"at": 52, "type": "pop"}, {"at": 76, "type": "pop"}, {"at": 84, "type": "click"}]
- ,
+ "sfx": [
+  {
+   "at": 28,
+   "type": "pop"
+  },
+  {
+   "at": 52,
+   "type": "pop"
+  },
+  {
+   "at": 76,
+   "type": "pop"
+  },
+  {
+   "at": 84,
+   "type": "click"
+  }
+ ],
  "vi": {
-  "ten": "Chồng thẻ danh sách rơi lên, có bộ đếm",
-  "mo_ta": "Trang giấy sáng kiểu bản tin / hộp thư: tiêu đề trang ở trên, rồi 3-6 thẻ (số thứ tự #1, #2… + tiêu đề in đậm + dòng mô tả) lần lượt bay từ dưới lên xếp chồng, mỗi thẻ đáp xuống làm cả chồng nhún nhẹ, tiêu đề được tô bút dạ quang thoáng qua; bộ đếm số lớn nhảy từng số theo mỗi thẻ. Máy quay từ cận cảnh lùi dần ra để thấy cả chồng, cuối có vệt sáng lướt qua.",
-  "hop_khi": "Người nói liệt kê nhiều mục cùng loại mới tích lũy được: tin tức, bài viết, đơn hàng, email, lead, việc cần làm, kết quả tìm kiếm, tính năng mới; nói \"mỗi ngày có thêm…\", \"đã có 5 khách hàng…\", điểm tin, tổng hợp.",
-  "tranh_khi": "Các mục cần so sánh với nhau hoặc có số liệu biểu đồ; chỉ 1-2 mục; nội dung cảm xúc / con người; câu mục quá dài (> 60 ký tự).",
-  "nang_luong": "vua",
-  "chu_de": ["danh sách", "bản tin", "tin tức", "hộp thư", "tổng hợp", "đếm số", "tích lũy", "app", "feed"]
+  "ten": "Thẻ tin tức xếp chồng kèm bộ đếm số",
+  "mo_ta": "Nền mờ phía sau, tiêu đề bản tin và dòng mô tả ngắn đặt cố định ở góc trên bên trái đối diện với bộ đếm số lớn nhảy tăng dần ở góc trên bên phải. Các thẻ thông tin màu trắng bo góc lần lượt từ cạnh dưới bay vút lên xếp chồng nhún nảy, mỗi thẻ đáp xuống đẩy cả chồng thẻ trước lên cao hiển thị số thứ tự và nội dung tóm tắt. Nhịp chuyển động nhanh, dứt khoát và cuốn hút, tạo cảm giác cập nhật thông tin liên tục và dồn dập.",
+  "hop_khi": "Dùng khi tổng hợp các tin nóng trong ngày, đúc kết danh sách bài học quan trọng, liệt kê nhiều tính năng nổi bật hoặc tóm tắt các điểm then chốt với nhịp nói dồn dập, hào hứng. Phù hợp với các câu nói kiểu: 'Sau đây là 5 cập nhật AI chấn động nhất trong tuần qua mà bạn không thể bỏ lỡ', 'Mình đã đúc kết được 4 thói quen giúp tăng gấp đôi năng suất làm việc mỗi ngày', 'Dưới đây là 3 tin vui tài chính cực hot dành cho các bạn trẻ vừa nhận lương'.",
+  "mo_rong": "Đổi tin tức thành 3-5 ưu điểm vượt trội của sản phẩm -> dùng cho video bán hàng online hoặc review công nghệ; đổi nội dung thành các bước quy trình từ 1 đến 5 -> dùng cho video hướng dẫn nấu ăn, kinh nghiệm làm việc hoặc thủ tục pháp lý; đổi thành các cảnh báo sai lầm thường gặp -> dùng cho chuyên gia tài chính cá nhân, sức khỏe hoặc huấn luyện viên thể hình; đổi màu sắc thẻ và tiêu đề thành bảng tin du lịch với các địa điểm nổi bật -> dùng cho vlogger du lịch giới thiệu lịch trình ăn chơi.",
+  "nang_luong": "cao",
+  "chu_de": [
+   "tổng hợp tin tức",
+   "danh sách xếp chồng",
+   "bộ đếm số",
+   "công nghệ",
+   "kinh doanh",
+   "bán hàng",
+   "hướng dẫn quy trình",
+   "bài học đúc kết",
+   "top danh sách",
+   "tài chính"
+  ]
  },
  "backdrop": true
 }

@@ -97,21 +97,24 @@
   }
  ],
  "vi": {
-  "ten": "Lật thẻ 3D — tính năng lật ra con số kết quả",
-  "mo_ta": "Nền tối điện ảnh, 2–3 thẻ tối đứng trên mặt sàn bóng: mặt trước mỗi thẻ có giao diện app nhỏ (ô gõ lệnh, quy trình, ô tìm kiếm) cùng tên tính năng. Lần lượt từng thẻ ngả nhẹ ra sau rồi lật 180° quanh trục dọc, có vệt sáng lướt qua cạnh thẻ, bật hơi quá rồi đứng lại — mặt sau trắng sáng hiện CON SỐ rất to kèm nhãn giải thích. Kết thúc là một hàng thẻ trắng với các con số. Khung dọc: các thẻ nằm ngang xếp chồng từ trên xuống.",
-  "hop_khi": "Nói “tính năng/giải pháp này mang lại kết quả gì”: liệt kê 2–3 tính năng của app / sản phẩm / dịch vụ rồi chốt bằng số liệu (nhanh hơn 3 lần, giảm 40% chi phí, tiết kiệm 2 giờ/ngày); so sánh trước–sau bằng con số, báo cáo kết quả dự án, case study.",
-  "tranh_khi": "Không có con số cụ thể; chỉ có 1 ý hoặc hơn 3 ý; nội dung cảm xúc / đời thường không liên quan sản phẩm; video tone sáng nhẹ nhàng.",
+  "ten": "Lật thẻ 3D tiết lộ kết quả",
+  "mo_ta": "Trên nền tối chiều sâu, ba thẻ tính năng màu xám đen xếp dọc trên mặt sàn bóng với dòng tiêu đề lớn ở góc trên bên trái. Từng thẻ lần lượt ngả nhẹ rồi lật 180 độ chuyển sang mặt sau màu trắng nổi bật, khoe trọn con số kết quả ấn tượng cùng dòng giải thích ngắn gọn. Nhịp lật so le gãy gọn, dứt khoát và tạo điểm nhấn thị giác rõ ràng cho từng kết quả.",
+  "hop_khi": "Phù hợp cho đoạn tổng kết thành quả sau một thời gian, công bố chỉ số đo lường thực tế hoặc so sánh hiệu quả cải thiện của từng tính năng; nhịp thuyết phục, tự tin và mạch lạc. Ví dụ câu nói: 'Sau 3 tháng áp dụng, đây là ba con số chứng minh hiệu quả rõ rệt nhất.', 'Tốc độ tăng gấp ba lần, thời gian thao tác giảm một nửa mà độ chính xác gần như tuyệt đối.', 'Mỗi bước cải tiến đều mang lại một thay đổi bất ngờ cho công việc của bạn.'",
+  "mo_rong": "Đổi 3 thẻ thành 3 chỉ số phục hồi da (độ ẩm tăng 85%, mụn giảm 60%, da sáng sau 2 tuần) -> dùng cho review mỹ phẩm, spa, da liễu; Đổi thành 3 kết quả học tập (IELTS 7.5, thời gian ôn luyện giảm 50%, phản xạ 0.5s) -> dùng cho trung tâm tiếng Anh, gia sư, du học; Đổi thành 3 lợi ích đầu tư (lợi nhuận 15%/năm, thanh khoản 24h, chiết khấu 8%) -> dùng cho bán bất động sản, tài chính cá nhân; Đổi thành 3 chỉ số thể lực (giảm 5kg mỡ, tăng 3kg cơ, hạ nhịp tim nghỉ) -> dùng cho huấn luyện viên gym, dinh dưỡng, giảm cân; Đổi thành 3 ưu điểm dịch vụ (tiết kiệm chi phí, quy trình tự động, hỗ trợ 24/7) -> dùng cho giới thiệu dịch vụ doanh nghiệp, phần mềm B2B.",
   "nang_luong": "vua",
   "chu_de": [
-   "tính năng",
-   "kết quả",
-   "số liệu",
-   "so sánh",
-   "app",
-   "sản phẩm",
-   "AI",
-   "case study",
-   "tăng trưởng"
+   "lật thẻ 3d",
+   "tiết lộ số liệu",
+   "kết quả thực tế",
+   "tổng kết",
+   "chỉ số cải thiện",
+   "chứng minh hiệu quả",
+   "làm đẹp",
+   "giáo dục",
+   "tài chính",
+   "thể thao",
+   "bất động sản",
+   "kinh doanh"
   ]
  },
  "backdrop": true

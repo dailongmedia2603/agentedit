@@ -154,6 +154,32 @@ async function main() {
     record('Nạp sidecar đã biên dịch', false, String(e.stderr || e.message))
   }
 
+  // 2b) Bo tao am thanh earshot (sfx_gen + sidecar/vendor/earshot, 2026-10-18): render trong Python nhung, khong ghi
+  //     __pycache__ / cache numba vao trong app
+  console.log('\n[2b] Bộ tạo âm thanh earshot...')
+  try {
+    const out = py(
+      'import os, sys, sfx_gen as G\n' +
+        'w = G.render({"sound": "whoosh_fast/tight", "dur": 0.7, "apex": 0.45})\n' +
+        'k = G.render({"sound": "pluck/kalimba", "pitch": "E5"})\n' +
+        'nb = "numba" in sys.modules\n' +
+        'pyc = [d for d, _s, _f in os.walk(G.VENDOR) if d.endswith("__pycache__")]\n' +
+        'print("ES", len(G.sounds()), "| apex", round(w["sync_s"], 3), "| pitch", k["edits"]["pitch"]["ok"], ' +
+        '"| numba", nb, "| pycache", len(pyc), "| file", os.path.isfile(w["file"]))'
+    )
+    const m = /ES (\d+) \| apex ([\d.]+) \| pitch (\w+) \| numba (\w+) \| pycache (\d+) \| file (\w+)/.exec(out)
+    record(
+      'earshot: 185 tiếng, whoosh đỉnh đúng 0.45s, kalimba đúng nốt E5',
+      !!m && m[1] === '185' && Math.abs(Number(m[2]) - 0.45) < 0.006 && m[3] === 'True' && m[6] === 'True',
+      out.trim()
+    )
+    record('earshot: không ghi __pycache__ vào trong app', !!m && m[5] === '0', out.trim())
+    // numba: Mac ARM + Windows co wheel (nhanh ~25x); Mac Intel chay ban Python thuan (cham hon, van dung)
+    console.log(`  info  earshot numba: ${m ? m[4] : '?'}${process.arch === 'x64' && process.platform === 'darwin' ? ' (Mac Intel: không có numba — bình thường)' : ''}`)
+  } catch (e) {
+    record('earshot: bộ tạo âm thanh chạy được', false, String(e.stderr || e.message).slice(-600))
+  }
+
   // 3) Video thu + thi giac may
   console.log('\n[3] Thị giác máy...')
   const work = join(home, 'work')

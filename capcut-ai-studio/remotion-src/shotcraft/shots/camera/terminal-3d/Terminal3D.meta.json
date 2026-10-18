@@ -76,21 +76,23 @@
   }
  ],
  "vi": {
-  "ten": "Ba cửa sổ terminal 3D — máy quay bay qua từng bước lệnh",
-  "mo_ta": "Không gian tối có lưới sàn xanh chanh, 3 cửa sổ terminal lơ lửng ở các góc khác nhau với số bước 01/02/03 lớn phía sau. Máy quay dừng ở từng cửa sổ: lệnh được gõ từng ký tự, kết quả in ra từng dòng (biểu tượng xoay → dấu tick, thanh tiến trình chạy), rồi bay lùi ra thấy cả 3 cửa sổ và lao sang cửa sổ kế; cuối cùng nhãn HOÀN TẤT và tên kết quả phát sáng.",
-  "hop_khi": "Nói về lập trình, code, phần mềm, quy trình kỹ thuật 3 bước (khởi tạo → xây dựng → triển khai), làm web / app bằng AI, tự động hoá bằng dòng lệnh, đưa sản phẩm lên mạng; video dành cho dân công nghệ, developer.",
-  "tranh_khi": "Khán giả phổ thông không quen màn hình code; nội dung không phải quy trình nhiều bước; cảnh cần ngắn (shot dài ~8 giây); tone đời thường, cảm xúc.",
+  "ten": "Ba bước cửa sổ dòng lệnh không gian 3D",
+  "mo_ta": "Máy quay chuyển động lướt mượt mà trong không gian 3D nền tối, lần lượt lia và phóng gần vào ba cửa sổ dòng lệnh lập trình có số thứ tự bước lớn ở phía sau. Tại mỗi điểm dừng, từng câu lệnh tự động gõ ký tự và danh sách kết quả, thanh tiến trình hiển thị rõ ràng trước khi máy quay lùi lại rồi chuyển hướng mượt sang bước kế tiếp. Cửa sổ cuối cùng kết thúc bằng nhãn thông báo hoàn tất cùng tên miền kết quả sáng rực rỡ.",
+  "hop_khi": "Phù hợp để truyền tải hướng dẫn quy trình 3 bước triển khai nhanh, giải thích cách thức hoạt động của công nghệ, tự động hóa phần mềm hoặc chia sẻ bí quyết làm việc bài bản với nhịp độ dứt khoát, logic và mang lại độ tin cậy chuyên nghiệp. Ví dụ câu nói: 'Chỉ với 3 bước cực kỳ đơn giản, bạn đã xây dựng xong một hệ thống hoàn chỉnh', 'Đây là quy trình từ ý tưởng ban đầu đến lúc sản phẩm sẵn sàng phục vụ khách hàng', 'Để đưa website lên mạng internet một cách chuẩn chỉ, bạn chỉ cần làm đúng 3 điều này'.",
+  "mo_rong": "Đổi các lệnh terminal thành 3 bước chăm sóc da gồm Làm sạch, Cấp ẩm, Bảo vệ và kết quả là làn da rạng rỡ -> dùng cho video hướng dẫn làm đẹp, spa; đổi 3 cửa sổ thành 3 bước mua bất động sản an toàn gồm Chọn vị trí, Thẩm định pháp lý, Công chứng nhận sổ -> dùng cho video tư vấn nhà đất; đổi thành 3 bước setup studio gồm Đèn chiếu, Mic thu âm, Góc máy -> dùng cho video hướng dẫn sáng tạo nội dung; đổi thành quy trình chế biến món ăn 3 bước Sơ chế, Ướp sốt, Chiên không dầu -> dùng cho video ẩm thực F&B; đổi thành 3 bước nộp hồ sơ xin việc -> dùng cho video hướng dẫn tuyển dụng, sự nghiệp.",
   "nang_luong": "vua",
   "chu_de": [
-   "code",
-   "lập trình",
-   "terminal",
-   "quy trình",
-   "3 bước",
-   "phần mềm",
-   "triển khai",
-   "AI",
-   "công nghệ"
+   "cửa sổ dòng lệnh",
+   "không gian 3d",
+   "quy trình 3 bước",
+   "hướng dẫn từng bước",
+   "lập trình công nghệ",
+   "tự động hóa",
+   "phát triển website",
+   "công cụ trí tuệ nhân tạo",
+   "kinh doanh online",
+   "giải pháp kỹ thuật",
+   "hướng dẫn quy trình"
   ]
  },
  "backdrop": true

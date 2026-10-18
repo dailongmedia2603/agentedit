@@ -1317,7 +1317,9 @@ def build_spec(plan, log=None):
     lan cung ra mot ket qua, khong sua `plan` truyen vao. Khung (doc / ngang) lay tu plan["canvas"] — moi phep do
     khoi chu / bo cuc / ne mat ben trong theo dung khung do (canvas.use)."""
     import canvas
-    with canvas.use(*canvas.of_plan(plan)):
+    import sfx_gen
+    # bo tieng earshot cua video (B7 chon theo ngu canh) -> moi tieng tu gan trong luc dung lay tu bo nay
+    with canvas.use(*canvas.of_plan(plan)), sfx_gen.use((plan or {}).get("am_thanh")):
         spec, report = _build_spec(plan, log=log)
         # mau Kho Text bi bo vi khong con cho ngoai mat nguoi noi (khoi mau to hon chu thuong) -> dung lai voi cum do
         # la chu thuong (khong de mat ca cum chu, nhat la chu hook)
@@ -1558,7 +1560,13 @@ def _build_spec(plan, log=None):
     plan_guard.clear_over_inserts(p, changes)
 
     auds = []
+    import sfx_gen
     for i, a in enumerate(p.get("audio") or []):
+        if a.get("gen") is not None and not os.path.isfile(str(a.get("file") or "")):
+            # tieng earshot: file cache bi xoa / plan chua resolve -> tao lai (tat dinh, cung tieng)
+            if not sfx_gen.resolve(a):
+                changes.append("audio%d: khong tao duoc tieng %s -> bo" % (i, (a.get("gen") or {}).get("sound")))
+                continue
         if a.get("src_time") is not None:
             pref = "hook" if a.get("anchor") == "hook" else "body"
             t = providers._f(a.get("src_time"))
@@ -1567,6 +1575,9 @@ def _build_spec(plan, log=None):
                 changes.append("audio%d: gio nguon %.2fs da bi cat khoi timeline -> bo" % (i, t))
                 continue
             a["start"] = hit[0]
+        if a.get("gen") is not None and a.get("_sync"):
+            # AI khai THOI DIEM SU KIEN -> diem dong bo cua tieng (dinh whoosh / cuoi riser) roi dung luc do
+            a["start"] = round(max(0.0, providers._f(a.get("start")) - float(a["_sync"])), 3)
         if providers._f(a.get("start")) >= duration:
             changes.append("audio%d: ngoai video -> bo" % i)
             continue

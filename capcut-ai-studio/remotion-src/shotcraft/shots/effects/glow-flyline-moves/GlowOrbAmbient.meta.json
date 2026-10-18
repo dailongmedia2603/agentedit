@@ -20,11 +20,11 @@
  "brand": "optional",
  "sfx": [],
  "vi": {
-  "ten": "Thẻ kính mờ giữa quầng sáng trôi — trình phát",
-  "mo_ta": "Nền tối xanh đêm, ba quầng sáng lớn (xanh ngọc, xanh dương, cam san hô) trôi chậm phía sau một thẻ kính mờ giữa màn hình; màu sáng xuyên qua kính, viền thẻ hắt sáng theo quầng gần nhất. Trong thẻ giống trình phát nhạc/podcast: tiêu đề lớn hiện từng chữ từ mờ, câu phụ, dải sóng âm nhấp nhô và đồng hồ đếm ngược. Chuyển động rất chậm, êm, cuối cảnh đứng yên.",
-  "hop_khi": "Đoạn chậm, sâu lắng: giới thiệu podcast / tập mới / bài nhạc, chủ đề thiền, ngủ ngon, sức khỏe tinh thần, một câu nói cần ngẫm; mở đầu chương với không khí tĩnh, cao cấp kiểu sản phẩm công nghệ.",
-  "tranh_khi": "Khoảnh khắc năng lượng cao, sốc, hài; video tông sáng (giấy, trắng) — chuyển sáng↔tối gắt; câu dài hơn 1–2 dòng.",
+  "ten": "Thẻ podcast kính mờ phát sáng dịu",
+  "mo_ta": "Thẻ kính mờ bo góc nổi bật ở trung tâm trên phông nền tối sâu thẳm với các quầng sáng chuyển động trôi nhẹ nhàng. Nội dung trên thẻ hiển thị tiêu đề trắng tinh tế, sóng âm thanh dao động êm ả cùng bộ đếm thời gian dạng trình phát audio. Chuyển động vào và duy trì vô cùng mượt mà, tĩnh tại, mang lại cảm giác thư thái, cao cấp và sâu lắng.",
+  "hop_khi": "Phù hợp cho những khoảnh khắc tâm sự, chia sẻ bài học cuộc sống, bản tin sáng hoặc tối nhẹ nhàng, trích đoạn podcast hoặc lời khuyên chữa lành tâm hồn; nhịp điệu chậm rãi, ấm áp, sâu sắc. Ví dụ: 'Dành ra đúng năm phút mỗi ngày để tĩnh tâm và lắng nghe chính mình.', 'Đây là cuốn sách đã giúp mình vượt qua áp lực suốt những năm tháng tuổi trẻ.', 'Trước khi bắt đầu ngày mới bận rộn, hãy cho phép tâm trí được nghỉ ngơi đôi chút.'.",
+  "mo_rong": "Đổi tiêu đề và sóng âm thành trích đoạn sách nói, câu quote truyền cảm hứng -> Dùng cho kênh review sách và triết lý sống; thay nhãn và tên thành liệu trình thư giãn, tinh dầu -> Dùng cho spa, thẩm mỹ viện, chăm sóc da hoặc thiền định; đổi nội dung thành lời tâm sự quản lý chi tiêu cá nhân ban đêm -> Dùng cho chuyên gia tài chính chia sẻ thói quen sống; thay bằng thông tin ra mắt tập phát thanh hoặc bài hát mới -> Giới thiệu sản phẩm âm nhạc, nghệ thuật; đổi thành mẹo ngủ ngon và xả stress -> Dùng cho kênh sức khỏe tinh thần.",
   "nang_luong": "thap",
-  "chu_de": ["podcast", "âm nhạc", "thiền", "sức khỏe tinh thần", "trích dẫn", "app", "không khí", "tiêu đề"]
+  "chu_de": ["thẻ kính mờ", "ánh sáng cực quang", "podcast", "chữa lành", "chia sẻ cuộc sống", "sách nói", "thư giãn", "spa làm đẹp", "sức khỏe tinh thần", "audio player"]
  }
 }

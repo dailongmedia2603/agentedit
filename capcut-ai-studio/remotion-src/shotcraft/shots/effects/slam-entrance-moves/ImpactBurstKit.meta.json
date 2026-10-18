@@ -117,19 +117,22 @@
   }
  ],
  "vi": {
-  "ten": "Thẻ phương án chính đập vào giữa — hai thẻ bên bị hất ra",
-  "mo_ta": "Trang trắng sáng kiểu bảng giá: tiêu đề phía trên, hai thẻ trắng hai bên đã nằm sẵn, giữa là ô trống viền nét đứt. Thẻ chính màu xanh đậm (tên, con số lớn, 3 điểm nổi bật có dấu tích, nút xanh) lơ lửng sát ống kính, mờ, rồi ĐẬP xuống ô trống: thẻ bẹp rồi bật lại, vòng sóng xanh lan ra, mảnh giấy bắn tung, rung màn hình; sóng xung kích hất hai thẻ bên nghiêng ra rồi lắc về chỗ; nhãn 'PHỔ BIẾN NHẤT' bật lên trên thẻ.",
-  "hop_khi": "Giới thiệu gói / phương án / sản phẩm được khuyên chọn giữa 3 lựa chọn: 'gói Chuyên nghiệp là đáng tiền nhất', 'trong 3 cách thì cách thứ hai hiệu quả nhất'; bảng giá, so sánh 3 phiên bản, công bố lựa chọn tối ưu một cách mạnh mẽ.",
-  "tranh_khi": "Không có đúng 3 phương án để so; chỉ nói về một thứ; tone trầm, nhẹ nhàng; đã dùng cảnh đập/rung khác gần đó (tối đa 2 lần mỗi video).",
+  "ten": "Bảng so sánh ba gói dịch vụ dập thẻ trọng tâm",
+  "mo_ta": "Bố cục ba cột thẻ so sánh đặt trên nền mờ không gian làm việc, phía trên có nhãn danh mục và tiêu đề hướng dẫn chọn gói. Hai thẻ phụ trắng hai bên đã nằm sẵn, trong khi thẻ chính màu xanh đậm phóng to từ cận cảnh dập mạnh xuống ô giữa với lực nảy đàn hồi dứt khoát. Thẻ trung tâm nổi bật với nhãn phổ biến nhất, con số giá lớn, ba dòng tính năng tích xanh rõ ràng và nút bấm kêu gọi hành động bắt mắt.",
+  "hop_khi": "Dùng ở khoảnh khắc báo giá, so sánh các mức dịch vụ hoặc chốt sale, hướng người xem chọn gói tối ưu nhất được đề xuất. Nhịp điệu quyết đoán, dồn sự chú ý tuyệt đối vào giá trị cốt lõi, thích hợp với các câu nói: 'Chỉ với 299 cành mỗi tháng, đây là gói được nhiều người chọn nhất', 'Nếu bạn muốn đầy đủ tính năng mà vẫn tiết kiệm thì hãy chọn gói chuyên nghiệp', hoặc 'Xem ngay bảng giá chi tiết để chọn gói phù hợp với bạn'.",
+  "mo_rong": "Đổi giá tiền thành trọng lượng/kích cỡ và các dòng tính năng thành chi tiết sản phẩm -> so sánh các combo quà tặng hoặc set đồ ăn trong F&B; đổi 3 gói thành 3 hạn mức căn hộ/lợi nhuận cam kết -> báo giá các suất đầu tư bất động sản; đổi 3 gói thành các hạng thẻ thành viên Silver, Gold, Platinum -> bán gói tập gym, yoga hoặc thẻ spa; đổi 3 gói thành 3 chặng tour du lịch từ tiết kiệm đến VIP -> chào bán dịch vụ lữ hành; đổi 3 gói thành các lộ trình khóa học -> bán gói đào tạo online.",
   "nang_luong": "cao",
   "chu_de": [
    "bảng giá",
-   "so sánh",
-   "gói dịch vụ",
-   "lựa chọn",
-   "sản phẩm",
-   "khuyến nghị",
-   "danh sách"
+   "so sánh dịch vụ",
+   "báo giá",
+   "chốt sale",
+   "gói hội viên",
+   "thương mại điện tử",
+   "fnb",
+   "khóa học trực tuyến",
+   "bất động sản",
+   "thể thao"
   ]
  },
  "backdrop": true

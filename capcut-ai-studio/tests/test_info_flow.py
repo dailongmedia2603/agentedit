@@ -116,8 +116,9 @@ TRA_LOI = {
     # LUAT HOOK: B7 / R4 chua dat gi cho hook -> hook_rule nho AI bo sung dung phan thieu
     "Hook-FX": {"effects": [{"type": "shake", "source_id": "source_1", "src_start": 8.2, "src_end": 8.8, "anchor": "hook",
                              "why": "cu soc 'dung lam the' can rung manh"}]},
-    "Hook-SFX": {"audio": [{"sfx_id": "kit-boom", "source_id": "source_1", "src_time": 8.1, "anchor": "hook",
-                            "purpose": "punch", "why": "dam mo hook"}]},
+    # bo tao am thanh earshot (sfx_gen): hook chon tieng TAO, khong lay tieng khong loi cua kho
+    "Hook-SFX": {"audio": [{"gen": {"sound": "pro_impact/short"}, "source_id": "source_1", "src_time": 8.1,
+                            "anchor": "hook", "purpose": "punch", "why": "dam mo hook"}]},
 }
 NHAN = {}      # step_label -> payload user da parse
 SYS = {}       # step_label -> system prompt
@@ -171,8 +172,15 @@ try:
     check("spec: hook co ca hieu ung hinh + SFX", any(e.get("start", 99) < _hk_end for e in _sp0.get("effects") or [])
           and any(a.get("start", 99) < _hk_end for a in _sp0.get("audio") or []), (_sp0.get("effects"), _sp0.get("audio")))
     _hs = NHAN.get("Hook-SFX", {})
-    check("Hook-SFX nhan khoanh khac hook + kho SFX + hieu ung hinh da co",
-          (_hs.get("hook") or {}).get("anchor") == "hook" and _hs.get("sfx_catalog") and _hs.get("hieu_ung_hinh"), _hs)
+    check("Hook-SFX nhan khoanh khac hook + bo tao am thanh (danh muc + bo tieng video) + hieu ung hinh da co",
+          (_hs.get("hook") or {}).get("anchor") == "hook" and _hs.get("gen_catalog") and _hs.get("bo_am_thanh")
+          and _hs.get("hieu_ung_hinh"), _hs)
+    check("Hook-SFX: kho chi con tieng co giong noi (kit-boom khong loi bi loai)", _hs.get("sfx_catalog") == [], _hs.get("sfx_catalog"))
+    check("SFX hook = tieng TAO earshot", any(a.get("anchor") == "hook" and (a.get("gen") or {}).get("sound") == "pro_impact/short"
+                                               for a in _p0.get("audio") or []), _p0.get("audio"))
+    check("plan co bo tieng cua video (am_thanh, mac dinh theo tone khi B7 khong chon)",
+          ((_p0.get("am_thanh") or {}).get("bo") or {}).get("pop") and (_p0.get("am_thanh") or {}).get("nguon") == "mac_dinh",
+          _p0.get("am_thanh"))
     check("_pipeline ghi ket qua luat hook", (_p0.get("_pipeline") or {}).get("luat_hook"), _p0.get("_pipeline"))
     check("R4 thiet ke dung duoc -> khong goi R4 du phong", "R4-visual" not in THU_TU, THU_TU)
 
@@ -260,6 +268,8 @@ try:
     check("B7 thay meme cua B6", [m.get("meme_id") for m in da_co.get("meme", [])] == ["wow-1"], da_co.get("meme"))
     check("B7 biet hook", (b7.get("hook") or {}).get("src_start") == 8.0)
     check("B7 co story_arc + tone", (b7.get("cau_chuyen") or {}).get("tone") == "nghiem tuc chia se")
+    check("B7 nhan luat + danh muc bo tao am thanh earshot", "BO TAO AM THANH" in SYS.get("B7-audio", "")
+          and "whoosh_fast/tight" in SYS.get("B7-audio", ""))
     check("B7 co kieu SFX video mau", "audio" in (b7.get("phong_cach_mau") or {}))
     check("B7 KHONG nhan phan caption video mau", "captions" not in (b7.get("phong_cach_mau") or {}))
 

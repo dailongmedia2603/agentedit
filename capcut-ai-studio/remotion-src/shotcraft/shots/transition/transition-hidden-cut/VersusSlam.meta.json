@@ -135,21 +135,23 @@
   }
  ],
  "vi": {
-  "ten": "Hai poster đối đầu lao vào nhau — VS",
-  "mo_ta": "Mở bằng câu hỏi chữ đen lớn trên nền giấy, một đường mực xéo mọc ra; rồi hai nửa màn hình (đen 'cách cũ' và màu nhấn 'cách mới') tăng tốc lao vào nhau theo đường cắt xéo, va chạm: chớp trắng, rung màn hình, con dấu tròn 'VS' đóng xuống, vòng sóng xung kích. Mỗi bên có con số rất lớn + đơn vị, câu mô tả và các mục (bên cũ gạch ngang, bên mới dấu tích); cuối hiện thanh kết luận. Khung dọc: hai nửa trên/dưới đập vào nhau.",
-  "hop_khi": "Người nói SO SÁNH hai phương án có số liệu: trước/sau, cũ/mới, mình/đối thủ, thủ công/tự động, tốn kém/tiết kiệm (\"trước đây mất 14 ngày, giờ chỉ 1 buổi\"); mở đầu phần so sánh, đập tan một quan niệm cũ.",
-  "tranh_khi": "Không có hai phe đối lập rõ ràng (chữ VS sẽ vô nghĩa); không có con số; tone nhẹ nhàng, cảm xúc sâu lắng.",
+  "ten": "So sánh đối đầu va chạm nảy lửa",
+  "mo_ta": "Mở đầu bằng câu hỏi dẫn dắt in đậm trên nền giấy sáng cùng một vệt mực xéo sắc nét xẻ đôi khung hình. Ngay sau đó, hai khối màu đen và cam đỏ mang hai phương án đối lập tăng tốc lao sầm vào nhau, va chạm tạo hiệu ứng chớp sáng rung giật và đóng con dấu tròn 'VS' ngay tại đường phân cách. Hai bên làm nổi bật số liệu tương phản cùng các gạch đầu dòng tóm tắt, trước khi cố định lại bằng thanh kết luận bo góc ở đáy với nhịp dồn dập, mạnh mẽ.",
+  "hop_khi": "Dùng khi người nói so sánh triệt để giữa cách làm cũ và cách làm mới, đối đầu giữa sản phẩm thường với sản phẩm cao cấp, hoặc phá vỡ lối mòn tốn kém để làm bật lên giải pháp đột phá; cảm xúc kịch tính, dứt khoát và thuyết phục tức thì. Phù hợp với các câu nói như: 'Tại sao phải tốn 14 ngày làm thủ công trong khi bạn chỉ mất một buổi chiều?', 'Cách làm truyền thống đang khiến bạn lãng phí bao nhiêu nguồn lực so với giải pháp này?', 'Cùng một mức đầu tư, đây là sự khác biệt một trời một vực giữa hai lựa chọn...'.",
+  "mo_rong": "Đổi thời gian thực hiện thành chi phí tự học vs học có kèm cặp 1:1 -> giáo dục, kích cầu đăng ký khóa học chuyên sâu; đổi ăn kiêng kham khổ vs thực đơn dinh dưỡng khoa học kèm số cân nặng thay đổi -> sức khỏe / fitness, quảng bá gói huấn luyện; đổi chăm sóc da tại nhà vs liệu trình công nghệ cao tại viện thẩm mỹ -> spa / làm đẹp, thuyết phục khách hàng trải nghiệm dịch vụ; đổi vận hành thủ công nhiều nhân sự vs ứng dụng phần mềm tự động hóa -> công nghệ / B2B, bán giải pháp phần mềm doanh nghiệp; đổi chi phí và rủi ro tự túc vs tiện ích của tour trọn gói -> du lịch, bán tour du lịch.",
   "nang_luong": "cao",
   "chu_de": [
    "so sánh",
-   "trước sau",
    "đối đầu",
-   "VS",
-   "số liệu",
-   "cũ mới",
-   "tiết kiệm",
-   "AI",
-   "năng suất"
+   "versus",
+   "cũ và mới",
+   "chuyển cảnh kịch tính",
+   "tối ưu chi phí",
+   "giải pháp",
+   "kinh doanh",
+   "giáo dục",
+   "làm đẹp",
+   "công nghệ"
   ]
  },
  "backdrop": false

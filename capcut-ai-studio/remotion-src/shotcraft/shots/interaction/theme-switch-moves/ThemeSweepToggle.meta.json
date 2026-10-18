@@ -20,11 +20,11 @@
  "brand": "optional",
  "sfx": [{"at": 8, "type": "click"}, {"at": 14, "type": "whoosh"}, {"at": 78, "type": "ding"}],
  "vi": {
-  "ten": "Bật chế độ tối — đường quét ngày sang đêm",
-  "mo_ta": "Cận cảnh công tắc mặt trời/mặt trăng trên thanh đầu một ứng dụng lịch tuần màu sáng: con trỏ bấm, núm gạt sang mặt trăng; một đường ranh giới nghiêng 15° có viền sáng cam như hoàng hôn quét từ phải sang trái, chỗ nó đi qua cả giao diện lẫn nền đổi sang bản tối ban đêm có sao, đồng thời máy quay lùi ra toàn cảnh lịch; quét xong, ô 'hôm nay', vạch giờ hiện tại và viền cửa sổ sáng lên.",
-  "hop_khi": "Nói về chế độ tối / dark mode, đổi giao diện, tùy chỉnh app; quản lý lịch, sắp xếp công việc trong tuần; câu chuyển 'từ ngày sang đêm', 'làm việc cả ngày lẫn đêm'.",
-  "tranh_khi": "Nội dung không liên quan app / phần mềm / lịch; đã dùng một cảnh đổi giao diện khác trong video (chỉ nên dùng 1 lần).",
+  "ten": "Gạt công tắc quét đổi giao diện",
+  "mo_ta": "Mở đầu cận cảnh góc trên giao diện sáng với con trỏ bấm chuyển nút gạt sang chế độ ban đêm. Ngay sau đó máy quay lùi dần ra toàn cảnh cùng vệt sáng cam ấm quét nghiêng 15 độ từ phải sang trái, biến đổi mượt mà toàn bộ bảng lịch trình sang nền tối huyền bí lấp lánh sao đêm. Bố cục hiển thị lưới lịch tuần trực quan với các thẻ công việc nhiều màu sắc, nhịp chuyển động êm ái và hiện đại.",
+  "hop_khi": "Phù hợp khi người nói muốn minh họa sự chuyển đổi trạng thái ngoạn mục (ngày sang đêm, làm việc sang nghỉ ngơi, thủ công sang tự động), giới thiệu tính năng cá nhân hóa ứng dụng hoặc giải thích cách sắp xếp lịch trình bận rộn. Cảm xúc nhẹ nhàng, thông minh và công nghệ. Ví dụ câu nói: \"Chỉ cần một thao tác gạt nhẹ, toàn bộ hệ thống chuyển sang chế độ làm việc ban đêm\", \"Lịch trình một tuần của mình luôn được phân bổ cực kỳ khoa học như thế này\", \"Sau 18 giờ tối, mình tự động bật chế độ thư giãn để tái tạo năng lượng\".",
+  "mo_rong": "Đổi các thẻ lịch trình thành thực đơn dinh dưỡng theo ngày -> dùng cho F&B, giảm cân hoặc chế độ ăn kiêng; đổi giao diện ứng dụng thành phòng ốc bật tắt đèn nghệ thuật -> dùng cho thiết kế nội thất, bất động sản thông minh; đổi các khung giờ thành lộ trình tiết học trong tuần -> dùng cho giáo dục, luyện thi; đổi nội dung thẻ thành quy trình dưỡng da sáng và tối -> dùng cho spa, mỹ phẩm; đổi thành lịch phân ca trực của đội ngũ nhân sự -> dùng cho tuyển dụng, quản trị doanh nghiệp.",
   "nang_luong": "vua",
-  "chu_de": ["chế độ tối", "giao diện", "app", "lịch", "kế hoạch", "năng suất"]
+  "chu_de": ["giao diện ứng dụng", "công tắc chuyển đổi", "chế độ tối", "lịch làm việc", "quản lý thời gian", "công nghệ", "năng suất", "trước và sau", "chuyển ý", "lịch trình"]
  }
 }

@@ -5,7 +5,10 @@ export const MOTION_STAGES: { id: string; label: string }[] = [
   { id: 'prepare', label: 'Chuẩn bị' },
   { id: 'brand', label: 'Tìm hiểu thương hiệu' },
   { id: 'idea', label: 'Lên ý tưởng & kịch bản' },
+  // 'images' + 'sound': chi quy trinh motion-video-director (engine 'mvd', motion/mvd.ts)
+  { id: 'images', label: 'Tạo ảnh AI' },
   { id: 'voice', label: 'Tạo giọng đọc' },
+  { id: 'sound', label: 'Nhạc & âm thanh' },
   { id: 'build', label: 'Dựng chuyển động' },
   { id: 'review', label: 'Tự kiểm tra & sửa' },
   { id: 'final', label: 'Xuất video hoàn chỉnh' },
@@ -102,6 +105,7 @@ export function emptyBrief(): MotionBrief {
         duration: last.duration || base.duration,
         language: last.language || base.language,
         videoType: last.videoType || base.videoType,
+        ...(last.engine === 'mvd' ? { engine: 'mvd' as const } : {}),
         voice: { ...base.voice, enabled: last.voice?.enabled ?? true, voiceId: last.voice?.voiceId || '', voiceName: last.voice?.voiceName || '', speed: last.voice?.speed || 1 }
       }
     }
@@ -115,7 +119,7 @@ export function rememberBrief(b: MotionBrief): void {
   try {
     localStorage.setItem(
       LAST_KEY,
-      JSON.stringify({ aspect: b.aspect, duration: b.duration, language: b.language, videoType: b.videoType, voice: { enabled: b.voice.enabled, voiceId: b.voice.voiceId, voiceName: b.voice.voiceName, speed: b.voice.speed } })
+      JSON.stringify({ aspect: b.aspect, duration: b.duration, language: b.language, videoType: b.videoType, engine: b.engine, voice: { enabled: b.voice.enabled, voiceId: b.voice.voiceId, voiceName: b.voice.voiceName, speed: b.voice.speed } })
     )
   } catch {
     /* bo qua */

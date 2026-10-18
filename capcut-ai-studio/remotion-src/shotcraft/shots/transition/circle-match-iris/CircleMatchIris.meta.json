@@ -151,20 +151,22 @@
   }
  ],
  "vi": {
-  "ten": "Bảng xếp hạng mở vòng tròn thành biểu đồ % (chuyển cảnh khớp hình)",
-  "mo_ta": "Nền tối xanh chanh: bảng xếp hạng 5 dòng (thứ hạng, avatar tròn, tên, số liệu) hiện lên, các dòng khác tối đi, avatar xanh dạ quang của dòng giữa đập 2 nhịp; rồi chính avatar đó nở ra thành vòng tròn và mở toang màn hình sang cảnh mới: một vòng tiến độ có mặt đồng hồ chạy tới X%, số ở giữa đếm lên, bên cạnh hiện tiêu đề kết luận, 3 chỉ số và viên nhãn chốt.",
-  "hop_khi": "Nói về thứ hạng / bảng xếp hạng rồi đi sâu vào số liệu của một người hay sản phẩm: tiến độ mục tiêu, KPI, % hoàn thành, thành tích tuần / tháng, 'mình đang đứng thứ 3 và đã đạt 87% mục tiêu'; dashboard, app theo dõi, thống kê kênh.",
-  "tranh_khi": "Không có số liệu phần trăm / tiến độ; nội dung cảm xúc, câu chuyện không liên quan dữ liệu; video tone sáng nhẹ nhàng.",
+  "ten": "Bảng xếp hạng chuyển cảnh vòng tiến độ",
+  "mo_ta": "Bảng xếp hạng 5 dòng phong cách tối màu hiện lên với các chỉ số, trong đó dòng thành tích cá nhân được viền xanh neon nổi bật. Avatar của dòng này lập tức phóng to thành một vòng tròn chuyển cảnh mượt sang vòng tiến độ đồng hồ chạy số phần trăm tăng vọt lên 87%. Phần dưới hiện rõ tiêu đề động viên cùng 3 cột số liệu thống kê chi tiết và thanh thông báo mục tiêu kế tiếp.",
+  "hop_khi": "Phù hợp khi người nói khoe thành tích cá nhân, tổng kết kết quả thi đua, khích lệ người xem bứt phá về đích hoặc chia sẻ cột mốc tiến bộ ấn tượng. Hợp với nhịp nói truyền cảm hứng, tự hào, hào hứng và thúc đẩy hành động. Ví dụ: 'Chỉ còn một chút xíu nữa thôi là chúng ta đã hoàn thành mục tiêu của tháng', 'Nhờ kiên trì mỗi ngày mà mình đã leo lên top đầu bảng xếp hạng', 'Nhìn lại kết quả 6 tuần qua, mình thực sự tự hào về sự bứt phá này'.",
+  "mo_rong": "Đổi bảng xếp hạng doanh số nội bộ và vòng tiến độ KPI -> hội thảo kinh doanh tôn vinh nhân viên xuất sắc; đổi thành bảng xếp hạng giảm cân và tỷ lệ mỡ cơ thể -> huấn luyện viên thể hình khoe tiến độ học viên; đổi thành điểm thi thử và phần trăm hoàn thành giáo trình -> gia sư luyện thi đại học khích lệ học sinh; đổi thành bảng xếp hạng lượt xem và tiến độ kênh -> chuyên gia sáng tạo nội dung chia sẻ tăng trưởng mạng xã hội; đổi thành tiến độ gom đơn hàng và số lượng còn lại -> livestream bán hàng tạo cảm giác khan hiếm.",
   "nang_luong": "cao",
   "chu_de": [
    "bảng xếp hạng",
-   "số liệu",
-   "tiến độ",
-   "phần trăm",
-   "mục tiêu",
-   "dashboard",
-   "KPI",
-   "chuyển cảnh"
+   "vòng tiến độ",
+   "chuyển cảnh iris",
+   "kết quả thi đua",
+   "tổng kết thành tích",
+   "động lực bứt phá",
+   "doanh số kpi",
+   "phát triển bản thân",
+   "thể hình giảm cân",
+   "chỉ số đo lường"
   ]
  },
  "backdrop": true

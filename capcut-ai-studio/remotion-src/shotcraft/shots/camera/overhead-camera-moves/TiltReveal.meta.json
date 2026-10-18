@@ -90,20 +90,22 @@
   }
  ],
  "vi": {
-  "ten": "Dashboard nằm ngửa ngóc dậy — máy quay ngẩng lên lộ bảng số liệu",
-  "mo_ta": "Nền xanh đêm; mở đầu chỉ thấy một dải sáng mảnh như đường chân trời (mép trên của một trang dashboard đang nằm ngửa). Máy quay ngẩng lên, trang dựng thẳng dậy đầy khung với vệt phản chiếu lướt qua: tiêu đề lớn kèm con số tô màu, biểu đồ vùng phát sáng đi lên được vẽ dần với chấm sáng ở đỉnh, và 1-3 ô số liệu to.",
-  "hop_khi": "Nhắc tới kết quả kinh doanh, doanh thu / người dùng / tăng trưởng, báo cáo, KPI, số liệu của app hay dự án; mở đầu phần \"kết quả đạt được\"; video về dữ liệu, SaaS, marketing, tài chính.",
-  "tranh_khi": "Số liệu đang GIẢM (biểu đồ luôn đi lên); không có con số cụ thể; tone đời thường, cảm xúc; đã dùng một cảnh mở màn kiểu máy quay lớn khác ngay trước đó.",
-  "nang_luong": "vua",
+  "ten": "Bảng số liệu dựng góc nghiêng 3D",
+  "mo_ta": "Mở đầu từ góc máy cực thấp nhìn tấm bảng điều khiển nằm phẳng trong không gian văn phòng tối với đường chân trời phát sáng tinh tế. Máy quay ngửa lên mượt mà đồng thời tấm bảng 3D dựng đứng đối diện người xem kèm vệt ánh kim phản chiếu lướt qua mặt kính bóng bẩy. Tiêu đề nổi bật cùng con số phần trăm phát sáng, đồ thị tăng trưởng dạng sóng uốn lượn đi lên và ba dòng chỉ số thống kê sắc nét bên dưới, nhịp chuyển động đĩnh đạc và uy tín.",
+  "hop_khi": "Phù hợp nhất khi người nói công bố kết quả kinh doanh đột phá, báo cáo tài chính, tổng kết chiến dịch hay đưa ra bằng chứng số liệu thuyết phục để tạo dựng niềm tin. Cảm xúc tự hào, đanh thép và quyền lực. Ví dụ câu nói: \"Doanh thu tháng vừa rồi của cả team đã tăng trưởng ngoài sức tưởng tượng\", \"Đây là những con số thực tế chứng minh phương pháp này hiệu quả\", \"Chỉ sau một quý áp dụng, lượng đơn hàng và chỉ số hài lòng đều tăng vọt\".",
+  "mo_rong": "Đổi số liệu doanh thu thành số cân nặng đã giảm và số đo vòng eo -> dùng cho thẩm mỹ viện, huấn luyện viên thể hình, gym; đổi biểu đồ thành tỷ suất sinh lời theo tháng -> dùng cho tài chính cá nhân, chứng khoán, đầu tư bất động sản; đổi các dòng chỉ số thành điểm số thi cử và tỷ lệ học viên đỗ visa -> dùng cho trung tâm ngoại ngữ, tư vấn du học; đổi thành số lượt tiếp cận, tương tác và người theo dõi mới -> dùng cho marketing, sáng tạo nội dung; đổi thành số người dùng mới và lượt tải ứng dụng -> dùng cho công nghệ, startup.",
+  "nang_luong": "cao",
   "chu_de": [
-   "dashboard",
-   "số liệu",
-   "tăng trưởng",
-   "doanh thu",
-   "báo cáo",
-   "KPI",
-   "biểu đồ",
-   "app"
+   "báo cáo doanh thu",
+   "bảng điều khiển",
+   "số liệu tăng trưởng",
+   "chỉ số kinh doanh",
+   "biểu đồ xu hướng",
+   "tài chính",
+   "góc quay 3D",
+   "thành tích",
+   "marketing",
+   "chuyên gia"
   ]
  },
  "backdrop": true

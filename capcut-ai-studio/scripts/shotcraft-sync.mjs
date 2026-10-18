@@ -57,7 +57,7 @@ for (const f of walk(shotsDir).filter((p) => p.endsWith('.meta.json')).sort()) {
     if (!IMG_ROLES.has(im.role)) err(`o anh ${im.id}: role '${im.role}' sai`)
   }
   for (const x of m.sfx || []) if (!SFX.has(x.type) || !(x.at >= 0)) err(`sfx sai: ${JSON.stringify(x)}`)
-  for (const k of ['ten', 'mo_ta', 'hop_khi', 'tranh_khi', 'nang_luong', 'chu_de']) if (!m.vi?.[k]) err(`vi.${k} thieu`)
+  for (const k of ['ten', 'mo_ta', 'hop_khi', 'mo_rong', 'nang_luong', 'chu_de']) if (!m.vi?.[k]) err(`vi.${k} thieu`)
   metas.push({ ...m, _file: relative(base, tsx).replace(/\\/g, '/').replace(/\.tsx$/, '') })
 }
 const seen = new Map()

@@ -19,11 +19,11 @@
  "brand": "optional",
  "sfx": [{"at": 20, "type": "typing"}, {"at": 88, "type": "swoosh"}],
  "vi": {
-  "ten": "Bản vẽ phác thảo hóa thành giao diện thật",
-  "mo_ta": "Nền giấy xanh nhạt có lưới chấm như bản thiết kế. Các đường mảnh xanh xám tự vẽ ra bố cục một ứng dụng / dashboard (thanh bên, thanh trên, các thẻ với biểu đồ, thanh tiến độ, lưới nhiệt) theo từng nhóm; rồi một vạch sáng màu hổ phách quét từ trái sang phải, chỗ nào vạch đi qua thì bản phác thảo biến thành giao diện thật đầy đủ màu, chữ và số.",
-  "hop_khi": "Nói về quá trình thiết kế → sản phẩm thật, xây dựng app / phần mềm / website, \"từ ý tưởng thành hiện thực\", ra mắt giao diện mới, giới thiệu các tính năng trên dashboard của sản phẩm.",
-  "tranh_khi": "Không liên quan sản phẩm số; video tông tối; cần đập mạnh nhanh (cảnh chậm ~4 giây mới hoàn chỉnh); đã dùng một cảnh 'cả bức tường thẻ sáng lên' khác trong video.",
+  "ten": "Phác thảo wireframe chuyển bảng điều khiển",
+  "mo_ta": "Nền mờ phủ lớp hiệu ứng đồ họa vẽ nét wireframe tự phác thảo khung lưới gồm tiêu đề và 6 ô thẻ biểu đồ, chỉ số. Một luồng quét sáng lướt ngang biến toàn bộ khung dây thành giao diện bảng điều khiển hoàn chỉnh với thẻ trắng nổi, số liệu đậm nét và đồ thị màu sắc trực quan. Nhịp chuyển động mượt mà, biến chuyển kỳ ảo từ bản vẽ kỹ thuật sang giao diện số liệu thành phẩm.",
+  "hop_khi": "Phù hợp khi người nói công bố kết quả tổng quan, chứng minh số liệu kinh doanh thực tế, giới thiệu tính năng phần mềm hoặc chuyển từ khâu lên kế hoạch sang kết quả vận hành hoàn chỉnh. Hợp với tông giọng tin cậy, tự hào, thuyết phục; ví dụ: 'Và đây là toàn bộ kết quả kinh doanh tháng vừa qua', 'Từ bản thiết kế sơ khai đến một hệ thống tự động hoàn chỉnh', 'Cùng nhìn qua những con số biết nói sau chiến dịch vừa rồi'.",
+  "mo_rong": "Đổi 6 chỉ số thành doanh thu/đơn hàng/chi phí và đổi màu biểu đồ sang xanh lá -> báo cáo tài chính kinh doanh online; đổi biểu đồ thành lộ trình điều trị và điểm cải thiện da -> spa làm đẹp và thẩm mỹ; đổi thành diện tích/giá bán/tỷ lệ lấp đầy -> phân tích dự án bất động sản; đổi thành calo tiêu hao/cân nặng/thời gian tập -> tổng kết tiến độ huấn luyện viên thể hình; đổi thành số lượng hồ sơ/tỷ lệ trúng tuyển/KPI đạt được -> báo cáo tuyển dụng và nhân sự.",
   "nang_luong": "vua",
-  "chu_de": ["thiết kế", "app", "phần mềm", "dashboard", "giao diện", "từ ý tưởng đến sản phẩm", "ra mắt", "website"]
+  "chu_de": ["giao diện", "bảng điều khiển", "dashboard", "wireframe", "báo cáo số liệu", "kinh doanh", "công nghệ", "saas", "tài chính", "bất động sản", "phân tích dữ liệu", "kết quả"]
  }
 }

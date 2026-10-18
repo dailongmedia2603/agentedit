@@ -101,20 +101,23 @@
   }
  ],
  "vi": {
-  "ten": "Không gian 3D — bay qua 3 thẻ bước rồi tổng kết",
-  "mo_ta": "Nền tối điện ảnh có bụi sáng 3D. Ba thẻ lớn (số 01/02/03, tên bước chữ to, câu mô tả, vạch tiến độ vàng) nằm rải rác trong không gian; camera bay từ thẻ này sang thẻ khác — thế giới xoay nghiêng 38°, rồi cả khung hình xoay 90° để dựng thẳng thẻ thứ ba — có nhoè chuyển động. Cuối cùng camera kéo ra thấy cả ba thẻ cùng lúc và câu tổng kết serif lớn hiện từng từ.",
-  "hop_khi": "Người nói trình bày quy trình / lộ trình / phương pháp đúng 3 bước hoặc 3 ý chính (vd \"bước 1… bước 2… bước 3\", \"3 điều bạn cần biết\"), giới thiệu 3 giai đoạn của dự án, 3 tính năng chính; đoạn tóm tắt cấu trúc bài nói kéo dài khoảng 7 giây.",
-  "tranh_khi": "Nội dung không đúng 3 ý; câu nói ngắn dưới 5 giây; cần hiển thị ảnh / giao diện thật; tone vui tươi sáng màu.",
+  "ten": "Camera 3D lướt qua lộ trình ba bước",
+  "mo_ta": "Không gian 3D nền tối điện ảnh điểm xuyết bụi sáng chuyển động, chứa ba thẻ thông tin bo góc cao cấp có chữ số thứ tự mờ chìm phía sau tiêu đề và thanh tiến độ mảnh. Ống kính máy quay lướt bay và xoay góc nghiêng mượt mà trong không gian ba chiều lần lượt qua thẻ bước 1, thẻ bước 2 rồi lật góc dựng thẳng thẻ bước 3. Cuối cùng, camera kéo lùi ra xa bao quát trọn vẹn cả ba thẻ lơ lửng đa chiều cùng tiêu đề tổng kết xuất hiện trang trọng ở góc dưới màn hình theo tiết tấu đĩnh đạc, sang trọng.",
+  "hop_khi": "Rất thích hợp khi diễn giả trình bày một quy trình chiến lược, đúc kết bài học theo các giai đoạn then chốt, vạch ra lộ trình phát triển bản thân, kế hoạch kinh doanh hoặc lộ trình dịch vụ trọn gói. Phù hợp cảm xúc truyền cảm hứng, chuyên nghiệp, uy tín, đĩnh đạc và mang tính định hướng cao. Ví dụ câu nói: 'Để biến một ý tưởng sơ khai thành cỗ máy kinh doanh tự vận hành, bạn bắt buộc phải đi qua 3 bước cốt lõi này', 'Đây là lộ trình 3 giai đoạn giúp mình xây dựng kênh từ con số 0 lên trăm ngàn follower', 'Toàn bộ quy trình chăm sóc và trẻ hóa da chuẩn y khoa tại viện sẽ bao gồm 3 bước sau'.",
+  "mo_rong": "Đổi 3 bước thành 3 giai đoạn mua bán bất động sản an toàn (Kiểm tra pháp lý - Đàm phán giá - Công chứng sang tên) -> dùng cho video tư vấn môi giới nhà đất; đổi 3 bước thành 3 liệu trình chăm sóc da (Thải độc - Điện di - Khóa ẩm) -> dùng cho video thẩm mỹ, nha khoa, làm đẹp; đổi 3 bước thành 3 kỹ năng cốt lõi cho người đi làm (Tư duy dữ liệu - Làm chủ AI - Thuyết trình thuyết phục) -> dùng cho video giáo dục, phát triển sự nghiệp; đổi 3 bước thành 3 gói giải pháp dịch vụ (Khởi động - Tăng tốc - Đột phá) -> dùng cho video bán hàng dịch vụ B2B, tư vấn chiến lược; đổi 3 bước thành lịch trình 3 ngày trải nghiệm vùng đất mới -> dùng cho video review du lịch, khám phá ẩm thực.",
   "nang_luong": "vua",
   "chu_de": [
-   "3 bước",
+   "không gian 3D",
+   "lộ trình 3 bước",
    "quy trình",
-   "lộ trình",
-   "danh sách",
-   "phương pháp",
-   "tổng kết",
-   "3D",
-   "chương mới"
+   "chiến lược",
+   "hướng dẫn từng bước",
+   "kinh doanh",
+   "giáo dục",
+   "bất động sản",
+   "phát triển bản thân",
+   "tổng quan",
+   "cinematic"
   ]
  },
  "backdrop": true

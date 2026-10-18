@@ -17,11 +17,11 @@
  "brand": "optional",
  "sfx": [{"at": 4, "type": "riser"}, {"at": 60, "type": "swoosh"}],
  "vi": {
-  "ten": "Đèn quét tím đánh thức giao diện trong bóng tối",
-  "mo_ta": "Phông đen hoàn toàn; một tấm giao diện phần mềm nghiêng chéo trong không gian 3D chỉ hiện ra ở nơi luồng sáng chiếu tới. Một vệt sáng tím-hồng rực, nhoè, chạy đều từ trái sang phải sát mép trên tấm giao diện, lướt qua logo làm nó sáng viền, tới mép phải thì bật một vệt sáng dọc; ánh sáng đi tới đâu giao diện tỉnh dậy tới đó, đi qua rồi thì chìm lại vào bóng tối.",
-  "hop_khi": "Mở màn bí ẩn khi giới thiệu một app / phần mềm / nền tảng mới (\"và đây là…\"), teaser ra mắt sản phẩm số, đoạn chuyển sang phần demo; tone tối, công nghệ, sang trọng.",
-  "tranh_khi": "Cần người xem đọc thông tin cụ thể (giao diện chỉ thấy một phần, phần lớn chìm trong tối); tone sáng vui tươi; nội dung không liên quan phần mềm.",
-  "nang_luong": "thap",
-  "chu_de": ["app", "phần mềm", "ra mắt", "teaser", "giao diện", "bí ẩn", "công nghệ", "ánh sáng"]
+  "ten": "Quét sáng giao diện 3D trong tối",
+  "mo_ta": "Một tấm bảng hiển thị nghiêng chéo 3D nổi bật giữa không gian tối, chỉ hé lộ chi tiết khi có luồng sáng quét qua. Một vệt tia sáng neon tím hồng sắc lẹm lướt nhanh dọc viền trên kết hợp cùng đốm sáng tròn quét ngang qua mặt giao diện rồi chìm dần vào bóng tối. Nhịp lướt mượt mà, bí ẩn, đậm chất điện ảnh và công nghệ tương lai.",
+  "hop_khi": "Rất hợp khi muốn tạo sự tò mò, hé lộ tính năng bí mật, giới thiệu giao diện ứng dụng mới hoặc demo công cụ độc quyền; cảm xúc bí ẩn, kích thích khám phá, sang trọng. Ví dụ: 'Và đây là tính năng bí mật mà 90% người dùng vẫn chưa hề hay biết...', 'Giao diện mới của phần mềm này sẽ thay đổi hoàn toàn cách bạn làm việc.', 'Hãy nhìn kỹ vào bảng điều khiển này, điều kỳ diệu nằm ở ngay đây.'.",
+  "mo_rong": "Thay ảnh chụp giao diện thành bản vẽ thiết kế 3D hoặc mặt bằng căn hộ -> Dùng cho bất động sản, kiến trúc và nội thất cao cấp; thay bằng bảng báo cáo danh mục đầu tư hoặc biểu đồ sinh lời -> Dùng cho kênh tài chính, chứng khoán; đổi sang ảnh chụp tài liệu mật hoặc trang sách chiến lược -> Video giáo dục và chia sẻ bí quyết kinh doanh; thay bằng ảnh chụp sản phẩm studio trên nền tối như tai nghe, điện thoại, đồng hồ sang trọng -> Giới thiệu thiết bị công nghệ cao cấp.",
+  "nang_luong": "vua",
+  "chu_de": ["quét sáng giao diện", "3D perspective", "hé lộ sản phẩm", "công nghệ", "ứng dụng", "bất động sản", "tài chính", "thiết kế", "bí mật", "cinematic"]
  }
 }

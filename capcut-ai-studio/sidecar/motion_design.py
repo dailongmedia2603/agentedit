@@ -3217,14 +3217,10 @@ def layer_sfx(layers, changes):
         fam = L.pop("_sfx", None)
         if not fam:
             continue
-        sid, path = sfx_kit.family_file(fam)
-        if not sid:
+        item = sfx_kit.auto_item(fam, L["start"], L["id"], _sfx_purpose(fam), lib=lib,
+                                 dur=(L.get("enter") or {}).get("duration"))
+        if not item:
             continue
-        if sid not in lib:          # bo tieng vua duoc tao + dang ky (lan dau tren may) -> doc lai kho
-            lib = {e["id"]: e for e in engine.sfx_list()}
-        e = lib.get(sid) or {}
-        item = {"sfx_id": sid, "file": path, "start": L["start"], "purpose": _sfx_purpose(fam),
-                "_name": e.get("name"), "tags": e.get("tags") or [], "_lufs": e.get("lufs_m"), "_from_layer": L["id"]}
         if L.get("type") in TEXT_SFX_TYPES:
             item["_text"] = True
         out.append(item)
@@ -3299,15 +3295,11 @@ def ensure_text_sfx(layers, captions, audio, duration, changes):
     for t, fam, ref in sorted(need):
         if t >= duration - 0.05 or any(t - TEXT_SFX_EARLY <= s <= t + TEXT_SFX_LATE for s in starts):
             continue
-        sid, path = sfx_kit.family_file(fam)
-        if not sid:
+        item = sfx_kit.auto_item(fam, round(t, 3), ref, _sfx_purpose(fam), lib=lib)
+        if not item:
             continue
-        if sid not in lib:
-            lib = {e["id"]: e for e in engine.sfx_list()}
-        e = lib.get(sid) or {}
-        out.append({"sfx_id": sid, "file": path, "start": round(t, 3), "purpose": _sfx_purpose(fam),
-                    "_name": e.get("name"), "tags": e.get("tags") or [], "_lufs": e.get("lufs_m"),
-                    "_from_layer": ref, "_auto_text": True})
+        item["_auto_text"] = True
+        out.append(item)
         starts.append(t)
         names.append("%s@%.1fs=%s" % (ref, t, fam))
     if out:

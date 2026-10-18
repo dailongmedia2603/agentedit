@@ -20,11 +20,11 @@
  "brand": "optional",
  "sfx": [{"at": 2, "type": "typing"}, {"at": 48, "type": "typing"}, {"at": 68, "type": "typing"}, {"at": 96, "type": "ding"}],
  "vi": {
-  "ten": "Máy đánh chữ gõ sai rồi sửa lại",
-  "mo_ta": "Nền sáng sạch, chữ đậm lớn hiện ra từng ký tự như đang gõ phím với con trỏ màu nhấn: gõ một cụm từ bình thường → con trỏ nhấp nháy ngập ngừng → xóa lùi từng chữ → gõ nhanh, dứt khoát cụm từ đúng; xong thì một vệt marker màu quét dưới cụm từ mới. Hiệu ứng 'nói lại cho đúng' rất rõ.",
-  "hop_khi": "Câu nói kiểu 'không phải X, mà là Y', 'nhiều người nghĩ đây chỉ là..., thật ra nó là...', định nghĩa lại một sản phẩm / app / khái niệm, đính chính hiểu lầm, câu slogan bán hàng có cú đổi ý.",
-  "tranh_khi": "Câu không có hai vế đối lập; dùng quá 1 lần trong video; câu dài hơn ~2 dòng; khoảnh khắc cần năng lượng cao, dồn dập.",
+  "ten": "Gõ phím xóa sửa đính chính",
+  "mo_ta": "Nền video mờ tối góc làm nổi bật cụm chữ lớn căn trái ở trung tâm màn hình, phía trên có nhãn phụ nhỏ kèm biểu tượng bo góc. Dòng chữ giữ nguyên cụm mở đầu, gõ ra cụm từ thông thường cùng con trỏ nhấp nháy rồi dừng ngập ngừng, sau đó xóa lùi từng ký tự và gõ nhanh cụm từ đính chính. Toàn bộ hiệu ứng diễn ra với nhịp gõ phím typewriter chân thực, dứt khoát và dừng lại cố định ở thông điệp chính xác.",
+  "hop_khi": "Dùng khi người nói muốn lật ngược suy nghĩ thông thường, đính chính hiểu lầm, tạo nút thắt bất ngờ (plot twist) hoặc nâng tầm định vị cho sản phẩm/dịch vụ. Rất hợp với nhịp nói ngập ngừng chuyển sang khẳng định dứt khoát để tạo tò mò và giữ chân người xem. Ví dụ câu nói: 'Đừng nghĩ đây chỉ là một thỏi son dưỡng thông thường... đây là liệu trình tái tạo môi chuyên sâu', 'Nhiều người nghĩ làm sáng tạo nội dung nhàn lắm... thực ra là thức trắng đêm viết kịch bản', 'Đây không phải là một khóa học lý thuyết... đây là quy trình thực chiến x10 doanh số'.",
+  "mo_rong": "Đổi cụm từ thường thành giải pháp vượt trội để định vị sản phẩm công nghệ / SaaS (ví dụ: 'một app ghi chú' đổi thành 'trợ lý AI quản lý công việc'); đổi quan niệm sai thành sự thật khoa học trong ngành sức khỏe / dinh dưỡng (ví dụ: 'nhịn ăn giảm cân' xóa đi gõ thành 'thâm hụt calo khoa học'); đổi dịch vụ cơ bản thành trải nghiệm cao cấp cho spa / thẩm mỹ viện (ví dụ: 'gội đầu thư giãn' đổi thành 'trị liệu da đầu chuyên sâu'); đổi mức giá niêm yết thành ưu đãi sốc khi livestream / bán hàng flash sale (ví dụ: 'giá gốc 499k' xóa đi gõ thành 'chỉ còn 149k'); đổi định kiến sang thực tế đời sống trong video tuyển dụng / vlog nghề nghiệp (ví dụ: 'ngồi văn phòng máy lạnh' xóa đi gõ thành 'chạy deadline 12 tiếng mỗi ngày').",
   "nang_luong": "vua",
-  "chu_de": ["đính chính", "không phải mà là", "slogan", "định nghĩa", "gõ chữ", "thông điệp"]
+  "chu_de": ["gõ phím xóa sửa", "đính chính", "hiểu lầm và sự thật", "nút thắt bất ngờ", "công nghệ và ai", "bán hàng online", "giáo dục đào tạo", "làm đẹp và spa", "tài chính kinh doanh", "typography", "hook giữ chân"]
  }
 }

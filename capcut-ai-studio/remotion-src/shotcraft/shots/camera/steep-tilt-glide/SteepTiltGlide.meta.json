@@ -21,11 +21,11 @@
  "brand": "optional",
  "sfx": [{"at": 0, "type": "whoosh"}, {"at": 40, "type": "swoosh"}],
  "vi": {
-  "ten": "Trang phần mềm dựng nghiêng 60° trượt ngang",
-  "mo_ta": "Nền tối tím: một trang giao diện phần mềm quản lý công việc (thanh tiêu đề có tên dự án, menu bên trái, các ô thẻ tiến độ / việc cần làm / biểu đồ, trang danh sách việc bên phải) dựng đứng nghiêng 60° như bức tường, mép phải gần ống kính. Máy quay đứng yên, cả trang tự trượt ngang lướt qua với vệt nhòe tốc độ; trang sáng dần từ tối, các chữ trên trang lơ lửng rồi rơi đáp xuống mặt trang.",
-  "hop_khi": "Giới thiệu một phần mềm / app / nền tảng làm việc, công cụ quản lý dự án, dashboard; câu 'mọi thứ nằm gọn trong một nơi', 'quy trình làm việc của team'; có ảnh chụp màn hình trang web dài thì lướt khoe toàn trang.",
-  "tranh_khi": "Cần người xem đọc kỹ chữ (trang bị nghiêng, chữ chỉ lướt qua); chủ đề đời thường không liên quan phần mềm; video tông sáng.",
+  "ten": "Giao diện nghiêng 3D lướt danh sách việc",
+  "mo_ta": "Bảng giao diện quản lý hiện đại màu trắng được dựng đứng nghiêng góc 3D trong không gian tối với ánh đèn thành phố mờ ảo phía sau. Ống kính máy quay thực hiện cú lướt dolly êm ái dọc theo bề mặt giao diện, đi qua widget tỷ lệ phần trăm tiến độ và biểu đồ sóng rồi dừng lại ở danh sách công việc bên phải. Các gạch đầu dòng công việc có gắn chấm tròn màu sắc nổi bật, kết cấu không gian đa chiều tạo cảm giác chuyên nghiệp và năng động.",
+  "hop_khi": "Lý tưởng khi người nói chia sẻ kế hoạch hành động cụ thể, lộ trình từng bước, danh sách việc cần làm (to-do list) hoặc tiến độ triển khai dự án; nhịp điệu dứt khoát, logic, khoa học. Phù hợp với các câu nói: 'Đây là toàn bộ kế hoạch 4 bước mình triển khai tuần này để đạt mục tiêu...', 'Để chuẩn bị ra mắt sản phẩm, tụi mình đã chia nhỏ thành các đầu việc sau...', 'Chỉ cần bám sát danh sách công việc này thì hiệu suất của bạn sẽ tăng gấp đôi...'",
+  "mo_rong": "Đổi danh sách việc thành các bước chăm sóc da buổi tối -> hướng dẫn quy trình skincare, làm đẹp, spa; đổi danh sách việc thành lịch trình tour du lịch 3 ngày 2 đêm -> review du lịch, vlog trải nghiệm lữ hành; đổi danh sách việc thành quy trình 4 bước mở quán cà phê -> chia sẻ kinh nghiệm khởi nghiệp, kinh doanh F&B; đổi danh sách việc thành lịch tập luyện và chế độ ăn trong tuần -> video thể hình fitness, giảm cân sống khỏe; đổi danh sách việc thành các bước kiểm tra pháp lý khi mua đất -> video tư vấn bất động sản, thủ tục công chứng; đổi danh sách việc thành các bước chuẩn bị hồ sơ phỏng vấn xin việc -> hướng dẫn định hướng nghề nghiệp.",
   "nang_luong": "vua",
-  "chu_de": ["phần mềm", "app", "dashboard", "quản lý công việc", "giao diện", "website"]
+  "chu_de": ["kế hoạch hành động", "danh sách công việc", "lộ trình từng bước", "giao diện 3d", "quản trị dự án", "hướng dẫn quy trình", "khởi nghiệp kinh doanh", "du lịch trải nghiệm", "chăm sóc da làm đẹp", "thể hình fitness", "bất động sản", "tăng năng suất"]
  }
 }

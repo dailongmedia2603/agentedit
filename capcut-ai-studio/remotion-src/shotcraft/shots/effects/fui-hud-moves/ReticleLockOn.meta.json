@@ -20,11 +20,11 @@
  "brand": "none",
  "sfx": [{"at": 14, "type": "whoosh"}, {"at": 46, "type": "click"}, {"at": 48, "type": "pop"}],
  "vi": {
-  "ten": "Khung ngắm HUD khóa mục tiêu",
-  "mo_ta": "Giao diện dashboard sáng (hoặc ảnh chụp màn hình thật) đứng yên; bốn góc chữ L màu nhấn kèm dấu thập lao vào từ ngoài khung có nhoè tốc độ, co lại quá đà rồi bật về và \"cắn\" khít bốn góc của một ô / vùng giữa màn hình. Lúc khóa: vùng đó sáng lên, phần còn lại tối nhẹ, một nhãn tối nhỏ (chấm trạng thái + tên mục + mã) bật ra phía trên. Camera đẩy vào rất chậm.",
-  "hop_khi": "Người nói chỉ vào một chi tiết cụ thể trên app / web / dashboard: \"nhìn vào chỗ này\", \"chỉ số quan trọng nhất là…\", \"tính năng này nằm ở đây\"; nhấn mạnh một con số / một ô trong báo cáo; điểm nhấn giới thiệu phần mềm, công cụ AI.",
-  "tranh_khi": "Không nói về giao diện / màn hình nào; đã dùng 2 lần trong cùng video (dễ thành khuôn mẫu quân sự); tone cảm xúc, đời thường.",
-  "nang_luong": "vua",
-  "chu_de": ["app", "dashboard", "phần mềm", "tính năng", "chỉ vào", "số liệu", "giao diện", "AI"]
+  "ten": "Khung ngắm khóa tiêu điểm dữ liệu",
+  "mo_ta": "Bốn góc thước đo chữ L kèm dấu hồng tâm ngắm từ bốn phía lao nhanh vào trung tâm với hiệu ứng nhoè tốc độ, khóa chặt một ô thông số trên màn hình giao diện. Ngay khi khóa thành công, một thanh nhãn viền dạ quang phía trên bật lên hiển thị tiêu đề và huy hiệu xác nhận, đồng thời toàn vùng xung quanh hơi chìm xuống để tôn tiêu điểm. Nhịp chuyển động giật dứt khoát chuẩn xác mang phong cách công nghệ cao, sau đó giữ tĩnh rõ nét để người xem đọc thông tin.",
+  "hop_khi": "Dùng khi người nói muốn khoanh vùng, chỉ đích danh một tính năng quan trọng, một con số bất thường hoặc một chi tiết then chốt trên ảnh chụp màn hình hay tài liệu. Phù hợp với tiết tấu dứt khoát, cảm xúc cảnh báo hoặc hé lộ bí mật đắt giá. Ví dụ câu nói: 'Đây chính là tính năng ngốn nhiều ngân sách nhất của anh em', 'Nhìn kỹ vào chỉ số này trên bảng điều khiển', 'Tập trung đúng vào điểm này để tối ưu tỷ lệ chuyển đổi'.",
+  "mo_rong": "Đổi ảnh màn hình thành ảnh bảng giá và khóa vào gói dịch vụ cao cấp nhất để chốt sale (SaaS / Dịch vụ); đổi ảnh màn hình thành bản đồ quy hoạch và khóa vào vị trí lô góc tiềm năng (Bất động sản); đổi thành kết quả phiếu xét nghiệm hoặc ảnh soi da và khóa vào chỉ số cần điều trị (Spa / Sức khỏe); đổi thành sơ đồ thuật toán và khóa vào hàm code gây thắt cổ chai (Công nghệ / Lập trình); đổi thành ảnh hiện trường hoặc nhóm người và khóa vào nhân vật mấu chốt khi dẫn chuyện (Kể chuyện / Tin tức).",
+  "nang_luong": "cao",
+  "chu_de": ["khung ngắm", "khóa mục tiêu", "tiêu điểm", "giao diện ứng dụng", "soi số liệu", "công nghệ", "bất động sản", "phân tích dữ liệu", "bán hàng", "khoanh vùng"]
  }
 }

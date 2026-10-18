@@ -121,20 +121,22 @@
   }
  ],
  "vi": {
-  "ten": "Chia bài — 26 thẻ bay ào vào lưới trang",
-  "mo_ta": "Bàn đá tối, cận cảnh một chồng thẻ được máy quay lượn vòng; chồng thẻ nhún xuống lấy đà rồi từng thẻ bị 'chia bài' bay vào lưới một trang web sáng bên cạnh, càng lúc càng nhanh, mỗi thẻ đáp xuống nảy nhẹ. Máy quay đuổi theo, nâng cao rồi ngả thành góc nhìn chéo thấy cả bảng đầy thẻ; bộ đếm chạy tới 26 và tiêu đề hai dòng trồi lên. Thẻ là ảnh thật (chụp màn hình, sản phẩm, bài đăng) hoặc thẻ nội dung tiếng Việt.",
-  "hop_khi": "Nói về SỐ LƯỢNG lớn nội dung / sản phẩm / đơn hàng / bài đăng đổ về liên tục: \"hàng trăm mẫu\", \"mỗi ngày ra hàng chục video\", kho template, danh mục sản phẩm, portfolio, thư viện; khoe kết quả làm được nhiều.",
-  "tranh_khi": "Chỉ có 1-2 thứ để khoe; nội dung cần đọc chi tiết từng thẻ (thẻ nhỏ, bay nhanh); mở đầu video ngay giây đầu; video tone sáng nhẹ nhàng.",
+  "ten": "Chồng thẻ chia bài vào trang web 3D",
+  "mo_ta": "Mở đầu với góc cận một chồng thẻ trắng 3D trôi giữa nền tối; chồng thẻ nhún xuống rồi lần lượt từng thẻ bị 'chia bài' bay vút sang cắm kín vào một trang web dạng lưới bài viết nghiêng 3D. Camera đuổi theo và lùi dần lên cao để bao quát toàn bộ danh sách thẻ dày đặc, đồng thời góc dưới bên trái hiện nhãn thống kê số lượng cùng tiêu đề lớn màu trắng rõ ràng. Nhịp chuyển động nhanh, dồn dập, tạo cảm giác số lượng khổng lồ và liên tục.",
+  "hop_khi": "Dùng khi người nói nhấn mạnh về khối lượng nội dung đồ sộ, kho tài nguyên khổng lồ, hệ thống tự động xuất bản liên tục hoặc quá trình tích lũy số lượng lớn dữ liệu; cảm xúc dồn dập, hào hứng, tự hào. Ví dụ: 'Mỗi ngày bên mình tạo ra hàng chục ý tưởng nội dung hoàn toàn tự động', 'Hệ thống sẽ tự động đăng hàng trăm bài viết lên đa kênh cho bạn', 'Bạn sẽ nhận được nguyên một kho hơn 500 mẫu kịch bản có sẵn'.",
+  "mo_rong": "Đổi nội dung thẻ thành danh sách sản phẩm, đổi nhãn thành 'SẢN PHẨM MỚI VỀ' -> bán hàng online kho hàng tổng hoặc thương mại điện tử giới thiệu số lượng mẫu mã đa dạng; đổi thẻ bài viết thành danh sách căn hộ đang mở bán kèm ảnh phối cảnh -> môi giới bất động sản giới thiệu giỏ hàng căn hộ dồi dào; đổi các thẻ thành danh sách bài học trong lộ trình đào tạo -> edtech, giáo dục giới thiệu kho tài liệu khóa học; đổi thẻ thành hồ sơ ứng viên/CV đổ về liên tục -> tuyển dụng, HR giới thiệu dịch vụ cung ứng nhân sự; đổi thẻ thành các món ăn trong thực đơn hoặc đánh giá 5 sao -> chuỗi F&B, nhà hàng giới thiệu menu phong phú.",
   "nang_luong": "cao",
   "chu_de": [
-   "số lượng",
-   "kho nội dung",
-   "danh mục sản phẩm",
-   "portfolio",
-   "app",
-   "website",
-   "bài đăng",
-   "template"
+   "chia bài 3d",
+   "lưới bài viết",
+   "kho tài nguyên",
+   "tự động hóa",
+   "bán hàng online",
+   "thương mại điện tử",
+   "bất động sản",
+   "khoá học",
+   "tuyển dụng",
+   "truyền thông"
   ]
  },
  "backdrop": true

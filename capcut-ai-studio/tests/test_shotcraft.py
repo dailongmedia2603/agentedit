@@ -41,6 +41,7 @@ reg = open(os.path.join(ROOT, "remotion-src", "shotcraft", "registry.ts"), encod
 reg_ids = re.findall(r'^\s+"([^"]+)": \{ C:', reg, re.M)
 check("registry.ts khop danh muc", sorted(reg_ids) == sorted(ids), sorted(set(ids) ^ set(reg_ids)))
 bad = [m["id"] for m in cat if not (m.get("vi") or {}).get("mo_ta") or not (m.get("vi") or {}).get("hop_khi")
+       or not (m.get("vi") or {}).get("mo_rong")
        or m.get("duration", 0) <= 0 or m.get("portrait", {}).get("mode") not in ("native", "band")]
 check("moi mau du mo ta / do dai / bo cuc doc", not bad, bad)
 viet = [m["id"] for m in cat if not re.search(r"[ăâđêôơưáàảãạéèẻẽẹíìỉĩịóòỏõọúùủũụýỳỷỹỵ]", (m.get("vi") or {}).get("mo_ta", "").lower())]
@@ -51,6 +52,23 @@ check("mau an khong vao danh muc R4", all(("- %s [" % m["id"]) not in block for 
 check("prompt_block co MOI mau", not miss, miss)
 check("luat dung noi vao R4", "KHO SHOT" in shot_lib.rules_text() and "FULL-SCREEN" in shot_lib.rules_text())
 check("fingerprint on dinh", shot_lib.fingerprint() == shot_lib.fingerprint())
+check("khong con 'tranh khi' (user 2026-10-18)", not [m["id"] for m in cat if "tranh_khi" in (m.get("vi") or {})]
+      and "tranh:" not in block)
+check("moi mau co video xem truoc", not [m["id"] for m in cat if not shot_lib.preview_path(m["id"])],
+      [m["id"] for m in cat if not shot_lib.preview_path(m["id"])])
+fp0 = shot_lib.fingerprint()
+first = next(m["id"] for m in cat if not m.get("hidden"))
+shot_lib.set_disabled(first, True)
+check("tat mau -> khong vao danh muc R4 / by_id, khoa cache doi",
+      ("- %s [" % first) not in shot_lib.prompt_block() and first not in shot_lib.by_id() and shot_lib.fingerprint() != fp0)
+shot_lib.set_disabled(first, False)
+check("bat lai -> nhu cu", ("- %s [" % first) in shot_lib.prompt_block() and shot_lib.fingerprint() == fp0)
+lv = shot_lib.list_view()["shots"]
+check("list_view du mau + preview", len(lv) == len(cat) and all(x["preview"] for x in lv))
+lb = shot_lib.clean_label({"ten": " A ", "mo_ta": "x", "hop_khi": "y", "mo_rong": "z", "nang_luong": "??", "chu_de": ["a", "a", "b"],
+                           "chat_luong": 9, "tranh_khi": "bo"})
+check("clean_label: bo tranh_khi, chuan hoa", "tranh_khi" not in lb and lb["nang_luong"] == "vua" and lb["chu_de"] == ["a", "b"]
+      and lb["chat_luong"] == 5 and lb["ten"] == "A")
 print("     (danh muc R4: %d ky tu ~ %d token)" % (len(block), len(block) // 3))
 
 # mau thu: mau chu (khong anh) va mau co o anh bat buoc

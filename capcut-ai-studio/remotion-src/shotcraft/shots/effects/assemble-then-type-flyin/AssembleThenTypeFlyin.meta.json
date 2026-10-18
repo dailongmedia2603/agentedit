@@ -111,20 +111,23 @@
   }
  ],
  "vi": {
-  "ten": "Trang web tự lắp ráp — khung bay vào, chữ xoay 3D rơi vào chỗ",
-  "mo_ta": "Trên nền ảnh chủ đề (hoặc nền tối): các khung trống (thanh menu, thẻ ảnh, nút, 3 ô chỉ số, bánh xe màu) bay từ bốn phía vào khớp chỗ; rồi từng ký tự xoay lộn 3D từ xa bay tới rơi đúng vị trí — tiêu đề lớn trước, nút và chỉ số sau. Cuối cùng nút chính sáng vàng và ảnh trong thẻ được quét 'chỉnh màu' từ xám sang màu thật. Khung dọc: trang xếp dọc, tiêu đề to giữa màn hình.",
-  "hop_khi": "Giới thiệu ra mắt sản phẩm / app / website / landing page; nói về việc AI hay công cụ 'tự dựng' trang, video, thiết kế; khoe 3 con số nổi bật kèm câu chốt và lời kêu gọi dùng thử.",
-  "tranh_khi": "Chủ đề đời thường, cảm xúc, không liên quan sản phẩm/công nghệ; cảnh cần ngắn dưới 4 giây; video tone sáng nhẹ nhàng.",
-  "nang_luong": "cao",
+  "ten": "Lắp ráp giao diện và chữ bay 3D",
+  "mo_ta": "Trên nền không gian làm việc tối cinematic, các khung lưới, thanh điều hướng, ô hình ảnh và nút bấm từ bốn phía bay vào khớp nối thành bố cục giao diện hoàn chỉnh. Tiếp đó, từng ký tự tiêu đề xoay 3D từ xa bay tới rơi chuẩn xác vào vị trí, theo sau là phụ đề, hai nút hành động nổi bật và ba ô thông số kỹ thuật bên dưới. Toàn bộ chuyển động mượt mà, chuẩn xác với nhịp điệu từ tốn, hiện đại và sang trọng.",
+  "hop_khi": "Phù hợp khi người nói công bố sản phẩm mới, giải pháp toàn diện, giới thiệu nền tảng công nghệ, khóa học cao cấp hoặc dịch vụ trọn gói; tone giọng tự tin, đĩnh đạc, truyền cảm hứng và mang tính thuyết phục cao. Ví dụ: 'Tất cả quy trình phức tạp đó nay được tích hợp trong một hệ thống duy nhất', 'Một giải pháp toàn diện giúp bạn biến mọi ý tưởng thành sản phẩm thực tế', 'Chỉ với ba bước đơn giản, bạn đã sở hữu một quy trình làm việc chuẩn chuyên nghiệp'.",
+  "mo_rong": "Đổi ảnh phong cảnh thành ảnh phối cảnh căn hộ và 3 ô thông số thành diện tích, số phòng, giá bán cho ngành bất động sản; đổi ảnh thành hình chụp món ăn/combo tiệc và các thông số thành thời gian chuẩn bị, định lượng calo cho nhà hàng F&B; đổi ảnh thành trang bìa giáo trình cùng 3 chỉ số số buổi học, số bài thực hành, tỷ lệ đỗ cho khóa học trực tuyến; đổi ảnh thành bộ sản phẩm làm đẹp kèm các chỉ số công dụng và nút đặt lịch cho spa / mỹ phẩm; đổi ảnh thành ứng dụng di động hoặc giao diện phần mềm SaaS cho công ty công nghệ.",
+  "nang_luong": "vua",
   "chu_de": [
-   "ra mắt",
-   "website",
-   "app",
+   "lắp ráp giao diện",
+   "chữ bay 3D",
+   "giới thiệu sản phẩm",
    "landing page",
-   "AI",
-   "thiết kế",
-   "số liệu",
-   "giới thiệu sản phẩm"
+   "công nghệ AI",
+   "bất động sản",
+   "khóa học online",
+   "phần mềm SaaS",
+   "dịch vụ cao cấp",
+   "kinh doanh",
+   "ra mắt tính năng"
   ]
  },
  "backdrop": true

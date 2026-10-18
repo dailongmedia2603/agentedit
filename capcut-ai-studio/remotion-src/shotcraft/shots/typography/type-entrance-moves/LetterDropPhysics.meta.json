@@ -18,11 +18,11 @@
  "brand": "none",
  "sfx": [{"at": 28, "type": "pop"}, {"at": 64, "type": "pop"}, {"at": 110, "type": "click"}],
  "vi": {
-  "ten": "Chữ rơi nảy vật lý",
-  "mo_ta": "Nền sáng có đường chân trời mảnh: từng chữ cái IN HOA đậm rơi từ trên cao xuống (nhanh dần, có vệt mờ chuyển động), đập xuống sàn, nảy 2 lần, bẹp rồi đứng nghiêng ngả lệch nhau kèm bóng đổ dưới chân; đến nhịp cuối cả hàng chữ cùng 'đứng nghiêm' thẳng lại, câu phụ hiện lên phía dưới. Vui nhộn, có trọng lượng.",
-  "hop_khi": "Mở đầu / chuyển chương với một từ khóa ngắn (tên chủ đề, tên sản phẩm, tên kênh, 'Mẹo số 1', 'Sale'), tone vui vẻ, hài hước, năng lượng tích cực; nhấn mạnh một từ người nói vừa thốt ra.",
-  "tranh_khi": "Câu dài nhiều hơn 3 từ; nội dung nghiêm túc, buồn, chuyên môn cao; đã có một hiệu ứng chữ mạnh ngay cạnh.",
+  "ten": "Chữ rơi vật lý nảy bật xếp hàng",
+  "mo_ta": "Từng ký tự in hoa đậm nét rơi tự do từ mép trên khung hình xuống sàn ảo ở trung tâm với gia tốc và trọng lực chân thực. Khi tiếp đất, các chữ cái nảy bật nhiều nhịp, va đập nghiêng ngả tự nhiên rồi bất ngờ giật thẳng đứng, căn chỉnh ngay hàng thẳng lối thành từ khóa lớn trước khi câu phụ đề mờ dần hiện ra bên dưới. Nhịp rơi ban đầu dồn dập, bất ngờ và kết thúc ổn định, rõ nét.",
+  "hop_khi": "Dùng khi người nói thốt lên một từ cảm thán, nhấn mạnh một biến cố bất ngờ, một cú sốc tâm lý hoặc sự kiện bùng nổ làm thay đổi cục diện câu chuyện; năng lượng cao, kịch tính, bất ngờ hoặc hài hước hóm hỉnh. Ví dụ: 'Một sự bùng nổ ngoài sức tưởng tượng!', 'Toang thật rồi các bạn ơi.', 'Cú sốc lớn nhất trong sự nghiệp khởi nghiệp của mình.'",
+  "mo_rong": "Đổi chữ thành 'SALE' hoặc 'XẢ HÀNG' với màu đỏ nổi bật -> video livestream bán hàng kích thích săn deal; đổi thành 'SAI LẦM' hoặc 'CẢNH BÁO' -> video chuyên gia chỉ ra bẫy đầu tư chứng khoán hoặc mua nhà đất; đổi thành tên triệu chứng bệnh -> video bác sĩ cảnh báo sức khỏe và dinh dưỡng; đổi thành từ khóa du lịch 'KHÁM PHÁ' -> video vlog trải nghiệm mạo hiểm; đổi thành từ ngữ lóng hài hước -> video tiểu phẩm hoặc review đời sống giải trí.",
   "nang_luong": "cao",
-  "chu_de": ["tiêu đề", "từ khóa", "mở đầu", "chương mới", "vui nhộn", "tên sản phẩm"]
+  "chu_de": ["chữ rơi vật lý", "chữ nảy bật", "từ khóa chấn động", "nhấn mạnh kịch tính", "bán hàng săn sale", "cảnh báo sai lầm", "kể chuyện đời sống", "đầu tư tài chính", "vlog giải trí", "chuyển biến bất ngờ"]
  }
 }

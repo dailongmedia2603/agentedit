@@ -23,11 +23,11 @@
  "brand": "optional",
  "sfx": [{"at": 24, "type": "swoosh"}, {"at": 40, "type": "whoosh"}, {"at": 82, "type": "click"}],
  "vi": {
-  "ten": "Lật trang kiểu rèm sáo — trang Trước lật thành trang Sau",
-  "mo_ta": "Trang tạp chí giấy sáng với chữ khổng lồ (vd \"Trước.\") và câu mô tả nhỏ; sau gần 1 giây, 12 lá rèm dọc lần lượt lật 3D từ trái sang phải như làn sóng (lộ khe tối, ánh sáng lướt trên lá), biến cả trang thành trang màu nhấn với chữ khổng lồ mới (vd \"Sau.\") và câu mô tả mới.",
-  "hop_khi": "So sánh trước / sau, cũ / mới, vấn đề / giải pháp, hôm qua / hôm nay; chuyển sang phần tiếp theo của bài nói (Phần 1 → Phần 2); khoảnh khắc \"mọi thứ thay đổi\" khi dùng sản phẩm, phương pháp mới.",
-  "tranh_khi": "Chỉ có một ý, không có cặp đối lập; chữ khổng lồ dài hơn 1-2 từ; đã dùng một hiệu ứng quét/chuyển cảnh hình học khác trong cùng video.",
-  "nang_luong": "vua",
-  "chu_de": ["trước sau", "so sánh", "chuyển chương", "thay đổi", "vấn đề giải pháp", "tạp chí", "chuyển cảnh"]
+  "ten": "Chuyển cảnh rèm lật so sánh trước sau",
+  "mo_ta": "Màn hình mở đầu bằng bố cục phong cách tạp chí tối giản nền sáng với chữ 'Trước' ngoại cỡ ở góc dưới cùng lời diễn giải vấn đề phía trên. Sau một nhịp dừng, toàn bộ khung hình phân tách thành các nan rèm dọc lật xoay 3D lần lượt từ trái sang phải như làn sóng ánh sáng, quét sạch mặt cũ để lộ trang màu cam đỏ rực rỡ với chữ 'Sau' khổng lồ và lời khẳng định kết quả. Chuyển động lật rèm dứt khoát, mượt mà và tạo độ tương phản thị giác cực kỳ ấn tượng.",
+  "hop_khi": "Xuất sắc nhất cho khoảnh khắc so sánh Trước - Sau (Before/After), biến đổi tư duy cũ sang tư duy mới, đối lập giữa nỗi đau hiện tại và kết quả đột phá của giải pháp. Nhịp điệu dứt khoát, kích thích mạnh thị giác và níu chân người xem lướt feed. Ví dụ câu nói: 'Trước đây khi chưa biết mẹo này thì mất cả ngày, nhưng sau khi áp dụng chỉ tốn đúng 5 phút', 'Đừng giữ cách làm cũ kỹ này nữa, đây mới là tư duy đột phá giúp bạn nhân đôi doanh số', 'Từ một người tự ti không dám đứng trước ống kính, mình đã lột xác hoàn toàn sau thử thách này'.",
+  "mo_rong": "Đổi chữ Trước - Sau thành 'Làn da mụn thâm - Da căng bóng sáng mịn' -> quảng cáo liệu trình spa hoặc serum trị mụn; đổi thành 'Nhà thô bừa bộn - Căn hộ phong cách Indochine đẳng cấp' -> khoe thành quả thiết kế thi công nội thất bất động sản; đổi thành 'Ăn kiêng mệt mỏi - Thân hình săn chắc rạng rỡ' -> bán khóa tập gym hoặc thực đơn dinh dưỡng sức khỏe; đổi thành 'Làm thủ công sai sót liên tục - Tự động hóa bằng AI tiết kiệm 80% thời gian' -> giới thiệu phần mềm hoặc công cụ công nghệ mới; đổi thành 'Doanh thu lẹt đẹt loay hoay tìm khách - Đơn nổ liên tục nhờ tối ưu phễu' -> tiếp thị dịch vụ marketing bán hàng.",
+  "nang_luong": "cao",
+  "chu_de": ["so sánh trước sau", "chuyển cảnh lật rèm", "lật thẻ 3D", "phong cách tạp chí", "đối lập giải pháp", "spa làm đẹp", "nội thất nhà ở", "thể hình sức khỏe", "công nghệ AI", "bán hàng chuyển đổi", "kinh doanh online"]
  }
 }

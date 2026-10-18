@@ -61,6 +61,7 @@ try {
   // 3) Lap dist: .so (mã đã bảo vệ) + launcher + MỌI file top-level không phải .py
   //    (requirements.lock cho probe, fx_runtime.mjs cho hộp cách ly FX...) + scripts/assets/references.
   //    KHÔNG copy .py lõi (chỉ còn .so); giữ launcher .py + scripts/*.py (gọi bằng đường dẫn).
+  //    vendor/: thư viện bên thứ ba giữ dạng source + giấy phép (earshot — MIT, bộ tạo âm thanh sfx_gen.py).
   rmSync(dist, { recursive: true, force: true })
   mkdirSync(dist, { recursive: true })
   for (const f of soFiles) cpSync(join(build, f), join(dist, f))
@@ -70,7 +71,7 @@ try {
       cpSync(join(sidecar, entry.name), join(dist, entry.name))
     }
   }
-  for (const d of ['scripts', 'assets', 'references']) {
+  for (const d of ['scripts', 'assets', 'references', 'vendor']) {
     if (existsSync(join(sidecar, d))) {
       cpSync(join(sidecar, d), join(dist, d), {
         recursive: true,

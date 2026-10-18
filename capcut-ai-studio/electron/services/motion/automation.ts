@@ -13,7 +13,7 @@ import { createMotionJob, listMotionJobs } from './runner'
 import { downloadImage, enrichItem, fetchFacebookItems, fetchWebItems } from './sources'
 import { clampDuration, validateBrief } from './prompt'
 import { licenseDisabled, licenseState } from '../license'
-import type { AutoProject, AutoSource, MotionSourceItem } from './types'
+import type { AutoPostConfig, AutoProject, AutoSource, MotionSourceItem } from './types'
 
 const FILE = join(MOTION_HOME, 'automation.json')
 const SEEN_MAX = 500
@@ -128,6 +128,7 @@ export function saveAutoProject(input: Partial<AutoProject> & { sources?: (Parti
   if (!d) throw new Error('Thiếu thông tin chung của dự án.')
   if (!String(d.name || '').trim()) throw new Error('Nhập tên kênh / thương hiệu trong thông tin chung.')
   if (d.voice?.enabled && !d.voice.voiceId) throw new Error('Chọn giọng đọc (hoặc tắt lời đọc).')
+  const post = cleanPost(input.post === undefined ? old?.post : input.post, old?.post)
   const p: AutoProject = {
     id: old?.id || 'auto_' + Date.now().toString(36) + randomBytes(2).toString('hex'),
     name,
@@ -146,7 +147,8 @@ export function saveAutoProject(input: Partial<AutoProject> & { sources?: (Parti
     // nguon bi bo -> bo luon tin da xem cua nguon do
     seen: Object.fromEntries(Object.entries(old?.seen || {}).filter(([k]) => srcs.some((s) => s.id === k))),
     primed: Object.fromEntries(Object.entries(old?.primed || {}).filter(([k]) => srcs.some((s) => s.id === k))),
-    daily: old?.daily
+    daily: old?.daily,
+    post
   }
   // du an moi: kiem sau 5s; doi chu ky: tinh lai tu bay gio; sua cac muc khac: giu lich cu
   if (!old || !p.nextCheckAt) p.nextCheckAt = Date.now() + 5000
@@ -155,6 +157,42 @@ export function saveAutoProject(input: Partial<AutoProject> & { sources?: (Parti
   else list.unshift(p)
   save()
   return publicProjects().find((x) => x.id === p.id)!
+}
+
+/** Cau hinh tu dong dang (Phone Agent): kiem + chuan hoa; bat lan dau -> ghi moc enabledAt (video cu khong tu dang). */
+function cleanPost(v: Partial<AutoPostConfig> | null | undefined, prev?: AutoPostConfig): AutoPostConfig | undefined {
+  if (!v) return undefined
+  const enabled = !!v.enabled
+  const deviceId = String(v.deviceId || '').trim()
+  const scriptId = String(v.scriptId || '').trim()
+  if (enabled && !deviceId) throw new Error('Tự động đăng: chọn iPhone.')
+  if (enabled && !scriptId) throw new Error('Tự động đăng: chọn kịch bản đăng.')
+  const timing = v.timing === 'delay' || v.timing === 'slots' ? v.timing : 'now'
+  const slots = (Array.isArray(v.slots) ? v.slots : [])
+    .map((s) => String(s).trim())
+    .filter((s) => /^([01]?\d|2[0-3]):[0-5]\d$/.test(s))
+    .slice(0, 24)
+  if (enabled && timing === 'slots' && !slots.length) throw new Error('Tự động đăng: thêm ít nhất một khung giờ (HH:MM).')
+  const variables: Record<string, string> = {}
+  for (const [k, val] of Object.entries(v.variables || {})) if (/^[A-Za-z0-9_]{1,64}$/.test(k)) variables[k] = String(val ?? '').slice(0, 5000)
+  return {
+    enabled,
+    deviceId,
+    deviceName: v.deviceName ? String(v.deviceName) : undefined,
+    scriptId,
+    scriptName: v.scriptName ? String(v.scriptName) : undefined,
+    videoVar: v.videoVar ? String(v.videoVar) : undefined,
+    variables,
+    timing,
+    delayMin: clampInt(v.delayMin, 0, 7 * 24 * 60, 30),
+    slots,
+    enabledAt: enabled ? (prev?.enabled && prev.enabledAt ? prev.enabledAt : Date.now()) : undefined
+  }
+}
+
+/** Du an (ban day du, chi doc) — dung cho tu dong dang. */
+export function getAutoProject(id: string): AutoProject | undefined {
+  return load().find((p) => p.id === id)
 }
 
 export function deleteAutoProject(id: string): void {

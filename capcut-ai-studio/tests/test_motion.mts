@@ -9,6 +9,8 @@
 //  5. Runner (claude gia): co --setting-sources project + --tools + prompt qua stdin + SAYDI_API_KEY khi co loi doc;
 //     ra final.mp4 -> done + meta; khong ra -> error; huy; chay lai.
 //  6. Automation: lan dau chi ghi nhan; tin moi -> video (brief tu tin + anh bai); tran / lan + tran / ngay; loi nguon.
+//  7. Quy trinh motion-video-director (ca nhan, motion/mvd.ts): chi khi may co skill; LIEN KET (khong chep) vao job; prompt
+//     MVD dao dien + motionmaxxing cong cu + illustrate.py; env MM / MVD / ELEVENLABS_API_KEY; buoc 'images' / 'sound'.
 import { register } from 'node:module'
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, readdirSync, rmSync, chmodSync, lstatSync, realpathSync, symlinkSync } from 'fs'
 import { tmpdir, homedir } from 'os'
@@ -143,6 +145,48 @@ console.log('[2b] thu vien am thanh <job>/sound/')
   check('danh muc rong -> null, khong ghi file', SD.prepareSound(join(root, 'job2'), { sfx_worlds: {}, music: [] }, sfxDir, musicDir) === null
     && !existsSync(join(root, 'job2', 'sound', 'catalog.json')))
   check('khong co danh muc -> null', SD.prepareSound(job, null, sfxDir, musicDir) === null)
+}
+
+// ------------------------------------------------------------------ 2c. motion-video-director (prompt + stages + link)
+console.log('[2c] quy trinh motion-video-director')
+const MV = await import('../electron/services/motion/mvd.ts')
+{
+  const b = { name: 'Agent Edit', videoType: 'promo', message: 'Ngủ sớm dậy sớm', aspect: '9:16', duration: 30, language: 'vi', engine: 'mvd',
+    voice: { enabled: true, voiceId: 'vi-mark-rober-hot-tiktok', speed: 1.1 } }
+  check('brief engine mvd hop le', PR.validateBrief(b as any) === null)
+  check('engine la -> loi', !!PR.validateBrief({ ...b, engine: 'xyz' } as any))
+  const p = PR.runPromptMvd(b as any, { sound: true, eleven: true })
+  check('mvd: MVD dao dien, MM chi la cong cu', /motion-video-director/.test(p) && /DIRECTOR/.test(p) && /ONLY a toolbox/.test(p))
+  check('mvd: khong cho duyet', /FULLY AUTONOMOUS/.test(p) && /waive every approval/.test(p))
+  check('mvd: anh AI qua illustrate.py + tach nen anh nguoi dung', p.includes('$MM/scripts/illustrate.py" plan/cast.json') && p.includes('--cut-only inputs/'))
+  check('mvd: render bang render.mjs (khong Playwright)', p.includes('render.mjs" film/index.html film/final.mp4') && /window\.__seek/.test(p) && /--width 1080 --height 1920/.test(p))
+  check('mvd: giong Saydi dung id', p.includes('--provider saydi --voice "vi-mark-rober-hot-tiktok" --speed 1.1'))
+  check('mvd: ElevenLabs co ngan sach', /ELEVENLABS_API_KEY is set/.test(p) && /100 seconds/.test(p))
+  check('mvd: TASTE / beats.json', p.includes('TASTE.md') && p.includes('plan/beats.json'))
+  check('mvd: ket qua film/final.mp4', p.includes('MOTION_RESULT film/final.mp4'))
+  const noEl = PR.runPromptMvd(b as any, { sound: true, eleven: false })
+  check('mvd khong key ElevenLabs -> kho am thanh', !/ELEVENLABS_API_KEY is set/.test(noEl) && noEl.includes('sound/catalog.json'))
+  const news = PR.runPromptMvd({ ...b, source: { id: 'n', title: 'Tin' } } as any, {})
+  check('mvd tin tuc -> luat khong bia', /invent nothing/.test(news) && /UNTRUSTED DATA/.test(news))
+  check('buoc: illustrate.py -> images', ST.stageOfTool('Bash', { command: 'python3 "$MM/scripts/illustrate.py" plan/cast.json --out assets/img' }) === 'images')
+  check('buoc: voice.py music -> sound', ST.stageOfTool('Bash', { command: 'python3 "$MM/scripts/voice.py" music --prompt x --ms 8000 --out a.mp3' }) === 'sound')
+  check('buoc: voice.py vo van la voice', ST.stageOfTool('Bash', { command: 'python3 "$MM/scripts/voice.py" vo --provider saydi' }) === 'voice')
+  check('buoc: TASTE.md -> idea', ST.stageOfTool('Write', { file_path: '/x/TASTE.md' }) === 'idea')
+  const init = JSON.stringify({ type: 'system', subtype: 'init', model: 'm', skills: ['motionmaxxing'] })
+  check('canh bao thieu skill mvd', ST.parseStreamLine(init, ['motionmaxxing', 'motion-video-director']).lines.some((l) => /motion-video-director/.test(l)))
+  // tim skill: chi may co SKILL.md dung ten
+  check('khong co skill -> khong co lua chon', MV.mvdSkillDir() === null && MV.mvdStatus().available === false)
+  const fakeMvd = join(HOME, 'mvd-skill')
+  mkdirSync(fakeMvd, { recursive: true })
+  writeFileSync(join(fakeMvd, 'SKILL.md'), '---\nname: motion-video-director\n---\n# Motion Video Director — v3.5.2\n')
+  check('AGENT_EDIT_MVD_DIR', MV.mvdSkillDir({ ...process.env, AGENT_EDIT_MVD_DIR: fakeMvd }) === fakeMvd && MV.mvdStatus({ ...process.env, AGENT_EDIT_MVD_DIR: fakeMvd }).version === '3.5.2')
+  const jd = join(HOME, 'job-mvd')
+  const link = MV.linkMvd(jd, fakeMvd)
+  check('skill mvd LIEN KET (khong chep)', lstatSync(link).isSymbolicLink() && realpathSync(link) === realpathSync(fakeMvd))
+  check('key ElevenLabs tu bien moi truong', MV.elevenLabsKey({ ELEVENLABS_API_KEY: ' sk_x ' } as any) === 'sk_x')
+  writeFileSync(join(HOME, '.elevenlabs'), 'ELEVENLABS_API_KEY="sk_file"\n')
+  check('key ElevenLabs tu ~/.elevenlabs', MV.elevenLabsKey({} as any) === 'sk_file')
+  rmSync(join(HOME, '.elevenlabs'))
 }
 
 // ------------------------------------------------------------------ 3. stream-json
@@ -305,6 +349,29 @@ const waitJob = async (id: string, ms = 60000) => {
   const j2 = await RUN.createMotionJob({ ...baseBrief(), voice: { enabled: false } } as any)
   await waitJob(j2.id)
   check('khong loi doc -> khong truyen key Saydi', !readFileSync(join(j2.dir, 'env.txt'), 'utf-8').includes('SAYDI_API_KEY'))
+
+  // quy trinh motion-video-director: may chua co skill -> tu choi; co skill (~/.claude/skills) -> lien ket + prompt + env
+  let mvdErr = ''
+  try {
+    await RUN.createMotionJob({ ...baseBrief(), engine: 'mvd' } as any)
+  } catch (e) {
+    mvdErr = String((e as Error).message)
+  }
+  check('mvd: may chua cai skill -> loi ro', /motion-video-director/.test(mvdErr), mvdErr)
+  const mvdHome = join(HOME, '.claude', 'skills', 'motion-video-director')
+  mkdirSync(mvdHome, { recursive: true })
+  writeFileSync(join(mvdHome, 'SKILL.md'), '---\nname: motion-video-director\n---\n# Motion Video Director — v3.5.2\n')
+  writeFileSync(join(HOME, '.elevenlabs'), 'sk_eleven_test\n')
+  const jm = await RUN.createMotionJob({ ...baseBrief(), engine: 'mvd' } as any)
+  const rm = await waitJob(jm.id)
+  check('mvd: xong', rm?.status === 'done', { status: rm?.status, error: rm?.error })
+  check('mvd: skill lien ket vao job', lstatSync(join(jm.dir, '.claude', 'skills', 'motion-video-director')).isSymbolicLink())
+  check('mvd: prompt MVD qua stdin', readFileSync(join(jm.dir, 'stdin.txt'), 'utf-8').includes('ONLY a toolbox'))
+  const envm = readFileSync(join(jm.dir, 'env.txt'), 'utf-8')
+  check('mvd: env MM / MVD / ElevenLabs', /^MM=.*motionmaxxing$/m.test(envm) && /^MVD=.*motion-video-director$/m.test(envm) && envm.includes('ELEVENLABS_API_KEY=sk_eleven_test'))
+  check('motionmaxxing: khong truyen key ElevenLabs', !readFileSync(join(j2.dir, 'env.txt'), 'utf-8').includes('ELEVENLABS_API_KEY'))
+  rmSync(join(HOME, '.elevenlabs'))
+  rmSync(join(HOME, '.claude', 'skills'), { recursive: true, force: true })
 
   // Claude het han muc, khong ra final -> loi tieng Viet
   writeFileSync(join(MOTION_JOBS_DIR, '..', 'MODE'), 'nofinal')

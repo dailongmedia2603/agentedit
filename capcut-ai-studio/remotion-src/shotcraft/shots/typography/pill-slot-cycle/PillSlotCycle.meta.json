@@ -19,11 +19,11 @@
  "brand": "none",
  "sfx": [{"at": 12, "type": "click"}, {"at": 33, "type": "click"}, {"at": 54, "type": "click"}, {"at": 75, "type": "click"}, {"at": 96, "type": "click"}, {"at": 117, "type": "click"}, {"at": 138, "type": "pop"}],
  "vi": {
-  "ten": "Câu có ô trống, các tính năng lăn vào như máy đánh bạc",
-  "mo_ta": "Nền sáng sạch, một câu chữ đậm đứng yên ('Chỉ một app để …'), cuối câu là một viên thuốc trắng có icon: cứ ~0,7 giây viên cũ lật bay lên mờ đi, viên mới lật từ dưới lên (hiệu ứng trống quay, mờ chuyển động) với một cụm động từ khác. Sau 3-6 lần đổi, viên cuối bay đi và vế chốt ('làm tất cả.') nảy vào chỗ, cả câu trượt êm ra giữa và đứng yên.",
-  "hop_khi": "Liệt kê nhiều tính năng / việc mà một sản phẩm làm được trong MỘT câu: 'chỉ một app để quay, dựng, chèn nhạc...', 'AI giúp bạn viết bài, làm ảnh, trả lời khách', 'khóa học dạy bạn...'; giới thiệu app / phần mềm / dịch vụ đa năng; nhịp đều, dễ hiểu.",
-  "tranh_khi": "Các mục dài (hơn ~4 từ) hoặc độ dài chênh nhau nhiều; danh sách chỉ 1-2 mục; nội dung là số liệu; khoảnh khắc cần cảm xúc mạnh; video tone tối.",
+  "ten": "Thẻ viên thuốc cuộn đổi chữ",
+  "mo_ta": "Nền mờ tối giản làm nổi bật dòng tiêu đề cố định ở trung tâm, ngay bên dưới là một thẻ bo tròn trắng dạng viên thuốc chứa icon và từ khóa. Các thẻ viên thuốc liên tục lật cuộn theo trục dọc như máy quay slot với hiệu ứng mờ chuyển động dứt khoát, lần lượt thay thế các tính năng. Ở giây cuối, thẻ viên thuốc biến mất nhường chỗ cho cụm kết luận chốt hạ xuất hiện ngay ngắn phía dưới tiêu đề.",
+  "hop_khi": "Phù hợp khi người nói đang tổng hợp giải pháp tất cả trong một, liệt kê nhanh các tính năng, công dụng hoặc dịch vụ tiện ích để chứng minh sự tiện lợi vượt trội. Nhịp điệu dứt khoát, hiện đại và thuyết phục. Ví dụ câu nói: 'Chỉ cần một công cụ này là giải quyết được mọi khâu sáng tạo', 'Một hũ kem mà vừa dưỡng ẩm, vừa chống lão hóa lại mờ thâm', 'Một khóa học giúp bạn làm chủ từ viết kịch bản đến dựng video'.",
+  "mo_rong": "Đổi danh sách công dụng thành các bước hành động -> hướng dẫn quy trình làm việc tinh gọn; đổi sang các kênh truyền thông hoặc nền tảng số -> quảng bá chiến dịch tiếp thị đa kênh; đổi thành các dịch vụ trọn gói -> giới thiệu gói dịch vụ agency hoặc chăm sóc sắc đẹp; đổi thành danh sách triệu chứng cần khắc phục -> mở đầu video tư vấn sức khỏe hoặc quản lý tài chính; đổi thành các địa danh du lịch nổi tiếng -> quảng bá tour khám phá trọn gói.",
   "nang_luong": "vua",
-  "chu_de": ["tính năng", "danh sách", "app", "đa năng", "AI", "giới thiệu sản phẩm", "dịch vụ"]
+  "chu_de": ["con lăn chữ", "liệt kê tính năng", "tất cả trong một", "viên thuốc", "ứng dụng công nghệ", "chăm sóc da", "dịch vụ trọn gói", "giải pháp tiện ích", "năng suất", "chuyển động chữ"]
  }
 }

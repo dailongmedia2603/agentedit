@@ -67,21 +67,22 @@
   }
  ],
  "vi": {
-  "ten": "Ra lệnh bằng giọng nói — sóng âm trực tiếp",
-  "mo_ta": "Nền kem ấm: một khung thu âm dạng viên thuốc màu trắng với nút micro cam đất, 64 vạch sóng âm nhảy theo lời nói và trôi từ phải sang trái (khi ngừng thì xẹp thành hàng chấm); phía trên câu nói hiện ra từng chữ theo nhịp (chữ mới màu cam rồi chuyển đen, có con trỏ nhấp nháy khi ngừng). Bấm nút gửi: sóng xẹp lại, câu chữ thu nhỏ bay vào bong bóng chat màu cam, hiện dòng 'Đã gửi · 0:03'.",
-  "hop_khi": "Nói về trợ lý ảo / AI giọng nói, ra lệnh bằng giọng nói, chatbot, tính năng ghi âm, dictation, 'chỉ cần nói là xong', đặt hàng/đặt chỗ qua app bằng giọng nói; minh họa câu người dùng nói với máy.",
-  "tranh_khi": "Không liên quan giọng nói / trợ lý; câu quá dài (> 2 vế); lúc người nói đang nói câu khác hẳn (chữ trên màn hình sẽ lệch lời).",
+  "ten": "Thanh thu âm giọng nói hiển thị chữ",
+  "mo_ta": "Khung thu âm dạng viên thuốc màu trắng nổi ở nửa dưới màn hình với nút micro cam và dải sóng âm chuyển động theo thời gian thực. Phía trên, các từ ngữ trong câu nói gõ ra từng chữ đồng bộ theo giọng đọc với chữ mới màu cam rồi chuyển đen. Khi nói xong, toàn bộ câu thoại được đóng gói gọn gàng trong bong bóng màu cam đất, nút gửi chuyển thành biểu tượng tích tròn xác nhận và sóng âm thu về hàng chấm tĩnh.",
+  "hop_khi": "Phù hợp cho khoảnh khắc ra lệnh bằng giọng nói, tương tác với trợ lý ảo AI, đọc tin nhắn thoại hoặc trích dẫn lời đối thoại trực tiếp trong video công nghệ, review ứng dụng, hướng dẫn thao tác hay lifestyle. Nhịp điệu tự nhiên, chân thực, tạo cảm giác thông minh và trực quan sinh động. Ví dụ câu nói: 'Mình chỉ cần giữ nút nói: Đặt giúp mình một bàn tối thứ Sáu cho bốn người', 'Nhắn cho trợ lý tìm ngay chuyến bay rẻ nhất đi Đà Nẵng tuần sau', 'Bạn có thể ra lệnh bằng giọng nói để tự động lên lịch làm việc cả ngày'.",
+  "mo_rong": "Đổi câu thoại thành câu hỏi dịch thuật -> video giáo dục ngoại ngữ hoặc mẹo du lịch nước ngoài; đổi chữ thành lời mô tả triệu chứng bệnh -> video y tế, phòng khám tư vấn sức khỏe online; đổi nội dung thành yêu cầu tìm kiếm bất động sản hoặc tư vấn đầu tư -> video tài chính, môi giới nhà đất demo app; đổi màu cam sang màu xanh lá và chữ thành đơn hàng món ăn -> video F&B, review ẩm thực đặt đồ ăn bằng giọng nói; đổi câu thoại thành phản hồi khách hàng -> video bán hàng online tăng độ tin cậy.",
   "nang_luong": "vua",
   "chu_de": [
-   "giọng nói",
    "trợ lý ảo",
-   "AI",
-   "chatbot",
-   "ghi âm",
-   "app",
-   "điện thoại",
-   "ra lệnh",
-   "tin nhắn"
+   "giọng nói AI",
+   "nhận diện giọng nói",
+   "speech to text",
+   "công nghệ",
+   "review ứng dụng",
+   "tin nhắn thoại",
+   "đặt lịch hẹn",
+   "tương tác",
+   "giao diện app"
   ]
  },
  "backdrop": true

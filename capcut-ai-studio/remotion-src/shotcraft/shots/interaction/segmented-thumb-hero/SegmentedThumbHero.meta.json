@@ -19,11 +19,11 @@
  "brand": "none",
  "sfx": [{"at": 4, "type": "whoosh"}, {"at": 48, "type": "click"}, {"at": 60, "type": "pop"}],
  "vi": {
-  "ten": "Công tắc 2 lựa chọn phóng to — con trỏ bấm chuyển A → B",
-  "mo_ta": "Cận cảnh một nút gạt 2 ô kiểu iOS cỡ lớn trên nền sáng (có thể kèm 1 câu tiêu đề phía trên). Nút trượt nhẹ lên, con trỏ chuột to lướt vào từ góc phải dưới, bấm vào ô bên phải (có vòng sóng màu nhấn), viên trượt trắng lướt nhanh sang, mặt cười màu nhấn bật ra ở lựa chọn mới.",
-  "hop_khi": "Nói về chuyển đổi / lựa chọn giữa 2 thứ: thủ công → tự động, cũ → mới, miễn phí → trả phí, offline → online, tháng → năm, bật chế độ mới trong app; khoảnh khắc \"chỉ cần bấm một cái là xong\".",
-  "tranh_khi": "Có từ 3 lựa chọn trở lên; nhãn dài (> 2 từ); nội dung không có ý chuyển đổi / so sánh hai trạng thái; video tone tối.",
+  "ten": "Nút gạt chuyển đổi chế độ phong cách iOS",
+  "mo_ta": "Khung hình sáng sủa với tiêu đề dẫn dắt ở nửa trên, trung tâm là một thanh gạt lựa chọn hai trạng thái bo tròn cỡ lớn theo chuẩn giao diện iOS. Ban đầu trạng thái bên trái đang được kích hoạt kèm biểu tượng cảm xúc, sau đó một con trỏ chuột lướt vào từ góc phải nhấp chọn ô bên phải, khiến khối trượt lướt mượt mà sang vị trí mới và đổi màu biểu tượng. Nhịp chuyển động nhịp nhàng, tối giản, mô phỏng thao tác phần mềm chân thực và rõ ràng.",
+  "hop_khi": "Phù hợp khi người nói nhấn mạnh việc thay đổi tư duy, chuyển đổi cách làm việc, demo tính năng bật/tắt tự động, hoặc phân tích sự khác nhau giữa hai lựa chọn trái ngược. Cảm xúc thông minh, dễ hiểu, thuyết phục và trực quan. Ví dụ câu nói: 'Thay vì làm thủ công vất vả, hãy bật chế độ tự động hóa lên.', 'Chỉ một nút bấm là bạn đã chuyển từ nghiệp dư sang chuyên nghiệp.', 'Bạn muốn tiếp tục cách cũ hay chọn cách làm thông minh hơn?'",
+  "mo_rong": "Đổi hai lựa chọn thành 'Tiết kiệm' và 'Đầu tư' -> video tài chính cá nhân, quản lý chi tiêu; đổi thành 'Tự nấu ăn' và 'Đặt đồ ăn ngoài' -> vlog phong cách sống, F&B; đổi thành 'Học truyền thống' và 'Học cùng AI' -> giáo dục EdTech, chia sẻ mẹo học tập; đổi thành 'Thuê nhà' và 'Mua nhà' -> môi giới bất động sản so sánh dòng tiền; đổi thành 'Chăm sóc tại nhà' và 'Liệu trình chuyên sâu' -> thẩm mỹ viện, spa tư vấn dịch vụ làm đẹp; đổi thành 'Lương cố định' và 'Kinh doanh tự do' -> video truyền cảm hứng khởi nghiệp, phát triển bản thân.",
   "nang_luong": "vua",
-  "chu_de": ["so sánh", "chuyển đổi", "lựa chọn", "app", "tính năng", "cài đặt", "tự động hoá", "trước sau"]
+  "chu_de": ["nút gạt", "chuyển đổi chế độ", "giao diện iOS", "tương tác UI", "tự động hóa", "so sánh lựa chọn", "tài chính cá nhân", "công nghệ", "phong cách sống", "giáo dục"]
  }
 }

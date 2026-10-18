@@ -60,3 +60,6 @@ r2-publish.json
 # Kho shot: thu muc xem thu (scripts/shot-still.mjs)
 capcut-ai-studio/remotion-src/shotcraft/.preview/
 capcut-ai-studio/remotion-src/shotcraft/.preview-public/
+
+# motion-video-director: skill THUONG MAI 1 nguoi (cam phan phoi lai) — khong bao gio dua vao repo (PROJECT_OVERVIEW 28)
+motion-video-director/

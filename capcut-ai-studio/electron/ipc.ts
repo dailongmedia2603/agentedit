@@ -42,6 +42,7 @@ import {
 } from './services/license'
 import { updateState, onUpdateChange, checkForUpdateNow, applyUpdate, startDownload } from './services/updater'
 import { busyMotionIds } from './services/motion/runner'
+import { busyPosts } from './services/phoneagent/posts'
 import { readState, writeState, planProviderOf, PlanProvider, jobLimitsOf, saveJobLimits, JobLimits } from './services/state'
 import { mediaBase, mediaUrl } from './services/media-server'
 import { cancelRender, renderStatus, browserInstalled } from './services/remotion'
@@ -104,7 +105,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
   })
   // busy = trang Tao video con video dang xu ly
   // busy: renderer bao Edit Video dang chay; video tao bang AI (Tao video / Automation) kiem o main (tranh lech luc)
-  ipcMain.handle('update:apply', (_e, busy?: boolean) => applyUpdate(!!busy || busyMotionIds().length > 0))
+  ipcMain.handle('update:apply', (_e, busy?: boolean) => applyUpdate(!!busy || busyMotionIds().length > 0 || busyPosts() > 0))
 
   // ---- Doctor ----
   // Chi dung khi tu kiem giao dien (chay kem --user-data-dir tam): coi moi dieu kien
@@ -665,6 +666,9 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
   // ---- KHO HIEU UNG tu viet (2026-10-05): bo dieu phoi nen o renderer (src/lib/fxHarvest.ts) goi lan luot:
   // preview (lan render, chi khi ranh) -> Gemini nhan (lan gemini) -> gui kho chung. KHONG tu dong goi sau render
   // (bo 2026-10-17: tac gia tu viet hieu ung roi bo sung vao kho) ----
+  // ---- KHO SHOT & MOTION (2026-10-18): xem preview + mo ta, tat / bat tung mau ----
+  ipcMain.handle('shotlib:list', () => rmCall('/shotlib/list'))
+  ipcMain.handle('shotlib:toggle', (_e, id: string, disabled: boolean) => rmCall('/shotlib/toggle', { id, disabled }))
   ipcMain.handle('fxlib:list', () => rmCall('/fxlib/list'))
   ipcMain.handle('fxlib:renderPreview', (_e, id: string) => fxRenderPreview(id))
   ipcMain.handle('fxlib:label', (_e, ids: string[]) => rmCall('/fxlib/label', { ids }, LONG_AI_MS))

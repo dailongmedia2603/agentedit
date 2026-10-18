@@ -172,21 +172,24 @@
   }
  ],
  "vi": {
-  "ten": "Bảng 12 ảnh đổi bố cục — lưới, ghép, xòe bài",
-  "mo_ta": "Nền giấy màu cát: 12 ảnh (ảnh thật của video hoặc ảnh phim minh họa) hiện thành lưới đều; công tắc 3 nấc góc trên trượt sang nấc mới và cả bảng tự xếp lại thành bố cục ghép có một ảnh chính thật lớn kèm chú thích chữ serif; rồi lần nữa các ảnh được 'chia bài' thành một chuỗi ảnh polaroid viền trắng xòe chéo, mỗi tấm nghiêng thêm một chút, tiêu đề lớn hiện ở khoảng trống.",
-  "hop_khi": "Khoe một bộ sưu tập ảnh / sản phẩm / tác phẩm: portfolio, album ảnh, kho mẫu, menu món ăn, các mẫu thiết kế, khoảnh khắc chuyến đi; nói về 'nhiều cách sắp xếp / trình bày cùng một nội dung', app ảnh, công cụ thiết kế; chuyển cảnh nhẹ nhàng giữa hai phần.",
-  "tranh_khi": "Không có ảnh liên quan (ảnh minh họa vẽ sẵn chỉ hợp chủ đề nhiếp ảnh / du lịch / sáng tạo); nội dung số liệu; khoảnh khắc cần nhịp nhanh (cảnh dài ~7 giây).",
+  "ten": "Lưới ảnh chuyển cảnh tái bố cục",
+  "mo_ta": "Màn hình mở đầu bằng lưới 12 khung ảnh đều đặn bên dưới thanh công tắc ba nấc Lưới - Ghép - Xòe. Khi công tắc gạt nấc, toàn bộ lưới tự động tái cấu trúc mượt mà: một khung ảnh tiêu điểm phóng lớn kèm dải thẻ thông tin chi tiết, sau đó chuyển nấc xòe chéo thành tập thẻ bài 3D xếp lớp cùng cụm tiêu đề thanh lịch bên dưới. Nhịp chuyển động biến hóa thông minh, liền mạch và mang tính thị giác cao.",
+  "hop_khi": "Phù hợp khi người nói muốn tổng kết bộ sưu tập, trình bày quy trình từ tổng quan đến chi tiết, hoặc giới thiệu nhiều phương án trước khi nhấn mạnh một điểm nổi bật nhất. Thích hợp với nhịp nói chia sẻ có chiều sâu, thẩm mỹ và dẫn dắt câu chuyện lớp lang. Ví dụ câu nói: 'Đây là toàn bộ 12 góc máy mình đã lên kịch bản cho dự án lần này.', 'Trong rất nhiều lựa chọn, đây chính là phương án tâm đắc nhất của mình.', 'Từ những mảnh ghép rời rạc ban đầu, mọi thứ kết nối lại thành một bức tranh hoàn chỉnh.'",
+  "mo_rong": "Thay 12 ảnh thành hình ảnh món ăn trong thực đơn -> giới thiệu menu ẩm thực F&B hoặc nhà hàng; thay ảnh thành các bước skincare -> hướng dẫn quy trình chăm sóc da spa và làm đẹp; thay ảnh thành các căn hộ và phối cảnh dự án -> portfolio môi giới bất động sản; thay ảnh thành giao diện tính năng phần mềm -> giới thiệu hệ sinh thái ứng dụng công nghệ; thay ảnh thành các địa danh chặng hành trình -> review tour và lịch trình du lịch.",
   "nang_luong": "vua",
   "chu_de": [
+   "lưới ảnh",
+   "tái bố cục",
+   "bento grid",
    "bộ sưu tập",
-   "ảnh",
+   "quy trình",
    "portfolio",
-   "album",
-   "bố cục",
-   "thiết kế",
-   "sản phẩm",
+   "bất động sản",
+   "làm đẹp spa",
+   "ẩm thực fnb",
    "du lịch",
-   "chuyển cảnh"
+   "nhiếp ảnh",
+   "review sản phẩm"
   ]
  },
  "backdrop": true

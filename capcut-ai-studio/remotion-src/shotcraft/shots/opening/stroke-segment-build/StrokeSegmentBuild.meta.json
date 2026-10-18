@@ -52,20 +52,23 @@
   }
  ],
  "vi": {
-  "ten": "Biển neon sáng từng đoạn — đoán chữ rồi bật sáng",
-  "mo_ta": "Tường tím tối, một từ ngắn được vẽ bằng ống đèn neon hồng tách thành nhiều đoạn rời; các đoạn chập chờn bật sáng LỘN XỘN khắp các chữ nên ban đầu không đọc ra, im lặng một nhịp, rồi 3 đoạn cuối gắn vào và cả biển bừng sáng — người xem 'à' ra chữ. Có bóng phản chiếu dưới sàn, dòng phụ hiện sau. Khung dọc: biển to giữa màn hình.",
-  "hop_khi": "Mở video / mở phần mới bằng một từ khoá gây tò mò rồi bật mí: tên sản phẩm, LIVE, SALE, MỚI, con số năm, % giảm giá; thông báo livestream, sự kiện tối nay, ra mắt bí mật.",
-  "tranh_khi": "Câu dài hoặc từ dài hơn 8 ký tự; từ lạ người xem không nhận ra (mất hiệu ứng 'à ra thế'); cần thông tin ngay lập tức (chữ chỉ đọc được sau ~3.5 giây); dùng quá 1 lần trong video.",
-  "nang_luong": "vua",
+  "ten": "Chữ neon lắp ghép bật sáng ấn tượng",
+  "mo_ta": "Trên nền phòng làm việc tối mở ảo về đêm, từng đoạn ống đèn neon hồng xuất hiện rải rác và chập chờn nhấp nháy ở chính giữa khung hình. Sau một nhịp chờ đợi bất ngờ, các nét rời lập tức khớp nối lại thành từ khóa hoàn chỉnh bừng sáng rực rỡ, tỏa ánh hào quang neon lung linh. Ở phần cuối, một nhãn phụ cùng dòng thời gian bên dưới nhẹ nhàng hiện ra để chốt lại thông điệp sự kiện với nhịp điệu dứt khoát.",
+  "hop_khi": "Phù hợp làm hook mở đầu video, thông báo khung giờ livestream, công bố tên thương hiệu hoặc hé lộ một chủ đề bất ngờ với cảm giác tò mò rồi bùng nổ năng lượng. Thích hợp khi người nói kêu gọi người xem tập trung hoặc chuẩn bị đón nhận thông tin quan trọng. Ví dụ câu nói: 'Tối nay 8 giờ mình sẽ tiết lộ một thông tin cực kỳ quan trọng', 'Buổi phát sóng trực tiếp đặc biệt nhất tháng này chính thức bắt đầu', 'Cái tên mà tất cả các bạn chờ đợi suốt thời gian qua chính là đây'.",
+  "mo_rong": "Đổi chữ 'LIVE' thành tên voucher hoặc khuyến mãi 'SALE 50%' kèm giờ mở bán -> dùng cho video bán hàng online chốt đơn giờ vàng; đổi thành tên workshop 'AI MASTER' kèm ngày giờ -> dùng cho video giáo dục tuyển sinh khóa học; đổi thành tên thương hiệu 'SPA LUX' trên nền tối sang trọng -> dùng làm intro mở màn giới thiệu cơ sở làm đẹp; đổi thành từ khóa giật gân 'BÍ MẬT' hoặc 'CẢNH BÁO' -> dùng cho video kể chuyện, drama hoặc chia sẻ đời sống; đổi màu đèn neon sang vàng kim hoặc xanh neon -> dùng cho nội dung tài chính, crypto hoặc công nghệ hiện đại.",
+  "nang_luong": "cao",
   "chu_de": [
-   "mở đầu",
-   "bật mí",
-   "livestream",
-   "sale",
-   "ra mắt",
-   "neon",
-   "từ khoá",
-   "sự kiện"
+   "đèn neon",
+   "mở màn video",
+   "hook mở đầu",
+   "thông báo livestream",
+   "ra mắt thương hiệu",
+   "chữ phát sáng",
+   "sự kiện đặc biệt",
+   "bán hàng online",
+   "khóa học workshop",
+   "bí mật bất ngờ",
+   "thời trang giải trí"
   ]
  },
  "backdrop": true

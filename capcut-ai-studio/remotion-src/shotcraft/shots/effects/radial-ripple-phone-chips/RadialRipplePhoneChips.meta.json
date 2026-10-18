@@ -83,19 +83,22 @@
   }
  ],
  "vi": {
-  "ten": "Điện thoại giữa vòng sóng + 2 nhãn tính năng",
-  "mo_ta": "Nền be ấm với bốn vòng tròn đồng tâm phập phồng lệch nhịp như gợn sóng; một chiếc điện thoại viền titan nổi lên giữa màn hình, màn hình tự cuộn chậm (ảnh app thật hoặc feed giả). Hai nhãn trắng dạng viên thuốc có biểu tượng lần lượt bật ra hai bên điện thoại rồi lơ lửng; cuối cảnh tên thương hiệu/app và câu khẩu hiệu hiện lên. Yên tĩnh, sang, kiểu poster sản phẩm.",
-  "hop_khi": "Giới thiệu một app / sản phẩm trên điện thoại và 2 điểm mạnh của nó: 'app này có AI gợi ý và đăng bài một chạm'; mở đầu hoặc kết phần giới thiệu sản phẩm di động; khoe giao diện app thật (đưa ảnh chụp màn hình).",
-  "tranh_khi": "Nội dung không liên quan điện thoại / app; cần năng lượng cao; có nhiều hơn 2 tính năng cần kể (dùng mẫu danh sách); nhãn dài hơn ~4 từ.",
-  "nang_luong": "thap",
+  "ten": "Điện thoại gợn sóng tỏa nhãn tính năng",
+  "mo_ta": "Bố cục trung tâm đặt một chiếc điện thoại thông minh viền titan đang tự động cuộn lướt giao diện ứng dụng, nổi trên nền sáng có các vòng tròn gợn sóng đồng tâm lan tỏa nhẹ nhàng. Lần lượt hai nhãn trắng hình viên thuốc có biểu tượng màu cam bật nảy ra hai bên thân máy và lơ lửng bồng bềnh, trước khi logo thương hiệu cùng câu khẩu hiệu xuất hiện ở dưới đáy. Toàn bộ chuyển động mang tính thư thái, mềm mại và tôn vinh giao diện sản phẩm.",
+  "hop_khi": "Dùng khi người nói giới thiệu một ứng dụng mới, ra mắt tính năng độc quyền trên điện thoại hoặc muốn nhấn mạnh sự tiện lợi 'tất cả trong một' ngay trong lòng bàn tay; nhịp điệu êm ái, thân thiện, khơi gợi sự tò mò muốn tải về trải nghiệm. Phù hợp với các câu nói như: 'Mọi thao tác quản lý đơn hàng giờ đây chỉ thu nhỏ trong chiếc điện thoại này', 'Đây là ứng dụng giúp bạn giải quyết cả công việc lẫn cuộc sống mà không cần cài thêm bất kỳ app nào khác', 'Chỉ với hai chạm đơn giản, trí tuệ nhân tạo sẽ tự động làm hết phần việc còn lại cho bạn'.",
+  "mo_rong": "1. Đổi ảnh màn hình thành biểu đồ chi tiêu và dòng tiền, đổi 2 nhãn thành 'Báo cáo thông minh' và 'Tự động phân bổ ví' -> Tài chính cá nhân/Fintech hướng dẫn quản lý tài chính tiện lợi. 2. Đổi màn hình thành thực đơn gọi món trực tuyến, đổi 2 nhãn thành 'Tích điểm thành viên' và 'Giao món trong 20 phút' -> F&B kích thích khách tải app nhận ưu đãi độc quyền. 3. Đổi màn hình thành phòng tập ảo 3D hoặc bài tập thể hình, đổi 2 nhãn thành 'Huấn luyện viên AI' và 'Lộ trình cá nhân hóa' -> Thể thao/Sức khỏe giới thiệu ứng dụng tập luyện tại nhà. 4. Đổi màn hình thành bản đồ tìm nhà và ảnh phòng 360 độ, đổi 2 nhãn thành 'Xem nhà thực tế ảo' và 'Định giá tự động' -> Bất động sản quảng bá tính năng tra cứu dự án tiện lợi trên điện thoại. 5. Đổi màn hình thành luồng săn deal mua sắm, đổi 2 nhãn thành 'Freeship đơn đầu' và 'Mã giảm 50%' -> Thương mại điện tử/Bán hàng online kêu gọi người xem cài app",
+  "nang_luong": "vua",
   "chu_de": [
-   "điện thoại",
-   "app",
-   "sản phẩm",
-   "tính năng",
-   "ra mắt",
-   "giới thiệu",
-   "logo"
+   "mockup điện thoại",
+   "giao diện ứng dụng",
+   "sóng lan tỏa",
+   "nhãn tính năng",
+   "ra mắt app",
+   "công nghệ di động",
+   "thương mại điện tử",
+   "tài chính cá nhân",
+   "trải nghiệm người dùng",
+   "tiện ích số"
   ]
  },
  "backdrop": true

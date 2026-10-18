@@ -124,19 +124,24 @@
   }
  ],
  "vi": {
-  "ten": "Khung màu thương hiệu bật đổi chế độ",
-  "mo_ta": "Một khung viền màu dày mọc ra ôm quanh màn hình, cửa sổ phần mềm thiết kế (cột lớp, thẻ giá ở giữa với nút được chọn, cột thuộc tính) rơi lò xo vào trong khung; con trỏ bấm nút gạt trên thanh tiêu đề và ĐÚNG khung hình đó cả viền đổi màu (xanh → cam), giao diện đổi sang chế độ code tối, đường đo kích thước hiện ra, chữ chế độ trên viền đổi theo, có chớp sáng và nảy nhẹ.",
-  "hop_khi": "Nói về chuyển chế độ / chuyển giai đoạn trong một phần mềm: thiết kế → lập trình, bản nháp → bản chính, người mới → chuyên gia, chế độ sáng → tối; giới thiệu tính năng 'chỉ một nút bấm'; demo app thiết kế, website, công cụ làm việc; chuyển chương hai phần của video.",
-  "tranh_khi": "Không có ý 'hai chế độ / trước và sau' trong lời nói; nội dung không liên quan phần mềm; dùng quá 2 lần trong video.",
-  "nang_luong": "vua",
+  "ten": "Khung viền snap đổi chế độ",
+  "mo_ta": "Khung viền màu bo quanh toàn màn hình cùng cửa sổ ứng dụng nảy lò xo vào giữa trên nền mờ, với tiêu đề lớn ở trên và phụ đề ở dưới. Đúng lúc con trỏ chuột bấm nút chuyển trên thanh công cụ, toàn bộ khung viền lập tức snap đổi màu và giao diện bên trong chuyển sang chế độ làm việc mới. Nhịp chuyển động nảy dứt khoát, hiện đại và tạo cảm giác tương tác phần mềm chân thực.",
+  "hop_khi": "Phù hợp khi người nói giới thiệu tính năng chuyển đổi 2 trạng thái đối lập, công bố phiên bản hoặc gói tính năng mới chỉ bằng một thao tác đơn giản; nhịp dứt khoát, hào hứng và hiện đại. Ví dụ câu nói: 'Chỉ cần đúng một cú click, toàn bộ giao diện sẽ chuyển sang chế độ làm việc chuyên nghiệp.', 'Từ bản phác thảo thô, bấm một nút là hệ thống tự động tối ưu hóa toàn bộ.', 'Bạn có thể linh hoạt chuyển đổi giữa hai chế độ bất cứ lúc nào tùy theo nhu cầu.'",
+  "mo_rong": "Đổi nội dung thẻ giá và danh sách tính năng thành bảng báo giá khóa học (gói Cơ bản sang VIP), đổi màu viền xanh sang vàng cam -> dùng cho giáo dục, bán khóa học; Đổi 2 chế độ thành Chăm sóc da ban ngày và Ban đêm, đổi màu viền xanh pastel sang tím than -> dùng cho review mỹ phẩm, spa, làm đẹp; Đổi giao diện thành app đặt phòng từ Phòng tiêu chuẩn sang Phòng tổng thống, màu viền sang đỏ đô -> dùng cho du lịch, khách sạn; Đổi 2 chế độ thành Ăn kiêng và Xả cơ, màu viền xanh lá sang cam rực -> dùng cho thể hình, dinh dưỡng; Đổi giao diện thành so sánh Lãi suất tiết kiệm và Lợi nhuận đầu tư -> dùng cho tài chính, bảo hiểm.",
+  "nang_luong": "cao",
   "chu_de": [
+   "đổi chế độ",
+   "chuyển trạng thái",
+   "bảng giá",
+   "công nghệ",
    "phần mềm",
-   "chuyển chế độ",
-   "thiết kế",
-   "lập trình",
-   "app",
-   "giao diện",
-   "chuyển chương"
+   "tính năng mới",
+   "giao diện app",
+   "giáo dục",
+   "làm đẹp",
+   "thể hình",
+   "tài chính",
+   "dịch vụ"
   ]
  },
  "backdrop": true

@@ -137,21 +137,23 @@
   }
  ],
  "vi": {
-  "ten": "Bấm nút — vật che quét qua — xong ngay",
-  "mo_ta": "Trang sáng tông cát ấm: ảnh lớn + tiêu đề serif + 2 thông số + giá + nút màu đất nung; nút bị bấm xuống, hiện vòng xoay 'đang xử lý', rồi một mảng tối mờ như vật đi ngang sát ống kính quét qua toàn màn hình và khi nó đi khỏi thì đã là trang kết quả: tiêu đề lớn 'Xong rồi…', vé xác nhận có ảnh, mã số và con dấu tích bật xuống. Liền mạch như một cú máy.",
-  "hop_khi": "Người nói kể quy trình 'chỉ cần bấm một cái là xong' — đặt vé, đặt lịch, thanh toán, đăng ký, mua hàng online, gửi đơn; khoe app làm mọi thứ nhanh gọn; trước/sau của một thao tác.",
-  "tranh_khi": "Không có hành động 'bấm → kết quả'; nội dung tối, gắt, công nghệ lạnh; cần hiện số liệu nhiều; người nói đang kể chuyện cảm xúc.",
+  "ten": "Thẻ đặt chỗ chuyển cảnh xác nhận",
+  "mo_ta": "Giao diện thẻ thông tin tông cát ấm hiển thị hình ảnh, tiêu đề, thông số và nút kêu gọi hành động nổi bật. Khi nút được nhấn, một bóng mờ quét ngang màn hình như cú cắt vô hình chuyển cảnh mượt mà sang giao diện xác nhận thành công. Trang kết quả hiển thị tiêu đề lớn kèm thẻ tóm tắt chuyến đi và mã xác nhận rõ ràng.",
+  "hop_khi": "Phù hợp cho khoảnh khắc xác nhận giao dịch thành công, hoàn tất thủ tục, đặt phòng/tour du lịch, chốt đơn hoặc chứng minh trải nghiệm dịch vụ tiện lợi diễn ra trong tích tắc. Cảm xúc an tâm, hào hứng, nhịp chuyển nhanh và mượt mà. Ví dụ câu nói: 'Bấm đặt phòng một cái là có vé xác nhận gửi về email ngay lập tức.', 'Thanh toán siêu nhanh, mã vé đã sẵn sàng để bạn lên đường.', 'Chỉ mất đúng 3 giây là thủ tục đăng ký của bạn đã hoàn tất.'",
+  "mo_rong": "Đổi ảnh du lịch thành ảnh món ăn, đổi thông số thành thời gian giao hàng và mã đơn -> Minh họa đặt món thành công trên ứng dụng F&B; đổi ảnh phong cảnh thành ảnh căn hộ/homestay, đổi nút thành 'Đặt lịch xem nhà', chuyển sang thẻ hẹn giờ tư vấn -> Bất động sản và dịch vụ lưu trú; đổi ảnh thành bìa khóa học, đổi giá và nút thành 'Đăng ký ngay', chuyển sang thẻ cấp mã kích hoạt tài khoản -> Giáo dục trực tuyến, bán khóa học; đổi thông tin thành gói chăm sóc da/nha khoa, chuyển sang thẻ lịch hẹn có mã xác nhận -> Ngành thẩm mỹ, làm đẹp, y tế.",
   "nang_luong": "vua",
   "chu_de": [
-   "đặt vé",
-   "đặt lịch",
-   "thanh toán",
-   "app",
-   "mua hàng",
-   "du lịch",
    "chuyển cảnh",
-   "trước sau",
-   "thao tác nhanh"
+   "xác nhận thành công",
+   "đặt chỗ",
+   "du lịch",
+   "thương mại điện tử",
+   "thẻ thông tin",
+   "đặt hàng",
+   "ứng dụng",
+   "vé điện tử",
+   "dịch vụ",
+   "F&B"
   ]
  },
  "backdrop": true

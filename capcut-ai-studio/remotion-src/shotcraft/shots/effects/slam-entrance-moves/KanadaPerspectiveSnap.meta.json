@@ -87,19 +87,22 @@
   }
  ],
  "vi": {
-  "ten": "Thẻ ra mắt quăng vào phối cảnh kiểu anime",
-  "mo_ta": "Nền tím đêm, một thẻ ra mắt (ảnh/tranh hoàng hôn + tiêu đề lớn, nhãn, nút 'Xem ngay') bị QUĂNG từ trái vào với phối cảnh méo kiểu mắt cá, vệt tốc độ phía sau, rồi 'bộp' phẳng lại có nảy nhẹ, rung màn hình 2 khung và một vòng tia tập trung kiểu manga toả ra. Chữ trong thẻ trượt vào trễ một nhịp, dòng chú thích hiện từng từ bên dưới.",
-  "hop_khi": "Công bố / ra mắt một sản phẩm, tập phim, khoá học, sự kiện, bản cập nhật: 'và đây là phiên bản mới', 'tối thứ Sáu này công chiếu', 'giới thiệu khoá học X'; khoảnh khắc 'nó đến rồi' năng động, trẻ trung.",
-  "tranh_khi": "Tone nghiêm túc, chậm; không có gì để 'ra mắt'; đã dùng một cảnh đập/rung khác gần đó (tối đa 2 lần mỗi video).",
+  "ten": "Thẻ ra mắt giật phối cảnh 3D",
+  "mo_ta": "Một thẻ thông tin màu tím đậm mang phong cách tương lai lao vút từ góc vào trung tâm với hiệu ứng phối cảnh 3D méo góc rộng cực mạnh. Thẻ giật nảy dứt khoát rồi đứng yên ở giữa màn hình, làm nổi bật ảnh minh họa hoàng hôn thành phố, tiêu đề lớn và nút kêu gọi hành động. Dòng phụ đề kèm tên thương hiệu sau đó xuất hiện êm ái ở mép dưới để hoàn thiện bố cục.",
+  "hop_khi": "Phù hợp làm điểm nhấn giữ chân (hook) đầu video hoặc khoảnh khắc cao trào ra mắt sản phẩm mới, công bố tính năng đột phá, thông báo sự kiện đặc biệt hoặc mở bán đợt khuyến mãi lớn. Năng lượng bùng nổ, dứt khoát, khơi gợi sự tò mò và phấn khích. Ví dụ câu nói: 'Đây là tính năng hoàn toàn mới mà các bạn đã chờ đợi suốt thời gian qua!', 'Chính thức ra mắt bộ sưu tập giới hạn vào tối thứ Sáu tuần này.', 'Đừng bỏ lỡ phiên bản nâng cấp mạnh mẽ nhất từ trước đến nay!'",
+  "mo_rong": "Đổi ảnh thành poster khóa học, đổi chữ thành tên workshop và ngày giờ phát sóng trực tiếp -> Thông báo livestream, webinar giáo dục; đổi ảnh thành sản phẩm thời trang/giày dép, đổi badge thành 'LIMITED DROP', nút thành 'Săn ngay' -> Giới thiệu bộ sưu tập mới của thương hiệu thời trang; đổi ảnh thành món ăn đặc trưng, đổi chữ thành combo khai trương giảm 50% -> Chiến dịch khuyến mãi, khai trương quán mới ngành F&B; đổi ảnh thành thiết bị công nghệ/điện thoại, đổi màu tím sang tông đen xám kim loại -> Review và đập hộp đồ công nghệ cao cấp; đổi ảnh thành phối cảnh dự án, đổi badge thành 'MỞ BÁN ĐỢT 1' -> Giới thiệu căn hộ mẫu, lễ mở bán bất động sản.",
   "nang_luong": "cao",
   "chu_de": [
-   "ra mắt",
-   "sản phẩm",
-   "sự kiện",
-   "khoá học",
-   "phim",
-   "thông báo",
-   "cập nhật"
+   "ra mắt sản phẩm",
+   "thẻ thông tin",
+   "phối cảnh 3D",
+   "thông báo sự kiện",
+   "công nghệ",
+   "thời trang",
+   "khuyến mãi",
+   "quảng cáo",
+   "hook đầu video",
+   "giáo dục"
   ]
  },
  "backdrop": true

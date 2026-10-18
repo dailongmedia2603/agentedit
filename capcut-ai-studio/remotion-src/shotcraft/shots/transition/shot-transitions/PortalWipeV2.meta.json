@@ -124,20 +124,22 @@
   }
  ],
  "vi": {
-  "ten": "Xuyên cửa sổ — mở một thẻ thành thế giới chi tiết",
-  "mo_ta": "Màn hình tổng quan sáng kiểu app quản lý (lời chào lớn + lưới 6 thẻ dự án có bìa màu). Một thẻ nhấc nhẹ lên, các thẻ khác mờ đi; rồi thẻ đó phình to thành cả khung như một cửa sổ, bên trong là không gian xanh coban sâu: tấm kính lớn có tiêu đề + biểu đồ tự vẽ (hoặc ảnh chi tiết), hai thẻ số nổi tách lớp phía trước. Dừng hẳn để đọc.",
-  "hop_khi": "Đi từ tổng quan vào chi tiết: 'mở tính năng X ra xem', giới thiệu một mục / dự án / báo cáo cụ thể trong app, dashboard; nói về số liệu dự báo, tăng trưởng của một hạng mục; chuyển chương từ danh sách sang một mục.",
-  "tranh_khi": "Không nói về phần mềm / app / dự án; chỉ có một ý đơn lẻ không có 'danh sách → chi tiết'; nội dung cảm xúc, đời thường.",
+  "ten": "Phóng to thẻ biểu đồ tăng trưởng",
+  "mo_ta": "Màn hình mở đầu bằng giao diện ứng dụng sáng sủa gồm lời chào cá nhân hóa cùng lưới thẻ dự án đa màu sắc hiện đại. Một thẻ phân tích bất ngờ nhấc nổi lên và phóng to toàn màn hình, chuyển cảnh mượt mà vào cửa sổ dashboard xanh đen sâu thẳm. Bên trong hiển thị biểu đồ đường neon đang tăng vọt cùng hai thẻ chỉ số thống kê và tỷ lệ phần trăm nổi bật, nhịp chuyển động vô cùng êm ái và thuyết phục.",
+  "hop_khi": "DÙNG KHI / PHÙ HỢP: Chuyển ý từ tổng quan sang đi sâu phân tích một hạng mục, minh chứng số liệu kết quả, giải thích case study hoặc chứng minh độ hiệu quả. Phù hợp nhịp điệu logic, tin cậy, khoa học và thuyết phục. Ví dụ: 'Nhìn tổng thể thì rất tốt, nhưng hãy cùng đào sâu vào một con số bất ngờ này.', 'Chiến dịch tháng vừa rồi giúp chúng tôi tăng trưởng đột phá hơn 18%.', 'Đây chính là lý do vì sao phương pháp này đạt độ tin cậy lên tới 94%.'",
+  "mo_rong": "1. Thay lưới thẻ thành danh mục các khóa học, thẻ phóng to là biểu đồ tiến độ học tập kèm tỷ lệ đỗ chứng chỉ 95% -> dùng cho video edtech, luyện thi. 2. Thay thành bảng theo dõi sức khỏe, thẻ phóng to là biểu đồ giảm cân và mỡ cơ thể theo tuần -> dùng cho video huấn luyện viên thể hình, dinh dưỡng. 3. Thay lưới thành danh mục tài sản, thẻ phóng to là biểu đồ lợi nhuận danh mục cổ phiếu -> dùng cho video chứng khoán, đầu tư tài chính. 4. Thay lưới thẻ thành các kênh phân phối, thẻ phóng to là doanh số TikTok Shop bùng nổ -> dùng cho video chia sẻ kinh nghiệm kinh doanh thương mại điện tử. 5. Thay thành các mẫu thiết kế nội thất, thẻ phóng to là tiến độ hoàn thiện căn hộ mẫu -> dùng cho video kiến trúc, bất động sản.",
   "nang_luong": "vua",
   "chu_de": [
-   "app",
-   "dashboard",
    "chuyển cảnh",
-   "chi tiết",
-   "dự án",
-   "số liệu",
-   "tính năng",
-   "phân tích"
+   "giao diện app",
+   "biểu đồ tăng trưởng",
+   "dashboard phân tích",
+   "số liệu thống kê",
+   "kinh doanh",
+   "tài chính",
+   "công nghệ",
+   "case study",
+   "giáo dục"
   ]
  },
  "backdrop": true

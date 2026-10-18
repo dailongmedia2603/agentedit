@@ -70,20 +70,22 @@
   }
  ],
  "vi": {
-  "ten": "Camera kéo lên từ một dòng ra toàn bảng dữ liệu",
-  "mo_ta": "Mở đầu cận cảnh rất to một dòng trong bảng (mã đơn, tuyến, trạng thái 'Đang giao', chấm xanh nhấp nháy), các dòng khác mờ đi; rồi camera như cần cẩu nâng lên và lùi ra, từng dòng lần lượt lóe sáng khi lọt vào khung, cho đến khi thấy trọn một cửa sổ dashboard trắng: tiêu đề, con số KPI lớn đếm từ 0 lên, bảng hàng chục dòng. Cuối cùng dòng được theo dõi chuyển thành 'Đã giao' kèm dấu tick.",
-  "hop_khi": "Đi từ chi tiết ra toàn cảnh: 'mỗi ngày hệ thống xử lý hàng chục nghìn đơn', giới thiệu phần mềm quản lý / dashboard / CRM, nói về quy mô dữ liệu, theo dõi đơn hàng, vận hành tự động.",
-  "tranh_khi": "Không nói về phần mềm / dữ liệu; video tông tối; cần giới thiệu nhanh dưới 3 giây.",
-  "nang_luong": "vua",
+  "ten": "Cần cẩu lùi xa hé lộ dashboard số liệu",
+  "mo_ta": "Cú máy mở đầu bằng góc cận cảnh macro cực lớn vào một dòng trạng thái nổi bật trong bảng dữ liệu, sau đó camera nâng cao và kéo lùi ra xa (crane pull-back) lướt qua hàng loạt đơn hàng đang cập nhật liên tục. Điểm dừng mở ra trọn vẹn một bảng dashboard quản trị hiện đại với tiêu đề, nhãn trực tiếp và con số KPI quy mô lớn đếm số tăng tốc ngoạn mục. Nhịp điệu dồn dập, chuyển động máy hoành tráng mang phong cách công nghệ cao và vận hành tầm vóc.",
+  "hop_khi": "Dùng khi công bố kết quả kinh doanh đột phá, báo cáo số lượng đơn hàng khủng, chứng minh quy mô vận hành lớn hoặc liên kết một giao dịch cụ thể với bức tranh toàn cảnh. Phù hợp với khoảnh khắc khẳng định uy tín, chốt hạ kết quả, truyền cảm hứng tự hào với nhịp điệu dồn dập, uy lực. Ví dụ: 'Tính đến thời điểm hiện tại, hệ thống đã xử lý thành công hơn 48.000 đơn hàng trên toàn quốc.', 'Từ một đơn hàng nhỏ đầu tiên, quy trình tự động hóa đã giúp chúng mình mở rộng quy mô thần tốc.', 'Nhìn vào bảng số liệu trực tiếp này bạn sẽ hiểu vì sao việc tối ưu vận hành lại tạo ra doanh thu khủng đến vậy.'",
+  "mo_rong": "Đổi bảng vận đơn thành danh sách các hợp đồng cọc, số KPI thành tổng giá trị giao dịch -> dùng cho bất động sản, môi giới nhà đất cao cấp; Đổi dữ liệu thành danh sách học viên đăng ký, số lớn thành số chứng chỉ đã cấp -> dùng cho trung tâm ngoại ngữ, học viện đào tạo nghề; Đổi thành số lượng lượt khách ghé thăm hoặc số suất ăn bán ra trong ngày -> dùng cho F&B, chuỗi siêu thị, nhượng quyền thương hiệu; Đổi thành bảng phân tích tăng trưởng doanh thu hoặc số lượt tải ứng dụng mới -> dùng cho startup gọi vốn, ứng dụng SaaS, thương mại điện tử; Đổi thành số ca phẫu thuật hoặc điều trị thành công kèm danh sách khách hàng -> dùng cho y tế, phòng khám chuyên khoa, thẩm mỹ viện.",
+  "nang_luong": "cao",
   "chu_de": [
-   "dashboard",
-   "phần mềm",
-   "dữ liệu",
-   "đơn hàng",
-   "quản lý",
-   "số liệu",
-   "vận hành",
-   "app"
+   "máy cẩu",
+   "crane reveal",
+   "dashboard quản trị",
+   "đếm số kpi",
+   "báo cáo doanh thu",
+   "vận hành kho vận",
+   "bán hàng quy mô",
+   "kết quả kinh doanh",
+   "dữ liệu trực tiếp",
+   "tài chính"
   ]
  },
  "backdrop": true

@@ -5,7 +5,10 @@ export const STAGES: { id: string; label: string }[] = [
   { id: 'prepare', label: 'Chuẩn bị' },
   { id: 'brand', label: 'Tìm hiểu thương hiệu' },
   { id: 'idea', label: 'Lên ý tưởng & kịch bản' },
+  // 'images' + 'sound': chi quy trinh motion-video-director (engine 'mvd', motion/mvd.ts)
+  { id: 'images', label: 'Tạo ảnh AI' },
   { id: 'voice', label: 'Tạo giọng đọc' },
+  { id: 'sound', label: 'Nhạc & âm thanh' },
   { id: 'build', label: 'Dựng chuyển động' },
   { id: 'review', label: 'Tự kiểm tra & sửa' },
   { id: 'final', label: 'Xuất video hoàn chỉnh' },
@@ -29,6 +32,8 @@ export function stageOfTool(name: string, input: Record<string, unknown> | undef
     const run = (script: string, rest = '') => new RegExp(`(?:node|python3?)\\s+[^\\n|;&]*?${script}["']?${rest}`).test(c)
     if (run('brand\\.mjs') || run('fetch_logo\\.mjs')) return 'brand'
     if (run('precedent\\.py')) return 'idea'
+    if (run('illustrate\\.py')) return 'images'
+    if (run('voice\\.py', '\\s+(music|music-check|music-fit|sfx)\\b') || run('gen_sfx_elevenlabs\\.py') || run('procedural_sfx\\.py')) return 'sound'
     if (run('voice\\.py', '\\s+(vo|split)\\b') || run('sync\\.mjs')) return 'voice'
     if (run('render\\.mjs', '[^\\n|;&]*final\\.mp4')) return 'final'
     if (run('look\\.py') || run('lint\\.mjs')) return 'review'
@@ -37,7 +42,7 @@ export function stageOfTool(name: string, input: Record<string, unknown> | undef
   }
   if (name === 'Write' || name === 'Edit') {
     const f = String(inp.file_path || '')
-    if (/STORYBOARD\.md$|vo\.txt$/i.test(f)) return 'idea'
+    if (/STORYBOARD\.md$|vo\.txt$|TASTE\.md$|cast\.json$/i.test(f)) return 'idea'
     if (/NOTE\.md$/i.test(f)) return 'note'
     if (/\.html$/i.test(f)) return 'build'
   }
@@ -61,7 +66,7 @@ const short = (s: string, n = 220) => {
 }
 
 /** 1 dong JSON cua stream -> thong tin. Dong hong / khong quan tam -> { lines: [] }. */
-export function parseStreamLine(line: string): StreamInfo {
+export function parseStreamLine(line: string, expectSkills: string[] = ['motionmaxxing']): StreamInfo {
   const out: StreamInfo = { lines: [] }
   let d: any
   try {
@@ -73,7 +78,7 @@ export function parseStreamLine(line: string): StreamInfo {
   if (d.type === 'system' && d.subtype === 'init') {
     out.model = d.model
     out.lines.push(`Claude bắt đầu (model ${d.model || '?'})`)
-    if (Array.isArray(d.skills) && !d.skills.includes('motionmaxxing')) out.lines.push('CẢNH BÁO: Claude không nạp được skill motionmaxxing')
+    if (Array.isArray(d.skills)) for (const sk of expectSkills) if (!d.skills.includes(sk)) out.lines.push('CẢNH BÁO: Claude không nạp được skill ' + sk)
     return out
   }
   if (d.type === 'assistant' && Array.isArray(d.message?.content)) {

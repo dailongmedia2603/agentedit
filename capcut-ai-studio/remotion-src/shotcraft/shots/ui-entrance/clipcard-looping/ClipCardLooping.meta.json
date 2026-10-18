@@ -64,21 +64,23 @@
   }
  ],
  "vi": {
-  "ten": "Thẻ video nổi bật — đóng khung một đoạn cảnh thật",
-  "mo_ta": "Sân khấu tối dịu, bụi sáng bay: một tấm thẻ bo góc trồi lên từ dưới, ngả về sau rồi dựng thẳng, phóng to vừa khít và hết mờ; đoạn video thật (tắt tiếng) bừng sáng chạy bên trong, một vòng sáng màu nhấn toả ra từ mép thẻ khi thẻ đáp, một vệt sáng lướt qua mặt thẻ. Góc thẻ có nhãn kiểu 'đang phát' với chấm nháy, đáy thẻ có thanh tiến trình + mã thời gian như trình phát video. Sau đó thẻ trôi lơ lửng rất nhẹ và máy đẩy chậm vào; tiêu đề hiện từng từ và chú thích hiện từ mờ (khung dọc: thẻ lớn chiếm phần lớn khung, chữ ở dưới; khung ngang: thẻ bên trái, chữ cột phải).",
-  "hop_khi": "Muốn cho người xem THẤY một cảnh thật như bằng chứng / điểm nhấn: 'đây là cảnh thực tế ở xưởng', 'các bạn xem khách hàng phản hồi nè', hậu trường, sản phẩm đang hoạt động, kết quả trước–sau, trích một khoảnh khắc đắt giá từ chính video hoặc đoạn video người dùng đưa vào; đóng khung một đoạn quay để nó nổi bật hơn cắt thẳng.",
-  "tranh_khi": "Không có đoạn video / cảnh phù hợp để đóng khung; cảnh cần nghe tiếng gốc (thẻ luôn tắt tiếng); nội dung là con số / danh sách thuần chữ; video tone sáng rực, vui nhộn kiểu hoạt hình.",
+  "ten": "Thẻ video bo góc kèm chú thích",
+  "mo_ta": "Thẻ phát video bo góc trồi lên mượt mà ở nửa trên màn hình trên nền tối làm mờ, hiển thị video thực tế kèm nhãn kicker góc trái và thanh thời lượng bên dưới. Nửa dưới xuất hiện dòng tiêu đề chính sắc nét cùng chú thích chi tiết giải thích bối cảnh. Khung hình giữ ổn định để video tiếp tục phát tự nhiên, tạo điểm nhấn trực quan chân thực với nhịp điệu vừa phải và đĩnh đạc.",
+  "hop_khi": "Dùng khi người nói cần đưa ra bằng chứng thực tế, video hậu trường tại chỗ, hoặc clip người thật việc thật để chứng minh tính xác thực cho lời khẳng định. Phù hợp với khoảnh khắc củng cố niềm tin, đập tan nghi ngờ, cam kết chất lượng với cảm xúc chân thật, đĩnh đạc. Ví dụ: 'Đây là toàn bộ cảnh đóng gói thực tế tại kho sáng nay, hoàn toàn không dàn dựng.', 'Mình quay cận cảnh quy trình pha chế để các bạn thấy rõ từng nguyên liệu sạch.', 'Khách hàng vừa gửi lại cho mình clip phản hồi ngay sau khi nhận xe.'",
+  "mo_rong": "Đổi video kho vận thành clip khách hàng unboxing và trải nghiệm sản phẩm, đổi chữ thành lời khen -> dùng cho review mỹ phẩm, thời trang, bán hàng online; Đổi thành video màn hình điện thoại ghi lại giao dịch chuyển khoản thành công -> dùng cho tài chính, đầu tư, thông báo dịch vụ; Đổi thành video timelapse hoàn thiện nội thất hoặc tiến độ xây dựng công trình -> dùng cho bất động sản, thiết kế kiến trúc; Đổi thành video bác sĩ thực hiện liệu trình hoặc cận cảnh làn da phục hồi -> dùng cho spa, thẩm mỹ viện, nha khoa; Đổi kicker thành 'Sự cố thực tế' kèm clip đời thường -> dùng cho video kể chuyện, chia sẻ bài học khởi nghiệp.",
   "nang_luong": "vua",
   "chu_de": [
-   "video thật",
-   "cảnh thực tế",
+   "thẻ video",
+   "bằng chứng thực tế",
    "hậu trường",
-   "bằng chứng",
-   "khách hàng",
-   "sản phẩm",
-   "highlight",
-   "footage",
-   "trích đoạn"
+   "review sản phẩm",
+   "bán hàng online",
+   "uy tín",
+   "unboxing",
+   "kho vận",
+   "chia sẻ kinh nghiệm",
+   "chứng thực",
+   "giao diện video"
   ]
  },
  "backdrop": true

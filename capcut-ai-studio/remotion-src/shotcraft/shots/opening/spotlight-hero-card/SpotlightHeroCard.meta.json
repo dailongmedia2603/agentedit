@@ -6,29 +6,116 @@
  "duration": 172,
  "kind": "insert",
  "dark": true,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
  "hold": 96,
  "slots": [
-  {"id": "title", "role": "title", "sample": "Trợ lý AI chăm sóc khách hàng", "max": 40, "note": "tên sản phẩm / dự án / tính năng trên thẻ chính"},
-  {"id": "subtitle", "role": "subtitle", "sample": "Trả lời tin nhắn 24/7, tự phân loại đơn hàng và chuyển ca khó cho nhân viên.", "max": 90, "optional": true, "note": "mô tả ngắn trên thẻ chính"},
-  {"id": "tags", "role": "label", "sample": "AI|Tự động hoá", "max": 14, "list": {"min": 0, "max": 3}, "optional": true, "note": "nhãn nhỏ cuối thẻ"},
-  {"id": "label", "role": "label", "sample": "Mới ra mắt", "max": 16, "optional": true, "note": "nhãn góc phải trên thẻ (thời gian / trạng thái)"},
-  {"id": "note1", "role": "title", "sample": "Sản phẩm của bạn,", "max": 24, "note": "chú thích lớn nổi 3D cạnh thẻ, dòng 1"},
-  {"id": "note2", "role": "title", "sample": "nổi bật nhất.", "max": 22, "note": "dòng 2 của chú thích — được tô vạch màu vàng (từ khoá)"}
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Trợ lý AI chăm sóc khách hàng",
+   "max": 40,
+   "note": "tên sản phẩm / dự án / tính năng trên thẻ chính"
+  },
+  {
+   "id": "subtitle",
+   "role": "subtitle",
+   "sample": "Trả lời tin nhắn 24/7, tự phân loại đơn hàng và chuyển ca khó cho nhân viên.",
+   "max": 90,
+   "optional": true,
+   "note": "mô tả ngắn trên thẻ chính"
+  },
+  {
+   "id": "tags",
+   "role": "label",
+   "sample": "AI|Tự động hoá",
+   "max": 14,
+   "list": {
+    "min": 0,
+    "max": 3
+   },
+   "optional": true,
+   "note": "nhãn nhỏ cuối thẻ"
+  },
+  {
+   "id": "label",
+   "role": "label",
+   "sample": "Mới ra mắt",
+   "max": 16,
+   "optional": true,
+   "note": "nhãn góc phải trên thẻ (thời gian / trạng thái)"
+  },
+  {
+   "id": "note1",
+   "role": "title",
+   "sample": "Sản phẩm của bạn,",
+   "max": 24,
+   "note": "chú thích lớn nổi 3D cạnh thẻ, dòng 1"
+  },
+  {
+   "id": "note2",
+   "role": "title",
+   "sample": "nổi bật nhất.",
+   "max": 22,
+   "note": "dòng 2 của chú thích — được tô vạch màu vàng (từ khoá)"
+  }
  ],
  "images": [
-  {"id": "image", "role": "photo", "optional": true, "note": "ảnh HOẶC video sản phẩm, tỉ lệ bất kỳ; hiện ở nửa trên thẻ chính (cắt lấp khung)"}
+  {
+   "id": "image",
+   "role": "photo",
+   "optional": true,
+   "note": "ảnh HOẶC video sản phẩm, tỉ lệ bất kỳ; hiện ở nửa trên thẻ chính (cắt lấp khung)"
+  }
  ],
  "brand": "optional",
- "sfx": [{"at": 2, "type": "click"}, {"at": 40, "type": "whoosh"}, {"at": 56, "type": "whoosh"}, {"at": 68, "type": "ding"}, {"at": 142, "type": "pop"}],
+ "sfx": [
+  {
+   "at": 2,
+   "type": "click"
+  },
+  {
+   "at": 40,
+   "type": "whoosh"
+  },
+  {
+   "at": 56,
+   "type": "whoosh"
+  },
+  {
+   "at": 68,
+   "type": "ding"
+  },
+  {
+   "at": 142,
+   "type": "pop"
+  }
+ ],
  "vi": {
-  "ten": "Đèn sân khấu soi một thẻ — thẻ nổi lên làm nhân vật chính",
-  "mo_ta": "Một trang web dạng lưới nhiều thẻ dự án chìm trong bóng tối như sân khấu tắt đèn; đèn rọi vàng ấm (có cột sáng, bụi bay) bật 'tách' rồi lia tìm qua vài chỗ, khoá vào thẻ giữa. Máy quay đẩy nghiêng sát vào, thẻ bật lên lơ lửng, tia sáng vàng chạy quanh viền 2 vòng, dòng chú thích chữ trắng lớn nổi 3D cạnh thẻ (từ khoá được tô vạch vàng), rồi thẻ và chữ hạ về mặt trang. Thẻ có thể chứa ảnh/video sản phẩm.",
-  "hop_khi": "Giới thiệu MỘT sản phẩm / dự án / tính năng chủ lực giữa nhiều lựa chọn ('trong tất cả, đây là cái đáng chú ý nhất'); mở đầu video giới thiệu app, khoá học, dịch vụ; công bố sản phẩm mới, case study nổi bật.",
-  "tranh_khi": "Cần so sánh nhiều mục cùng lúc; đoạn nói ngắn dưới 3 giây (cảnh cần ~4–5 giây mới trọn nhịp); tone sáng vui nhộn.",
-  "nang_luong": "vua",
-  "chu_de": ["giới thiệu sản phẩm", "nổi bật", "ra mắt", "app", "dự án", "case study", "sân khấu"]
+  "ten": "Đèn rọi khóa thẻ sản phẩm nổi bật",
+  "mo_ta": "Khởi đầu trong không gian tối với lưới nhiều thẻ thông tin mờ ảo, một luồng đèn rọi tròn lia nhanh tìm kiếm rồi khóa chặt vào thẻ ở trung tâm. Thẻ mục tiêu bừng sáng trắng với hiệu ứng tỏa sáng viền mềm mại, phóng to nhẹ để lộ rõ tiêu đề, mô tả tính năng, thông tin phụ trách và hai tag phân loại. Ngay sau đó, dòng chữ ghi chú bên dưới xuất hiện với hiệu ứng đóng khung bo viền màu ấm nhấn mạnh trực tiếp vào từ khóa đinh.",
+  "hop_khi": "Rất hiệu quả khi người nói muốn tạo cao trào bất ngờ, công bố một tính năng đinh, đề xuất dịch vụ trọng tâm hoặc chọn ra giải pháp xuất sắc nhất giữa vô số lựa chọn; cảm xúc dứt khoát, phấn khích, tràn đầy tự tin. Phù hợp với các câu nói: 'Và đây chính là giải pháp thay đổi hoàn toàn cách vận hành của bạn...', 'Trong hàng chục tính năng thì đây là thứ bạn nhất định phải thử ngay hôm nay...', 'Sản phẩm chủ lực và bán chạy nhất đợt này của bên mình chính là em này...'",
+  "mo_rong": "Đổi thông tin thẻ thành món ăn/đồ uống best-seller kèm giá và nhãn ưu đãi -> review ẩm thực, F&B, quán ăn hot; đổi thông tin thẻ thành căn hộ/dự án bất động sản tâm điểm kèm diện tích và pháp lý -> môi giới bất động sản, tư vấn đầu tư nhà đất; đổi thông tin thẻ thành gói liệu trình chăm sóc da mụn chuyên sâu -> quảng bá dịch vụ spa, thẩm mỹ viện; đổi thông tin thẻ thành khóa học mũi nhọn kèm ưu đãi học bổng -> tuyển sinh trung tâm đào tạo, du học; đổi thông tin thẻ thành hồ sơ nhân viên xuất sắc nhất tháng -> video vinh danh nội bộ, truyền thông doanh nghiệp.",
+  "nang_luong": "cao",
+  "chu_de": [
+   "ra mắt sản phẩm",
+   "thẻ nổi bật",
+   "đèn rọi spotlight",
+   "bán hàng online",
+   "bất động sản",
+   "spa làm đẹp",
+   "f&b ẩm thực",
+   "khóa học",
+   "công nghệ ai",
+   "tôn vinh",
+   "review dịch vụ",
+   "tính năng mới"
+  ]
  },
  "backdrop": false
 }

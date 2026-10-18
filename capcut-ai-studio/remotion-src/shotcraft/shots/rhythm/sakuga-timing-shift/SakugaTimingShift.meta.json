@@ -91,20 +91,23 @@
   }
  ],
  "vi": {
-  "ten": "Thẻ nhích từng nấc rồi bứt tốc — kiểu hoạt hình vẽ tay",
-  "mo_ta": "Nền giấy vẽ hoạt hình (lỗ ghim, khung chì xanh, bảng nhịp hình phía dưới). Một thẻ viền mực đậm mang con số lớn nhích ngang từng nấc giật giật như lật sách (mỗi bước đổi tư thế, nhún lên xuống), nhãn to góc trên ghi giai đoạn chậm; đến khoảnh khắc chuyển, cả màn hình lóe nền mực với tia tập trung, nhãn đổi sang màu đỏ (vd \"BỨT TỐC!\") và thẻ lao vụt mượt về giữa có vệt tốc độ, nảy nhẹ rồi đứng yên.",
-  "hop_khi": "Câu chuyện \"lúc đầu chậm chạp, rồi bùng nổ\": tăng trưởng đột phá, áp dụng công cụ / AI xong thì nhanh gấp nhiều lần, trước-sau về tốc độ, năng suất, doanh thu tăng vọt; khoảnh khắc cao trào có số liệu ấn tượng.",
-  "tranh_khi": "Nội dung nghiêm túc / buồn; không có ý tương phản chậm-nhanh; video tông tối; cần đặt cạnh một hiệu ứng làm chậm / đóng băng thời gian khác.",
+  "ten": "Bảng nhịp hoạt họa bứt phá tốc độ",
+  "mo_ta": "Nền phong cách bàn vẽ hoạt hình có dải đo khung hình chuyển động phía dưới; một thẻ số màu trắng bước đi nhích từng nấc giật chậm rãi kèm tiêu đề giai đoạn khởi động bên góc trái. Đến giữa shot, chữ tiêu đề chuyển sang tông đỏ nghiêng bùng nổ, thẻ số đổi sang chuỗi nhịp tăng tốc nhanh giật liên hồi thể hiện sự bứt phá ngoạn mục. Nhịp điệu tương phản rõ rệt giữa hai pha, từ bước khởi đầu kiên trì chậm chắc chuyển sang cú tăng tốc bùng nổ.",
+  "hop_khi": "Dùng khi người nói đối chiếu hai giai đoạn phát triển: thời kỳ tích lũy kiên trì từng bước đối lập với khoảnh khắc nhảy vọt về doanh thu, kỹ năng hoặc thành tựu. Phù hợp với nội dung truyền cảm hứng, đúc rút bài học kinh nghiệm, khích lệ bứt phá. Ví dụ câu nói: 'Thời gian đầu đi rất chậm, nhưng một khi đã vào guồng là bứt tốc gấp ba', 'Kiên trì suốt nửa năm chỉ để chuẩn bị cho cú nhảy vọt 300% này', 'Đừng nản lòng lúc khởi động, bước tăng tốc mới là lúc hái quả ngọt'.",
+  "mo_rong": "Đổi thẻ số thành chỉ số cân nặng hoặc vòng eo để minh họa giai đoạn siết mỡ tăng cơ bứt phá phong độ (Thể hình / Sức khỏe); đổi thẻ số thành điểm số IELTS hoặc số từ vựng ghi nhớ để thể hiện giai đoạn luyện đề cấp tốc (Giáo dục / Ngoại ngữ); đổi thẻ số thành lượng người theo dõi hoặc lượt xem để mô tả bước ngoặt tăng trưởng kênh (Sáng tạo nội dung / Marketing); đổi thẻ số thành số đơn hàng hoặc doanh thu ngày sale để tôn vinh thành tích bán hàng (Kinh doanh online / F&B); đổi thẻ số thành số dư tiết kiệm để hướng dẫn lộ trình tích lũy tự do tài chính (Tài chính cá nhân).",
   "nang_luong": "cao",
   "chu_de": [
-   "tăng tốc",
-   "đột phá",
+   "bứt tốc",
    "tăng trưởng",
-   "trước sau",
-   "năng suất",
-   "con số",
-   "hoạt hình",
-   "cao trào"
+   "hoạt họa",
+   "so sánh trước sau",
+   "thống kê số liệu",
+   "doanh thu",
+   "truyền cảm hứng",
+   "thể hình",
+   "giáo dục",
+   "tài chính",
+   "sakuga"
   ]
  },
  "backdrop": true

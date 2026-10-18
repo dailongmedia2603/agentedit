@@ -22,11 +22,11 @@
  "brand": "none",
  "sfx": [{"at": 14, "type": "pop"}, {"at": 20, "type": "swoosh"}],
  "vi": {
-  "ten": "Mực loang trên giấy — mở chương mới ra ảnh",
-  "mo_ta": "Trang giấy ngà kiểu sách in: nhãn chương nhỏ, tiêu đề chữ có chân lớn (dòng 2 nghiêng) và câu phụ. Một giọt mực rơi xuống rồi loang ra với viền tua rua như mực thấm giấy, có quầng ướt nhạt bên ngoài; bên trong vết loang là ảnh của cảnh mới hiện dần, loang kín cả khung rồi đứng yên trên ảnh.",
-  "hop_khi": "Mở chương / phần mới của câu chuyện rồi dẫn vào hình ảnh minh họa: kể chuyện cá nhân, hồi tưởng, văn hóa, sách, nghệ thuật, ẩm thực truyền thống; video tone nhẹ nhàng, chậm, giấy mực.",
-  "tranh_khi": "Đoạn nhịp nhanh, năng lượng cao; video công nghệ tối màu; ảnh mới là cận mặt người hoặc logo; dùng quá 2 lần trong video.",
-  "nang_luong": "thap",
-  "chu_de": ["chuyển cảnh", "chương mới", "kể chuyện", "giấy mực", "hồi tưởng", "văn hóa", "nghệ thuật", "ảnh"]
+  "ten": "Chuyển cảnh vệt mực loang phong cách trang sách",
+  "mo_ta": "Mở đầu với trang giấy ngà cổ điển hiển thị tiêu đề phân đoạn chữ có chân thanh lịch cùng dòng chú thích phụ. Liền sau đó, một giọt mực rơi xuống và loang rộng từ tâm với mép viền răng cưa thẩm thấu chân thực như mực ăn vào thớ giấy, mở rộng dần bao trùm toàn màn hình để chuyển cảnh mượt sang hình ảnh hoặc video tiếp theo. Nhịp điệu lắng đọng, tinh tế lúc đầu rồi bung mở tự nhiên sang nội dung kế tiếp.",
+  "hop_khi": "Phù hợp cho khoảnh khắc chuyển cảnh kể chuyện (storytelling), chuyển chương mục, bước ngoặt câu chuyện hoặc chuyển từ vấn đề sang giải pháp. Mang lại sắc thái hoài niệm, sâu sắc và đậm chất điện ảnh, hoàn hảo với các câu dẫn: 'Mọi thứ bắt đầu thay đổi từ bước ngoặt này', 'Bước sang chương hai, tôi nhận ra sai lầm lớn nhất của mình', hoặc 'Để mình kể cho bạn nghe câu chuyện phía sau thành công đó'.",
+  "mo_rong": "Đổi tiêu đề thành tên địa điểm/thời gian và cảnh sau thành khung cảnh thiên nhiên -> chuyển cảnh vlog du lịch, khám phá; đổi tiêu đề thành tên món ăn gia truyền và cảnh sau thành quá trình nấu nướng -> phân đoạn ẩm thực truyền thống; đổi tiêu đề thành giai đoạn thi công và cảnh sau thành hình ảnh dự án hoàn thiện -> video tiến độ kiến trúc, bất động sản; đổi tiêu đề thành các bước chăm sóc da và cảnh sau thành clip thao tác -> chuỗi video làm đẹp, mỹ phẩm; đổi tiêu đề thành tên bài học cuộc sống -> video podcast, self-help truyền cảm hứng.",
+  "nang_luong": "vua",
+  "chu_de": ["chuyển cảnh", "vệt mực loang", "kể chuyện", "storytelling", "tiêu đề chương", "phát triển bản thân", "du lịch khám phá", "bất động sản", "ẩm thực", "điện ảnh"]
  }
 }

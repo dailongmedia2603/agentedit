@@ -60,20 +60,23 @@
   }
  ],
  "vi": {
-  "ten": "Con trỏ dẫn tour 4 khu của dashboard",
-  "mo_ta": "Giao diện web/app sáng (trắng + xanh coban) nhìn toàn cảnh với 4 thẻ chức năng; camera bay lần lượt tới từng thẻ và phóng to, con trỏ chuột đi trước chỉ vào nút rồi BẤM (vòng gợn sóng): đổi 30N→90N làm số lớn và cột nhảy lên, chấm biểu đồ bật chú thích, công tắc bật + thanh tiến độ chạy, một dòng trong bảng được chọn tích. Cuối cùng lùi ra toàn cảnh thấy cả 4 thay đổi.",
-  "hop_khi": "Giới thiệu / hướng dẫn một app, phần mềm, website, dashboard quản lý: 'vào đây xem doanh thu, bấm vào đây để bật tính năng...', demo sản phẩm SaaS, tour các tính năng chính, báo cáo số liệu kinh doanh.",
-  "tranh_khi": "Nội dung không liên quan phần mềm / số liệu; cần hiện ảnh chụp màn hình thật của sản phẩm (đây là giao diện vẽ minh hoạ); đoạn nói ngắn dưới 5 giây (cảnh dài 8 giây).",
+  "ten": "Chuột lướt tương tác bảng điều khiển",
+  "mo_ta": "Bảng điều khiển ứng dụng tông sáng hiển thị trực quan bốn thẻ chức năng gồm doanh thu, lưu lượng truy cập, danh mục bán chạy và công tắc tính năng. Con trỏ chuột lướt mượt mà qua từng thẻ, dẫn dắt góc quay phóng to và kích hoạt các phản hồi tương tác chân thực như chuyển tab nhảy số liệu, rê điểm trên biểu đồ sóng, bật công tắc và đánh dấu lựa chọn. Góc nhìn sau đó lùi về toàn cảnh hoàn chỉnh với nhịp độ nhịp nhàng, thanh thoát và đậm tính chuyên nghiệp.",
+  "hop_khi": "Phù hợp khi người nói muốn trình diễn quy trình thao tác thực tế, giới thiệu hệ sinh thái tính năng đa dạng của một nền tảng hoặc chứng minh tính trực quan, tiện lợi của sản phẩm. Nhịp điệu vừa phải, tạo cảm giác đáng tin cậy, rõ ràng và mạch lạc. Ví dụ: 'Để mình thao tác trực tiếp trên hệ thống cho các bạn xem độ mượt mà của nó', 'Nền tảng này tích hợp đầy đủ mọi công cụ bạn cần từ theo dõi số liệu đến tự động hóa', 'Chỉ với vài cú nhấp chuột đơn giản, mọi khâu quản lý phức tạp đều được xử lý gọn gàng'.",
+  "mo_rong": "Đổi bốn thẻ thành bốn bước mở tài khoản và xác thực định danh điện tử -> dùng cho ngân hàng số và fintech để hướng dẫn người dùng mới; Đổi bốn thẻ thành bốn chặng trong lộ trình học tập từ cơ bản đến nâng cao -> dùng cho giáo dục trực tuyến để minh họa nội dung khóa học; Đổi bốn thẻ thành bốn gói combo dịch vụ kèm bảng giá và tiện ích đi kèm -> dùng cho spa, thẩm mỹ viện và phòng khám khi tư vấn gói chăm sóc; Đổi bốn thẻ thành các khâu từ chọn bàn, đặt món đến thanh toán và nhận ưu đãi -> dùng cho nhà hàng, F&B khi giới thiệu app tích điểm; Đổi bốn thẻ thành các tiêu chí thẩm định hồ sơ và phê duyệt giải ngân -> dùng cho môi giới bất động sản và tài chính cá nhân.",
   "nang_luong": "vua",
   "chu_de": [
-   "app",
+   "bảng điều khiển",
    "dashboard",
-   "phần mềm",
-   "hướng dẫn",
-   "tính năng",
-   "số liệu",
-   "doanh thu",
-   "website"
+   "con trỏ chuột",
+   "hướng dẫn phần mềm",
+   "fintech",
+   "giáo dục",
+   "bán hàng",
+   "fnb",
+   "công nghệ",
+   "trải nghiệm người dùng",
+   "quy trình thao tác"
   ]
  },
  "backdrop": true

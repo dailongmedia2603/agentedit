@@ -20,11 +20,11 @@
  "brand": "none",
  "sfx": [{"at": 0, "type": "riser"}],
  "vi": {
-  "ten": "Đốm sáng góc trái lan dần thắp sáng màn hình",
-  "mo_ta": "Màn hình đen; một đốm sáng trắng nóng xuất hiện ở góc trên-trái rồi nở rộng ĐỀU như đèn pha, chỗ nào được chiếu thì trang giao diện sáng (cận cảnh, nghiêng nhẹ, camera trôi chậm): tiêu đề trang lớn hiện trước, rồi hàng tab, rồi các dòng danh sách; cuối cùng ánh sáng phủ kín toàn màn hình.",
-  "hop_khi": "Mở đầu phần giới thiệu một tính năng / trang trong app (\"tính năng thứ nhất là Thư viện…\"), chuyển cảnh từ màn đen sang màn hình sản phẩm, khoảnh khắc \"bật sáng\" ý tưởng; tone tối, tinh tế.",
-  "tranh_khi": "Cần thông tin hiện ngay lập tức; video tone sáng, vui nhộn; nội dung không liên quan giao diện / phần mềm.",
-  "nang_luong": "thap",
-  "chu_de": ["app", "tính năng", "giao diện", "chuyển cảnh", "mở đầu", "ánh sáng", "phần mềm"]
+  "ten": "Đèn rọi góc mở rộng lộ giao diện",
+  "mo_ta": "Từ màn hình tối, một chùm sáng spotlight hình cung tròn từ góc trên bên trái quét mở rộng dần sang phải và xuống dưới như ánh đèn pha hé lộ nội dung. Giao diện trang thư viện hiện rõ dần với tiêu đề lớn, hàng tab danh mục ngang và các dòng danh sách nội dung thanh lịch, cuối cùng ánh sáng bao phủ trọn vẹn toàn bộ khung hình. Chuyển động lướt êm dịu, tinh tế với nhịp độ vừa phải, mang lại cảm giác khám phá kho tàng bí mật.",
+  "hop_khi": "Dùng khi người nói chuẩn bị công bố một kho tài nguyên, bộ sưu tập công cụ, danh mục tài liệu hoặc chuyển ý sang chủ đề chia sẻ bí kíp, khai mở giải pháp mới. Phù hợp với khoảnh khắc gợi mở, gây tò mò, chia sẻ giá trị với nhịp điệu êm ái, thanh lịch. Ví dụ: 'Toàn bộ kho tài liệu mẫu này mình đã tổng hợp sẵn cho các bạn.', 'Bật mí cho các bạn một trang web có đầy đủ mọi công cụ AI cần thiết.', 'Trong mục tài nguyên này chứa hơn 100 biểu mẫu chuẩn chỉnh dành riêng cho người mới bắt đầu.'",
+  "mo_rong": "Đổi giao diện thư viện thành danh mục các khóa học trực tuyến với các tab theo trình độ -> dùng cho giáo dục, đào tạo kỹ năng, tuyển sinh; Đổi các tab thành các kênh đầu tư (Vàng, Bất động sản, Cổ phiếu, Tiết kiệm) -> dùng cho tài chính cá nhân, quản lý tài sản, đầu tư chứng khoán; Đổi thành menu thực đơn món mới hoặc bảng giá gói dịch vụ chăm sóc -> dùng cho F&B, nhà hàng ẩm thực, spa làm đẹp; Đổi danh sách thành bảng so sánh các gói phần mềm hoặc danh mục dự án mở bán -> dùng cho SaaS công nghệ, bất động sản nghỉ dưỡng; Đổi thành kho thư viện prompt AI hoặc bộ plugin hữu ích -> dùng cho công nghệ AI, thiết kế đồ họa, marketing.",
+  "nang_luong": "vua",
+  "chu_de": ["đèn rọi", "spotlight reveal", "kho tài nguyên", "thư viện tài liệu", "giao diện phần mềm", "danh mục tab", "giáo dục", "công nghệ AI", "bật mí", "khám phá"]
  }
 }

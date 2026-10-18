@@ -85,20 +85,22 @@
   }
  ],
  "vi": {
-  "ten": "Menu ứng dụng hiện từng mục — tiêu đề bên cạnh",
-  "mo_ta": "Nền than chì tối: một cột menu kiểu thanh bên ứng dụng (icon nét mảnh + tên mục + phím tắt/số) hiện TỪNG MỤC cách nhau đều, mỗi mục phóng nhẹ từ mờ sang nét rồi 'khớp' vào chỗ; mục đầu là thanh trắng sáng có vệt lóe; cả cột trôi lên rất chậm như đang thở. Khi danh sách hiện được nửa, tiêu đề lớn và câu phụ trồi lên bên cạnh (khung dọc: bên dưới).",
-  "hop_khi": "Liệt kê 3-8 mục theo kiểu giao diện: các tính năng / mục menu của một app, phần mềm, website; các bước, các gói dịch vụ, mục lục video; đoạn dẫn chậm rãi khi giới thiệu giao diện sản phẩm.",
-  "tranh_khi": "Danh sách cần số liệu so sánh (dùng biểu đồ); khoảnh khắc cao trào cần đập mạnh; nội dung đời thường không liên quan app/giao diện (dùng mẫu danh sách khác).",
-  "nang_luong": "thap",
+  "ten": "Menu danh sách xếp tầng kèm tiêu đề",
+  "mo_ta": "Ở nửa trên màn hình, một danh sách menu dạng thẻ giao diện bo góc hiện đại lần lượt trượt xuống và xếp lớp theo hiệu ứng thác nước mượt mà, mục đầu tiên nổi bật với nền trắng tương phản kèm phím tắt và huy hiệu thông báo màu cam bắt mắt. Cùng lúc ở nửa dưới, thẻ nhãn nhỏ phát sáng xuất hiện trước, theo sau là dòng tiêu đề lớn màu trắng sắc nét và câu mô tả chi tiết. Toàn bộ bố cục trôi nhẹ nhàng tạo chiều sâu không gian thanh lịch và đậm chất công nghệ.",
+  "hop_khi": "Dùng khi người nói hệ thống hóa kiến thức, liệt kê các phân mục trong một giải pháp tổng thể, giới thiệu các tính năng trên thanh công cụ hoặc tóm lược các gói dịch vụ; phong thái chuyên nghiệp, mạch lạc và đáng tin cậy. Ví dụ: 'Mọi công cụ bạn cần đều nằm gọn trong bàn làm việc này.', 'Đây là 5 phân mục bạn phải kiểm soát khi xây dựng hệ thống.', 'Toàn bộ quy trình vận hành gói gọn trong một nền tảng duy nhất.'",
+  "mo_rong": "Đổi các mục thành các bước quy trình -> video hướng dẫn đăng ký tài khoản hoặc sử dụng ứng dụng; đổi thành các gói dịch vụ và bảng giá chi tiết -> video báo giá agency, nha khoa hoặc spa thẩm mỹ; đổi thành danh sách phòng ốc và tiện ích nội khu -> video review căn hộ cao cấp hoặc tour du lịch nghỉ dưỡng; đổi thành danh sách món ăn đặc sắc -> video giới thiệu thực đơn quán ăn F&B; đổi thành các vị trí đang tuyển -> video tuyển dụng nhân sự doanh nghiệp.",
+  "nang_luong": "vua",
   "chu_de": [
-   "danh sách",
-   "menu",
-   "app",
-   "giao diện",
-   "tính năng",
-   "các bước",
-   "mục lục",
-   "phần mềm"
+   "giao diện menu",
+   "danh sách xếp tầng",
+   "hệ thống hóa quy trình",
+   "giới thiệu tính năng",
+   "bảng giá dịch vụ",
+   "công nghệ phần mềm",
+   "bất động sản",
+   "ẩm thực F&B",
+   "tuyển dụng nhân sự",
+   "hướng dẫn thao tác"
   ]
  },
  "backdrop": true

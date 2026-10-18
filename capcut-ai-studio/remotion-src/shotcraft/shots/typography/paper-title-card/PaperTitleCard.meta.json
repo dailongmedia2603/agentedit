@@ -6,25 +6,73 @@
  "duration": 55,
  "kind": "insert",
  "dark": false,
- "portrait": {"mode": "native"},
- "rate": [0.75, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.75,
+  1.2
+ ],
  "hold": 44,
  "slots": [
-  {"id": "title", "role": "title", "sample": "Mỗi dự án đều được nối thẳng vào báo cáo tuần.", "max": 70, "note": "MỘT câu cụ thể (tên tính năng + lợi ích), 5-12 từ"},
-  {"id": "accent", "role": "label", "sample": "báo cáo tuần", "max": 24, "optional": true, "note": "1-3 từ chép NGUYÊN VĂN từ title để nhấn nghiêng màu; trống = từ cuối"},
-  {"id": "number", "role": "number", "sample": "12", "max": 6, "optional": true, "note": "chỉ chữ số (cuộn kiểu đồng hồ) đứng trước subtitle"},
-  {"id": "subtitle", "role": "label", "sample": "video đã xuất hôm nay", "max": 36, "optional": true, "note": "dòng chữ nhỏ in hoa kiểu mono, đi kèm con số"}
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Mỗi dự án đều được nối thẳng vào báo cáo tuần.",
+   "max": 70,
+   "note": "MỘT câu cụ thể (tên tính năng + lợi ích), 5-12 từ"
+  },
+  {
+   "id": "accent",
+   "role": "label",
+   "sample": "báo cáo tuần",
+   "max": 24,
+   "optional": true,
+   "note": "1-3 từ chép NGUYÊN VĂN từ title để nhấn nghiêng màu; trống = từ cuối"
+  },
+  {
+   "id": "number",
+   "role": "number",
+   "sample": "12",
+   "max": 6,
+   "optional": true,
+   "note": "chỉ chữ số (cuộn kiểu đồng hồ) đứng trước subtitle"
+  },
+  {
+   "id": "subtitle",
+   "role": "label",
+   "sample": "video đã xuất hôm nay",
+   "max": 36,
+   "optional": true,
+   "note": "dòng chữ nhỏ in hoa kiểu mono, đi kèm con số"
+  }
  ],
  "images": [],
  "brand": "none",
- "sfx": [{"at": 3, "type": "swoosh"}],
+ "sfx": [
+  {
+   "at": 3,
+   "type": "swoosh"
+  }
+ ],
  "vi": {
-  "ten": "Thẻ chữ giấy — ép từng từ một câu",
-  "mo_ta": "Trên ảnh nền sáng theo chủ đề (không có ảnh nền: giấy trắng ngà ấm), một câu serif lớn ở giữa hiện TỪNG TỪ như được ép in (từ to hơn, mờ nhòe rồi nén xuống rõ nét), một từ khoá nghiêng màu nhấn; gạch ngang màu nhấn kéo ra bên dưới, dòng chữ nhỏ kèm con số cuộn kiểu đồng hồ; cuối cảnh chữ mờ đi. Rất ngắn (~1,8 giây), nhẹ nhàng.",
-  "hop_khi": "Khoảng nghỉ giữa hai đoạn nhiều thông tin; câu dẫn trước khi giới thiệu một tính năng/phần mới (\"Tiếp theo là…\", \"Điều quan trọng nhất là…\"); một câu giá trị cốt lõi ngắn gọn; tone tri thức, doanh nghiệp, chia sẻ kinh nghiệm.",
-  "tranh_khi": "Câu dài quá 12 từ hoặc nhiều ý; khoảnh khắc cần năng lượng cao; video tone tối, gắt; cần giữ chữ trên màn hình lâu.",
+  "ten": "Thẻ chữ Serif dập nổi phong cách báo chí",
+  "mo_ta": "Nền sáng thanh lịch mờ ảo làm nổi bật khối văn bản font Serif trang nhã hiện dần từng từ ở trung tâm như mực dập in cơ học. Cụm từ khóa chính được tạo điểm nhấn bằng màu cam nổi bật và font chữ nghiêng, bên dưới có dòng số liệu đo lường chạy vào tinh tế. Chuyển động nhẹ nhàng, chỉn chu, mang hơi hướng xuất bản báo chí cao cấp.",
+  "hop_khi": "Dùng khi người nói đúc kết một triết lý cốt lõi, công bố số liệu tổng kết quan trọng, trích dẫn định hướng hoặc chuyển sang phần tổng kết bài học sâu sắc. Phù hợp với nhịp nói trầm tĩnh, truyền cảm, có trọng lượng và cần sự tập trung lắng đọng của người xem. Ví dụ: 'Mỗi dự án đều được nối thẳng vào báo cáo tuần của bạn', 'Kỷ luật chính là chiếc cầu nối giữa mục tiêu và thành tựu', 'Hơn 12 hợp đồng lớn đã được ký kết chỉ trong buổi sáng'.",
+  "mo_rong": "Đổi câu chữ thành triết lý đầu tư, số liệu thành Lãi suất 18%/năm -> video chia sẻ tư duy tài chính, chứng khoán; đổi câu chữ thành thông điệp chăm sóc sức khỏe, số liệu thành 2 lít nước mỗi ngày -> video phong cách sống, wellness, dinh dưỡng; đổi câu chữ thành nhận xét của chuyên gia hoặc báo chí, số liệu thành Top 1 xu hướng -> video xây dựng thương hiệu cá nhân, PR dịch vụ cao cấp; đổi câu chữ thành lời cam kết bảo hành, số liệu thành Cam kết đổi trả 30 ngày -> video bán lẻ đồ gia dụng, thời trang chất lượng cao; đổi câu chữ thành châm ngôn sống, số liệu thành 3 năm kiên trì -> video podcast, tự sự, truyền cảm hứng khởi nghiệp.",
   "nang_luong": "thap",
-  "chu_de": ["câu dẫn", "chương mới", "thông điệp", "câu chốt", "chuyển cảnh", "tiêu đề"]
+  "chu_de": [
+   "chữ báo chí",
+   "trích dẫn sâu sắc",
+   "serif thanh lịch",
+   "tổng kết số liệu",
+   "triết lý sống",
+   "tài chính",
+   "xây dựng thương hiệu",
+   "podcast",
+   "chăm sóc sức khỏe",
+   "thời trang"
+  ]
  },
  "backdrop": true
 }

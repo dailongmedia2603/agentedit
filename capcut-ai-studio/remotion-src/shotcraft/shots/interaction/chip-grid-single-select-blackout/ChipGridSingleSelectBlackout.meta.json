@@ -98,20 +98,22 @@
   }
  ],
  "vi": {
-  "ten": "Chọn một lựa chọn — nút đổi đen, hiện giá kết quả",
-  "mo_ta": "Nền trắng kiểu trang thanh toán của app: câu hỏi to ở trên, 3–6 nút lựa chọn bo tròn bật lên. Con trỏ chuột lướt vòng cung tới nút đầu tiên và bấm: nút chớp xám 1 khung rồi chuyển đen chữ trắng có dấu tích, các nút khác mờ đi tại chỗ rồi biến mất; nút đen bay lên giữa, bên dưới giá cũ hiện ra rồi bị gạch ngang, giá mới hiện rất to từng chữ số, cuối cùng bật ra viên nhãn xanh “tiết kiệm…”.",
-  "hop_khi": "Nói về việc chọn gói / chọn phương án và kết quả của lựa chọn đó: gói năm rẻ hơn gói tháng, chọn gói phù hợp, ưu đãi giảm giá, so sánh giá trước–sau, “chỉ cần chọn … là được …”; demo thao tác chọn trong app / trang thanh toán.",
-  "tranh_khi": "Không có lựa chọn hay con số kết quả cụ thể; nội dung cảm xúc / kể chuyện; video tone tối; lựa chọn dài cả câu.",
+  "ten": "Chọn nút thanh toán hiện giá ưu đãi",
+  "mo_ta": "Từ câu hỏi đặt ở trên, một lưới các nút bo tròn màu xám nhạt lần lượt xuất hiện đại diện cho các lựa chọn. Con trỏ chuột lướt vào bấm chọn một nút khiến nó đổi sang màu đen nổi bật với dấu tích, các nút còn lại mờ dần và biến mất. Nút đã chọn trượt lên giữa nhường chỗ cho mức giá cũ bị gạch ngang, giá mới in to đậm cùng huy hiệu ưu đãi tiết kiệm xuất hiện bên dưới.",
+  "hop_khi": "Phù hợp khi người nói đưa ra lời khuyên chọn gói dịch vụ tối ưu, so sánh và chốt phương án mua sắm, hoặc công bố mức giá khuyến mãi hời nhất cho khách hàng. Hợp với nhịp nói dẫn dắt, giải thích rồi chốt đơn dứt khoát. Ví dụ: 'Nếu bạn đang phân vân thì gói theo năm là phương án tiết kiệm nhất', 'Nhiều người hỏi mình nên chọn combo nào, câu trả lời chính là gói này', 'Giá gốc gần nửa triệu nhưng hôm nay bạn chỉ cần bỏ ra đúng 349 cành'.",
+  "mo_rong": "Đổi các nút thành kích thước/màu sắc sản phẩm và hiện giá sale -> shop thời trang hoặc mỹ phẩm chốt đơn trực tiếp; đổi thành các gói tập gym/yoga và hiện chi phí ưu đãi -> phòng tập thể hình tuyển học viên; đổi thành các gói dịch vụ làm răng/spa và hiện giá khuyến mãi -> nha khoa thẩm mỹ báo giá dịch vụ; đổi các nút thành các gói bảo hiểm -> tư vấn viên tài chính gợi ý gói bảo hiểm phù hợp; đổi các nút thành các khóa học -> trung tâm đào tạo hướng dẫn học viên chọn lộ trình.",
   "nang_luong": "vua",
   "chu_de": [
-   "lựa chọn",
-   "giá",
-   "gói dịch vụ",
-   "khuyến mãi",
+   "chọn gói dịch vụ",
+   "bảng giá ưu đãi",
    "thanh toán",
-   "app",
-   "so sánh",
-   "tiết kiệm"
+   "thương mại điện tử",
+   "bán hàng chốt đơn",
+   "tư vấn gói cước",
+   "tiết kiệm chi phí",
+   "khuyến mãi",
+   "giao diện app",
+   "so sánh giá"
   ]
  },
  "backdrop": true

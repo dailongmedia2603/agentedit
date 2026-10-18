@@ -103,20 +103,22 @@
   }
  ],
  "vi": {
-  "ten": "Máy quét phân tích trang web — khung ngắm + nhãn",
-  "mo_ta": "Một trang web bán hàng tông be (logo, menu, tiêu đề lớn, mô tả, nút bấm, ảnh sản phẩm, bảng màu) nằm trong cửa sổ trình duyệt. Một vạch quét xanh lam chạy đều từ trên xuống; quét qua khối nào, khối đó bị 4 góc khung ngắm thu vào bắt nét (nảy nhẹ) rồi một nhãn xanh tự gõ tên khối (LOGO, MENU, TIÊU ĐỀ, CTA…); dòng trạng thái phía trên đếm tín hiệu 00/06 → 06/06. Khung dọc: trang dạng mobile xếp dọc.",
-  "hop_khi": "Nói về AI / công cụ phân tích, đọc hiểu website, thương hiệu, landing page; 'AI sẽ quét trang của bạn và chỉ ra…'; audit / chấm điểm website, SEO, thiết kế; giải thích cấu trúc một trang bán hàng.",
-  "tranh_khi": "Nội dung không liên quan web / thiết kế / phân tích; cần năng lượng cao; video tone tối.",
+  "ten": "Tia quét phân tích giao diện đa điểm",
+  "mo_ta": "Khung giao diện website bán hàng nằm gọn trên nền màu be sang trọng, một thanh quét tia sáng ngang chuyển động trượt dần từ đỉnh xuống đáy. Khi tia quét đi qua từng khu vực từ logo, tiêu đề, nút bấm cho đến ảnh sản phẩm và bảng màu, các thẻ nhãn chú thích kỹ thuật màu xanh lập tức bật nảy ghim chặt vào từng vị trí. Khi quét xong, góc trên chuyển trạng thái sang đã phân tích và bốn góc ngàm khóa cố định, nhịp độ mượt mà hiện đại.",
+  "hop_khi": "Dùng khi người nói phân tích cấu trúc trang web, bóc tách các thành phần của một trang đích bán hàng (landing page), giải mã chiến lược sắp đặt hình ảnh hoặc hướng dẫn tối ưu trải nghiệm người dùng. Cảm giác sắc sảo, tính thị phạm cao, mang đậm tính chuyên môn. Ví dụ câu nói: 'Cùng mình bóc tách xem trang landing page này giữ chân khách hàng như thế nào', 'Từng chi tiết từ tiêu đề đến nút kêu gọi hành động đều được tính toán kỹ', 'Một website chuyển đổi cao cần phải đạt đủ các tiêu chuẩn sau'.",
+  "mo_rong": "Đổi trang web thành giao diện bài viết Facebook hoặc TikTok để phân tích công thức viết bài nghìn đơn (Content marketing); đổi thành giao diện ứng dụng ngân hàng hoặc fintech để đánh giá độ thân thiện người dùng và tính năng bảo mật (Tài chính / App công nghệ); đổi thành ảnh trang sản phẩm mỹ phẩm hoặc thời trang để mổ xẻ cách phối màu kích thích tâm lý mua sắm (Thương mại điện tử / Bán lẻ); đổi thành hồ sơ ứng viên CV để phân tích cách trình bày gây ấn tượng với nhà tuyển dụng (Tuyển dụng / Phát triển sự nghiệp); đổi thành menu điện tử của quán cà phê để hướng dẫn mẹo upsell món đắt tiền (F&B / Quản lý nhà hàng).",
   "nang_luong": "vua",
   "chu_de": [
-   "AI",
-   "phân tích",
-   "website",
+   "quét giao diện",
+   "phân tích website",
    "landing page",
-   "thương hiệu",
-   "thiết kế",
-   "quét",
-   "audit"
+   "chú thích kỹ thuật",
+   "đánh giá ứng dụng",
+   "tiếp thị số",
+   "thương mại điện tử",
+   "bóc tách chi tiết",
+   "công nghệ",
+   "thiết kế"
   ]
  },
  "backdrop": true

@@ -104,21 +104,22 @@
   }
  ],
  "vi": {
-  "ten": "Màn hình sóng trực tiếp — đột biến vọt đỉnh",
-  "mo_ta": "Màn hình giám sát nền xanh đêm phủ kín khung: đường sóng phát sáng chạy liên tục từ phải sang trái như máy đo nhịp, con số lớn nhảy theo thời gian thực, chấm LIVE nhấp nháy. Giữa chừng sóng vọt một đỉnh nhọn màu đỏ san hô, số lớn phóng to và đỏ lên, nhãn sự kiện ghim ở đỉnh kèm giá trị; cuối cùng dòng chảy phanh lại (TẠM DỪNG) và máy quay khẽ đẩy về đỉnh.",
-  "hop_khi": "Nói về số liệu TRỰC TIẾP / thời gian thực bỗng tăng vọt: lượt truy cập, đơn hàng flash sale, người xem livestream, video viral, server quá tải, giá coin/cổ phiếu nhảy, hệ thống giám sát, dashboard vận hành.",
-  "tranh_khi": "Số liệu tăng đều theo tháng/năm (dùng biểu đồ tăng trưởng); so sánh nhiều nhóm; câu không có con số; tone nhẹ nhàng đời sống.",
+  "ten": "Biểu đồ sóng xung kích đột biến",
+  "mo_ta": "Mô phỏng bảng điều khiển giám sát thời gian thực với nhãn trạng thái trực tiếp, con số tổng lớn nhảy liên tục cùng hai chỉ số kỹ thuật phụ ở phía trên. Phía dưới là đường sóng dao động phát sáng chạy từ phải sang trái, bất ngờ xuất hiện một đỉnh sóng vọt cao màu đỏ san hô kèm thẻ ghim ghi nhận sự kiện đột biến. Đỉnh sóng dựng đứng tạo điểm nhấn giật mình trước khi màn hình chuyển sang trạng thái tạm dừng đóng băng dữ liệu để người xem đọc rõ chỉ số cao nhất.",
+  "hop_khi": "Dùng khi người nói công bố số liệu tăng vọt bất thường, một sự cố nghiêm trọng, thành tích bùng nổ kỷ lục hoặc biến động thị trường khốc liệt; cảm xúc kịch tính, khẩn cấp hoặc phấn khích tột độ. Ví dụ câu nói: 'Đúng vào khung giờ flash sale, lượng truy cập bỗng tăng đột biến gấp năm lần bình thường!', 'Hệ thống vừa ghi nhận một đợt tấn công mạng với lưu lượng dữ liệu tăng vọt.', 'Chỉ sau một đêm, doanh số bán lẻ đã lập đỉnh cao nhất trong lịch sử cửa hàng.'",
+  "mo_rong": "Đổi thành nhịp tim và calo tiêu thụ, đỉnh nhọn là nhịp tim tối đa khi tập cardio -> video thể hình, gym, sức khỏe; đổi thành đường giá vàng hoặc cổ phiếu, đỉnh nhọn là phiên bùng nổ giá -> video tài chính, đầu tư chứng khoán, tiền số; đổi thành số đơn hàng phát sinh trong phiên livestream -> video bán hàng thương mại điện tử; đổi thành lượng người chơi đồng thời (CCU) bị quá tải máy chủ -> video tin tức công nghệ, game; đổi thành mức độ căng thẳng (stress level) trong ngày -> video phong cách sống, sức khỏe tinh thần.",
   "nang_luong": "cao",
   "chu_de": [
-   "số liệu",
-   "thời gian thực",
-   "dashboard",
-   "giám sát",
-   "đột biến",
-   "tăng vọt",
-   "livestream",
-   "viral",
-   "server"
+   "số liệu thời gian thực",
+   "đột biến kỷ lục",
+   "biểu đồ sóng dao động",
+   "bùng nổ doanh số",
+   "cảnh báo sự cố",
+   "tài chính chứng khoán",
+   "thương mại điện tử",
+   "công nghệ phần mềm",
+   "thể thao sức khỏe",
+   "chỉ số kỹ thuật"
   ]
  },
  "backdrop": true

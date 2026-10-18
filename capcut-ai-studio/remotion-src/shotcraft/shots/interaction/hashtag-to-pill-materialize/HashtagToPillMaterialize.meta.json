@@ -20,11 +20,11 @@
  "brand": "none",
  "sfx": [{"at": 8, "type": "typing"}, {"at": 48, "type": "pop"}, {"at": 66, "type": "swoosh"}, {"at": 83, "type": "click"}],
  "vi": {
-  "ten": "Gõ hashtag biến thành nhãn trong trang ghi chú",
-  "mo_ta": "Nền trắng, giữa màn hình gõ từng chữ '#từ khóa' với con trỏ đỏ; đến nhịp thì CẮT CỨNG thành một viên nhãn bo tròn to (biểu tượng nhãn + từ khóa), dừng một chút rồi thu nhỏ trượt lên góc trái, rồi lại cắt cứng sang trang ghi chú hoàn chỉnh nền kem: tiêu đề xanh đậm, nhãn xanh lá nằm đúng chỗ, đoạn văn phía dưới. Gọn, dứt khoát, kiểu demo app ghi chú.",
-  "hop_khi": "Nói về gắn thẻ / phân loại / hashtag / chủ đề; demo app ghi chú, nhật ký, quản lý công việc; khi người nói nêu một chủ đề rồi kể nội dung bên trong ('chủ đề hôm nay là...', 'mình ghi lại hết vào...'); giới thiệu một series theo hashtag.",
-  "tranh_khi": "Không có từ khóa ngắn rõ ràng; nội dung cảm xúc mạnh hoặc cần năng lượng cao; video tone tối.",
-  "nang_luong": "vua",
-  "chu_de": ["hashtag", "từ khóa", "ghi chú", "app", "phân loại", "chủ đề", "nhật ký"]
+  "ten": "Gõ hashtag biến thành trang ghi chú",
+  "mo_ta": "Ở giữa màn hình hiện dòng chữ gõ từng ký tự kèm con trỏ đỏ nhấp nháy, sau đó biến đổi mượt mà thành một nhãn thẻ bo tròn có biểu tượng tag. Nhãn thẻ trượt thu nhỏ vào vị trí bên dưới tiêu đề lớn, đồng thời trang ghi chú nền kem xuất hiện ngay ngắn với thanh điều hướng ở trên cùng và đoạn nhật ký chi tiết phía dưới. Nhịp gõ chữ nhanh gọn rồi mở ra trang tài liệu tĩnh, tạo cảm giác ngăn nắp và chân thực.",
+  "hop_khi": "Cực kỳ ăn khớp với khoảnh khắc người nói mở đầu câu chuyện nhật ký, chia sẻ thói quen, tâm sự bài học xương máu hoặc đúc kết trải nghiệm cá nhân sau một hành trình. Rất hợp với nhịp kể chuyện thủ thỉ, chậm rãi, gần gũi, mở đầu video bằng chủ đề cốt lõi. Ví dụ: 'Nếu được quay lại ngày đầu tiên, đây là ghi chú mình sẽ gửi cho chính mình.', 'Hành trình giảm 10kg của mình bắt đầu từ một thói quen viết nhật ký đơn giản.', 'Mỗi tối mình đều ghi lại đúng 3 điều này trước khi đi ngủ.'.",
+  "mo_rong": "Đổi hashtag thành tên kỹ năng (#tiengAnh, #lapTrinh) và đoạn văn thành bài học cốt lõi cho video kinh nghiệm tự học, phát triển bản thân; đổi hashtag thành tên món ăn (#anKieng, #eatClean) và nội dung thành công thức dinh dưỡng cho video ẩm thực, lối sống lành mạnh; đổi hashtag thành mã bất động sản (#canHo, #nhaPho) và nội dung thành thông số pháp lý, diện tích, giá bán cho video review nhà đất; đổi hashtag thành tên khách hàng (#feedback) và nội dung thành lời cảm nhận chân thực cho video chứng thực kết quả spa, thẩm mỹ; đổi hashtag thành tên sách (#docSach) và nội dung thành đoạn trích dẫn tâm đắc cho video tóm tắt sách, podcast.",
+  "nang_luong": "thap",
+  "chu_de": ["gõ chữ hashtag", "trang ghi chú", "nhật ký cá nhân", "chia sẻ trải nghiệm", "kể chuyện", "thói quen sống", "sức khỏe", "học tập", "đọc sách", "ẩm thực", "phát triển bản thân", "review"]
  }
 }

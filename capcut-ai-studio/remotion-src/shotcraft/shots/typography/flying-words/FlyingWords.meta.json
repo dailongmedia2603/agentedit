@@ -55,21 +55,23 @@
   }
  ],
  "vi": {
-  "ten": "Đường hầm từ khóa bay xuyên qua",
-  "mo_ta": "Nền xanh đêm sâu: hàng chục từ khóa (chữ trắng, vài từ xanh phát sáng, vài từ nghiêng serif) từ xa giữa màn hình lao thẳng về phía người xem, phóng to rồi vụt qua hai bên với vệt nhòe tốc độ, giữa các vòng elip mảnh và vệt sao như đang bay trong đường hầm. Câu tiêu đề chính đứng yên ở giữa, có nhãn nhỏ phía trên; chuyển động liên tục, cảm giác \"rất nhiều thứ\".",
-  "hop_khi": "Người nói kể ra cả loạt khái niệm / tính năng / kỹ năng / lĩnh vực (\"AI, dữ liệu, tự động hóa, marketing…\"), nói về lượng thông tin khổng lồ, thế giới công nghệ, mở đầu chủ đề lớn, hoặc câu chốt kiểu \"tất cả trong một\".",
-  "tranh_khi": "Chỉ có 1-2 ý cụ thể cần đọc kỹ; tone nhẹ nhàng, ấm áp, sáng màu; danh sách cần thứ tự (bước 1-2-3) vì từ khóa bay ngẫu nhiên, không đọc được hết.",
+  "ten": "Bão từ khóa bay quanh tiêu đề chính",
+  "mo_ta": "Nền tối không gian làm việc mờ ảo với tiêu đề chính in đậm màu trắng đứng yên vững chãi ở chính giữa màn hình, phía trên có nhãn phụ gọn gàng. Hàng loạt từ khóa liên tục lao từ chiều sâu ra phía trước theo hiệu ứng đường hầm 3D, phóng to dần và lướt vụt qua hai bên với độ mờ chuyển động tự nhiên. Nhịp độ trôi nhanh và dồn dập tạo chiều sâu thị giác mạnh mẽ nhưng vẫn giữ được trọn vẹn sự tập trung vào thông điệp trung tâm.",
+  "hop_khi": "DÙNG KHI / PHÙ HỢP: Khoảnh khắc tổng kết giải pháp toàn diện, giới thiệu trọn bộ công cụ, khái quát kho kiến thức đồ sộ hoặc nhấn mạnh hệ sinh thái các yếu tố cốt lõi trong một chủ đề; nhịp nói dứt khoát, hào hứng và mang tính khẳng định cao. Ví dụ câu nói: 'Mọi thứ bạn cần để làm một video chuyên nghiệp nằm ngay ở đây.', 'Để xây dựng kênh triệu view từ con số 0, bạn nhất định phải nắm rõ những yếu tố này.', 'Đây là toàn bộ quy trình chăm sóc da chuẩn y khoa mà các bác sĩ luôn áp dụng.'",
+  "mo_rong": "Đổi các từ khóa thành tên phần mềm và kỹ năng (Canva, CapCut, Premiere, kịch bản) -> Video đào tạo, hướng dẫn dựng video hoặc tuyển dụng sáng tạo nội dung; Đổi từ khóa thành các hoạt chất chuyên sâu (Retinol, BHA, Niacinamide, HA) -> Video chuyên gia da liễu, review mỹ phẩm hoặc spa làm đẹp; Đổi từ khóa thành các thuật ngữ tài chính và kênh sinh lời (cổ phiếu, lạm phát, dòng tiền, quỹ mở) -> Video tư vấn tài chính, chứng khoán hoặc kinh doanh online; Đổi từ khóa thành các tiện ích sống và dịch vụ cao cấp -> Video giới thiệu dự án bất động sản, resort du lịch; Đổi từ khóa thành các mô hình AI và tính năng mới -> Video tin tức công nghệ, review ứng dụng chuyển đổi số.",
   "nang_luong": "cao",
   "chu_de": [
-   "từ khóa",
-   "danh sách",
+   "bão từ khóa",
+   "chữ bay 3D",
+   "tiêu đề trung tâm",
+   "tổng hợp công cụ",
+   "hệ thống kiến thức",
    "công nghệ",
-   "AI",
-   "tính năng",
-   "kỹ năng",
-   "tất cả trong một",
-   "mở đầu",
-   "thông tin"
+   "giáo dục",
+   "tài chính",
+   "làm đẹp",
+   "bất động sản",
+   "marketing"
   ]
  },
  "backdrop": true

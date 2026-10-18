@@ -6,25 +6,93 @@
  "duration": 140,
  "kind": "insert",
  "dark": true,
- "portrait": {"mode": "native"},
- "rate": [0.85, 1.2],
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
  "hold": 108,
  "slots": [
-  {"id": "lead", "role": "title", "sample": "Video của bạn", "max": 18, "optional": true, "note": "cụm đứng yên đi trước các từ được chọn (vd \"Làm cho nó\", \"Sản phẩm của bạn\")"},
-  {"id": "items", "role": "item", "sample": "hiện đại|vui nhộn|cảm xúc|mạnh mẽ|của riêng bạn.", "max": 16, "list": {"min": 3, "max": 5}, "note": "1-3 từ mỗi mục, cùng loại (tính từ / lợi ích); mục đầu = trạng thái mở, MỤC CUỐI = câu chốt dừng lại"},
-  {"id": "fillers", "role": "item", "sample": "tối giản|gọn gàng|bền bỉ|tinh tế", "max": 16, "list": {"min": 4, "max": 4}, "optional": true, "note": "4 cụm mờ đệm (2 trên, 2 dưới) cùng loại với items; bỏ trống = danh sách quay vòng"},
-  {"id": "subtitle", "role": "subtitle", "sample": "Một sản phẩm, muôn vàn phong cách.", "max": 48, "optional": true, "note": "khẩu hiệu nhỏ hiện sau nhịp cuối"}
+  {
+   "id": "lead",
+   "role": "title",
+   "sample": "Video của bạn",
+   "max": 18,
+   "optional": true,
+   "note": "cụm đứng yên đi trước các từ được chọn (vd \"Làm cho nó\", \"Sản phẩm của bạn\")"
+  },
+  {
+   "id": "items",
+   "role": "item",
+   "sample": "hiện đại|vui nhộn|cảm xúc|mạnh mẽ|của riêng bạn.",
+   "max": 16,
+   "list": {
+    "min": 3,
+    "max": 5
+   },
+   "note": "1-3 từ mỗi mục, cùng loại (tính từ / lợi ích); mục đầu = trạng thái mở, MỤC CUỐI = câu chốt dừng lại"
+  },
+  {
+   "id": "fillers",
+   "role": "item",
+   "sample": "tối giản|gọn gàng|bền bỉ|tinh tế",
+   "max": 16,
+   "list": {
+    "min": 4,
+    "max": 4
+   },
+   "optional": true,
+   "note": "4 cụm mờ đệm (2 trên, 2 dưới) cùng loại với items; bỏ trống = danh sách quay vòng"
+  },
+  {
+   "id": "subtitle",
+   "role": "subtitle",
+   "sample": "Một sản phẩm, muôn vàn phong cách.",
+   "max": 48,
+   "optional": true,
+   "note": "khẩu hiệu nhỏ hiện sau nhịp cuối"
+  }
  ],
  "images": [],
  "brand": "optional",
- "sfx": [{"at": 30, "type": "click"}, {"at": 48, "type": "click"}, {"at": 66, "type": "click"}, {"at": 84, "type": "pop"}],
+ "sfx": [
+  {
+   "at": 30,
+   "type": "click"
+  },
+  {
+   "at": 48,
+   "type": "click"
+  },
+  {
+   "at": 66,
+   "type": "click"
+  },
+  {
+   "at": 84,
+   "type": "pop"
+  }
+ ],
  "vi": {
-  "ten": "Danh sách nhảy theo nhịp, viên thuốc đổi màu",
-  "mo_ta": "Nền tối, chữ cố định (vd 'Video của bạn') cạnh một viên thuốc màu; danh sách từ cuộn LÊN TỪNG NHỊP (~0,6 giây một nhịp), viên thuốc đứng yên 'bắt' từ mới, mỗi nhịp đồng loạt đổi màu viên thuốc + màu nền + kiểu chữ (đậm, nghiêng, serif, in hoa) có nảy nhẹ; 3-4 nhịp rồi dừng ở từ cuối màu vàng, khẩu hiệu nhỏ hiện bên dưới.",
-  "hop_khi": "Liệt kê nhanh nhiều tính từ/lợi ích/phong cách cùng loại (\"nhanh hơn, rẻ hơn, đẹp hơn\", \"dùng cho bán hàng, học tập, giải trí\"), nhiều chủ đề/giao diện của một app; đoạn nhịp nhanh khớp nhạc; câu \"…và quan trọng nhất là…\" với từ chốt ở cuối.",
-  "tranh_khi": "Các mục dài cả câu; nội dung trầm, nghiêm túc; chỉ có 1-2 ý; cần người xem đọc kỹ.",
+  "ten": "Cuộn từ khóa đổi phong cách theo nhịp",
+  "mo_ta": "Màn hình tối với tiêu đề cố định ở phía trên, bên dưới là danh sách từ cuộn dọc nhanh theo từng nhịp dứt khoát. Ở giữa, một viên thuốc màu nổi bật giữ cố định để bắt lấy từng từ khóa, đồng thời đổi kiểu chữ, màu sắc và ánh sáng nền tương ứng theo mỗi bước nhảy. Kết thúc bằng việc dừng lại ở từ khóa cuối cùng và mở ra dòng phụ đề giải thích gõ chữ mượt mà.",
+  "hop_khi": "Phù hợp khi người nói liệt kê dồn dập các phong cách, đặc điểm nổi bật, tính năng đa dạng hoặc sắc thái cảm xúc của một sản phẩm, dịch vụ hay cá nhân theo nhịp điệu sôi nổi, hào hứng. Thích hợp cho các đoạn cao trào ngắn để kích thích sự tò mò và ấn tượng thị giác. Ví dụ: 'Chỉ một công cụ nhưng đáp ứng mọi phong cách sáng tạo bạn cần.', 'Dù bạn thích phong cách tối giản, cá tính hay sang trọng, chúng tôi đều có.', 'Một bộ trang phục biến hóa từ thanh lịch công sở đến rực rỡ dạo phố.'",
+  "mo_rong": "Thay từ khóa thành các phân khúc đối tượng (Học sinh | Sinh viên | Dân văn phòng | Quản lý) -> video tuyển sinh, giới thiệu ứng dụng; đổi thành các công dụng nổi bật của mỹ phẩm (Dưỡng ẩm | Sáng da | Chống lão hóa | Khóa ẩm) -> video review làm đẹp; đổi thành các cấp độ kỹ năng (Cơ bản | Nâng cao | Chuyên sâu | Master) -> video khóa học giáo dục; thay bằng các vị đồ uống đặc trưng (Matcha | Trà sen | Cà phê muối | Trà đào) -> video F&B giới thiệu menu mới.",
   "nang_luong": "cao",
-  "chu_de": ["danh sách", "tính từ", "lợi ích", "phong cách", "giao diện", "app", "nhịp nhanh", "đổi chủ đề"]
+  "chu_de": [
+   "cuộn từ khóa",
+   "nhịp điệu",
+   "đổi phong cách",
+   "tính năng đa dạng",
+   "thời trang",
+   "công nghệ",
+   "mỹ phẩm",
+   "ẩm thực",
+   "giáo dục",
+   "sản phẩm nổi bật"
+  ]
  },
  "backdrop": false
 }

@@ -113,20 +113,23 @@
   }
  ],
  "vi": {
-  "ten": "Tiêu đề lớn thu nhỏ thành nhãn mục — 2 phần nối tiếp",
-  "mo_ta": "Trang giấy sáng kiểu tạp chí. Phần 1: tiêu đề chữ đậm rất lớn (chấm đỏ cuối) trồi lên từng ký tự giữa màn hình, đứng một nhịp rồi bay mượt thu nhỏ về góc trên-trái thành nhãn \"01 / …\"; bên dưới câu dẫn và 3 thẻ (ý chính, trích dẫn nền tối, ý phụ có dải nhịp) mọc ra lần lượt. Phần 2: nội dung cũ trôi lên biến mất, tiêu đề thứ hai hiện ra, một khối tô chọn màu đỏ nhạt quét qua như bôi đen chữ rồi cũng thu thành nhãn; một đoạn văn 4 dòng hiện ra, câu thứ 3 được tô chọn và nối dây sang thẻ ghi chú.",
-  "hop_khi": "Video chia chương / chia phần (\"phần một… phần hai…\"), bài giảng, chia sẻ kinh nghiệm có cấu trúc, review sách / khóa học, giải thích quy trình 2 giai đoạn kèm ý chính, trích dẫn và kết luận; tone tri thức, biên tập, dài khoảng 8 giây.",
-  "tranh_khi": "Đoạn nói ngắn dưới 6 giây; chỉ có một câu đơn lẻ; tone tối, năng lượng cao, giật gân.",
-  "nang_luong": "thap",
+  "ten": "Tiêu đề lớn co thành thẻ mục",
+  "mo_ta": "Giao diện phong cách tạp chí trên nền mờ: dòng chữ tiêu đề lớn đậm xuất hiện giữa màn hình rồi co nhỏ mượt mà, di chuyển lên góc trên bên trái biến thành nhãn đánh số đề mục. Phía dưới xuất hiện tuần tự câu dẫn và ba thẻ nội dung bo góc gồm thẻ ý chính, thẻ trích dẫn nền tối nổi bật và thẻ sóng âm thanh động. Chuyển động tiếp tục sang phần hai với tiêu đề mới bay lên thay thế nhãn cũ, hiển thị đoạn văn bản kế hoạch kèm thẻ ghi chú phân loại hai cột với nhịp điệu đĩnh đạc, chỉn chu.",
+  "hop_khi": "Phù hợp khi người nói phân tách bài chia sẻ thành các phần hoặc chương lớn, đúc kết các luận điểm mấu chốt, hoặc hệ thống hóa phương pháp luận chi tiết có trích dẫn châm ngôn. Cảm xúc điềm tĩnh, chuyên nghiệp, uy tín và giàu tính chiến lược. Ví dụ câu nói: 'Phần đầu tiên là về tư duy: ý tưởng hay nhất phải đến từ người dùng thật', 'Có hai giai đoạn sống còn mà bất kỳ người khởi nghiệp nào cũng phải vượt qua', 'Bước thứ hai là khâu thực thi: chuyển từng mục tiêu thành đầu việc cụ thể'.",
+  "mo_rong": "Đổi nội dung thành hai giai đoạn chăm sóc da (thẻ 1: làm sạch sâu, thẻ trích dẫn: lưu ý kem chống nắng, thẻ sóng âm: thời gian đắp mặt) -> ngành spa, mỹ phẩm, làm đẹp; Đổi thành quy trình chốt giao dịch bất động sản (thẻ 1: thẩm định pháp lý, thẻ trích dẫn: kinh nghiệm đàm phán giá, bảng phần 2: danh mục hồ sơ ký công chứng) -> ngành bất động sản, đầu tư; Đổi thành lộ trình học ngoại ngữ (phần 1: ngữ pháp trọng tâm, trích dẫn quy tắc vàng, phần 2: lịch luyện phản xạ hàng ngày) -> ngành giáo dục, phát triển bản thân; Đổi thành nguyên tắc quản lý tài chính cá nhân (phần 1: cắt giảm chi tiêu cố định, thẻ trích dẫn: quy tắc 50/30/20, phần 2: phân bổ danh mục tích lũy) -> ngành tài chính, chứng khoán; Đổi thành quy trình đào tạo nhân sự mới (phần 1: văn hóa doanh nghiệp, phần 2: KPI và danh sách đầu việc 30 ngày) -> ngành quản trị, tuyển dụng.",
+  "nang_luong": "vua",
   "chu_de": [
-   "chương mới",
-   "phần",
-   "tiêu đề",
-   "bài giảng",
-   "ý chính",
-   "trích dẫn",
-   "kế hoạch",
-   "tạp chí"
+   "tiêu đề thu nhỏ",
+   "phân chia đề mục",
+   "thẻ trích dẫn",
+   "sóng âm thanh",
+   "tạp chí hiện đại",
+   "kinh doanh",
+   "giáo dục",
+   "quản trị",
+   "phát triển bản thân",
+   "bất động sản",
+   "quy trình"
   ]
  },
  "backdrop": true

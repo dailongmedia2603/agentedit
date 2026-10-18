@@ -28,6 +28,7 @@ import { IS_WIN, KEY_STORE, TERM } from '../lib/platform'
 import { isFullUi } from '@/lib/clientUi'
 import { DEFAULT_LIMITS, MAX_LIMITS, clampLimit, setLimits } from '@/lib/jobQueue'
 import { SaydiSettingsCard } from '@/components/motion/SaydiSettingsCard'
+import { PhoneAgentSettingsCard } from '@/components/phoneagent/PhoneAgentSettingsCard'
 
 interface ProviderMeta {
   id: string
@@ -1290,6 +1291,7 @@ export default function SettingsPage() {
         })}
         <JobLimitsCard />
         <SaydiSettingsCard />
+        <PhoneAgentSettingsCard />
       </div>
     </div>
   )

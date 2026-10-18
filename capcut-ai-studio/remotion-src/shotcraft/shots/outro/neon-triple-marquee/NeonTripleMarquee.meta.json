@@ -17,11 +17,11 @@
  "brand": "none",
  "sfx": [{"at": 0, "type": "click"}, {"at": 5, "type": "click"}, {"at": 10, "type": "click"}, {"at": 124, "type": "click"}],
  "vi": {
-  "ten": "Tường đèn neon — 3 từ khóa chạy ngang",
-  "mo_ta": "Một bức tường gạch tối quay chéo, trên đó 3 hàng chữ neon rỗng khổng lồ (xanh băng / hồng cánh sen / vàng hổ phách) chạy ngang vô tận, hàng giữa chạy ngược chiều; mỗi lần chỉ một hàng bật sáng rực, hai hàng kia là ống kính mờ, luân phiên như bảng hiệu đêm. Mặt đất ướt phía dưới phản chiếu ánh đèn. Mở đầu ba hàng chập chờn bật điện, cuối cảnh lần lượt tắt từng hàng.",
-  "hop_khi": "Tóm tắt / chốt lại 3 từ khóa hoặc 3 giá trị của video (\"nhớ 3 điều: …\"), slogan 3 vế, đoạn cuối video trước lời kêu gọi; đoạn nhạc không lời cần lấp hình mạnh; tone đêm, trẻ, năng động.",
-  "tranh_khi": "Câu dài / cần đọc nhiều chữ; không đúng 3 từ khóa; tone nhẹ nhàng, sáng, doanh nghiệp truyền thống.",
+  "ten": "Chữ neon ba hàng chạy lướt luân phiên",
+  "mo_ta": "Khung cảnh đêm với ba hàng chữ viền neon rỗng khổ lớn chạy ngang vô tận trên bề mặt kính nhìn ra ánh đèn thành phố, trong đó hàng giữa trôi ngược chiều. Từng hàng chữ lần lượt bừng sáng rực rỡ với các gam màu neon xanh băng, hồng cánh sen và vàng hổ phách nổi bật trên nền các hàng còn lại mờ tối. Nhịp lướt dồn dập, hiệu ứng ánh sáng bừng mở bắt mắt và tràn đầy năng lượng thị giác đô thị.",
+  "hop_khi": "Phù hợp cho khoảnh khắc kêu gọi hành động (CTA), tuyên ngôn thương hiệu, nhấn mạnh khẩu hiệu 3 bước then chốt hoặc kết thúc video tạo ấn tượng thị giác khó quên. Thích hợp với tông giọng hào hứng, quyết liệt, truyền cảm hứng hoặc chốt đơn sôi nổi. Ví dụ câu nói: 'Hãy nhớ kỹ ba từ khóa này nếu bạn muốn bứt phá trong năm nay.', 'Nghĩ được, làm được, và cầm chắc kết quả trong tay!', 'Theo dõi kênh ngay hôm nay để không bỏ lỡ những cơ hội mới!'",
+  "mo_rong": "Thay 3 chữ thành 'SĂN DEAL | GIẢM SÂU | MUA NGAY' -> chốt đơn livestream và khuyến mãi bán hàng online; thay thành 'ĐĂNG KÝ | THAM GIA | NHẬN QUÀ' -> kêu gọi hành động sự kiện hoặc hội thảo workshop; thay thành 'SÁNG TẠO | KHÁC BIỆT | BỨT PHÁ' -> truyền động lực và phát triển bản thân; thay thành 'CHUYÊN NGHIỆP | TẬN TÂM | UY TÍN' -> khẳng định giá trị cốt lõi doanh nghiệp bất động sản hoặc tài chính; thay thành 'ĂN NGON | CHECK IN | CHILL HẾT NẤC' -> quảng bá quán bar, pub hoặc nhà hàng F&B nightlife.",
   "nang_luong": "cao",
-  "chu_de": ["từ khóa", "tóm tắt", "slogan", "3 ý", "kết video", "neon", "chữ chạy"]
+  "chu_de": ["chữ neon", "marquee", "kêu gọi hành động", "khẩu hiệu", "tuyên ngôn", "quảng cáo đêm", "livestream bán hàng", "thương hiệu", "truyền cảm hứng", "nightlife fnb", "giải trí"]
  }
 }

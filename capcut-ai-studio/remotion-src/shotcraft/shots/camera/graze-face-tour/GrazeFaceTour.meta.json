@@ -59,20 +59,24 @@
   }
  ],
  "vi": {
-  "ten": "Camera lướt sát mặt giao diện app (3 cảnh)",
-  "mo_ta": "Nền tối có viền neon hồng tím; một giao diện phần mềm quản lý công việc sáng màu nằm nghiêng gắt, camera bay là là sát bề mặt như lướt qua địa hình, xa thì mờ (độ sâu trường ảnh). Chữ và thẻ trên giao diện lơ lửng phía trên có bóng mờ rồi lần lượt rơi xuống dán vào giao diện khi camera đi qua. Ba cảnh nối nhau: cây thư mục bên trái → thanh tab + tiêu đề trang lớn → danh sách công việc có thanh tiến độ.",
-  "hop_khi": "Người nói giới thiệu một phần mềm / app quản lý công việc, nền tảng làm việc nhóm, công cụ năng suất, quy trình làm việc số; đoạn kể \"mọi thứ được sắp xếp trong một chỗ\", \"đội mình quản lý dự án thế này\"; B-roll công nghệ 5 giây năng lượng cao.",
-  "tranh_khi": "Cần người xem đọc kỹ chữ (chữ nằm nghiêng, chỉ lướt qua); nội dung không liên quan phần mềm / công việc; tone nhẹ nhàng, đời thường.",
-  "nang_luong": "cao",
+  "ten": "Góc quay lướt mặt bàn làm việc",
+  "mo_ta": "Góc máy 3D đặt nghiêng gắt bay là là sát bề mặt giao diện quản lý sáng màu trên nền tối viền neon tím, tạo độ sâu trường ảnh xóa phông đậm nét. Camera lướt nhanh từ thanh menu điều hướng bên trái sang bảng dự án trung tâm, các thẻ đề mục và đầu việc lơ lửng lần lượt rơi xuống dán chặt vào danh sách. Nhịp máy bay liền mạch, mượt mà và sang trọng như một cú travel shot điện ảnh.",
+  "hop_khi": "Phù hợp khi người nói dẫn dắt quy trình làm việc chuyên nghiệp, tổng kết các hạng mục dự án, hoặc giới thiệu hệ thống vận hành bài bản từ chiến lược đến hành động. Thích hợp với giọng điệu tự tin, đĩnh đạc, giải thích cấu trúc công việc trong các video chia sẻ kiến thức quản trị, agency, freelancer, năng suất làm việc. Ví dụ: 'Đây là toàn bộ quy trình 4 bước team mình dùng để ra mắt sản phẩm mới.', 'Hệ thống vận hành này giúp mình tự động hóa toàn bộ công việc mỗi ngày.', 'Để hoàn thiện một chiến dịch, đây là các đầu việc không thể bỏ qua.'.",
+  "mo_rong": "Đổi các thẻ thành quy trình chăm sóc khách hàng hoặc liệu trình dịch vụ (Khám da -> Phác đồ -> Điều trị -> Chăm sóc) cho video spa, phòng khám thẩm mỹ; đổi thanh menu và các mục thành lộ trình học tập 4 tuần cho video quảng bá khóa học online kỹ năng, ngoại ngữ; đổi các đầu mục công việc thành các bước giao dịch mua bán nhà đất (Thẩm định -> Pháp lý -> Đàm phán -> Ký cọc) cho video tư vấn bất động sản; đổi các thẻ thành các giai đoạn thiết kế thi công hoàn thiện căn hộ cho ngành kiến trúc nội thất; đổi nền sang tone trắng tối giản cùng bảng danh mục đầu tư cho video quản lý tài chính cá nhân.",
+  "nang_luong": "vua",
   "chu_de": [
-   "app",
-   "phần mềm",
-   "quản lý công việc",
-   "giao diện",
+   "giao diện làm việc",
+   "camera 3d",
+   "quy trình dự án",
+   "danh sách công việc",
+   "quản trị",
    "năng suất",
-   "làm việc nhóm",
-   "danh sách",
-   "công nghệ"
+   "công nghệ",
+   "saas",
+   "kinh doanh",
+   "bất động sản",
+   "dịch vụ",
+   "đào tạo"
   ]
  },
  "backdrop": true

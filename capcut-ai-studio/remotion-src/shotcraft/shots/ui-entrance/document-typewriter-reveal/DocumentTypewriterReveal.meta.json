@@ -109,20 +109,22 @@
   }
  ],
  "vi": {
-  "ten": "Tài liệu tự viết ra trong cửa sổ app",
-  "mo_ta": "Sân khấu tối tím: một cửa sổ ứng dụng ghi chú / tài liệu nền giấy trắng ấm lơ lửng nghiêng 3D; camera bắt đầu cận tiêu đề rồi lùi dần ra toàn cửa sổ trong khi từng dòng chữ được 'viết' ra sau con trỏ tím (tiêu đề phần được tô nền tím), hai cột bên mở ra, các tài liệu cũ rơi vào danh sách; cuối cùng câu khẩu hiệu lớn hiện từng từ bên dưới.",
-  "hop_khi": "Nói về viết báo cáo / ghi chú / soạn tài liệu / lập kế hoạch, AI viết nội dung giúp, tóm tắt cuộc họp, tổng kết tuần; demo app ghi chú, Notion, Google Docs; liệt kê kết quả công việc dạng gạch đầu dòng.",
-  "tranh_khi": "Không có nội dung dạng văn bản / danh sách; khoảnh khắc cảm xúc, năng lượng cao; nội dung quá dài (hơn khoảng 15 dòng).",
-  "nang_luong": "thap",
+  "ten": "Gõ máy tài liệu mở rộng bảng quản trị",
+  "mo_ta": "Camera cận cảnh trang tài liệu trắng với con trỏ tím gõ chữ dạng typewriter thần tốc từng tiêu đề và gạch đầu dòng nội dung. Khi gõ xong, camera lùi xa theo góc nghiêng 3D để lộ toàn bộ ứng dụng ghi chú hiện đại với các bảng lịch sử phiên bản và nhận xét xung quanh, đồng thời đáy màn hình hiện thông điệp chốt ý nổi bật. Nhịp chuyển động dứt khoát, thông minh, mang tính giải pháp công nghệ cao.",
+  "hop_khi": "Dùng khi người nói giới thiệu công cụ AI, quy trình viết nội dung tự động, cách lập kế hoạch nhanh gọn hoặc chứng minh tốc độ hoàn thành công việc vượt trội; cảm xúc ấn tượng, hiện đại, thuyết phục. Ví dụ: 'Chỉ mất chưa đầy 5 phút là bạn đã có một bản báo cáo hoàn chỉnh như thế này', 'Công cụ AI này sẽ tự động soạn thảo toàn bộ kế hoạch tuần cho bạn', 'Đây là cách mình lên dàn ý kịch bản chi tiết chỉ với một cú click'.",
+  "mo_rong": "Đổi nội dung thành kịch bản bán hàng livestream và đổi dòng chốt thành 'Lên kịch bản chỉ trong 3 phút' -> đào tạo kinh doanh online, livestream bán hàng; đổi văn bản thành giáo án/bài giảng và lịch sử thành danh sách bài tập -> giáo viên, gia sư, edtech dạy học thông minh; đổi văn bản thành thực đơn dinh dưỡng/lịch tập luyện cá nhân hóa -> huấn luyện viên thể hình, gym, giảm cân, sức khỏe; đổi văn bản thành hợp đồng dịch vụ hoặc bản báo giá chi tiết gửi khách hàng -> freelancer, agency marketing, tư vấn pháp lý; đổi văn bản thành lịch trình du lịch chi tiết từng ngày kèm bảng chi phí -> travel blogger, công ty lữ hành tour du lịch.",
+  "nang_luong": "vua",
   "chu_de": [
-   "tài liệu",
-   "ghi chú",
-   "báo cáo",
-   "app",
-   "AI viết",
-   "danh sách",
-   "năng suất",
-   "kế hoạch"
+   "gõ máy typewriter",
+   "soạn thảo tài liệu",
+   "công cụ ai",
+   "tự động hóa",
+   "năng suất công việc",
+   "kế hoạch kinh doanh",
+   "viết kịch bản",
+   "giáo dục",
+   "du lịch",
+   "sức khỏe"
   ]
  },
  "backdrop": true

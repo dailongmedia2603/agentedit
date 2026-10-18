@@ -91,20 +91,23 @@
   }
  ],
  "vi": {
-  "ten": "Chọn mục trong danh sách bay lên bảng",
-  "mo_ta": "Giao diện app tông be ấm: bảng danh sách 3-5 mục, con trỏ chuột lần lượt tick 3 mục rồi bấm nút 'Đưa lên bảng'; 3 hàng nhấc lên, bay vòng cung lệch nhịp và biến hình thành 3 thẻ ghi chú nằm nghiêng trên bảng (tiêu đề serif lớn), chỗ cũ trong danh sách thành khung nét đứt 'Đã lên bảng', bộ đếm 'mục đã ghim' tăng lên. Khung dọc: bảng + thẻ ở trên, danh sách ở dưới, thẻ bay lên.",
-  "hop_khi": "Nói về chọn lọc / lên kế hoạch / sắp xếp ý tưởng: 'mình chọn ra 3 việc quan trọng nhất', công cụ AI gợi ý rồi đưa vào kế hoạch, app quản lý công việc, Miro/Notion/Trello, chuyển danh sách thành hành động.",
-  "tranh_khi": "Không có danh sách cụ thể; các mục quá dài (> 32 ký tự); video tông tối hoặc cần nhịp gắt.",
+  "ten": "Chọn danh sách bay lên bảng kế hoạch",
+  "mo_ta": "Màn hình tông màu be ấm áp với tiêu đề trang nhã phía trên và bảng danh sách gợi ý checklist ở phía dưới. Con trỏ chuột lần lượt tích chọn ba mục rồi nhấn nút đưa lên bảng, khiến ba hàng được chọn bay vòng cung và biến hình thành ba thẻ ghi chú nằm nghiêng trên nền canvas. Chuyển động bay và ghim thẻ mượt mà, tự nhiên với nhịp điệu vừa phải, thư thái.",
+  "hop_khi": "Dùng khi đúc kết các bước hành động quan trọng từ danh sách gợi ý, lên kế hoạch chiến dịch, hoặc hướng dẫn phương pháp chọn lọc ưu tiên từ công cụ AI. Phù hợp với cảm xúc truyền cảm hứng, chỉn chu, có tính tổ chức và định hướng thực thi cao. Ví dụ: 'Từ hàng chục gợi ý của AI, mình lọc ra đúng 3 đầu việc quan trọng nhất cho tuần này', 'Sau đây là 3 bước cốt lõi bạn cần đưa ngay vào kế hoạch hành động', 'Chỉ cần tích chọn và đưa lên bảng, bạn đã có ngay một lộ trình ra mắt hoàn chỉnh'.",
+  "mo_rong": "Đổi danh sách thành các bước chuẩn bị mở quán (Chọn mặt bằng, Setup quầy bar, Tuyển nhân sự) -> dùng cho kinh doanh F&B, khởi nghiệp; đổi thành routine chăm sóc da gồm ba bước thiết yếu -> dùng cho spa, mỹ phẩm, làm đẹp; đổi thành ba thủ tục pháp lý quan trọng khi đặt cọc mua nhà -> dùng cho bất động sản, đầu tư tài chính; đổi thành lộ trình ba kỹ năng tự học ngoại ngữ hiệu quả -> dùng cho giáo dục, chia sẻ kinh nghiệm học tập.",
   "nang_luong": "vua",
   "chu_de": [
-   "app",
-   "danh sách",
-   "kế hoạch",
-   "AI",
-   "quản lý công việc",
-   "ý tưởng",
-   "giao diện",
-   "chọn lọc"
+   "lên kế hoạch",
+   "checklist công việc",
+   "thẻ ghi chú",
+   "gợi ý AI",
+   "quy trình từng bước",
+   "kinh doanh",
+   "khởi nghiệp",
+   "làm đẹp",
+   "bất động sản",
+   "giáo dục",
+   "năng suất"
   ]
  },
  "backdrop": true
