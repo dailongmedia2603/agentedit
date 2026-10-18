@@ -264,6 +264,11 @@ def fx_moments(segments, transcript_data, emotion_map_data, key_moments_data, de
                    and providers._overlap(f(s.get("src_start")), f(s.get("src_end")), st, en)]
         lays = sorted({s.get("layout") for s in sc_here} - {None})
         row["bo_cuc"] = lays or ["full"]
+        shots = [s for s in sc_here if isinstance(s.get("shot"), dict) and s.get("layout") == "graphic"]
+        if shots:
+            # canh motion graphic toan man hinh (kho shot) tu ve day du -> khong dat hieu ung trong khoang do
+            row["canh_shot_toan_man_hinh"] = [{"src_start": s.get("src_start"), "src_end": s.get("src_end"),
+                                               "ghi_chu": "KHONG dat hieu ung trong khoang nay"} for s in shots]
         aroll = [{"layout": s.get("layout"), "card_y": s.get("card_y")} for s in sc_here
                  if s.get("layout") in ("card", "circle", "split") and s.get("card_y") is not None]
         if aroll:

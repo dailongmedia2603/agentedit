@@ -34,6 +34,15 @@ Mỗi scene phủ một khoảng; các scene nối tiếp, không chồng. Kho�
   hoặc lấy CẢNH KHÁC trong video nguồn làm B-roll: `{"source_id": "source_1", "src_time": 42.0}` (video chạy
   từ giây đó, tắt tiếng) — hợp khi nguồn có cảnh cận sản phẩm / thao tác minh hoạ đúng lời đang nói.
 - `morph` (giây, 0–0.5): khung A-roll trượt/co giãn MƯỢT từ bố cục trước sang bố cục này. 0 = cắt thẳng.
+- `shot` (KHO SHOT & MOTION — motion graphic toàn màn hình dựng sẵn, danh mục đầy đủ ở cuối prompt): scene
+  `"layout": "graphic"` + `"shot": {"id": "<id trong kho>", "texts": {"<ô chữ>": "<chữ từ lời nói>"},
+  "images": {"<ô ảnh>": "<asset id>" | {"source_id": "source_1", "src_time": 42.0}}, "brand_name": "<chỉ khi lời nói nhắc tên>"}`.
+  Mẫu tự vẽ nền + chữ + chuyển động (không cần `bg` / `panel` / lớp chữ trong khoảng đó); tiếng A-roll vẫn chạy, phụ đề
+  tự ẩn khi mẫu có chữ. Mẫu loại "LỚP PHỦ" (chớp sáng…) dùng `"layout": "full"` tại điểm cắt.
+```json
+{"layout": "graphic", "source_id": "source_1", "src_start": 41.2, "src_end": 44.6,
+ "shot": {"id": "blur-slide", "texts": {"line1": "AI Agent không thay", "line2": "con người, nó nhân bản bạn."}}}
+```
 
 ## 3. ASSETS — TÀI NGUYÊN HÌNH (khai 1 lần, dùng bằng `asset` id)
 ```json
@@ -48,7 +57,7 @@ Mỗi scene phủ một khoảng; các scene nối tiếp, không chồng. Kho�
   nói lúc ảnh hiện, vị trí ảnh trên màn hình, chữ hiện cùng lúc, chủ đề video) cho AI tạo ảnh.
 - `cutout: true` = tách nền → PNG trong suốt (nhân vật, sản phẩm, icon 3D đặt đè lên video/nền).
 - `source_frame`: khung tĩnh lấy từ video nguồn (vd cận sản phẩm) — không tốn thời gian tạo.
-- Dùng: scene `panel.asset`, `bg.asset`, layer `image.asset`.
+- Dùng: scene `panel.asset`, `bg.asset`, layer `image.asset`, `shot.images`.
 
 ## 4. LAYERS — LỚP ĐỒ HOẠ
 Trường chung:

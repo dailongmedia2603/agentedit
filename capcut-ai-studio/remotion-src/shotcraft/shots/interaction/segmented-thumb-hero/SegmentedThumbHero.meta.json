@@ -1,0 +1,28 @@
+{
+ "id": "segmented-thumb-hero",
+ "component": "SegmentedThumbHero",
+ "card": "segmented-thumb-hero",
+ "category": "interaction",
+ "duration": 110,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 72,
+ "slots": [
+  {"id": "from", "role": "label", "sample": "Thủ công", "max": 14, "note": "lựa chọn / trạng thái CŨ (bên trái), 1-2 từ"},
+  {"id": "to", "role": "label", "sample": "Tự động", "max": 14, "note": "lựa chọn / trạng thái MỚI được bấm chọn (bên phải), 1-2 từ"},
+  {"id": "title", "role": "title", "sample": "Chỉ một chạm để đổi chế độ", "max": 48, "optional": true, "note": "câu ngắn phía trên công tắc; bỏ trống = chỉ có công tắc"}
+ ],
+ "images": [],
+ "brand": "none",
+ "sfx": [{"at": 4, "type": "whoosh"}, {"at": 48, "type": "click"}, {"at": 60, "type": "pop"}],
+ "vi": {
+  "ten": "Công tắc 2 lựa chọn phóng to — con trỏ bấm chuyển A → B",
+  "mo_ta": "Cận cảnh một nút gạt 2 ô kiểu iOS cỡ lớn trên nền sáng (có thể kèm 1 câu tiêu đề phía trên). Nút trượt nhẹ lên, con trỏ chuột to lướt vào từ góc phải dưới, bấm vào ô bên phải (có vòng sóng màu nhấn), viên trượt trắng lướt nhanh sang, mặt cười màu nhấn bật ra ở lựa chọn mới.",
+  "hop_khi": "Nói về chuyển đổi / lựa chọn giữa 2 thứ: thủ công → tự động, cũ → mới, miễn phí → trả phí, offline → online, tháng → năm, bật chế độ mới trong app; khoảnh khắc \"chỉ cần bấm một cái là xong\".",
+  "tranh_khi": "Có từ 3 lựa chọn trở lên; nhãn dài (> 2 từ); nội dung không có ý chuyển đổi / so sánh hai trạng thái; video tone tối.",
+  "nang_luong": "vua",
+  "chu_de": ["so sánh", "chuyển đổi", "lựa chọn", "app", "tính năng", "cài đặt", "tự động hoá", "trước sau"]
+ }
+}

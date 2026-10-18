@@ -1,0 +1,26 @@
+{
+ "id": "slide-spotlight-pan",
+ "component": "SlideSpotlightPan",
+ "card": "spotlight-sweep-moves",
+ "category": "effects",
+ "duration": 132,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.25],
+ "hold": 40,
+ "slots": [],
+ "images": [
+  {"id": "screen", "role": "screen", "aspect": "21:9", "optional": true, "note": "ảnh chụp màn hình rộng (web / dashboard); ảnh được neo góc trên-trái và lia ngang qua. Không có thì là giao diện xám trừu tượng"}
+ ],
+ "brand": "optional",
+ "sfx": [{"at": 0, "type": "riser"}, {"at": 16, "type": "swoosh"}],
+ "vi": {
+  "ten": "Vệt sáng tím men mép giao diện + lia ngang",
+  "mo_ta": "Phông đen; một giao diện phần mềm rất rộng nằm thẳng, cận cảnh. Vệt sáng tím-hồng rực bò lên dọc mép trái, rẽ qua góc rồi chạy đều sát mép trên; ánh tím loang vào phần trên giao diện, quầng sáng đi theo đầu vệt làm lộ giao diện, chỗ ánh sáng đã qua thì tối lại. Cùng lúc giao diện trượt đều sang trái như camera lia phải.",
+  "hop_khi": "Dẫn vào phần trình bày một phần mềm / bảng điều khiển / website (\"cùng xem giao diện bên trong\"), tour tính năng bí ẩn, chuyển cảnh giữa hai phần nói về sản phẩm số; tone tối, công nghệ.",
+  "tranh_khi": "Cần đọc rõ thông tin trên màn hình; tone sáng; nội dung không phải phần mềm.",
+  "nang_luong": "thap",
+  "chu_de": ["app", "phần mềm", "dashboard", "website", "giao diện", "chuyển cảnh", "công nghệ", "ánh sáng"]
+ }
+}

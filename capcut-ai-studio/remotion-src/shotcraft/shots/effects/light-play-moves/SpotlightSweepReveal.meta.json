@@ -1,0 +1,28 @@
+{
+ "id": "spotlight-sweep",
+ "component": "SpotlightSweepReveal",
+ "card": "light-play-moves",
+ "category": "effects",
+ "duration": 170,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 150,
+ "slots": [
+  {"id": "title", "role": "title", "sample": "Khoảnh khắc tỏa sáng.", "max": 40, "note": "câu tiêu đề ngắn 2-6 từ; TỪ CUỐI in nghiêng"},
+  {"id": "kicker", "role": "kicker", "sample": "Đêm nay · Chính thức ra mắt", "max": 30, "optional": true, "note": "nhãn nhỏ phía trên, tự in hoa"},
+  {"id": "subtitle", "role": "subtitle", "sample": "Sản phẩm mà cả đội đã âm thầm làm suốt một năm qua.", "max": 80, "optional": true}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 4, "type": "click"}, {"at": 10, "type": "riser"}, {"at": 121, "type": "boom"}, {"at": 135, "type": "ding"}],
+ "vi": {
+  "ten": "Đèn sân khấu quét sáng tiêu đề",
+  "mo_ta": "Sân khấu tối với màn nhung đỏ rượu vang: tiêu đề chữ serif lớn gần như vô hình; một luồng đèn rọi ấm bật lên chớp nháy rồi đung đưa như con lắc qua lại, chiếu tới đâu chữ và nếp màn sáng tới đó, có bụi lơ lửng trong luồng sáng; cuối cùng đèn dừng giữa và mở rộng làm sáng trọn tiêu đề, dòng nhãn vàng và câu phụ hiện ra. Sang trọng, kịch tính kiểu đêm công chiếu.",
+  "hop_khi": "Màn mở đầu / hé lộ trang trọng: công bố sản phẩm, ra mắt khóa học, tên chương trình, 'và đây chính là...', giới thiệu nhân vật / khách mời, khoảnh khắc 'hồi hộp chờ kết quả'.",
+  "tranh_khi": "Video tone sáng, vui nhộn, nhịp nhanh; nội dung kỹ thuật khô (số liệu, hướng dẫn); đã dùng hiệu ứng ánh sáng khác trong video (tối đa 1-2 lần hiệu ứng đèn cả video); tiêu đề dài hơn 2 dòng.",
+  "nang_luong": "vua",
+  "chu_de": ["ra mắt", "hé lộ", "sân khấu", "công bố", "mở đầu", "tiêu đề", "sự kiện"]
+ }
+}

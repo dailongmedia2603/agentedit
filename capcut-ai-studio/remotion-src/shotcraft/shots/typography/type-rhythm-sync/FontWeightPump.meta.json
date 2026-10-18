@@ -1,0 +1,28 @@
+{
+ "id": "font-weight-pump",
+ "component": "FontWeightPump",
+ "card": "type-rhythm-sync",
+ "category": "typography",
+ "duration": 165,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.9, 1.1],
+ "hold": 140,
+ "slots": [
+  {"id": "word", "role": "title", "sample": "BÙNG NỔ", "max": 14, "note": "1-3 từ ngắn, IN HOA — chữ chính nhún theo nhịp"},
+  {"id": "subtitle", "role": "subtitle", "sample": "Cắt đúng nhịp, bùng nổ đúng lúc nhạc dồn.", "max": 70, "optional": true, "note": "hiện sau cú drop"},
+  {"id": "kicker", "role": "kicker", "sample": "Đêm nhạc cuối tuần", "max": 28, "optional": true, "note": "nhãn nhỏ góc trên trái"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 16, "type": "boom"}, {"at": 72, "type": "boom"}, {"at": 118, "type": "riser"}, {"at": 128, "type": "boom"}],
+ "vi": {
+  "ten": "Chữ đập theo nhịp trống (nét dày mỏng)",
+  "mo_ta": "Nền tím đêm neon: 1-3 chữ IN HOA rất lớn ở giữa, bình thường nét mảnh, mỗi tiếng trống chữ phình thành nét đậm rồi co lại (giữa trước, hai bên sau), phách mạnh chữ hơi giãn ngang và ửng hồng; sau 1 ô nhịp hiện thêm hai dòng chữ viền rỗng phía trên/dưới bị đẩy ra theo nhịp; cú drop chữ đậm hẳn, chuyển màu tím→hồng, một vệt sáng quét ngang, câu phụ trồi lên. Dưới cùng là dãy 8 ô nhịp + ô 'ĐỈNH' sáng lần lượt.",
+  "hop_khi": "Đoạn có nhạc nền mạnh / beat rõ, cao trào năng lượng: hô khẩu hiệu, công bố, \"bùng nổ\", sự kiện, âm nhạc, thể thao, khuyến mãi sốc; cần một từ khóa đập thật mạnh.",
+  "tranh_khi": "Không có nhạc beat (chữ phình co sẽ trông như lỗi); câu dài; nội dung nhẹ nhàng, nghiêm túc; đã dùng một cảnh chữ nhún khác trong cùng video (tối đa 1 lần).",
+  "nang_luong": "cao",
+  "chu_de": ["nhịp điệu", "âm nhạc", "beat", "khẩu hiệu", "cao trào", "sự kiện", "khuyến mãi", "năng lượng"]
+ }
+}

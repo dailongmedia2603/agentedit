@@ -1,0 +1,26 @@
+{
+ "id": "neon-triple-marquee",
+ "component": "NeonTripleMarquee",
+ "card": "neon-triple-marquee",
+ "category": "outro",
+ "duration": 150,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.25],
+ "hold": 60,
+ "slots": [
+  {"id": "words", "role": "item", "sample": "Ý TƯỞNG|HÀNH ĐỘNG|KẾT QUẢ", "max": 12, "list": {"min": 3, "max": 3}, "note": "đúng 3 từ khóa ngắn (1-2 từ mỗi cái), hiển thị IN HOA"}
+ ],
+ "images": [],
+ "brand": "none",
+ "sfx": [{"at": 0, "type": "click"}, {"at": 5, "type": "click"}, {"at": 10, "type": "click"}, {"at": 124, "type": "click"}],
+ "vi": {
+  "ten": "Tường đèn neon — 3 từ khóa chạy ngang",
+  "mo_ta": "Một bức tường gạch tối quay chéo, trên đó 3 hàng chữ neon rỗng khổng lồ (xanh băng / hồng cánh sen / vàng hổ phách) chạy ngang vô tận, hàng giữa chạy ngược chiều; mỗi lần chỉ một hàng bật sáng rực, hai hàng kia là ống kính mờ, luân phiên như bảng hiệu đêm. Mặt đất ướt phía dưới phản chiếu ánh đèn. Mở đầu ba hàng chập chờn bật điện, cuối cảnh lần lượt tắt từng hàng.",
+  "hop_khi": "Tóm tắt / chốt lại 3 từ khóa hoặc 3 giá trị của video (\"nhớ 3 điều: …\"), slogan 3 vế, đoạn cuối video trước lời kêu gọi; đoạn nhạc không lời cần lấp hình mạnh; tone đêm, trẻ, năng động.",
+  "tranh_khi": "Câu dài / cần đọc nhiều chữ; không đúng 3 từ khóa; tone nhẹ nhàng, sáng, doanh nghiệp truyền thống.",
+  "nang_luong": "cao",
+  "chu_de": ["từ khóa", "tóm tắt", "slogan", "3 ý", "kết video", "neon", "chữ chạy"]
+ }
+}

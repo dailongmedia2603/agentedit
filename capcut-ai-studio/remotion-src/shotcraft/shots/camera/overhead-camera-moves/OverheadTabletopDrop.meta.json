@@ -1,0 +1,35 @@
+{
+ "id": "overhead-tabletop-drop",
+ "component": "OverheadTabletopDrop",
+ "card": "overhead-camera-moves",
+ "category": "camera",
+ "duration": 140,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 96,
+ "slots": [
+  {"id": "kicker", "role": "kicker", "sample": "Dành cho chủ shop online", "max": 32, "optional": true, "note": "nhãn nhỏ màu vàng trên tiêu đề của trang được chọn"},
+  {"id": "title", "role": "title", "sample": "Bán hàng nhàn hơn.", "max": 28, "note": "dòng tiêu đề 1 (chữ đậm)"},
+  {"id": "title2", "role": "title", "sample": "Chốt đơn nhanh hơn.", "max": 28, "optional": true, "note": "dòng tiêu đề 2 (chữ nghiêng có chân)"},
+  {"id": "subtitle", "role": "subtitle", "sample": "Quản lý đơn, kho và khách hàng trong một ứng dụng duy nhất.", "max": 90, "optional": true},
+  {"id": "cta", "role": "cta", "sample": "Dùng thử miễn phí", "max": 22, "optional": true, "note": "chữ trên nút đen"},
+  {"id": "labels", "role": "label", "sample": "BẢNG GIÁ|TRANG CHỦ|CẬP NHẬT", "max": 16, "list": {"min": 3, "max": 3}, "optional": true, "note": "3 nhãn in trên mặt bàn dưới mỗi tấm (trái / giữa = tấm được chọn / phải)"}
+ ],
+ "images": [
+  {"id": "page1", "role": "screen", "optional": true, "note": "tấm bên trái (ảnh chụp màn hình / ảnh minh hoạ, tỉ lệ bất kỳ — cắt vừa khung)"},
+  {"id": "page2", "role": "screen", "optional": true, "note": "tấm GIỮA được chọn và phóng full màn hình; không có = trang chủ giả với tiêu đề + nút"},
+  {"id": "page3", "role": "screen", "optional": true, "note": "tấm bên phải"}
+ ],
+ "brand": "optional",
+ "sfx": [{"at": 0, "type": "swoosh"}, {"at": 48, "type": "click"}, {"at": 58, "type": "whoosh"}, {"at": 86, "type": "boom"}, {"at": 104, "type": "pop"}],
+ "vi": {
+  "ten": "Bàn duyệt 3 trang — máy quay lướt rồi lao xuống chọn trang giữa",
+  "mo_ta": "Nhìn từ trên cao xuống một mặt bàn tối có 3 tấm trang web / ảnh nằm nghiêng dưới ba ngọn đèn. Máy quay lướt ngang qua cả 3, dừng ở tấm giữa (tấm nổi lên, đèn hai bên tối đi), rồi lao thẳng xuống, tấm giữa dựng lên phủ kín màn hình: trang chủ sáng với tiêu đề lớn 2 dòng, câu mô tả, nút bấm và bảng lịch nhỏ có ô vàng trượt vào (hoặc ảnh của tấm giữa nếu có).",
+  "hop_khi": "Giới thiệu website / landing page / app; \"trong nhiều lựa chọn, chúng tôi chọn cái này\"; so sánh vài phương án rồi chốt một; chuyển từ tổng quan vào chi tiết; khoe 3 ảnh chụp màn hình sản phẩm rồi nhấn vào cái chính.",
+  "tranh_khi": "Không có gì để \"chọn\" hay giới thiệu trang / sản phẩm; nội dung cảm xúc, đời thường; đã dùng một cảnh máy quay lớn khác ngay cạnh.",
+  "nang_luong": "cao",
+  "chu_de": ["website", "landing page", "app", "lựa chọn", "so sánh", "giới thiệu sản phẩm", "ảnh chụp màn hình", "ra mắt"]
+ }
+}

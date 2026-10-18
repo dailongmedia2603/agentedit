@@ -1,0 +1,34 @@
+{
+ "id": "tape-scroll-fixed-pointer",
+ "component": "TapeScrollFixedPointer",
+ "card": "gauge-readout-moves",
+ "category": "data",
+ "duration": 150,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 122,
+ "slots": [
+  {"id": "kicker", "role": "kicker", "sample": "khung hình / giờ", "max": 26, "optional": true, "note": "tên chỉ số / đơn vị đo ngắn (đứng sau tên thương hiệu nếu có)"},
+  {"id": "title", "role": "title", "sample": "Hiệu suất", "max": 22, "note": "chủ ngữ: chỉ số nào thay đổi (1-3 từ)"},
+  {"id": "title2", "role": "title", "sample": "tăng gấp ba.", "max": 22, "note": "kết luận màu nhấn, hiện SAU khi băng số dừng"},
+  {"id": "from", "role": "number", "sample": "140", "max": 9, "note": "giá trị CŨ (mốc giới hạn trước); chỉ chữ số"},
+  {"id": "to", "role": "number", "sample": "420", "max": 9, "note": "giá trị MỚI, nên lớn hơn from rõ rệt (bước nhảy lớn); chỉ chữ số"},
+  {"id": "unit", "role": "label", "sample": "k", "max": 6, "optional": true, "note": "đơn vị ngắn sau số (k, tr, %, GB, người)"},
+  {"id": "old_label", "role": "label", "sample": "Giới hạn cũ", "max": 16, "optional": true, "note": "nhãn vạch mốc cũ (vạch đứt rồi gãy đôi)"},
+  {"id": "new_label", "role": "label", "sample": "Giới hạn mới", "max": 16, "optional": true, "note": "nhãn mốc mới (tam giác dừng đúng kim)"},
+  {"id": "change", "role": "number", "sample": "▲ 200%", "max": 10, "optional": true, "note": "chip kết quả; để trống thì tự tính % thay đổi từ from/to"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 52, "type": "click"}, {"at": 58, "type": "riser"}, {"at": 61, "type": "whoosh"}, {"at": 85, "type": "boom"}, {"at": 108, "type": "pop"}],
+ "vi": {
+  "ten": "Băng số cuộn — kim cố định, con số vọt lên mốc mới",
+  "mo_ta": "Nền trắng xanh kiểu đồng hồ máy bay: một băng vạch số dọc chạy suốt khung, cửa sổ đọc số màu xanh đứng yên giữa khung. Số bò chậm rồi bị chặn dưới vạch 'giới hạn cũ'; vạch gãy đôi, băng số lùi nhẹ rồi VỌT nhanh (nhòe chuyển động) vượt qua, phanh lò xo dội lại và dừng đúng mốc mới. Bên cạnh: tiêu đề hiện từng từ, dòng kết luận màu nhấn hiện sau, chip '▲ %' và dòng 'cũ → mới'.",
+  "hop_khi": "Một con số tăng VỌT: doanh thu / lượt xem / người theo dõi / tốc độ / dung lượng / năng suất tăng gấp nhiều lần, phá vỡ giới hạn cũ, nâng cấp gói, kỷ lục mới; câu kiểu 'từ 140 nghìn lên 420 nghìn', 'tăng gấp ba'.",
+  "tranh_khi": "Thay đổi nhỏ (vài %), con số giảm, nhiều chỉ số cùng lúc; không có số cụ thể.",
+  "nang_luong": "cao",
+  "chu_de": ["số liệu", "tăng trưởng", "kỷ lục", "nâng cấp", "so sánh", "doanh thu", "hiệu suất", "dashboard"]
+ }
+}

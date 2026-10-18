@@ -1,0 +1,34 @@
+{
+ "id": "unit-dot-swarm-regroup",
+ "component": "UnitDotSwarmRegroupV2",
+ "card": "chart-live-moves",
+ "category": "data",
+ "duration": 192,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 134,
+ "slots": [
+  {"id": "kicker", "role": "kicker", "sample": "Người dùng · Quý 3/2026", "max": 36, "optional": true, "note": "chuyên mục / mốc thời gian của số liệu"},
+  {"id": "groups", "role": "label", "sample": "Khách mới|Quay lại|Giới thiệu", "max": 18, "list": {"min": 2, "max": 3}, "note": "tên 2-3 nhóm cấu thành tổng; nhóm THỨ 2 được tô màu nhấn"},
+  {"id": "values", "role": "number", "sample": "7.210|4.102|1.535", "max": 9, "list": {"min": 2, "max": 3}, "note": "số của từng nhóm (cùng thứ tự groups); số chấm mỗi nhóm tỉ lệ theo số này"},
+  {"id": "total", "role": "number", "sample": "12.847", "max": 7, "optional": true, "note": "con số TỔNG được các chấm ghép thành; CHỈ chữ số và . , % + - K M x (vd 12.847, 2,5M, 98%); bỏ trống = tổng các nhóm"},
+  {"id": "unit", "role": "label", "sample": "người dùng", "max": 18, "optional": true, "note": "mỗi chấm đại diện cái gì (tự sinh 'Mỗi chấm ≈ 40 người dùng')"},
+  {"id": "h1", "role": "title", "sample": "Mỗi chấm là 40 người dùng", "max": 32, "optional": true, "note": "câu màn 1 (chấm rải rác); bỏ trống = tự sinh từ total/unit"},
+  {"id": "h2", "role": "title", "sample": "Chia theo nhóm", "max": 32, "optional": true, "note": "câu màn 2 (gom 3 cụm)"},
+  {"id": "h3", "role": "title", "sample": "Xếp thành cột", "max": 32, "optional": true, "note": "câu màn 3 (xếp cột)"},
+  {"id": "h4", "role": "title", "sample": "Tổng người dùng", "max": 32, "optional": true, "note": "câu màn cuối (ghép số tổng)"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 4, "type": "pop"}, {"at": 24, "type": "whoosh"}, {"at": 62, "type": "whoosh"}, {"at": 100, "type": "whoosh"}, {"at": 124, "type": "ding"}],
+ "vi": {
+  "ten": "Đàn chấm tụ lại thành con số tổng",
+  "mo_ta": "Nền trắng infographic: 320 chấm tròn bung ra rải khắp khung, rồi di cư theo 3 màn có lò xo — gom thành 2-3 cụm có tên nhóm và số, xếp thành các cột so sánh, cuối cùng tụ lại thành CON SỐ TỔNG khổng lồ ghép bằng chấm; tiêu đề đổi câu theo từng màn, chú thích nhóm và 'mỗi chấm ≈ X' hiện ở dưới.",
+  "hop_khi": "Nói về con số tổng có cấu thành: tổng người dùng / khách hàng / học viên / đơn hàng chia theo nguồn hoặc theo loại, 'mỗi con số là một con người', báo cáo quý, cột mốc cộng đồng, kết quả khảo sát chia nhóm.",
+  "tranh_khi": "Chỉ có một con số không có nhóm cấu thành; số liệu theo thời gian (dùng biểu đồ đường); tổng là chữ (vd '2 tỷ đồng' — chỉ ghép được chữ số và K/M/%); video tone tối, gắt.",
+  "nang_luong": "vua",
+  "chu_de": ["số liệu", "người dùng", "cộng đồng", "tổng số", "cơ cấu", "so sánh", "biểu đồ cột", "infographic", "báo cáo"]
+ }
+}

@@ -28,6 +28,7 @@ import providers
 import remotion_plan as RP
 import speech_align
 import media_vision
+import shot_lib
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -226,7 +227,9 @@ LOP DO HOA (layers: chu nhan, to hop chu, huy hieu, mui ten, vong, anh, the tric
   "assets": [{"id": "<id>", "kind": "ai_image", "illustrates": "<cau noi anh minh hoa>", "prompt": "<7 phan, tieng Anh>",
               "aspect": "<ti le>", "cutout": false}],
   "scenes": [{"layout": "<layout>", "source_id": "source_1", "src_start": 12.0, "src_end": 15.2,
-              "panel": {"asset": "<id>"}, "why": "..."}],
+              "panel": {"asset": "<id>"}, "why": "..."},
+             {"layout": "graphic", "source_id": "source_1", "src_start": 20.1, "src_end": 23.4,
+              "shot": {"id": "<id trong KHO SHOT>", "texts": {"<o chu>": "<chu tu loi noi>"}, "images": {}}, "why": "..."}],
   "layers": [{"id": "l1", "type": "text", "source_id": "source_1", "src_start": 3.2, "src_end": 5.0, "track": 30,
               "x": 0.5, "y": 0.6, "spans": [...], "enter": {...}, "exit": {...}, "why": "..."}],
   "effects": [{"type": "<id>", "source_id": "source_1", "src_start": 0.0, "src_end": 1.2, "intensity": 0.6}],
@@ -294,6 +297,11 @@ def gpt_rm_design(segments, transcript_data, emotion_map_data, key_moments_data,
                   + "\n\n# THUAT NGU EDIT (ap dung dung cho)\n" + glossary_doc()
                   + "\n\n# DANH MUC REMOTION (transition / effect / grade):\n" + RP._catalog_block()
                   + _NEW_FLOW_NOTE + creative.luat("R4") + CV.note("design") + ngon_ngu.luat(story, "R4"))
+    r4_timeout = 300
+    if shot_lib.available():
+        r4_timeout = 450            # danh muc kho shot ~70k token -> doc + viet lau hon
+        # KHO SHOT & MOTION (video-shotcraft): R4 doc TOAN BO kho, chon mau hop nhat cho tung khoanh khac (full-screen B-roll)
+        sys_prompt += shot_lib.rules_text() + "\n# DANH MUC KHO SHOT (TOAN BO)\n" + shot_lib.prompt_block()
     if user_media:
         import user_media as UM
         payload["tu_lieu_nguoi_dung"] = UM.planner_view(user_media)
@@ -317,11 +325,12 @@ def gpt_rm_design(segments, transcript_data, emotion_map_data, key_moments_data,
     text = providers.plan_chat([
         {"role": "system", "content": sys_prompt},
         {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
-    ], json_mode=True, max_tokens=24000, temperature=0.5, req_timeout=300, max_attempts=2,
+    ], json_mode=True, max_tokens=24000, temperature=0.5, req_timeout=r4_timeout, max_attempts=2,
         step_label="R4-design", images=ref_imgs or None)
     res = _as_design(providers._safe_json(text))
     thieu = audit_design(res, kit, payload["tong_do_dai_giay"], has_hook=bool(hook), user_media=user_media)
     thieu += ref_pack.audit_usage(res, payload["tong_do_dai_giay"])      # tan suat kieu chu video mau
+    thieu += shot_lib.audit(res, payload["tong_do_dai_giay"])            # canh shot: id / o chu / o anh / lieu luong
     if thieu and (res.get("scenes") or res.get("layers")):
         # 1 vong tu sua: code dem chi tieu -> GPT bo sung (giu phan da tot)
         if log:
@@ -334,11 +343,12 @@ def gpt_rm_design(segments, transcript_data, emotion_map_data, key_moments_data,
         text2 = providers.plan_chat([
             {"role": "system", "content": sys_prompt},
             {"role": "user", "content": json.dumps(fix_user, ensure_ascii=False)},
-        ], json_mode=True, max_tokens=24000, temperature=0.4, req_timeout=300, max_attempts=2,
+        ], json_mode=True, max_tokens=24000, temperature=0.4, req_timeout=r4_timeout, max_attempts=2,
             step_label="R4-design-fix", images=ref_imgs or None)
         res2 = _as_design(providers._safe_json(text2))
         thieu2 = audit_design(res2, kit, payload["tong_do_dai_giay"], has_hook=bool(hook), user_media=user_media)
         thieu2 += ref_pack.audit_usage(res2, payload["tong_do_dai_giay"])
+        thieu2 += shot_lib.audit(res2, payload["tong_do_dai_giay"])
         if (res2.get("scenes") or res2.get("layers")) and len(thieu2) <= len(thieu):
             res, thieu = res2, thieu2
     # hieu ung KHONG lay tu kho mau — buoc FX tu thiet ke + viet code theo boi canh (luat hook o prompt FX)
@@ -514,6 +524,12 @@ def asset_contexts(design, transcript_data=None, story=None, sources=None, user_
     for L in design.get("layers") or []:
         if isinstance(L, dict) and L.get("type") == "image" and L.get("asset"):
             uses.setdefault(L["asset"], []).append(("layer_cutout" if L.get("cutout", True) else "layer", L))
+    for sc in design.get("scenes") or []:
+        # anh trong canh shot (kho video-shotcraft): anh lap day mot khung lon trong canh motion graphic toan man hinh
+        if isinstance(sc, dict) and isinstance(sc.get("shot"), dict):
+            for v in (sc["shot"].get("images") or {}).values():
+                if isinstance(v, str) and v:
+                    uses.setdefault(v, []).append(("broll", sc))
     import asset_gen
     texts = [L for L in design.get("layers") or [] if isinstance(L, dict) and L.get("type") in ("text", "counter", "badge")]
     story = story if isinstance(story, dict) else {}
@@ -694,6 +710,7 @@ def scenes_to_spec(p, duration, kit, assets_by_id, changes):
         rows.append(it)
     rows.sort(key=lambda r: r["start"])
     out = []
+    shot_uses = {}
     for r in rows:
         st, en = max(0.0, r["start"]), min(duration, r["end"])
         if out and st < out[-1]["end"]:
@@ -707,6 +724,20 @@ def scenes_to_spec(p, duration, kit, assets_by_id, changes):
         lay = r["layout"]
         sc = {"id": "scene%d" % r["_n"], "start": round(st, 3), "end": round(en, 3), "layout": lay,
               "morph": round(_num(r.get("morph"), 0.25, 0, 0.6), 2)}
+        if isinstance(r.get("shot"), dict):
+            # KHO SHOT: kiem chu / anh / thuong hieu / do dai bang code; sai -> bo canh (graphic khong shot = nen trong)
+            nxt = next((x["start"] for x in rows if x["start"] > r["start"] + 1e-3), duration)
+            sc["_room"] = max(0.0, min(duration, nxt) - st)
+            ok = shot_lib.spec_shot(r, sc, p, assets_by_id, changes, shot_uses)
+            sc.pop("_room", None)
+            if ok:
+                out.append(sc)
+            elif lay != "graphic":
+                r = dict(r)
+                r.pop("shot", None)
+                changes.append("%s: giu bo cuc %s khong shot" % (sc["id"], lay))
+            if ok or lay == "graphic":
+                continue
         panel = r.get("panel") if isinstance(r.get("panel"), dict) else None
         media = None
         ua = assets_by_id.get(panel.get("asset")) if panel else None
@@ -790,7 +821,8 @@ def scenes_to_spec(p, duration, kit, assets_by_id, changes):
                 ext = max(ext, need)
             sc["popout"] = round(min(0.3, ext), 3)
         out.append(sc)
-    return out
+    # canh shot: tran tong thoi luong + khoang cach giua cac canh (nguoi noi phai hien lai)
+    return shot_lib.enforce_spacing(out, duration, changes)
 
 
 def _landscape_scene(sc, lay, r, media, p, kit, assets_by_id):

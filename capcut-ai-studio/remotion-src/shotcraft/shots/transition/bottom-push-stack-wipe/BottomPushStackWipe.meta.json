@@ -1,0 +1,37 @@
+{
+ "id": "bottom-push-stack-wipe",
+ "component": "BottomPushStackWipe",
+ "card": "bottom-push-stack-wipe",
+ "category": "transition",
+ "duration": 170,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 142,
+ "slots": [
+  {"id": "intro", "role": "title", "sample": "Ba bước\nđể bứt phá.", "max": 30, "note": "câu mở trên nền đen (chương 0); '\\n' = ngắt dòng"},
+  {"id": "intro_sub", "role": "subtitle", "sample": "Làm ít hơn, hiệu quả hơn — bắt đầu từ hôm nay.", "max": 70, "optional": true},
+  {"id": "intro_label", "role": "kicker", "sample": "Giới thiệu", "max": 20, "optional": true, "note": "nhãn nhỏ, tự in hoa"},
+  {"id": "title1", "role": "title", "sample": "Một kế hoạch.\nCả nhóm rõ.", "max": 32, "note": "ý / bước 1 (nền xanh coban)"},
+  {"id": "sub1", "role": "subtitle", "sample": "Mọi việc được chia rõ ràng cho từng người ngay từ đầu.", "max": 80, "optional": true},
+  {"id": "label1", "role": "label", "sample": "Lên kế hoạch", "max": 20, "optional": true, "note": "tên chương 1, 1-3 từ"},
+  {"id": "title2", "role": "title", "sample": "Họp ngắn,\nchốt nhanh.", "max": 32, "note": "ý / bước 2 (nền cam đỏ)"},
+  {"id": "sub2", "role": "subtitle", "sample": "Mười lăm phút mỗi sáng là đủ để cả nhóm cùng nhịp.", "max": 80, "optional": true},
+  {"id": "label2", "role": "label", "sample": "Phối hợp", "max": 20, "optional": true},
+  {"id": "title3", "role": "title", "sample": "Việc lặp lại,\ncứ để máy lo.", "max": 32, "note": "ý / bước 3 (nền xanh chanh, chữ tối)"},
+  {"id": "sub3", "role": "subtitle", "sample": "Email, báo cáo, nhắc việc chạy tự động không cần chạm tay.", "max": 80, "optional": true},
+  {"id": "label3", "role": "label", "sample": "Tự động hóa", "max": 20, "optional": true}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 22, "type": "whoosh"}, {"at": 48, "type": "pop"}, {"at": 66, "type": "whoosh"}, {"at": 110, "type": "whoosh"}, {"at": 126, "type": "click"}],
+ "vi": {
+  "ten": "Đẩy chương từ đáy — 3 ý, 3 màu nền",
+  "mo_ta": "Mở bằng câu tiêu đề lớn trên nền đen, rồi 3 lần cả màn hình màu (xanh coban → cam đỏ → xanh chanh) đẩy từ dưới lên, hất màn cũ ra khỏi khung. Mỗi chương: số 01/02/03 + tiêu đề chữ đậm rất to trồi lên + câu phụ, kèm một thẻ giao diện minh họa (khung chat nhóm có tin nhắn bật lên / cuộc họp trực tuyến có sóng âm / quy trình tự động đánh dấu từng bước). Khung dọc: chữ to phía trên, thẻ phóng lớn phía dưới.",
+  "hop_khi": "Người nói liệt kê đúng 3 bước / 3 lợi ích / 3 tính năng liên tiếp (vd \"thứ nhất… thứ hai… thứ ba\"), tóm tắt quy trình làm việc nhóm, giới thiệu app / phần mềm quản lý công việc, năng suất, tự động hóa.",
+  "tranh_khi": "Chỉ có 1 ý hoặc nhiều hơn 3 ý; nội dung cảm xúc, đời tư, không liên quan công việc / sản phẩm; đoạn nói quá ngắn (< 5 giây) vì cần thời gian đọc 3 chương.",
+  "nang_luong": "vua",
+  "chu_de": ["danh sách", "3 bước", "quy trình", "tính năng", "app", "làm việc nhóm", "tự động hóa", "năng suất", "chuyển chương"]
+ }
+}

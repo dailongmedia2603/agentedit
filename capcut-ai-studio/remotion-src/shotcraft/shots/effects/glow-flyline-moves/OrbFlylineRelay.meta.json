@@ -1,0 +1,28 @@
+{
+ "id": "orb-flyline-relay",
+ "component": "OrbFlylineRelay",
+ "card": "glow-flyline-moves",
+ "category": "effects",
+ "duration": 165,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.3],
+ "hold": 118,
+ "slots": [
+  {"id": "steps", "role": "item", "sample": "Nói ý tưởng|AI lên kịch bản|Xuất video", "max": 22, "list": {"min": 3, "max": 3}, "note": "đúng 3 bước theo thứ tự; 2–4 từ mỗi bước. Icon cố định: micro → lấp lánh (AI) → máy bay giấy (gửi)"},
+  {"id": "subs", "role": "label", "sample": "Chỉ một câu lệnh|8 cảnh, khớp nhịp|Sẵn sàng đăng", "max": 28, "list": {"min": 3, "max": 3}, "optional": true, "note": "3 dòng phụ ngắn dưới mỗi bước"},
+  {"id": "title", "role": "title", "sample": "Nói một lần, phần còn lại để AI lo.", "max": 56, "note": "câu chốt hiện cuối cảnh; TỪ CUỐI được tô màu nhấn"}
+ ],
+ "images": [],
+ "brand": "none",
+ "sfx": [{"at": 22, "type": "swoosh"}, {"at": 48, "type": "pop"}, {"at": 58, "type": "swoosh"}, {"at": 82, "type": "pop"}, {"at": 92, "type": "whoosh"}],
+ "vi": {
+  "ten": "Ba nút sáng tiếp sức — quy trình 3 bước",
+  "mo_ta": "Nền xanh đêm, ba nút tròn kính phát sáng (icon micro → lấp lánh AI → máy bay giấy) kèm tên bước. Một đường sáng có đầu sao chổi bay từ nút 1 sang nút 2; đúng khung chạm, nút 2 bừng sáng cùng quầng màu phía sau và vòng sóng lan ra; rồi tiếp sức sang nút 3. Đường bay tan thành chấm mờ, câu chốt chạy lên ở cuối (từ cuối màu nhấn). Khung dọc: ba nút xếp dọc như timeline.",
+  "hop_khi": "Trình bày quy trình 3 bước / cách hoạt động: \"bạn chỉ cần nói → AI xử lý → nhận kết quả\"; giới thiệu tính năng AI, tự động hóa, app làm hộ việc; tóm tắt các bước trước khi chốt lợi ích.",
+  "tranh_khi": "Quy trình nhiều hơn hoặc ít hơn 3 bước; nội dung đời thường không phải quy trình; video tông sáng; không có câu chốt.",
+  "nang_luong": "vua",
+  "chu_de": ["quy trình", "3 bước", "AI", "tự động hóa", "cách hoạt động", "app", "công nghệ", "tính năng"]
+ }
+}

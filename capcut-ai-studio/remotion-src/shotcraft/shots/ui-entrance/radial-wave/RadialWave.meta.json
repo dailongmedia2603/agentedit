@@ -1,0 +1,27 @@
+{
+ "id": "radial-wave",
+ "component": "RadialWave",
+ "card": "radial-wave",
+ "category": "ui-entrance",
+ "duration": 114,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.25],
+ "hold": 56,
+ "slots": [
+  {"id": "kicker", "role": "kicker", "sample": "HỆ THỐNG ĐÃ SẴN SÀNG", "max": 28, "optional": true, "note": "dòng nhỏ phát sáng phía trên tiêu đề, in hoa"},
+  {"id": "title", "role": "title", "sample": "Kết nối 63 tỉnh thành", "max": 36, "optional": true, "note": "chữ to giữa màn hình (con số / từ khóa / câu ngắn); bỏ trống = chỉ lưới chấm"}
+ ],
+ "images": [],
+ "brand": "none",
+ "sfx": [{"at": 0, "type": "boom"}, {"at": 28, "type": "riser"}, {"at": 72, "type": "swoosh"}],
+ "vi": {
+  "ten": "Lưới chấm gợn sóng từ tâm — hệ thống bật nguồn",
+  "mo_ta": "Nền đen, một lưới chấm xanh dương phủ kín màn hình. Từ tâm, một làn sóng lan ra: từng chấm phồng lên rồi sáng đều, như cả hệ thống được cấp điện; sau đó một làn sóng thứ hai màu xanh băng phát sáng chạy ngược từ mép vào tâm. Chữ (nếu có) hiện mờ-rõ ở giữa với quầng tối phía sau.",
+  "hop_khi": "Khoảnh khắc \"bật lên / khởi động / kết nối toàn bộ\": hệ thống đi vào hoạt động, mạng lưới phủ rộng, độ bao phủ (63 tỉnh thành, hàng nghìn điểm), dữ liệu lớn, AI vận hành; mở đầu một phần về công nghệ, nền cho một con số ấn tượng.",
+  "tranh_khi": "Video tông sáng; nội dung cảm xúc / đời thường; cần nhiều chữ hoặc danh sách.",
+  "nang_luong": "vua",
+  "chu_de": ["mạng lưới", "kết nối", "khởi động", "công nghệ", "dữ liệu", "AI", "độ phủ", "con số"]
+ }
+}

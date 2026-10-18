@@ -1,0 +1,28 @@
+{
+ "id": "brace-expand",
+ "component": "BraceExpand",
+ "card": "brace-expand",
+ "category": "typography",
+ "duration": 120,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.3],
+ "hold": 86,
+ "slots": [
+  {"id": "kicker", "role": "kicker", "sample": "mẹo nhỏ cho người làm nội dung", "max": 40, "optional": true, "note": "dòng chú thích kiểu code phía trên (tự thêm \"// \"), chữ thường"},
+  {"id": "title", "role": "title", "sample": "tự động hoá", "max": 26, "note": "1-4 từ, từ khoá/khái niệm chính, nên viết thường; dài hơn ~16 ký tự sẽ nhỏ lại hoặc xuống 2 dòng"},
+  {"id": "subtitle", "role": "subtitle", "sample": "Một câu lệnh, cả quy trình chạy xong.", "max": 70, "optional": true, "note": "câu giải thích ngắn bên dưới"}
+ ],
+ "images": [],
+ "brand": "none",
+ "sfx": [{"at": 6, "type": "click"}, {"at": 14, "type": "swoosh"}, {"at": 54, "type": "pop"}],
+ "vi": {
+  "ten": "Ngoặc nhọn { } bung mở lộ từ khoá",
+  "mo_ta": "Nền tối kiểu trình soạn code (lưới chấm, xanh điện): con trỏ nhấp nháy giữa màn hình rồi biến thành cặp ngoặc nhọn { } nhỏ, cặp ngoặc bật mạnh sang hai bên (có nảy nhẹ) và phóng to, kéo mở như tấm màn để lộ TỪ KHOÁ chính ở giữa; sau đó dòng chú thích '// ...' phía trên và câu phụ phía dưới hiện dần.",
+  "hop_khi": "Nhắc tới một khái niệm/từ khoá công nghệ cần nhấn: AI, code, lập trình, tự động hoá, API, tên tính năng/công cụ phần mềm; mở chương mới trong video về công nghệ, dev, sản phẩm số.",
+  "tranh_khi": "Chủ đề đời sống, cảm xúc, ẩm thực, làm đẹp (chất code không hợp); câu dài nhiều ý; video tone sáng ấm.",
+  "nang_luong": "vua",
+  "chu_de": ["code", "lập trình", "AI", "công nghệ", "từ khoá", "tiêu đề", "phần mềm"]
+ }
+}

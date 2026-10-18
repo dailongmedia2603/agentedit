@@ -1,0 +1,27 @@
+{
+ "id": "picker-carousel-feature-cycle",
+ "component": "PickerCarouselFeatureCycle",
+ "card": "picker-carousel-feature-cycle",
+ "category": "interaction",
+ "duration": 108,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 100,
+ "slots": [
+  {"id": "items", "role": "item", "sample": "Tự động cắt ghép|Phụ đề tiếng Việt|Chuyển động máy quay|Cắt theo nhịp nhạc|Hiệu ứng âm thanh|Bàn chỉnh chuyển động|Xuất video một chạm", "max": 26, "list": {"min": 3, "max": 7}, "note": "tên tính năng / lựa chọn / bước, mỗi mục 2–5 từ; theo đúng thứ tự người nói nhắc tới"},
+  {"id": "title", "role": "kicker", "sample": "TÍNH NĂNG NỔI BẬT", "max": 30, "optional": true, "note": "dòng nhỏ phía trên, in hoa"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 5, "type": "click"}, {"at": 24, "type": "click"}, {"at": 43, "type": "click"}, {"at": 63, "type": "click"}, {"at": 82, "type": "click"}],
+ "vi": {
+  "ten": "Bánh xe chọn kiểu điện thoại — lần lượt từng mục",
+  "mo_ta": "Nền giấy xám sáng, giữa màn hình là bộ chọn cuộn dọc kiểu iPhone: một viên khung trắng đứng yên, danh sách chữ cuộn qua và HÍT vào khung từng mục một (giảm tốc mạnh rồi dừng hẳn, khung phồng nhẹ), mục ở giữa đậm và có dấu tích, các mục trên dưới mờ và nhỏ dần. Bên cạnh (dọc: phía trên) là biểu tượng app nhỏ và dòng tiêu đề nhỏ.",
+  "hop_khi": "Người nói liệt kê lần lượt các tính năng / lựa chọn / gói / bước: 'app có tự cắt, có phụ đề, có nhạc…', 'bạn có thể chọn A, B hoặc C'; giới thiệu menu tuỳ chọn trong app di động; nhịp đều, mỗi mục ~0.6 giây.",
+  "tranh_khi": "Chỉ có 1–2 mục; mục là câu dài (> 5 từ); cần nhấn mạnh một con số hay một ý lớn; khoảnh khắc năng lượng cao.",
+  "nang_luong": "vua",
+  "chu_de": ["danh sách", "tính năng", "app", "điện thoại", "lựa chọn", "menu", "liệt kê"]
+ }
+}

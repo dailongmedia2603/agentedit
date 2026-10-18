@@ -1,0 +1,28 @@
+{
+ "id": "lead-word-zoom-assemble",
+ "component": "LeadWordZoomAssemble",
+ "card": "lead-word-zoom-assemble",
+ "category": "typography",
+ "duration": 84,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 48,
+ "slots": [
+  {"id": "title", "role": "title", "sample": "Giới thiệu Trợ lý AI", "max": 32, "note": "câu giới thiệu 1 dòng; TỪ ĐẦU TIÊN được phóng to chiếm màn hình nên phải ngắn (vd 'Giới thiệu', 'Chào', 'Đây', 'Gặp')"},
+  {"id": "highlight", "role": "name", "sample": "Trợ lý AI", "max": 24, "optional": true, "note": "cụm từ có sẵn trong title (thường là tên sản phẩm) được tô màu nhấn"},
+  {"id": "subtitle", "role": "subtitle", "sample": "Một câu lệnh, một video hoàn chỉnh — gõ, duyệt, xuất bản.", "max": 80, "optional": true}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 0, "type": "boom"}, {"at": 12, "type": "whoosh"}, {"at": 32, "type": "swoosh"}, {"at": 72, "type": "whoosh"}],
+ "vi": {
+  "ten": "Từ đầu phóng to rồi ráp thành câu giới thiệu",
+  "mo_ta": "Nền sáng nhẹ: từ đầu tiên hiện TO GẤP 2,3 LẦN giữa màn hình và còn tiến dần về phía người xem; rồi trong một nhịp liền nó thu về cỡ chữ thường và trượt sang trái về đúng chỗ, các từ còn lại lần lượt được 'đẩy' vào khe bên phải, tên sản phẩm đổi màu nhấn; cả dòng nhích lên, dòng phụ hiện bên dưới, giữ yên ~1 giây rồi cả khung phóng to nhòe đi để chuyển cảnh.",
+  "hop_khi": "Giới thiệu tên sản phẩm / tính năng / chương trình: 'Giới thiệu …', 'Đây là …', 'Chào mừng đến với …'; câu chủ đề ngắn mở đầu một phần mới; khoảnh khắc ra mắt.",
+  "tranh_khi": "Câu dài hơn 1 dòng (> 32 ký tự) hoặc từ đầu dài; cần kết thúc yên tĩnh (cảnh tự nhòe đi ở cuối như chuyển cảnh).",
+  "nang_luong": "cao",
+  "chu_de": ["ra mắt", "giới thiệu", "tên sản phẩm", "tiêu đề", "mở đầu", "tính năng mới"]
+ }
+}

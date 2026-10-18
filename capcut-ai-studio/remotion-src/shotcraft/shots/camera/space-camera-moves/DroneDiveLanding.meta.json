@@ -1,0 +1,31 @@
+{
+ "id": "drone-dive-landing",
+ "component": "DroneDiveLanding",
+ "card": "space-camera-moves",
+ "category": "camera",
+ "duration": 105,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 72,
+ "slots": [
+  {"id": "label", "role": "label", "sample": "Doanh thu tháng này", "max": 30, "note": "tên chỉ số trên thẻ đích"},
+  {"id": "number", "role": "number", "sample": "1,2 tỷ", "max": 10, "note": "con số lớn (chữ số + đơn vị ngắn)"},
+  {"id": "delta", "role": "label", "sample": "+32%", "max": 8, "optional": true, "note": "mức tăng/giảm"},
+  {"id": "subtitle", "role": "subtitle", "sample": "so với tháng trước", "max": 32, "optional": true}
+ ],
+ "images": [
+  {"id": "hero", "role": "screen", "aspect": "7:6", "optional": true, "note": "ảnh phủ thẻ đích (thay cho thẻ số liệu): ảnh chụp màn hình / ảnh minh hoạ"}
+ ],
+ "brand": "optional",
+ "sfx": [{"at": 20, "type": "riser"}, {"at": 26, "type": "whoosh"}, {"at": 50, "type": "boom"}],
+ "vi": {
+  "ten": "Máy quay lao xuống từ trên cao, đáp vào thẻ số liệu",
+  "mo_ta": "Nền sáng, nhìn từ trên cao xuống cả trang bảng điều khiển (dashboard) nằm phẳng trên nền lưới chấm; máy quay nhấc nhẹ rồi LAO VỤT xuống có nhoè chuyển động, góc nghiêng dựng thẳng dần, đệm khí hãm lại và dừng cận cảnh vào một thẻ: tên chỉ số + CON SỐ LỚN + mức tăng (hoặc ảnh), xung quanh tối nhẹ để dồn tiêu điểm.",
+  "hop_khi": "Từ bức tranh tổng thể đi thẳng vào một con số quan trọng (doanh thu, người dùng, tăng trưởng); \"và con số đáng chú ý nhất là…\"; mở chương về kết quả/số liệu của app, dashboard, báo cáo kinh doanh.",
+  "tranh_khi": "Không có con số/chỉ số cụ thể; chủ đề đời thường, cảm xúc; video tone tối; dùng nhiều lần trong một video (động tác lớn).",
+  "nang_luong": "cao",
+  "chu_de": ["số liệu", "dashboard", "doanh thu", "tăng trưởng", "app", "báo cáo", "con số", "3D"]
+ }
+}

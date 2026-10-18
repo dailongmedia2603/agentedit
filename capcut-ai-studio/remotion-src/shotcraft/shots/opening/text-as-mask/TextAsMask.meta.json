@@ -1,0 +1,31 @@
+{
+ "id": "text-as-mask",
+ "component": "TextAsMask",
+ "card": "text-as-mask",
+ "category": "opening",
+ "duration": 165,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 40,
+ "slots": [
+  {"id": "word", "role": "title", "sample": "DỮ LIỆU", "max": 12, "note": "1-2 từ NGẮN làm cửa sổ (tự in hoa): chủ đề / từ khóa chính; chữ càng ngắn nét càng to"},
+  {"id": "kicker", "role": "kicker", "sample": "", "max": 28, "optional": true, "note": "dòng nhỏ trên chữ; bỏ trống = tên thương hiệu của video"},
+  {"id": "subtitle", "role": "subtitle", "sample": "Mọi chỉ số kinh doanh, cập nhật theo từng giây.", "max": 70, "optional": true},
+  {"id": "screen_title", "role": "label", "sample": "Hiệu suất kinh doanh", "max": 30, "optional": true, "note": "tiêu đề bảng điều khiển hiện toàn màn hình ở cuối (khi không có ảnh)"}
+ ],
+ "images": [
+  {"id": "screen", "role": "photo", "aspect": "9:16", "optional": true, "note": "ảnh / khung hình ĐẬM MÀU, nhiều mảng màu lớn (cảnh sản phẩm, phong cảnh, giao diện tối); thay bảng điều khiển vẽ sẵn, cuối cảnh phủ kín màn hình"}
+ ],
+ "brand": "optional",
+ "sfx": [{"at": 2, "type": "swoosh"}, {"at": 104, "type": "riser"}, {"at": 126, "type": "whoosh"}],
+ "vi": {
+  "ten": "Chữ khổng lồ làm cửa sổ — phóng xuyên vào trong",
+  "mo_ta": "Nền trắng sứ, một từ in hoa cực đậm cỡ khổng lồ (xếp 2 dòng ở khung dọc); bên trong nét chữ lộ ra một bảng điều khiển tối đang chạy (biểu đồ xanh chảy, số đếm) hoặc ảnh thật, trôi ngang chầm chậm; dòng nhỏ phía trên và câu phụ phía dưới. Cuối cảnh chữ hít vào rồi phóng to vùn vụt xuyên qua nét chữ, hình bên trong chiếm trọn màn hình.",
+  "hop_khi": "Mở chương / chủ đề bằng MỘT từ khóa ('DỮ LIỆU', 'AI', 'TĂNG TRƯỞNG', 'BÁN HÀNG') rồi đi thẳng vào sản phẩm, dashboard, số liệu; chuyển từ khẩu hiệu sang hình ảnh sản phẩm.",
+  "tranh_khi": "Từ khóa dài (>2 từ); nội dung không có hình ảnh / dashboard liên quan; tone trầm, tâm sự.",
+  "nang_luong": "vua",
+  "chu_de": ["từ khóa", "mở chương", "dashboard", "số liệu", "sản phẩm", "chuyển cảnh"]
+ }
+}

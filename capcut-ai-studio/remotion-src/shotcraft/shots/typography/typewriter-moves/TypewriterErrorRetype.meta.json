@@ -1,0 +1,29 @@
+{
+ "id": "error-retype",
+ "component": "TypewriterErrorRetype",
+ "card": "typewriter-moves",
+ "category": "typography",
+ "duration": 160,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 115,
+ "slots": [
+  {"id": "kicker", "role": "kicker", "sample": "Giới thiệu", "max": 24, "optional": true, "note": "dòng nhỏ phía trên (tên thương hiệu của video tự nối phía sau); không có thương hiệu thì chỉ hiện khi có chữ thật"},
+  {"id": "prefix", "role": "title", "sample": "Đây là", "max": 20, "note": "phần đầu câu ĐƯỢC GIỮ LẠI (1-4 từ)"},
+  {"id": "wrong", "role": "title", "sample": "một app ghi chú", "max": 30, "note": "cách hiểu bình thường / sai, bị xóa đi (2-5 từ)"},
+  {"id": "right", "role": "title", "sample": "trợ lý AI của riêng bạn", "max": 32, "note": "cách nói đúng / điểm đắt giá được gõ lại và tô marker (2-6 từ)"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 2, "type": "typing"}, {"at": 48, "type": "typing"}, {"at": 68, "type": "typing"}, {"at": 96, "type": "ding"}],
+ "vi": {
+  "ten": "Máy đánh chữ gõ sai rồi sửa lại",
+  "mo_ta": "Nền sáng sạch, chữ đậm lớn hiện ra từng ký tự như đang gõ phím với con trỏ màu nhấn: gõ một cụm từ bình thường → con trỏ nhấp nháy ngập ngừng → xóa lùi từng chữ → gõ nhanh, dứt khoát cụm từ đúng; xong thì một vệt marker màu quét dưới cụm từ mới. Hiệu ứng 'nói lại cho đúng' rất rõ.",
+  "hop_khi": "Câu nói kiểu 'không phải X, mà là Y', 'nhiều người nghĩ đây chỉ là..., thật ra nó là...', định nghĩa lại một sản phẩm / app / khái niệm, đính chính hiểu lầm, câu slogan bán hàng có cú đổi ý.",
+  "tranh_khi": "Câu không có hai vế đối lập; dùng quá 1 lần trong video; câu dài hơn ~2 dòng; khoảnh khắc cần năng lượng cao, dồn dập.",
+  "nang_luong": "vua",
+  "chu_de": ["đính chính", "không phải mà là", "slogan", "định nghĩa", "gõ chữ", "thông điệp"]
+ }
+}

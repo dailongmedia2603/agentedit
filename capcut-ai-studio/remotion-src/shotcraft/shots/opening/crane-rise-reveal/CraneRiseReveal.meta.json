@@ -1,0 +1,30 @@
+{
+ "id": "crane-rise-reveal",
+ "component": "CraneRiseReveal",
+ "card": "crane-rise-reveal",
+ "category": "opening",
+ "duration": 165,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 140,
+ "slots": [
+  {"id": "title", "role": "title", "sample": "Đơn hàng hôm nay", "max": 28, "note": "tiêu đề trang dashboard"},
+  {"id": "number", "role": "number", "sample": "48.210", "max": 10, "note": "con số KPI lớn, đếm từ 0 lên (chỉ số, có thể kèm đơn vị ngắn)"},
+  {"id": "label", "role": "label", "sample": "đơn đã xử lý hôm nay", "max": 34, "note": "chú thích dưới con số KPI"},
+  {"id": "kicker", "role": "kicker", "sample": "Trực tiếp · Kho vận", "max": 30, "optional": true, "note": "nhãn nhỏ trên tiêu đề"},
+  {"id": "focus", "role": "label", "sample": "Hà Nội → TP.HCM", "max": 26, "optional": true, "note": "nội dung của dòng được camera soi cận cảnh lúc đầu (tên đơn / khách / mục)"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 24, "type": "riser"}, {"at": 40, "type": "whoosh"}, {"at": 134, "type": "ding"}],
+ "vi": {
+  "ten": "Camera kéo lên từ một dòng ra toàn bảng dữ liệu",
+  "mo_ta": "Mở đầu cận cảnh rất to một dòng trong bảng (mã đơn, tuyến, trạng thái 'Đang giao', chấm xanh nhấp nháy), các dòng khác mờ đi; rồi camera như cần cẩu nâng lên và lùi ra, từng dòng lần lượt lóe sáng khi lọt vào khung, cho đến khi thấy trọn một cửa sổ dashboard trắng: tiêu đề, con số KPI lớn đếm từ 0 lên, bảng hàng chục dòng. Cuối cùng dòng được theo dõi chuyển thành 'Đã giao' kèm dấu tick.",
+  "hop_khi": "Đi từ chi tiết ra toàn cảnh: 'mỗi ngày hệ thống xử lý hàng chục nghìn đơn', giới thiệu phần mềm quản lý / dashboard / CRM, nói về quy mô dữ liệu, theo dõi đơn hàng, vận hành tự động.",
+  "tranh_khi": "Không nói về phần mềm / dữ liệu; video tông tối; cần giới thiệu nhanh dưới 3 giây.",
+  "nang_luong": "vua",
+  "chu_de": ["dashboard", "phần mềm", "dữ liệu", "đơn hàng", "quản lý", "số liệu", "vận hành", "app"]
+ }
+}

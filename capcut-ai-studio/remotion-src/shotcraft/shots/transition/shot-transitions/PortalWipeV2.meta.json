@@ -1,0 +1,143 @@
+{
+ "id": "mask-wipe",
+ "component": "PortalWipeV2",
+ "card": "shot-transitions",
+ "category": "transition",
+ "duration": 140,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.25
+ ],
+ "hold": 74,
+ "slots": [
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Chào buổi sáng, Minh.",
+   "max": 30,
+   "note": "lời chào / tiêu đề lớn của trang ngoài (màn hình tổng quan)"
+  },
+  {
+   "id": "subtitle",
+   "role": "subtitle",
+   "sample": "6 dự án · 2 video xuất hôm nay",
+   "max": 40,
+   "optional": true
+  },
+  {
+   "id": "items",
+   "role": "item",
+   "sample": "Phim ra mắt|Video cập nhật|Hướng dẫn nhập môn|Mẫu quảng cáo|Hàng chờ xuất",
+   "max": 22,
+   "list": {
+    "min": 5,
+    "max": 5
+   },
+   "optional": true,
+   "note": "tên 5 thẻ còn lại trên lưới (cùng loại với thẻ được mở)"
+  },
+  {
+   "id": "target",
+   "role": "name",
+   "sample": "Dự báo lượt xem",
+   "max": 30,
+   "note": "tên thẻ được mở = tiêu đề thế giới bên trong (tính năng / dự án / mục được nói tới)"
+  },
+  {
+   "id": "target_meta",
+   "role": "label",
+   "sample": "Phân tích · 9 video",
+   "max": 24,
+   "optional": true,
+   "note": "dòng phụ dưới tên thẻ"
+  },
+  {
+   "id": "world_kicker",
+   "role": "kicker",
+   "sample": "Dự án · Phân tích",
+   "max": 28,
+   "optional": true,
+   "note": "nhãn nhỏ in hoa trên tiêu đề bên trong"
+  },
+  {
+   "id": "stat1",
+   "role": "number",
+   "sample": "+18,4%",
+   "max": 8,
+   "optional": true,
+   "note": "số nổi bật ở thẻ nổi trên phải"
+  },
+  {
+   "id": "stat1_label",
+   "role": "label",
+   "sample": "so với lần ra mắt trước",
+   "max": 26,
+   "optional": true
+  },
+  {
+   "id": "stat2",
+   "role": "number",
+   "sample": "94%",
+   "max": 6,
+   "optional": true,
+   "note": "số ở thẻ nổi dưới trái; nếu là % thì vòng tròn vẽ đúng tỉ lệ"
+  },
+  {
+   "id": "stat2_label",
+   "role": "label",
+   "sample": "độ tin cậy",
+   "max": 20,
+   "optional": true
+  }
+ ],
+ "images": [
+  {
+   "id": "screen",
+   "role": "screen",
+   "aspect": "16:9",
+   "optional": true,
+   "note": "ảnh chi tiết của mục được mở (màn hình tính năng, trang chi tiết, biểu đồ thật); hiện ở bìa thẻ và trong tấm kính lớn bên trong (phủ kín, cắt mép); không có -> biểu đồ dự báo vẽ sẵn"
+  }
+ ],
+ "brand": "optional",
+ "sfx": [
+  {
+   "at": 14,
+   "type": "click"
+  },
+  {
+   "at": 26,
+   "type": "whoosh"
+  },
+  {
+   "at": 60,
+   "type": "swoosh"
+  },
+  {
+   "at": 66,
+   "type": "pop"
+  }
+ ],
+ "vi": {
+  "ten": "Xuyên cửa sổ — mở một thẻ thành thế giới chi tiết",
+  "mo_ta": "Màn hình tổng quan sáng kiểu app quản lý (lời chào lớn + lưới 6 thẻ dự án có bìa màu). Một thẻ nhấc nhẹ lên, các thẻ khác mờ đi; rồi thẻ đó phình to thành cả khung như một cửa sổ, bên trong là không gian xanh coban sâu: tấm kính lớn có tiêu đề + biểu đồ tự vẽ (hoặc ảnh chi tiết), hai thẻ số nổi tách lớp phía trước. Dừng hẳn để đọc.",
+  "hop_khi": "Đi từ tổng quan vào chi tiết: 'mở tính năng X ra xem', giới thiệu một mục / dự án / báo cáo cụ thể trong app, dashboard; nói về số liệu dự báo, tăng trưởng của một hạng mục; chuyển chương từ danh sách sang một mục.",
+  "tranh_khi": "Không nói về phần mềm / app / dự án; chỉ có một ý đơn lẻ không có 'danh sách → chi tiết'; nội dung cảm xúc, đời thường.",
+  "nang_luong": "vua",
+  "chu_de": [
+   "app",
+   "dashboard",
+   "chuyển cảnh",
+   "chi tiết",
+   "dự án",
+   "số liệu",
+   "tính năng",
+   "phân tích"
+  ]
+ }
+}

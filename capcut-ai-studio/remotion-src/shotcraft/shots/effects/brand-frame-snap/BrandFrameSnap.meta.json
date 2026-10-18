@@ -1,0 +1,36 @@
+{
+ "id": "brand-frame-snap",
+ "component": "BrandFrameSnap",
+ "card": "brand-frame-snap",
+ "category": "effects",
+ "duration": 140,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 104,
+ "slots": [
+  {"id": "mode_a", "role": "label", "sample": "Thiết kế", "max": 14, "note": "tên chế độ / giai đoạn 1 (1-2 từ): hiện trên khung màu, nút gạt, tiêu đề lớn ở khung dọc"},
+  {"id": "mode_b", "role": "label", "sample": "Lập trình", "max": 14, "note": "tên chế độ / giai đoạn 2 — đổi sang ngay khi khung đổi màu"},
+  {"id": "name", "role": "name", "sample": "Gói Khởi đầu", "max": 22, "optional": true, "note": "tên sản phẩm / gói trên thẻ (mặc định = tên thương hiệu)"},
+  {"id": "badge", "role": "label", "sample": "Miễn phí", "max": 14, "optional": true},
+  {"id": "price", "role": "number", "sample": "0đ", "max": 9, "note": "giá / con số lớn trên thẻ"},
+  {"id": "price_unit", "role": "label", "sample": "/ trọn đời", "max": 14, "optional": true},
+  {"id": "tagline", "role": "subtitle", "sample": "Sản phẩm của bạn, chuyển động.", "max": 36, "optional": true},
+  {"id": "features", "role": "item", "sample": "Hàng trăm mẫu cảnh quay|Chuyển động máy 2.5D|Cắt theo nhịp nhạc", "max": 28, "list": {"min": 1, "max": 3}},
+  {"id": "cta", "role": "cta", "sample": "Tạo video ra mắt", "max": 24, "note": "chữ trên nút của thẻ"},
+  {"id": "page", "role": "label", "sample": "Trang chủ / Thẻ khuyến mãi", "max": 36, "optional": true, "note": "đường dẫn trên thanh tiêu đề cửa sổ, cách nhau bằng '/'"},
+  {"id": "caption", "role": "subtitle", "sample": "Một nút bấm, đổi cả chế độ làm việc.", "max": 60, "optional": true, "note": "chỉ hiện ở khung dọc, dưới cửa sổ"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 0, "type": "swoosh"}, {"at": 14, "type": "whoosh"}, {"at": 80, "type": "click"}, {"at": 84, "type": "boom"}, {"at": 90, "type": "pop"}],
+ "vi": {
+  "ten": "Khung màu thương hiệu bật đổi chế độ",
+  "mo_ta": "Một khung viền màu dày mọc ra ôm quanh màn hình, cửa sổ phần mềm thiết kế (cột lớp, thẻ giá ở giữa với nút được chọn, cột thuộc tính) rơi lò xo vào trong khung; con trỏ bấm nút gạt trên thanh tiêu đề và ĐÚNG khung hình đó cả viền đổi màu (xanh → cam), giao diện đổi sang chế độ code tối, đường đo kích thước hiện ra, chữ chế độ trên viền đổi theo, có chớp sáng và nảy nhẹ.",
+  "hop_khi": "Nói về chuyển chế độ / chuyển giai đoạn trong một phần mềm: thiết kế → lập trình, bản nháp → bản chính, người mới → chuyên gia, chế độ sáng → tối; giới thiệu tính năng 'chỉ một nút bấm'; demo app thiết kế, website, công cụ làm việc; chuyển chương hai phần của video.",
+  "tranh_khi": "Không có ý 'hai chế độ / trước và sau' trong lời nói; nội dung không liên quan phần mềm; dùng quá 2 lần trong video.",
+  "nang_luong": "vua",
+  "chu_de": ["phần mềm", "chuyển chế độ", "thiết kế", "lập trình", "app", "giao diện", "chuyển chương"]
+ }
+}

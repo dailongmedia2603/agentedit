@@ -1,0 +1,188 @@
+{
+ "id": "scanline-assemble-flyin",
+ "component": "ScanlineAssembleFlyin",
+ "card": "scanline-assemble-flyin",
+ "category": "effects",
+ "duration": 156,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.25
+ ],
+ "hold": 104,
+ "slots": [
+  {
+   "id": "badge",
+   "role": "label",
+   "sample": "Trình dựng video bằng AI",
+   "max": 32,
+   "optional": true,
+   "note": "chip nhỏ cạnh nhãn 'MỚI' (tên tính năng / sản phẩm)"
+  },
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Dựng cả trang",
+   "max": 22,
+   "note": "dòng 1 tiêu đề lớn"
+  },
+  {
+   "id": "title2",
+   "role": "title",
+   "sample": "chỉ trong vài giây.",
+   "max": 22,
+   "note": "dòng 2 tiêu đề, tô màu chuyển sắc (ý chốt)"
+  },
+  {
+   "id": "subtitle",
+   "role": "subtitle",
+   "sample": "Chỉ cần một câu mô tả, AI tự xếp bố cục, viết nội dung và chọn hình ảnh cho bạn.",
+   "max": 110,
+   "optional": true,
+   "note": "đoạn mô tả 1-2 câu"
+  },
+  {
+   "id": "cta",
+   "role": "cta",
+   "sample": "Bắt đầu ngay",
+   "max": 18,
+   "note": "nút chính"
+  },
+  {
+   "id": "cta2",
+   "role": "cta",
+   "sample": "Xem video demo",
+   "max": 20,
+   "optional": true,
+   "note": "nút phụ có biểu tượng play"
+  },
+  {
+   "id": "nav_cta",
+   "role": "cta",
+   "sample": "Dùng thử",
+   "max": 14,
+   "optional": true,
+   "note": "nút nhỏ trên thanh điều hướng"
+  },
+  {
+   "id": "menu",
+   "role": "label",
+   "sample": "Tính năng|Bảng giá|Hướng dẫn",
+   "max": 12,
+   "list": {
+    "min": 3,
+    "max": 3
+   },
+   "optional": true,
+   "note": "3 mục menu (chỉ hiện ở khung ngang)"
+  },
+  {
+   "id": "name",
+   "role": "name",
+   "sample": "Trang Mới",
+   "max": 20,
+   "optional": true,
+   "note": "tên trên thanh điều hướng khi video không có thương hiệu"
+  },
+  {
+   "id": "stats_numbers",
+   "role": "number",
+   "sample": "1|7|3 giây",
+   "max": 8,
+   "list": {
+    "min": 2,
+    "max": 3
+   },
+   "note": "2-3 con số ngắn (số + đơn vị)"
+  },
+  {
+   "id": "stats_labels",
+   "role": "label",
+   "sample": "câu lệnh duy nhất|khối tự động xếp|để hoàn tất",
+   "max": 24,
+   "list": {
+    "min": 2,
+    "max": 3
+   },
+   "note": "nhãn cho từng con số, cùng thứ tự"
+  },
+  {
+   "id": "media_label",
+   "role": "label",
+   "sample": "Bản xem trước · tự động tạo",
+   "max": 32,
+   "optional": true,
+   "note": "chip nhỏ góc dưới thẻ hình"
+  }
+ ],
+ "images": [
+  {
+   "id": "screen",
+   "role": "photo",
+   "aspect": "16:9",
+   "optional": true,
+   "note": "ảnh trong thẻ hình của trang (sản phẩm, ảnh minh họa, ảnh chụp app); phủ kín thẻ (cắt mép) — khung dọc thẻ ~16:10, khung ngang ~1:1; không có -> bầu trời sao vẽ sẵn"
+  }
+ ],
+ "brand": "optional",
+ "sfx": [
+  {
+   "at": 8,
+   "type": "riser"
+  },
+  {
+   "at": 19,
+   "type": "whoosh"
+  },
+  {
+   "at": 29,
+   "type": "whoosh"
+  },
+  {
+   "at": 55,
+   "type": "whoosh"
+  },
+  {
+   "at": 66,
+   "type": "swoosh"
+  },
+  {
+   "at": 75,
+   "type": "whoosh"
+  },
+  {
+   "at": 80,
+   "type": "swoosh"
+  },
+  {
+   "at": 88,
+   "type": "pop"
+  },
+  {
+   "at": 96,
+   "type": "ding"
+  }
+ ],
+ "vi": {
+  "ten": "Trang web tự lắp ráp — vạch quét gọi từng khối bay vào",
+  "mo_ta": "Bản vẽ kỹ thuật xanh đêm (lưới + khung nét đứt ghi tên từng khối). Một vạch sáng quét đều từ trên xuống; quét tới đâu, khối ở đó (thanh điều hướng, nhãn 'MỚI', tiêu đề lớn hai dòng, đoạn mô tả, nút bấm, thẻ hình, hàng số liệu) bay vụt từ ngoài khung vào, nảy nhẹ khớp chỗ, góc lóe sáng. Quét xong là trang hoàn chỉnh, dòng trạng thái báo 'Đã dựng xong' và đồng hồ dừng.",
+  "hop_khi": "Nói về AI / công cụ tự tạo website, landing page, giao diện, bài đăng, thiết kế 'chỉ trong vài giây'; giới thiệu sản phẩm số / app / SaaS với tiêu đề + lợi ích + con số; quy trình từ trống trơn tới thành phẩm, tự động hóa.",
+  "tranh_khi": "Chủ đề đời thường, cảm xúc, không liên quan sản phẩm số; chỉ cần nêu một câu ngắn; video tone sáng ấm.",
+  "nang_luong": "cao",
+  "chu_de": [
+   "AI",
+   "website",
+   "landing page",
+   "app",
+   "giao diện",
+   "tự động hóa",
+   "ra mắt",
+   "sản phẩm số",
+   "công nghệ"
+  ]
+ }
+}

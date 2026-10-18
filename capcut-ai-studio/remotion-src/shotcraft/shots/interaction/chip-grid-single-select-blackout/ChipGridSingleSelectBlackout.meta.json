@@ -1,0 +1,32 @@
+{
+ "id": "chip-grid-single-select-blackout",
+ "component": "ChipGridSingleSelectBlackout",
+ "card": "chip-grid-single-select-blackout",
+ "category": "interaction",
+ "duration": 165,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 134,
+ "slots": [
+  {"id": "kicker", "role": "kicker", "sample": "Chu kỳ thanh toán", "max": 28, "optional": true, "note": "nhãn ngắn màu xanh trên câu hỏi, in hoa"},
+  {"id": "question", "role": "title", "sample": "Bạn muốn thanh toán thế nào?", "max": 48, "note": "câu hỏi lựa chọn"},
+  {"id": "options", "role": "item", "sample": "Trả theo năm|Trả theo tháng|Cam kết hai năm|Sinh viên|Tổ chức phi lợi nhuận", "max": 24, "list": {"min": 3, "max": 6}, "note": "các lựa chọn dạng nút bo tròn; MỤC ĐẦU TIÊN là lựa chọn được bấm chọn; 1–4 từ mỗi mục"},
+  {"id": "before", "role": "number", "sample": "499.000đ", "max": 12, "optional": true, "note": "giá / con số cũ, bị gạch ngang"},
+  {"id": "value", "role": "number", "sample": "349.000đ", "max": 10, "note": "giá / con số kết quả sau khi chọn, hiện rất to"},
+  {"id": "unit", "role": "label", "sample": "/tháng", "max": 10, "optional": true, "note": "đơn vị nhỏ sau con số"},
+  {"id": "badge", "role": "label", "sample": "Tiết kiệm 30% · thanh toán một lần mỗi năm", "max": 48, "optional": true, "note": "viên nhãn xanh cuối cùng (lợi ích / mức tiết kiệm)"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 8, "type": "pop"}, {"at": 56, "type": "click"}, {"at": 104, "type": "swoosh"}, {"at": 118, "type": "swoosh"}, {"at": 128, "type": "ding"}],
+ "vi": {
+  "ten": "Chọn một lựa chọn — nút đổi đen, hiện giá kết quả",
+  "mo_ta": "Nền trắng kiểu trang thanh toán của app: câu hỏi to ở trên, 3–6 nút lựa chọn bo tròn bật lên. Con trỏ chuột lướt vòng cung tới nút đầu tiên và bấm: nút chớp xám 1 khung rồi chuyển đen chữ trắng có dấu tích, các nút khác mờ đi tại chỗ rồi biến mất; nút đen bay lên giữa, bên dưới giá cũ hiện ra rồi bị gạch ngang, giá mới hiện rất to từng chữ số, cuối cùng bật ra viên nhãn xanh “tiết kiệm…”.",
+  "hop_khi": "Nói về việc chọn gói / chọn phương án và kết quả của lựa chọn đó: gói năm rẻ hơn gói tháng, chọn gói phù hợp, ưu đãi giảm giá, so sánh giá trước–sau, “chỉ cần chọn … là được …”; demo thao tác chọn trong app / trang thanh toán.",
+  "tranh_khi": "Không có lựa chọn hay con số kết quả cụ thể; nội dung cảm xúc / kể chuyện; video tone tối; lựa chọn dài cả câu.",
+  "nang_luong": "vua",
+  "chu_de": ["lựa chọn", "giá", "gói dịch vụ", "khuyến mãi", "thanh toán", "app", "so sánh", "tiết kiệm"]
+ }
+}

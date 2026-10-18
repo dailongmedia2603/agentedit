@@ -105,6 +105,25 @@ export interface RSScene {
   /** POP-OUT (card/circle): khung video keo dai len tren them bay nhieu (phan chieu cao canvas);
    *  phan do chi hien NGUOI (clip.subject) -> dau troi ra khoi mep khung */
   popout?: number
+  /** MAU SHOT tu kho video-shotcraft (sidecar shot_lib.py) — canh motion graphic toan man hinh (layout graphic) hoac
+   *  lop trong suot de len canh cat (kind overlay, layout full) */
+  shot?: RSShot | null
+}
+
+export interface RSShot {
+  /** id mau (remotion-src/shotcraft/registry.ts) */
+  id: string
+  kind: 'insert' | 'overlay'
+  /** o chu -> chu THAT (loi noi) */
+  texts: Record<string, string | string[]>
+  /** o anh -> duong dan file tren may (Electron giai qua may chu media) */
+  images: Record<string, string>
+  /** toc do phat de vua do dai canh */
+  rate: number
+  /** thuong hieu duoc nhac trong loi noi (ten) */
+  brand?: { name: string } | null
+  /** an phu de trong canh (mau co chu) */
+  hideSubs?: boolean
 }
 
 // ---------------------------------------------------------------------------
@@ -368,6 +387,8 @@ export interface RenderSpec {
   bgFocus?: { start: number; end: number; dim: number; blur: number; desat: number; noSubject?: boolean }[]
   /** Vien sang quanh NGUOI NOI (ban tach nguoi) trong khoang — "poster" mo dinh danh / dong bang */
   subjectFx?: { start: number; end: number; stroke: { color: string; width: number } }[]
+  /** Mau cua video cho kho shot (mau nhan) — sidecar shot_lib.theme */
+  shotTheme?: { accent?: string; accent2?: string } | null
   /** Electron chen vao luc chay: goc URL cua may chu media cuc bo. */
   mediaBase?: string
 }

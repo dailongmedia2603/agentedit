@@ -1,0 +1,29 @@
+{
+ "id": "neon-frame-orbit-drop",
+ "component": "NeonFrameForerunOrbit",
+ "card": "neon-frame-orbit-drop",
+ "category": "ui-entrance",
+ "duration": 140,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.25],
+ "hold": 70,
+ "slots": [
+  {"id": "title", "role": "title", "sample": "Chào buổi sáng, Minh", "max": 40, "optional": true, "note": "lời chào / tiêu đề trang trên giao diện (chữ nhỏ trong app)"},
+  {"id": "items", "role": "item", "sample": "Duyệt bảng giá mới trên trang chủ|Đồng bộ dữ liệu khách hàng|Sửa lỗi trang thanh toán|Chuẩn bị nội dung tuần sau|Gửi báo cáo cho quản lý|Lên lịch họp với đối tác", "max": 40, "list": {"min": 3, "max": 6}, "optional": true, "note": "các dòng việc trong danh sách của app"}
+ ],
+ "images": [
+  {"id": "screen", "role": "screen", "aspect": "16:10", "optional": true, "note": "ảnh chụp màn hình app/web ngang; có thì thay toàn bộ giao diện vẽ sẵn"}
+ ],
+ "brand": "optional",
+ "sfx": [{"at": 0, "type": "riser"}, {"at": 14, "type": "swoosh"}, {"at": 66, "type": "pop"}],
+ "vi": {
+  "ten": "Khung neon vẽ viền → giao diện app rơi xuống, máy quay xoay vòng",
+  "mo_ta": "Nền đen có nhiều khung ống neon tím hồng cam mờ ảo; một khung neon gradient tự vẽ viền quanh bảng giao diện ứng dụng (trang chủ quản lý công việc: menu, ô tìm kiếm, thẻ gần đây, danh sách việc — hoặc ảnh chụp màn hình thật), góc nhìn 3D xoay vòng từ trái sang phải, đồng thời TẤT CẢ thành phần lơ lửng có bóng mềm rồi cùng lúc hạ xuống áp vào bảng.",
+  "hop_khi": "Ra mắt / giới thiệu tổng thể giao diện một app, phần mềm, web, dashboard; câu \"đây là giao diện chính\", \"mọi thứ nằm trong một màn hình\"; video công nghệ, SaaS, quản lý công việc.",
+  "tranh_khi": "Không nói về app/phần mềm; cần đọc rõ chữ trên giao diện (chữ trong app nhỏ); video tone sáng, mộc mạc.",
+  "nang_luong": "vua",
+  "chu_de": ["app", "phần mềm", "dashboard", "giao diện", "ra mắt", "SaaS", "neon", "quản lý công việc"]
+ }
+}

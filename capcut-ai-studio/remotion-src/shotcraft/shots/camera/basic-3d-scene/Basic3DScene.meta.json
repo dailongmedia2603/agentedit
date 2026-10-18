@@ -1,0 +1,34 @@
+{
+ "id": "basic-3d-scene",
+ "component": "Basic3DScene",
+ "card": "basic-3d-scene",
+ "category": "camera",
+ "duration": 225,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 214,
+ "slots": [
+  {"id": "kicker", "role": "kicker", "sample": "Lộ trình 3 bước", "max": 26, "optional": true, "note": "nhãn chung in hoa nhỏ trên cả 3 thẻ và trên phần tổng kết"},
+  {"id": "step1", "role": "item", "sample": "Ý tưởng.", "max": 24, "note": "tên bước 1, 1-3 từ"},
+  {"id": "desc1", "role": "subtitle", "sample": "Bắt đầu từ một vấn đề thật của khách hàng.", "max": 70, "optional": true},
+  {"id": "step2", "role": "item", "sample": "Thực hiện.", "max": 24, "note": "tên bước 2, 1-3 từ"},
+  {"id": "desc2", "role": "subtitle", "sample": "Biến kế hoạch thành sản phẩm chạy được.", "max": 70, "optional": true},
+  {"id": "step3", "role": "item", "sample": "Ra mắt.", "max": 18, "note": "tên bước 3 — thẻ này xoay nằm nghiêng rồi mới được xoay thẳng, nên càng ngắn càng tốt"},
+  {"id": "desc3", "role": "subtitle", "sample": "Đưa đến tay người dùng và đo kết quả.", "max": 70, "optional": true},
+  {"id": "title", "role": "title", "sample": "Ba bước, một hành trình.", "max": 40, "note": "câu tổng kết hiện cuối cùng khi cả 3 thẻ cùng hiện"},
+  {"id": "subtitle", "role": "subtitle", "sample": "Từ ý tưởng đến sản phẩm trong tay khách hàng.", "max": 80, "optional": true}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 38, "type": "whoosh"}, {"at": 98, "type": "whoosh"}, {"at": 160, "type": "whoosh"}, {"at": 190, "type": "swoosh"}],
+ "vi": {
+  "ten": "Không gian 3D — bay qua 3 thẻ bước rồi tổng kết",
+  "mo_ta": "Nền tối điện ảnh có bụi sáng 3D. Ba thẻ lớn (số 01/02/03, tên bước chữ to, câu mô tả, vạch tiến độ vàng) nằm rải rác trong không gian; camera bay từ thẻ này sang thẻ khác — thế giới xoay nghiêng 38°, rồi cả khung hình xoay 90° để dựng thẳng thẻ thứ ba — có nhoè chuyển động. Cuối cùng camera kéo ra thấy cả ba thẻ cùng lúc và câu tổng kết serif lớn hiện từng từ.",
+  "hop_khi": "Người nói trình bày quy trình / lộ trình / phương pháp đúng 3 bước hoặc 3 ý chính (vd \"bước 1… bước 2… bước 3\", \"3 điều bạn cần biết\"), giới thiệu 3 giai đoạn của dự án, 3 tính năng chính; đoạn tóm tắt cấu trúc bài nói kéo dài khoảng 7 giây.",
+  "tranh_khi": "Nội dung không đúng 3 ý; câu nói ngắn dưới 5 giây; cần hiển thị ảnh / giao diện thật; tone vui tươi sáng màu.",
+  "nang_luong": "vua",
+  "chu_de": ["3 bước", "quy trình", "lộ trình", "danh sách", "phương pháp", "tổng kết", "3D", "chương mới"]
+ }
+}

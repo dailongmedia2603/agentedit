@@ -1,0 +1,66 @@
+{
+ "id": "grain-dissolve",
+ "component": "GrainDissolve",
+ "card": "grain-dissolve",
+ "category": "outro",
+ "duration": 60,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.8,
+  1.15
+ ],
+ "hold": 50,
+ "slots": [
+  {
+   "id": "line",
+   "role": "subtitle",
+   "sample": "Phiên bản mới chính thức ra mắt hôm nay",
+   "max": 60,
+   "note": "cả câu hiện trước rồi vỡ thành hạt (tự đặt trong ngoặc { })"
+  },
+  {
+   "id": "word",
+   "role": "name",
+   "sample": "Đã ra mắt",
+   "max": 14,
+   "note": "từ ngắn được cô đọng lại, cùng ý với câu trên (tên sản phẩm / tên kênh / kết luận 1-3 từ)"
+  }
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [
+  {
+   "at": 6,
+   "type": "swoosh"
+  },
+  {
+   "at": 36,
+   "type": "riser"
+  },
+  {
+   "at": 42,
+   "type": "boom"
+  }
+ ],
+ "vi": {
+  "ten": "Câu chữ vỡ hạt rồi ngưng tụ thành 1 từ phát sáng",
+  "mo_ta": "Nền tối kiểu HUD có 4 góc khung. Một câu chữ trắng trong ngoặc { } đứng yên rồi đột ngột sôi lên thành hạt nhiễu, khung chọn sọc chéo hiện quanh nó; giữa lúc sôi nhất, mây hạt hút mạnh về giữa và ngưng tụ thành một từ ngắn to, phát sáng trắng, có vệt sáng ngang lóe một lần rồi đứng yên. Ngắn (2 giây), dứt khoát.",
+  "hop_khi": "Kết video / chốt thông điệp: gói cả câu thành một từ (\"tất cả gói gọn trong ___\"), công bố ra mắt / lên sóng, hiện tên sản phẩm hay tên kênh ở cuối; tone công nghệ, AI, sản phẩm số.",
+  "tranh_khi": "Cần người xem đọc kỹ câu dài (câu chỉ hiện ~0,5 giây trước khi vỡ); từ chốt dài hơn 2-3 từ; tone nhẹ nhàng, ấm áp, đời thường; video nền sáng.",
+  "nang_luong": "cao",
+  "chu_de": [
+   "kết video",
+   "ra mắt",
+   "logo",
+   "tên sản phẩm",
+   "công nghệ",
+   "AI",
+   "câu chốt",
+   "outro"
+  ]
+ }
+}

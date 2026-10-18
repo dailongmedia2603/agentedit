@@ -1,0 +1,27 @@
+{
+ "id": "glitch-cycle",
+ "component": "GlitchCycle",
+ "card": "glitch-cycle",
+ "category": "typography",
+ "duration": 168,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 142,
+ "slots": [
+  {"id": "steps", "role": "item", "sample": "LÊN KỊCH BẢN|KHỚP NHỊP NHẠC|DỰNG KHUNG HÌNH|SẴN SÀNG ĐĂNG", "max": 22, "list": {"min": 3, "max": 5}, "note": "các bước/trạng thái ngắn 2-4 từ, độ dài các mục NÊN gần bằng nhau; mục cuối = kết quả cuối cùng"},
+  {"id": "label", "role": "label", "sample": "du-an/video-ra-mat", "max": 26, "optional": true, "note": "nhãn dự án nhỏ kiểu đường dẫn, không dấu cách"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 0, "type": "click"}, {"at": 36, "type": "click"}, {"at": 74, "type": "click"}, {"at": 112, "type": "click"}, {"at": 140, "type": "ding"}],
+ "vi": {
+  "ten": "Màn hình trạng thái nhiễu glitch — các bước lần lượt",
+  "mo_ta": "Nền tím đen có vạch quét như màn hình máy: một dòng chữ in hoa kiểu mono rất lớn ở giữa luân phiên đổi qua 3-5 bước, mỗi lần đổi chữ vỡ thành ký tự nhiễu, giật ngang, tách màu hồng/xanh rồi đông lại thành bước tiếp theo; thanh tiến trình chạy đều tới 100% với 'BƯỚC n/N', cuối cùng bước cuối đứng yên sáng lên và trạng thái chuyển 'HOÀN TẤT'.",
+  "hop_khi": "Kể một quy trình/các bước máy móc, AI hoặc phần mềm đang chạy (xử lý, phân tích, xuất video, triển khai, cài đặt); đoạn 'hệ thống tự làm từng bước'; video công nghệ, AI, lập trình, automation.",
+  "tranh_khi": "Chủ đề đời sống nhẹ nhàng, cảm xúc; các bước dài cả câu; cần người xem đọc kỹ nhiều chữ; video tone sáng.",
+  "nang_luong": "cao",
+  "chu_de": ["AI", "quy trình", "các bước", "phần mềm", "tự động hoá", "công nghệ", "danh sách", "đang xử lý"]
+ }
+}

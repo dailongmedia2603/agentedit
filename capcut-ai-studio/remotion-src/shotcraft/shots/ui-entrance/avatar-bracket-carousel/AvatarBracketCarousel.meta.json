@@ -1,0 +1,34 @@
+{
+ "id": "avatar-bracket-carousel",
+ "component": "AvatarBracketCarousel",
+ "card": "avatar-bracket-carousel",
+ "category": "ui-entrance",
+ "duration": 156,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.2],
+ "hold": 128,
+ "slots": [
+  {"id": "left", "role": "title", "sample": "Trợ lý", "max": 18, "note": "phần câu ĐỨNG TRƯỚC ô trống (1-3 từ)"},
+  {"id": "right", "role": "title", "sample": "của bạn", "max": 18, "note": "phần câu ĐỨNG SAU ô trống (1-3 từ)"},
+  {"id": "roles", "role": "label", "sample": "Đạo diễn|Biên tập|Hoạt hình|Âm thanh", "max": 22, "list": {"min": 3, "max": 5}, "note": "các vai trò / lựa chọn lần lượt thay vào ô trống (1-3 từ mỗi mục); mục cuối là cái được giữ lại"}
+ ],
+ "images": [
+  {"id": "avatar1", "role": "photo", "aspect": "1:1", "optional": true, "note": "ảnh chân dung / sản phẩm cho vai trò 1 (cắt tròn); không có = biểu tượng / chữ cái đầu"},
+  {"id": "avatar2", "role": "photo", "aspect": "1:1", "optional": true},
+  {"id": "avatar3", "role": "photo", "aspect": "1:1", "optional": true},
+  {"id": "avatar4", "role": "photo", "aspect": "1:1", "optional": true},
+  {"id": "avatar5", "role": "photo", "aspect": "1:1", "optional": true}
+ ],
+ "brand": "none",
+ "sfx": [{"at": 4, "type": "click"}, {"at": 37, "type": "swoosh"}, {"at": 71, "type": "swoosh"}, {"at": 105, "type": "swoosh"}],
+ "vi": {
+  "ten": "Câu điền ô trống — ảnh đại diện xoay vòng trong khung ngắm",
+  "mo_ta": "Nền tối, một câu ngắn có ô trống ở giữa (khung dọc: câu xếp dọc, ô to ở giữa): khung ngắm 4 góc màu nhấn khoá vào ô, bên trong một hàng ảnh đại diện tròn (biểu tượng / chữ cái / ảnh thật) trượt bật lò xo thay nhau vào ô 2-4 lần — vào ô to rõ, ra ô nhỏ mờ nhoè; nhãn vai trò dưới ô đổi theo, khung ngắm 'nảy' nhẹ mỗi lần đổi.",
+  "hop_khi": "Liệt kê nhiều vai trò / công dụng cho CÙNG một thứ: 'một app làm được kế toán, bán hàng, chăm sóc khách', 'AI có thể là trợ lý, giáo viên, đầu bếp của bạn', đội ngũ / thành viên, các gói / phiên bản, đối tượng khách hàng ('dành cho sinh viên, mẹ bỉm, dân văn phòng').",
+  "tranh_khi": "Chỉ có một ý duy nhất; danh sách dài hơn 5 mục; cần giải thích chi tiết từng mục (mỗi mục chỉ là nhãn ngắn); video tone sáng.",
+  "nang_luong": "vua",
+  "chu_de": ["danh sách", "vai trò", "đội ngũ", "AI", "trợ lý", "app", "đối tượng", "lựa chọn"]
+ }
+}

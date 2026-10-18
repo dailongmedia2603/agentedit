@@ -1,0 +1,27 @@
+{
+ "id": "value-stagger-gradient",
+ "component": "ValueStaggerGradient",
+ "card": "value-stagger-gradient",
+ "category": "ui-entrance",
+ "duration": 150,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.25],
+ "hold": 112,
+ "slots": [
+  {"id": "title", "role": "title", "sample": "Mỗi tháng tăng thêm một chút", "max": 60, "note": "câu nhịp 1 (cột mọc dần từ trái sang phải); TỪ CUỐI tô màu chuyển xanh-tím"},
+  {"id": "title2", "role": "title", "sample": "Và bùng nổ đúng lúc cao điểm", "max": 60, "optional": true, "note": "câu nhịp 2, thay câu 1 lúc các cột giữa nảy lên (giây ~2.6); bỏ trống = giữ câu 1"}
+ ],
+ "images": [],
+ "brand": "none",
+ "sfx": [{"at": 9, "type": "riser"}, {"at": 78, "type": "swoosh"}, {"at": 86, "type": "boom"}],
+ "vi": {
+  "ten": "Biểu đồ cột xanh-tím mọc dần rồi nảy từ giữa",
+  "mo_ta": "Nền tối, 16 cột phát sáng màu chuyển từ xanh dương sang tím mọc lên lần lượt từ trái sang phải (cột trái cao nhất, thấp dần về phải, hiện từ mờ nhoè sang rõ, có bóng phản chiếu dưới sàn). Nhịp 2 các cột ở GIỮA nảy vọt lên sáng bừng rồi lan ra hai bên. Phía trên là thẻ chữ kính mờ: câu 1 hiện từ đầu, đổi sang câu 2 đúng lúc cột nảy.",
+  "hop_khi": "Nói về tăng trưởng, doanh số, lượt xem, số liệu đi lên theo thời gian; nhịp điệu / âm nhạc / sóng âm / equalizer; 'từ từ rồi bùng nổ', 'đỉnh điểm'; minh hoạ dữ liệu chung chung khi không có số cụ thể; chủ đề công nghệ, AI, phân tích.",
+  "tranh_khi": "Cần biểu đồ có con số / trục / nhãn cụ thể (cột không có giá trị); video tone sáng, nhẹ nhàng; nội dung giảm sút, tiêu cực (cột thấp dần về phải dễ hiểu nhầm là đi xuống).",
+  "nang_luong": "vua",
+  "chu_de": ["số liệu", "biểu đồ", "tăng trưởng", "dữ liệu", "âm nhạc", "sóng âm", "công nghệ", "đỉnh điểm"]
+ }
+}

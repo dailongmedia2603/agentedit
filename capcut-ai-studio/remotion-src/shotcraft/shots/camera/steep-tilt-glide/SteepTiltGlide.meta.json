@@ -1,0 +1,30 @@
+{
+ "id": "steep-tilt-glide",
+ "component": "SteepTiltGlide",
+ "card": "steep-tilt-glide",
+ "category": "camera",
+ "duration": 120,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 100,
+ "slots": [
+  {"id": "title", "role": "title", "sample": "Kế hoạch ra mắt", "max": 24, "note": "tên dự án / sản phẩm / app đang nói tới — chữ to nhất trên trang"},
+  {"id": "heading", "role": "subtitle", "sample": "Việc tuần này", "max": 26, "optional": true, "note": "tiêu đề danh sách ở trang trắng bên phải"},
+  {"id": "items", "role": "item", "sample": "Viết kịch bản video|Quay sản phẩm|Dựng và chèn nhạc|Đăng lên các kênh", "max": 30, "list": {"min": 2, "max": 5}, "optional": true, "note": "các dòng việc / tính năng ngắn"}
+ ],
+ "images": [
+  {"id": "screen", "role": "screen", "aspect": "16:9", "optional": true, "note": "ảnh chụp màn hình trang web / phần mềm THẬT, càng ngang dài càng đẹp; có ảnh thì thay toàn bộ giao diện vẽ sẵn"}
+ ],
+ "brand": "optional",
+ "sfx": [{"at": 0, "type": "whoosh"}, {"at": 40, "type": "swoosh"}],
+ "vi": {
+  "ten": "Trang phần mềm dựng nghiêng 60° trượt ngang",
+  "mo_ta": "Nền tối tím: một trang giao diện phần mềm quản lý công việc (thanh tiêu đề có tên dự án, menu bên trái, các ô thẻ tiến độ / việc cần làm / biểu đồ, trang danh sách việc bên phải) dựng đứng nghiêng 60° như bức tường, mép phải gần ống kính. Máy quay đứng yên, cả trang tự trượt ngang lướt qua với vệt nhòe tốc độ; trang sáng dần từ tối, các chữ trên trang lơ lửng rồi rơi đáp xuống mặt trang.",
+  "hop_khi": "Giới thiệu một phần mềm / app / nền tảng làm việc, công cụ quản lý dự án, dashboard; câu 'mọi thứ nằm gọn trong một nơi', 'quy trình làm việc của team'; có ảnh chụp màn hình trang web dài thì lướt khoe toàn trang.",
+  "tranh_khi": "Cần người xem đọc kỹ chữ (trang bị nghiêng, chữ chỉ lướt qua); chủ đề đời thường không liên quan phần mềm; video tông sáng.",
+  "nang_luong": "vua",
+  "chu_de": ["phần mềm", "app", "dashboard", "quản lý công việc", "giao diện", "website"]
+ }
+}

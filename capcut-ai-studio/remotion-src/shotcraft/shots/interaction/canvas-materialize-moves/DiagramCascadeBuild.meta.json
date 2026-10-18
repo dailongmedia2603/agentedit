@@ -1,0 +1,27 @@
+{
+ "id": "diagram-cascade",
+ "component": "DiagramCascadeBuild",
+ "card": "canvas-materialize-moves",
+ "category": "interaction",
+ "duration": 180,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 140,
+ "slots": [
+  {"id": "prompt", "role": "code", "sample": "Lập kế hoạch mở quán cà phê đầu tiên", "max": 60, "note": "câu lệnh / câu hỏi gõ vào ô AI"},
+  {"id": "nodes", "role": "item", "sample": "Quán cà phê|Vốn & chi phí|Khách hàng|Mặt bằng|Thiết bị|Thực đơn|Kênh online", "max": 28, "list": {"min": 3, "max": 7}, "note": "mục 1 = ý gốc; mục 2-3 = hai nhánh chính; mục 4-7 = ý con (chia đều: nhánh 1 trước rồi nhánh 2). 1-4 từ mỗi mục"}
+ ],
+ "images": [],
+ "brand": "none",
+ "sfx": [{"at": 8, "type": "typing"}, {"at": 48, "type": "click"}, {"at": 62, "type": "pop"}, {"at": 84, "type": "pop"}, {"at": 106, "type": "pop"}, {"at": 136, "type": "ding"}],
+ "vi": {
+  "ten": "AI tạo sơ đồ cây từ một câu lệnh",
+  "mo_ta": "Nền tím đêm kiểu ứng dụng AI: ô nhập lệnh có biểu tượng lấp lánh, chữ được gõ từng ký tự rồi bấm gửi; viền ô chạy dải sáng tím-hồng (đang tạo), camera lùi ra và một cây sơ đồ MỌC ra: thẻ gốc → 2 nhánh → các ý con, mỗi đường nối có đốm sáng chạy trước kéo thẻ ra. Xong hiện nhãn 'N mục · N-1 liên kết' và cả cây 'thở' một nhịp. Khung dọc: cây thành dàn dòng thụt lề xếp dọc, chữ to.",
+  "hop_khi": "Nói về dùng AI / ChatGPT để lập kế hoạch, phân tích, chia nhỏ vấn đề; 'chỉ cần một câu lệnh là có cả sơ đồ'; trình bày cấu trúc một ý lớn gồm các ý nhỏ (mind map, kế hoạch kinh doanh, lộ trình học).",
+  "tranh_khi": "Không liên quan AI / cấu trúc; cần hiển thị số liệu hay biểu đồ có sẵn; video tông sáng nhẹ nhàng.",
+  "nang_luong": "vua",
+  "chu_de": ["AI", "sơ đồ tư duy", "kế hoạch", "câu lệnh", "ChatGPT", "cấu trúc", "phân tích", "app"]
+ }
+}

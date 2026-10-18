@@ -1,0 +1,28 @@
+{
+ "id": "graze-face-tour",
+ "component": "GrazeFaceTour",
+ "card": "graze-face-tour",
+ "category": "camera",
+ "duration": 150,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.25],
+ "hold": 140,
+ "slots": [
+  {"id": "title", "role": "title", "sample": "Dự án của tôi", "max": 24, "note": "tiêu đề trang lớn ở cảnh giữa (tên dự án / tên trang / tên tính năng)"},
+  {"id": "items", "role": "item", "sample": "Chốt kịch bản video|Quay cảnh sản phẩm|Dựng bản nháp đầu tiên|Đăng lên kênh", "max": 34, "list": {"min": 3, "max": 4}, "note": "các đầu việc trong danh sách công việc ở cảnh cuối"},
+  {"id": "name", "role": "name", "sample": "Nhóm của tôi", "max": 22, "optional": true, "note": "tên workspace / app; bỏ trống = tên thương hiệu của video"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 0, "type": "whoosh"}, {"at": 48, "type": "swoosh"}, {"at": 98, "type": "swoosh"}],
+ "vi": {
+  "ten": "Camera lướt sát mặt giao diện app (3 cảnh)",
+  "mo_ta": "Nền tối có viền neon hồng tím; một giao diện phần mềm quản lý công việc sáng màu nằm nghiêng gắt, camera bay là là sát bề mặt như lướt qua địa hình, xa thì mờ (độ sâu trường ảnh). Chữ và thẻ trên giao diện lơ lửng phía trên có bóng mờ rồi lần lượt rơi xuống dán vào giao diện khi camera đi qua. Ba cảnh nối nhau: cây thư mục bên trái → thanh tab + tiêu đề trang lớn → danh sách công việc có thanh tiến độ.",
+  "hop_khi": "Người nói giới thiệu một phần mềm / app quản lý công việc, nền tảng làm việc nhóm, công cụ năng suất, quy trình làm việc số; đoạn kể \"mọi thứ được sắp xếp trong một chỗ\", \"đội mình quản lý dự án thế này\"; B-roll công nghệ 5 giây năng lượng cao.",
+  "tranh_khi": "Cần người xem đọc kỹ chữ (chữ nằm nghiêng, chỉ lướt qua); nội dung không liên quan phần mềm / công việc; tone nhẹ nhàng, đời thường.",
+  "nang_luong": "cao",
+  "chu_de": ["app", "phần mềm", "quản lý công việc", "giao diện", "năng suất", "làm việc nhóm", "danh sách", "công nghệ"]
+ }
+}

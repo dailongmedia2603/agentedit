@@ -1,0 +1,26 @@
+{
+ "id": "karaoke-fill-sync",
+ "component": "KaraokeFillSync",
+ "card": "type-rhythm-sync",
+ "category": "typography",
+ "duration": 150,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.75, 1.4],
+ "hold": 132,
+ "slots": [
+  {"id": "text", "role": "quote", "sample": "Nói ít hơn, làm nhiều hơn.", "max": 48, "note": "khẩu hiệu / câu chốt 2-6 từ, đúng lời người nói; từng từ được tô màu theo nhịp đọc"}
+ ],
+ "images": [],
+ "brand": "none",
+ "sfx": [],
+ "vi": {
+  "ten": "Chữ tô màu theo lời đọc (karaoke)",
+  "mo_ta": "Nền sáng sạch, một câu khẩu hiệu chữ rất đậm ở giữa (2-4 dòng), ban đầu mờ xám; từng từ lần lượt được tô màu nhấn từ trái sang phải như karaoke, có gạch chân chạy theo, đọc xong từ đó chuyển sang màu mực đậm; bên dưới là dải sóng âm giọng nói tô màu dần theo tiến độ. Không có chuyển động vị trí, chỉ có màu chạy theo lời.",
+  "hop_khi": "Người nói đọc một câu chốt / khẩu hiệu / nguyên tắc ngắn cần nhấn từng chữ (\"nói ít hơn, làm nhiều hơn\"), trích lời, slogan thương hiệu, câu thần chú, lời khuyên cô đọng; khi muốn người xem đọc theo.",
+  "tranh_khi": "Câu dài hơn 6 từ; người nói nói câu khác với chữ trên màn hình; đoạn không có lời thoại (tô màu sẽ vô nghĩa); cần năng lượng mạnh.",
+  "nang_luong": "vua",
+  "chu_de": ["trích dẫn", "khẩu hiệu", "câu chốt", "karaoke", "slogan", "lời khuyên", "nhấn mạnh", "chữ"]
+ }
+}

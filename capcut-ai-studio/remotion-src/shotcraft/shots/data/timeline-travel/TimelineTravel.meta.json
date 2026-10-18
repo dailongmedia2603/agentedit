@@ -1,0 +1,137 @@
+{
+ "id": "timeline-travel",
+ "component": "TimelineTravel",
+ "card": "timeline-travel",
+ "category": "data",
+ "duration": 160,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.25
+ ],
+ "hold": 114,
+ "slots": [
+  {
+   "id": "kicker",
+   "role": "kicker",
+   "sample": "Chặng đường phát triển",
+   "max": 30,
+   "optional": true,
+   "note": "nhãn nhỏ in hoa đầu trang"
+  },
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Mỗi tháng một bước tiến",
+   "max": 40,
+   "note": "tiêu đề cố định đầu trang"
+  },
+  {
+   "id": "labels",
+   "role": "label",
+   "sample": "v1.0|v2.0|v3.0|Hôm nay",
+   "max": 12,
+   "list": {
+    "min": 3,
+    "max": 5
+   },
+   "note": "tên từng mốc theo thứ tự thời gian: năm (2019), phiên bản, giai đoạn; mốc CUỐI là điểm dừng / hiện tại"
+  },
+  {
+   "id": "titles",
+   "role": "item",
+   "sample": "Ra mắt công khai|Máy quay & âm thanh|Bàn chỉnh chuyển động|Video chỉ từ một câu lệnh",
+   "max": 34,
+   "list": {
+    "min": 3,
+    "max": 5
+   },
+   "note": "tiêu đề thẻ của mỗi mốc (sự kiện chính), cùng số lượng với labels"
+  },
+  {
+   "id": "descs",
+   "role": "subtitle",
+   "sample": "Thẻ công thức cảnh quay, mẫu và thư viện.|Chuyển động máy 2.5D, âm thanh khớp nhịp.|Tinh chỉnh mọi cảnh quay ở một nơi.|Bạn đạo diễn, trợ lý AI tự quay.",
+   "max": 70,
+   "list": {
+    "min": 3,
+    "max": 5
+   },
+   "optional": true,
+   "note": "một câu mô tả ngắn cho mỗi mốc"
+  },
+  {
+   "id": "dates",
+   "role": "label",
+   "sample": "Th7 2026|Th8 2026|Th9 2026|Th10 2026",
+   "max": 12,
+   "list": {
+    "min": 3,
+    "max": 5
+   },
+   "optional": true,
+   "note": "ngày / tháng nhỏ của mỗi mốc"
+  },
+  {
+   "id": "metrics",
+   "role": "label",
+   "sample": "Xuất video Remotion|Cắt khớp nhịp|Xem trước trực tiếp|Dùng với trợ lý AI",
+   "max": 24,
+   "list": {
+    "min": 3,
+    "max": 5
+   },
+   "optional": true,
+   "note": "dòng điểm nhấn cuối thẻ (con số / thành tựu)"
+  }
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [
+  {
+   "at": 12,
+   "type": "riser"
+  },
+  {
+   "at": 30,
+   "type": "pop"
+  },
+  {
+   "at": 60,
+   "type": "pop"
+  },
+  {
+   "at": 80,
+   "type": "pop"
+  },
+  {
+   "at": 98,
+   "type": "pop"
+  },
+  {
+   "at": 104,
+   "type": "boom"
+  }
+ ],
+ "vi": {
+  "ten": "Du hành trục thời gian — lướt qua các mốc rồi phanh gấp ở hiện tại",
+  "mo_ta": "Nền sáng, một trục thời gian ngang có các nút mốc và vạch nhỏ. Máy quay khởi động chậm rồi lao nhanh dọc trục (nhòe chuyển động), mỗi khi tới một mốc thì một thẻ trắng (nhãn mốc, ngày, tiêu đề, mô tả) bật lò xo dựng đứng lên từ trục; chữ mốc khổng lồ mờ trôi phía sau. Đến mốc cuối máy phanh gấp và đẩy sát vào thẻ cuối (tô màu nhấn).",
+  "hop_khi": "Kể lịch sử / hành trình theo thời gian: các phiên bản sản phẩm, cột mốc công ty, quá trình phát triển kênh, hành trình cá nhân qua các năm, lộ trình học; câu kiểu 'năm 2019 bắt đầu... đến nay...', 'từ phiên bản đầu tiên tới giờ'.",
+  "tranh_khi": "Không có trình tự thời gian; hơn 5 mốc; cần đọc kỹ từng mốc giữa chừng (các mốc giữa lướt nhanh, chỉ mốc cuối dừng lâu).",
+  "nang_luong": "cao",
+  "chu_de": [
+   "dòng thời gian",
+   "lịch sử",
+   "cột mốc",
+   "hành trình",
+   "phiên bản",
+   "phát triển",
+   "changelog",
+   "năm"
+  ]
+ }
+}

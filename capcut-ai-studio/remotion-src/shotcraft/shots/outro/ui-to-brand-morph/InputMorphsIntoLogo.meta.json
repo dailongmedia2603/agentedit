@@ -1,0 +1,29 @@
+{
+ "id": "input-morph-assemble",
+ "component": "InputMorphsIntoLogo",
+ "card": "ui-to-brand-morph",
+ "category": "outro",
+ "duration": 168,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 150,
+ "slots": [
+  {"id": "message", "role": "subtitle", "sample": "Gửi bản cuối cho khách nhé!", "max": 40, "optional": true, "note": "tin nhắn đang gõ trong ô nhập, bị bắn đi khi bấm gửi"},
+  {"id": "channel", "role": "label", "sample": "ra-mat-san-pham", "max": 24, "optional": true, "note": "tên kênh chat phía trên (viết liền, không dấu cũng được)"},
+  {"id": "name", "role": "name", "sample": "", "max": 24, "optional": true, "note": "tên thương hiệu / sản phẩm hiện cạnh logo; bỏ trống = tên thương hiệu của video"},
+  {"id": "tagline", "role": "subtitle", "sample": "Làm việc nhóm nhanh hơn mỗi ngày.", "max": 60, "optional": true, "note": "khẩu hiệu ngắn dưới logo"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 20, "type": "click"}, {"at": 21, "type": "whoosh"}, {"at": 58, "type": "pop"}, {"at": 72, "type": "pop"}, {"at": 86, "type": "pop"}, {"at": 98, "type": "ding"}],
+ "vi": {
+  "ten": "Ô chat biến thành logo — các mảnh rơi xuống ghép khung",
+  "mo_ta": "Giao diện chat sáng: tên kênh, hai tin nhắn và một ô nhập lớn có dòng tin đang gõ. Con trỏ bấm nút gửi, dòng chữ bắn vọt lên góc phải; mực đen loang từ nút gửi lấp đầy ô nhập, rồi ô nhập co lại thành một nét dọc. Ba mảnh đen lần lượt rơi từ trên xuống khớp vào rãnh vẽ nét đứt (trên, dưới, phải) ghép thành khung vuông; logo thật hoặc chữ viết tắt bật vào giữa khung; logo dịch sang bên (khung dọc: dịch lên) để tên thương hiệu hiện từng chữ, khẩu hiệu hiện bên dưới.",
+  "hop_khi": "Kết video / outro cho app chat, phần mềm làm việc nhóm, công cụ SaaS; 'chỉ cần gửi một tin nhắn là xong'; chốt tên thương hiệu sau phần demo sản phẩm; kêu gọi dùng thử app.",
+  "tranh_khi": "Video không có thương hiệu / sản phẩm số để chốt; nội dung đời thường không liên quan app / nhắn tin; giữa video.",
+  "nang_luong": "vua",
+  "chu_de": ["logo", "thương hiệu", "outro", "app", "chat", "làm việc nhóm", "SaaS", "kết video"]
+ }
+}

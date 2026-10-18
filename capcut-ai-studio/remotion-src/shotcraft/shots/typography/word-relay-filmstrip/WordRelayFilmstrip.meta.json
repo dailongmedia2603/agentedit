@@ -1,0 +1,32 @@
+{
+ "id": "word-relay-filmstrip",
+ "component": "WordRelayFilmstrip",
+ "card": "word-relay-filmstrip",
+ "category": "typography",
+ "duration": 180,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 145,
+ "slots": [
+  {"id": "subject", "role": "name", "sample": "Trợ lý AI", "max": 16, "note": "chủ ngữ cố định dòng 1 (tên sản phẩm / người / thương hiệu); bỏ trống = tên thương hiệu"},
+  {"id": "verbs", "role": "item", "sample": "lên kịch bản|dựng video|đăng bài", "max": 16, "list": {"min": 2, "max": 3}, "note": "2-3 cụm động từ ngắn nối tiếp chủ ngữ (chủ ngữ + động từ đọc thành câu); tự thêm dấu chấm vàng"},
+  {"id": "notes", "role": "subtitle", "sample": "Kịch bản · 12 cảnh khớp nhịp|Bản xuất #1284 · 1080p · 1 phút 42 giây|Đã duyệt · lên sóng hôm nay", "max": 44, "list": {"min": 0, "max": 3}, "optional": true, "note": "chú thích bằng chứng nhỏ dưới từng động từ (cùng thứ tự)"}
+ ],
+ "images": [
+  {"id": "shot1", "role": "screen", "aspect": "16:9", "optional": true, "note": "ảnh chụp màn hình / ảnh minh họa cho động từ 1 (thẻ ngang 16:9, ảnh được phủ kín và cắt mép); không có thì dùng trang giả trung tính"},
+  {"id": "shot2", "role": "screen", "aspect": "16:9", "optional": true, "note": "bằng chứng cho động từ 2"},
+  {"id": "shot3", "role": "screen", "aspect": "16:9", "optional": true, "note": "bằng chứng cho động từ 3"}
+ ],
+ "brand": "optional",
+ "sfx": [{"at": 16, "type": "click"}, {"at": 66, "type": "click"}, {"at": 114, "type": "click"}],
+ "vi": {
+  "ten": "Cuộn phim bằng chứng + chữ lớn tiếp sức",
+  "mo_ta": "Nền tối điện ảnh: một cột các thẻ trang (ảnh chụp màn hình / trang giả sáng tối xen kẽ) đứng yên, thẻ ở giữa sáng rõ, thẻ trên dưới mờ và nhòe. Bên cạnh (khung dọc: bên dưới) là chữ serif lớn hai dòng: chủ ngữ cố định ('Trợ lý AI') và động từ in nghiêng thay nhau ('lên kịch bản.' → 'dựng video.' → 'đăng bài.', chấm vàng); mỗi lần đổi từ, cuộn phim nhích đúng một thẻ, chữ cũ bay lên khỏi mặt nạ, chữ mới trồi lên từng ký tự, đường dẫn vàng nối thẻ với chữ, chú thích nhỏ đổi theo.",
+  "hop_khi": "Một chủ thể làm được nhiều việc, mỗi việc có bằng chứng hình ảnh: 'app này giúp bạn viết bài, làm ảnh, đăng bài', 'AI lên kịch bản, dựng video, đăng lên mạng', giới thiệu các tính năng kèm ảnh chụp màn hình, case study / portfolio nhiều dự án; tone biên tập, sang, chậm rãi.",
+  "tranh_khi": "Động từ dài hơn ~3 từ; hơn 3 ý; không có chủ thể chung; khoảnh khắc cần năng lượng cao; video tone sáng; dùng gần mẫu câu có ô trống lăn chữ.",
+  "nang_luong": "vua",
+  "chu_de": ["tính năng", "app", "AI", "ảnh chụp màn hình", "portfolio", "danh sách", "giới thiệu sản phẩm"]
+ }
+}

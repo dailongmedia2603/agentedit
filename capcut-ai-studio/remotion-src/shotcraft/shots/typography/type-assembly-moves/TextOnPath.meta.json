@@ -1,0 +1,32 @@
+{
+ "id": "text-on-path",
+ "component": "TextOnPath",
+ "card": "type-assembly-moves",
+ "category": "typography",
+ "duration": 160,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 110,
+ "slots": [
+  {"id": "title", "role": "title", "sample": "Tăng trưởng mỗi quý", "max": 26, "note": "câu ngắn về tăng trưởng / đi lên — các chữ chạy dọc đường biểu đồ rồi bay lên thành tiêu đề"},
+  {"id": "kicker", "role": "kicker", "sample": "BÁO CÁO NĂM 2026", "max": 28, "optional": true, "note": "nhãn nhỏ in hoa trên tiêu đề"},
+  {"id": "subtitle", "role": "subtitle", "sample": "Quý sau luôn cao hơn quý trước.", "max": 60, "optional": true},
+  {"id": "value", "role": "number", "sample": "48,6 tỷ", "max": 10, "optional": true, "note": "con số lớn ở đỉnh đường (doanh thu, người dùng, lượt xem...)"},
+  {"id": "label", "role": "label", "sample": "doanh thu", "max": 16, "optional": true, "note": "nhãn dưới con số"},
+  {"id": "delta", "role": "number", "sample": "▲ 312%", "max": 10, "optional": true, "note": "mức tăng (màu xanh ngọc)"},
+  {"id": "quarters", "role": "label", "sample": "Quý 2|Quý 3|Quý 4", "max": 12, "list": {"min": 0, "max": 3}, "optional": true, "note": "3 nhãn mốc trên đường (giai đoạn / tháng / năm)"}
+ ],
+ "images": [],
+ "brand": "none",
+ "sfx": [{"at": 4, "type": "whoosh"}, {"at": 66, "type": "ding"}, {"at": 72, "type": "swoosh"}, {"at": 98, "type": "pop"}],
+ "vi": {
+  "ten": "Chữ chạy theo đường tăng trưởng rồi bay lên thành tiêu đề",
+  "mo_ta": "Nền xanh đêm kiểu biểu đồ báo cáo: một đường tăng trưởng xanh điện phát sáng vẽ dần từ trái dưới lên phải trên (vùng dưới đường tô gradient, chấm sáng xanh ngọc dẫn đầu); cả câu chữ trắng nối đuôi chạy dọc theo đường, nghiêng theo độ dốc, dừng một nhịp rồi từng chữ bay vòng cung lên góc trên trái xếp thành tiêu đề ngang. Sau đó hiện bảng số lớn ở đỉnh đường (con số + % tăng), các mốc trên đường sáng lên, câu phụ hiện dưới tiêu đề.",
+  "hop_khi": "Nói về tăng trưởng, kết quả đi lên: doanh thu tăng, số người dùng / lượt xem / follower tăng, thành tích theo thời gian, “chỉ sau 6 tháng…”, báo cáo kinh doanh, case study tăng trưởng.",
+  "tranh_khi": "Số liệu giảm / tin xấu; không có ý tăng trưởng; câu dài; video tone sáng ấm.",
+  "nang_luong": "vua",
+  "chu_de": ["tăng trưởng", "số liệu", "biểu đồ", "doanh thu", "báo cáo", "kết quả", "dashboard", "kinh doanh"]
+ }
+}

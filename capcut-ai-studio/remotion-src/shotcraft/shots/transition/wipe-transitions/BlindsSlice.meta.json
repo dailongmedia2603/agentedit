@@ -1,0 +1,32 @@
+{
+ "id": "blinds-slice",
+ "component": "BlindsSlice",
+ "card": "wipe-transitions",
+ "category": "transition",
+ "duration": 132,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.3],
+ "hold": 90,
+ "slots": [
+  {"id": "wordA", "role": "title", "sample": "Trước", "max": 12, "note": "chữ khổng lồ trang đầu (1 từ: Trước / Cũ / Vấn đề / Hôm qua)"},
+  {"id": "bodyA", "role": "subtitle", "sample": "Làm mọi thứ thủ công, mất cả ngày cho một việc nhỏ.", "max": 70, "optional": true, "note": "câu mô tả trạng thái đầu"},
+  {"id": "chapterA", "role": "kicker", "sample": "Phần 01", "max": 16, "optional": true},
+  {"id": "wordB", "role": "title", "sample": "Sau", "max": 12, "note": "chữ khổng lồ trang sau, đối lập với wordA (Sau / Mới / Giải pháp / Hôm nay)"},
+  {"id": "bodyB", "role": "subtitle", "sample": "Tự động hoá quy trình, chỉ còn vài phút mỗi ngày.", "max": 70, "optional": true, "note": "câu mô tả trạng thái sau"},
+  {"id": "chapterB", "role": "kicker", "sample": "Phần 02", "max": 16, "optional": true},
+  {"id": "label", "role": "label", "sample": "Sổ tay khởi nghiệp", "max": 28, "optional": true, "note": "tên chuyên mục nhỏ trên đầu trang"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 24, "type": "swoosh"}, {"at": 40, "type": "whoosh"}, {"at": 82, "type": "click"}],
+ "vi": {
+  "ten": "Lật trang kiểu rèm sáo — trang Trước lật thành trang Sau",
+  "mo_ta": "Trang tạp chí giấy sáng với chữ khổng lồ (vd \"Trước.\") và câu mô tả nhỏ; sau gần 1 giây, 12 lá rèm dọc lần lượt lật 3D từ trái sang phải như làn sóng (lộ khe tối, ánh sáng lướt trên lá), biến cả trang thành trang màu nhấn với chữ khổng lồ mới (vd \"Sau.\") và câu mô tả mới.",
+  "hop_khi": "So sánh trước / sau, cũ / mới, vấn đề / giải pháp, hôm qua / hôm nay; chuyển sang phần tiếp theo của bài nói (Phần 1 → Phần 2); khoảnh khắc \"mọi thứ thay đổi\" khi dùng sản phẩm, phương pháp mới.",
+  "tranh_khi": "Chỉ có một ý, không có cặp đối lập; chữ khổng lồ dài hơn 1-2 từ; đã dùng một hiệu ứng quét/chuyển cảnh hình học khác trong cùng video.",
+  "nang_luong": "vua",
+  "chu_de": ["trước sau", "so sánh", "chuyển chương", "thay đổi", "vấn đề giải pháp", "tạp chí", "chuyển cảnh"]
+ }
+}

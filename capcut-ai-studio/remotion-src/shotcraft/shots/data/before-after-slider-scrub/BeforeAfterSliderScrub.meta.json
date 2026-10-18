@@ -1,0 +1,30 @@
+{
+ "id": "before-after-slider-scrub",
+ "component": "BeforeAfterSliderScrub",
+ "card": "before-after-slider-scrub",
+ "category": "data",
+ "duration": 150,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 60,
+ "slots": [
+  {"id": "before_label", "role": "label", "sample": "Trước", "max": 14, "optional": true, "note": "nhãn chip phía ảnh cũ (1-3 từ): Trước, Ảnh gốc, Bản cũ"},
+  {"id": "after_label", "role": "label", "sample": "Sau khi dùng AI", "max": 18, "optional": true, "note": "nhãn chip phía ảnh mới (1-4 từ): Sau, AI chỉnh, Bản mới"}
+ ],
+ "images": [
+  {"id": "after", "role": "photo", "aspect": "9:16", "note": "ảnh 'SAU' (kết quả đẹp: ảnh đã chỉnh, sản phẩm mới, giao diện mới); nên cùng tỉ lệ khung video, chủ thể ở giữa — ảnh được phủ kín khung (cắt mép)"},
+  {"id": "before", "role": "photo", "aspect": "9:16", "optional": true, "note": "ảnh 'TRƯỚC' cùng bố cục, cùng góc máy với ảnh after; không có thì tự tạo bản 'chưa xử lý' từ ảnh after (mờ, xám, nhạt)"}
+ ],
+ "brand": "none",
+ "sfx": [{"at": 14, "type": "whoosh"}, {"at": 30, "type": "click"}],
+ "vi": {
+  "ten": "So sánh trước / sau — thanh trượt quét ảnh",
+  "mo_ta": "Hai phiên bản của CÙNG một ảnh chồng lên nhau, phủ kín khung: bên phải là bản 'Trước' (mờ, xám, nhạt), bên trái là bản 'Sau' (rõ, đủ màu). Một thanh chia dọc có nút tròn trắng vụt mạnh từ mép trái sang 3/4 khung (nảy lại), dừng một nhịp rồi trượt chậm về 40% để người xem soi kỹ khác biệt; chip nhãn 'Trước' / 'Sau' ở phía trên mỗi bên.",
+  "hop_khi": "Khoe hiệu quả trước/sau: AI làm nét / chỉnh màu ảnh, xóa phông, trang điểm, cải tạo phòng, giao diện app cũ vs mới, kết quả trước và sau khi áp dụng một mẹo; câu nói kiểu 'nhìn sự khác biệt này', 'trước đây thì như vậy, còn bây giờ...'.",
+  "tranh_khi": "Không có ảnh minh họa đúng chủ đề; hai thứ cần so sánh KHÁC bố cục (hai sản phẩm khác nhau, hai người khác nhau) — khi đó dùng mẫu so sánh hai cột; so sánh bằng con số.",
+  "nang_luong": "vua",
+  "chu_de": ["so sánh", "trước sau", "AI chỉnh ảnh", "kết quả", "nâng cấp", "hiệu quả"]
+ }
+}

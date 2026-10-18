@@ -1,0 +1,27 @@
+{
+ "id": "brand-ink-open",
+ "component": "BrandInkOpen",
+ "card": "brand-ink-open",
+ "category": "typography",
+ "duration": 104,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 66,
+ "slots": [
+  {"id": "name", "role": "name", "sample": "Góc Sáng Tạo", "max": 24, "note": "tên thương hiệu / kênh / sản phẩm; bỏ trống thì dùng tên thương hiệu của video"},
+  {"id": "kicker", "role": "subtitle", "sample": "Kể chuyện bằng hình ảnh", "max": 44, "optional": true, "note": "khẩu hiệu ngắn gõ máy chữ dưới tên; ≤ 28 ký tự thì in hoa"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 10, "type": "click"}, {"at": 28, "type": "typing"}, {"at": 97, "type": "whoosh"}],
+ "vi": {
+  "ten": "Mở đầu tên thương hiệu kiểu mực in",
+  "mo_ta": "Nền giấy kem: một dấu thập màu nhấn tự vẽ ra rồi mờ đi, tên thương hiệu serif lớn được 'ép in' TỪNG CHỮ (chữ to rồi ép xuống, nhòe → nét, gạch sáng màu nhấn lóe dưới chân chữ), dòng khẩu hiệu nhỏ gõ máy chữ kèm con trỏ khối nhấp nháy; đứng yên tròn 1 giây rồi bay lên mờ đi. Yên tĩnh, sang, năng lượng thấp.",
+  "hop_khi": "Mở đầu video: giới thiệu tên kênh / thương hiệu / sản phẩm trước khi vào nội dung; khi người nói xưng tên ('mình là…', 'đây là…'); chuyển sang một chuyên mục có tên riêng.",
+  "tranh_khi": "Giữa đoạn nói dồn dập cần năng lượng cao; không có tên riêng nào để hiện; video tông tối gắt.",
+  "nang_luong": "thap",
+  "chu_de": ["logo", "thương hiệu", "mở đầu", "tên kênh", "giới thiệu", "ra mắt"]
+ }
+}

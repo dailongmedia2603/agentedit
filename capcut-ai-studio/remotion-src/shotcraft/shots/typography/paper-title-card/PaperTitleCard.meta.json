@@ -1,0 +1,29 @@
+{
+ "id": "paper-title-card",
+ "component": "PaperTitleCard",
+ "card": "paper-title-card",
+ "category": "typography",
+ "duration": 55,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.75, 1.2],
+ "hold": 44,
+ "slots": [
+  {"id": "title", "role": "title", "sample": "Mỗi dự án đều được nối thẳng vào báo cáo tuần.", "max": 70, "note": "MỘT câu cụ thể (tên tính năng + lợi ích), 5-12 từ"},
+  {"id": "accent", "role": "label", "sample": "báo cáo tuần", "max": 24, "optional": true, "note": "1-3 từ chép NGUYÊN VĂN từ title để nhấn nghiêng màu; trống = từ cuối"},
+  {"id": "number", "role": "number", "sample": "12", "max": 6, "optional": true, "note": "chỉ chữ số (cuộn kiểu đồng hồ) đứng trước subtitle"},
+  {"id": "subtitle", "role": "label", "sample": "video đã xuất hôm nay", "max": 36, "optional": true, "note": "dòng chữ nhỏ in hoa kiểu mono, đi kèm con số"}
+ ],
+ "images": [],
+ "brand": "none",
+ "sfx": [{"at": 3, "type": "swoosh"}],
+ "vi": {
+  "ten": "Thẻ chữ giấy — ép từng từ một câu",
+  "mo_ta": "Nền giấy trắng ngà ấm, một câu serif lớn ở giữa hiện TỪNG TỪ như được ép in lên giấy (từ to hơn, mờ nhòe rồi nén xuống rõ nét), một từ khoá nghiêng màu nhấn; gạch ngang màu nhấn kéo ra bên dưới, dòng chữ nhỏ kèm con số cuộn kiểu đồng hồ; cuối cảnh chữ mờ đi. Rất ngắn (~1,8 giây), nhẹ nhàng.",
+  "hop_khi": "Khoảng nghỉ giữa hai đoạn nhiều thông tin; câu dẫn trước khi giới thiệu một tính năng/phần mới (\"Tiếp theo là…\", \"Điều quan trọng nhất là…\"); một câu giá trị cốt lõi ngắn gọn; tone tri thức, doanh nghiệp, chia sẻ kinh nghiệm.",
+  "tranh_khi": "Câu dài quá 12 từ hoặc nhiều ý; khoảnh khắc cần năng lượng cao; video tone tối, gắt; cần giữ chữ trên màn hình lâu.",
+  "nang_luong": "thap",
+  "chu_de": ["câu dẫn", "chương mới", "thông điệp", "câu chốt", "chuyển cảnh", "tiêu đề"]
+ }
+}

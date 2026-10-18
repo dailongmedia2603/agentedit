@@ -1,0 +1,30 @@
+{
+ "id": "hit-counter",
+ "component": "HitCounter",
+ "card": "impact-feedback",
+ "category": "effects",
+ "duration": 176,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 142,
+ "slots": [
+  {"id": "items", "role": "item", "sample": "Tự động cắt ghép|Phụ đề tức thì|Hiệu ứng một chạm", "max": 32, "list": {"min": 3, "max": 3}, "note": "ĐÚNG 3 mục: tên tính năng / bước / lợi ích, mỗi mục 2-5 từ"},
+  {"id": "descs", "role": "subtitle", "sample": "Chọn cảnh, AI lo phần còn lại.|Nói tới đâu, chữ hiện tới đó.|Bấm một lần là có chuyển động.", "max": 50, "list": {"min": 3, "max": 3}, "optional": true, "note": "mô tả ngắn cho từng thẻ (cùng thứ tự items)"},
+  {"id": "numbers", "role": "number", "sample": "−2 giờ|−1 ngày|−3 ngày", "max": 10, "list": {"min": 3, "max": 3}, "note": "3 con số 'sát thương' bay lên ở mỗi cú đập rồi nằm ở chân thẻ (vd −2 giờ, +30%, x3); nên tăng dần"},
+  {"id": "kicker", "role": "kicker", "sample": "CÓ GÌ MỚI", "max": 22, "optional": true, "note": "nhãn ngắn góc trên trái, in hoa"},
+  {"id": "title", "role": "title", "sample": "Mỗi video tiết kiệm trọn một tuần.", "max": 60, "note": "câu chốt cuối; 2 TỪ CUỐI tô vàng (đặt lợi ích chính ở cuối)"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 30, "type": "boom"}, {"at": 60, "type": "boom"}, {"at": 90, "type": "boom"}, {"at": 104, "type": "whoosh"}],
+ "vi": {
+  "ten": "Combo 3 cú đập — thẻ tính năng rơi xuống kiểu game đối kháng",
+  "mo_ta": "Nền xanh coban rực kiểu poster game: 3 thẻ trắng lần lượt RƠI ĐẬP vào 3 ô (mỗi cú đập khựng hình 2 khung, thẻ nén bẹp, vòng sóng trắng + tia lửa vàng), con số 'sát thương' vàng nghiêng to dần bay lên, bộ đếm COMBO ×1 ×2 ×3 ở góc nảy mạnh dần. Cuối cùng câu chốt hiện từng từ, 2 từ cuối màu vàng.",
+  "hop_khi": "Kể liền 3 tính năng / 3 lợi ích / 3 bước / 3 lý do có con số đi kèm (tiết kiệm thời gian, tăng %, gấp mấy lần) — 'thứ nhất... thứ hai... và cú chốt'; giới thiệu app, phần mềm, sản phẩm mới, mẹo hiệu quả; giọng hào hứng, vui.",
+  "tranh_khi": "Không đủ 3 ý; chủ đề nghiêm túc / buồn / sang trọng (ngôn ngữ game rất đậm); không có con số nào để đặt vào.",
+  "nang_luong": "cao",
+  "chu_de": ["danh sách", "3 tính năng", "lợi ích", "con số", "app", "ra mắt", "game", "so sánh"]
+ }
+}

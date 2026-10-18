@@ -1,0 +1,28 @@
+{
+ "id": "research-card-stack-scroll",
+ "component": "ResearchCardStackScroll",
+ "card": "research-card-stack-scroll",
+ "category": "ui-entrance",
+ "duration": 144,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.25],
+ "hold": 124,
+ "slots": [
+  {"id": "items", "role": "item", "sample": "Báo cáo thị trường thương mại điện tử Việt Nam 2024|Hành vi mua sắm của người dùng Gen Z trên mạng xã hội|Chi phí quảng cáo giảm 41% nhờ tối ưu bằng AI|Mười sai lầm phổ biến khi khởi nghiệp kinh doanh online|Xu hướng thanh toán không tiền mặt tại Đông Nam Á|Cách giữ chân khách hàng cũ hiệu quả hơn tìm khách mới|Phân tích 500 chiến dịch TikTok bán hàng thành công|Tác động của trí tuệ nhân tạo tới thị trường việc làm|Quy trình chăm sóc khách hàng của các thương hiệu lớn|Dữ liệu người dùng và bài toán quyền riêng tư|Chiến lược giá cho sản phẩm mới ra mắt", "max": 70, "list": {"min": 5, "max": 11}, "note": "tiêu đề tài liệu / bài báo / báo cáo; càng nhiều mục càng thấy 'khối lượng'"},
+  {"id": "details", "role": "label", "sample": "", "max": 40, "list": {"min": 0, "max": 11}, "optional": true, "note": "dòng nguồn nhỏ màu cam trên thẻ đang đọc (vd 'Nielsen · 2024'); bỏ trống thì hiện 'Tài liệu 01 · 12 trang'"},
+  {"id": "kicker", "role": "kicker", "sample": "Đang đọc tài liệu", "max": 28, "optional": true, "note": "nhãn nhỏ phía trên chồng thẻ, kèm bộ đếm n / N tự động"}
+ ],
+ "images": [],
+ "brand": "none",
+ "sfx": [{"at": 0, "type": "swoosh"}, {"at": 60, "type": "swoosh"}, {"at": 120, "type": "click"}],
+ "vi": {
+  "ten": "Chồng tài liệu bay vào liên tục",
+  "mo_ta": "Nền sáng có kẻ dòng mờ; từng thẻ tài liệu màu đen (tiêu đề chữ trắng) cứ khoảng nửa giây lại rơi xuống giữa màn hình chồng lên thẻ trước, thẻ trên cùng hiện rõ dòng nguồn + các dòng tóm tắt, các thẻ cũ trôi chéo xuống dưới, mờ dần và tối đi như đang chìm vào chồng giấy. Phía trên có nhãn nhỏ và bộ đếm 01/11 nhảy theo; cuối cảnh dừng lại ở thẻ cuối rõ nét.",
+  "hop_khi": "Người nói nhấn mạnh khối lượng tài liệu đã đọc / phân tích / tổng hợp (\"mình đã đọc hơn 100 báo cáo\", \"AI quét hàng nghìn bài viết\"), nghiên cứu thị trường, tra cứu, xử lý văn bản hàng loạt, giới thiệu công cụ AI đọc tài liệu.",
+  "tranh_khi": "Cần người xem đọc kỹ từng tiêu đề (mỗi thẻ chỉ hiện rõ ~0,5 giây); ít hơn 5 mục; nội dung cảm xúc, đời thường không liên quan tài liệu.",
+  "nang_luong": "vua",
+  "chu_de": ["tài liệu", "nghiên cứu", "khối lượng", "đọc", "AI", "báo cáo", "dữ liệu", "tra cứu", "danh sách"]
+ }
+}

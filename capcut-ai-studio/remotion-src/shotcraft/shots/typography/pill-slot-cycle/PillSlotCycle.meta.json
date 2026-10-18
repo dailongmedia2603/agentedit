@@ -1,0 +1,28 @@
+{
+ "id": "pill-slot-cycle",
+ "component": "PillSlotCycle",
+ "card": "pill-slot-cycle",
+ "category": "typography",
+ "duration": 200,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 160,
+ "slots": [
+  {"id": "stem", "role": "title", "sample": "Chỉ một app để", "max": 24, "note": "thân câu cố định đứng yên (lời hứa), kết thúc bằng chỗ trống cho các cụm động từ"},
+  {"id": "items", "role": "item", "sample": "Lên kịch bản|Quay sản phẩm|Dựng video|Chèn nhạc nền|Làm phụ đề|Đăng lên mạng", "max": 18, "list": {"min": 3, "max": 6}, "note": "các cụm động từ ngắn (2-4 từ, độ dài gần nhau) lần lượt lăn vào ô trống của câu"},
+  {"id": "ending", "role": "title", "sample": "làm tất cả.", "max": 18, "note": "vế chốt thay ô trống ở cuối, cùng cỡ chữ với thân câu"}
+ ],
+ "images": [],
+ "brand": "none",
+ "sfx": [{"at": 12, "type": "click"}, {"at": 33, "type": "click"}, {"at": 54, "type": "click"}, {"at": 75, "type": "click"}, {"at": 96, "type": "click"}, {"at": 117, "type": "click"}, {"at": 138, "type": "pop"}],
+ "vi": {
+  "ten": "Câu có ô trống — các tính năng lăn vào như máy đánh bạc",
+  "mo_ta": "Nền sáng sạch, một câu chữ đậm đứng yên ('Chỉ một app để …'), cuối câu là một viên thuốc trắng có icon: cứ ~0,7 giây viên cũ lật bay lên mờ đi, viên mới lật từ dưới lên (hiệu ứng trống quay, mờ chuyển động) với một cụm động từ khác. Sau 3-6 lần đổi, viên cuối bay đi và vế chốt ('làm tất cả.') nảy vào chỗ, cả câu trượt êm ra giữa và đứng yên.",
+  "hop_khi": "Liệt kê nhiều tính năng / việc mà một sản phẩm làm được trong MỘT câu: 'chỉ một app để quay, dựng, chèn nhạc...', 'AI giúp bạn viết bài, làm ảnh, trả lời khách', 'khóa học dạy bạn...'; giới thiệu app / phần mềm / dịch vụ đa năng; nhịp đều, dễ hiểu.",
+  "tranh_khi": "Các mục dài (hơn ~4 từ) hoặc độ dài chênh nhau nhiều; danh sách chỉ 1-2 mục; nội dung là số liệu; khoảnh khắc cần cảm xúc mạnh; video tone tối.",
+  "nang_luong": "vua",
+  "chu_de": ["tính năng", "danh sách", "app", "đa năng", "AI", "giới thiệu sản phẩm", "dịch vụ"]
+ }
+}

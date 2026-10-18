@@ -1,0 +1,37 @@
+{
+ "id": "product-card-progressive-assemble",
+ "component": "ProductCardProgressiveAssemble",
+ "card": "product-card-progressive-assemble",
+ "category": "ui-entrance",
+ "duration": 172,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 132,
+ "slots": [
+  {"id": "kicker", "role": "kicker", "sample": "SẢN PHẨM MỚI · BỘ SƯU TẬP THU", "max": 34, "optional": true, "note": "dòng nhỏ in hoa trên tên sản phẩm"},
+  {"id": "title", "role": "name", "sample": "Tai nghe Aura", "max": 30, "note": "tên sản phẩm / dịch vụ / khóa học"},
+  {"id": "pills", "role": "label", "sample": "Không dây|Chống ồn|Pin 40 giờ", "max": 16, "list": {"min": 0, "max": 3}, "optional": true, "note": "nhãn đặc điểm ngắn 1–3 từ"},
+  {"id": "price_old", "role": "number", "sample": "2.490.000đ", "max": 12, "optional": true, "note": "giá gốc — bị thu nhỏ + gạch ngang; bỏ trống nếu không giảm giá"},
+  {"id": "price_new", "role": "number", "sample": "1.790.000đ", "max": 12, "note": "giá bán / giá ưu đãi (hoặc “Miễn phí”)"},
+  {"id": "chip", "role": "label", "sample": "GIẢM 28%", "max": 16, "optional": true, "note": "nhãn ưu đãi nhỏ cạnh giá"},
+  {"id": "body", "role": "subtitle", "sample": "Âm thanh sống động, chống ồn chủ động, đeo cả ngày vẫn êm tai.", "max": 110, "note": "mô tả 1–2 câu (tối đa 3 dòng)"},
+  {"id": "highlight", "role": "label", "sample": "chống ồn chủ động", "max": 30, "optional": true, "note": "cụm từ CÓ TRONG body được tô bút xanh (chép đúng chữ)"},
+  {"id": "variant", "role": "label", "sample": "Màu · Đen nhám", "max": 24, "optional": true, "note": "phiên bản / màu / gói đang chọn, cạnh 4 chấm màu"},
+  {"id": "cta", "role": "cta", "sample": "Mua ngay — giao trong 2 giờ", "max": 32, "note": "chữ trên nút cuối"}
+ ],
+ "images": [
+  {"id": "product", "role": "product", "aspect": "any", "optional": true, "note": "ảnh sản phẩm (tách nền đẹp nhất; ảnh thường cũng được — hiện đủ, không cắt) trên nền studio; thiếu thì dùng logo thương hiệu"}
+ ],
+ "brand": "optional",
+ "sfx": [{"at": 2, "type": "swoosh"}, {"at": 22, "type": "typing"}, {"at": 62, "type": "pop"}, {"at": 86, "type": "swoosh"}, {"at": 116, "type": "click"}],
+ "vi": {
+  "ten": "Thẻ sản phẩm tự điền từng mục — giá cũ gạch, giá mới bật ra",
+  "mo_ta": "Nền trắng xanh nhạt kiểu trang bán hàng: một thẻ sản phẩm lớn hiện lên với các ô xám chờ sẵn; khung viền xanh có nhãn “TỰ ĐIỀN” nhảy lần lượt từng ô và nội dung hiện ra: ảnh sản phẩm trên nền studio, tên sản phẩm, các nhãn đặc điểm, giá gốc rồi giá gốc thu nhỏ bị gạch ngang và giá mới màu xanh bật ra kèm nhãn giảm giá, mô tả có cụm từ được tô bút, chấm màu lựa chọn, cuối cùng nút mua được tô đen từ trái sang phải.",
+  "hop_khi": "Giới thiệu một sản phẩm / dịch vụ / khóa học cụ thể kèm giá: “sản phẩm này có …, giá chỉ …”, chương trình khuyến mãi, giảm giá, review sản phẩm, livestream bán hàng, ra mắt món mới; nói về đặc điểm + giá + kêu gọi mua.",
+  "tranh_khi": "Không nói về sản phẩm hay giá; nội dung cảm xúc, kể chuyện; video tone tối; nhiều sản phẩm cùng lúc.",
+  "nang_luong": "vua",
+  "chu_de": ["sản phẩm", "giá", "khuyến mãi", "bán hàng", "thương mại điện tử", "review", "mua ngay", "giảm giá"]
+ }
+}

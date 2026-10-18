@@ -1,0 +1,24 @@
+{
+ "id": "flash-cut",
+ "component": "FlashCut",
+ "card": "shot-transitions",
+ "category": "transition",
+ "duration": 12,
+ "kind": "overlay",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.25],
+ "hold": 5,
+ "slots": [],
+ "images": [],
+ "brand": "none",
+ "sfx": [{"at": 3, "type": "swoosh"}],
+ "vi": {
+  "ten": "Chớp sáng che cắt — lóe trắng ấm",
+  "mo_ta": "Lớp trong suốt đặt ĐÈ lên điểm cắt cứng giữa hai cảnh: một quầng sáng trắng ấm (đậm ở giữa, mờ ra mép) bừng lên trong ~5 khung rồi tắt trong ~7 khung, che mất cú cắt nên chuyển cảnh mượt, không thấy 'kéo'. Không có chữ hay hình.",
+  "hop_khi": "Nối hai đoạn có năng lượng tương đương (A-roll → B-roll, màn hình này sang màn hình khác, nhảy cóc trong cùng câu nói); nhấn một nhịp chuyển ý nhanh, 'bùm' một cái sang ý mới; cắt ghép nhiều đoạn quay liên tiếp cho liền mạch.",
+  "tranh_khi": "Dùng liên tục ở mọi điểm cắt (rẻ tiền, mỏi mắt); chồng lên một hiệu ứng chuyển cảnh khác cùng chỗ; cảnh tối, trầm lắng cần cắt nhẹ.",
+  "nang_luong": "vua",
+  "chu_de": ["chuyển cảnh", "cắt", "chớp sáng", "nhịp nhanh", "nối cảnh"]
+ }
+}

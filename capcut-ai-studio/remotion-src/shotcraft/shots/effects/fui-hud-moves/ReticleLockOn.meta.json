@@ -1,0 +1,29 @@
+{
+ "id": "reticle-lock-on",
+ "component": "ReticleLockOn",
+ "card": "fui-hud-moves",
+ "category": "effects",
+ "duration": 90,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.25],
+ "hold": 60,
+ "slots": [
+  {"id": "label", "role": "label", "sample": "Trang xem nhiều nhất", "max": 28, "note": "tên phần đang được chỉ vào (tính năng / chỉ số / mục trên màn hình)"},
+  {"id": "tag", "role": "label", "sample": "ĐÃ KHÓA", "max": 10, "optional": true, "note": "mã nhỏ in hoa cạnh nhãn, vd ĐÃ KHÓA / MỤC 02 / MỚI"}
+ ],
+ "images": [
+  {"id": "screen", "role": "screen", "aspect": "16:9", "optional": true, "note": "ảnh chụp màn hình app / web / dashboard; khung ngắm khóa vào VÙNG GIỮA ảnh nên đặt phần cần chỉ ở giữa. Không có ảnh thì dùng dashboard giả"}
+ ],
+ "brand": "none",
+ "sfx": [{"at": 14, "type": "whoosh"}, {"at": 46, "type": "click"}, {"at": 48, "type": "pop"}],
+ "vi": {
+  "ten": "Khung ngắm HUD khóa mục tiêu",
+  "mo_ta": "Giao diện dashboard sáng (hoặc ảnh chụp màn hình thật) đứng yên; bốn góc chữ L màu nhấn kèm dấu thập lao vào từ ngoài khung có nhoè tốc độ, co lại quá đà rồi bật về và \"cắn\" khít bốn góc của một ô / vùng giữa màn hình. Lúc khóa: vùng đó sáng lên, phần còn lại tối nhẹ, một nhãn tối nhỏ (chấm trạng thái + tên mục + mã) bật ra phía trên. Camera đẩy vào rất chậm.",
+  "hop_khi": "Người nói chỉ vào một chi tiết cụ thể trên app / web / dashboard: \"nhìn vào chỗ này\", \"chỉ số quan trọng nhất là…\", \"tính năng này nằm ở đây\"; nhấn mạnh một con số / một ô trong báo cáo; điểm nhấn giới thiệu phần mềm, công cụ AI.",
+  "tranh_khi": "Không nói về giao diện / màn hình nào; đã dùng 2 lần trong cùng video (dễ thành khuôn mẫu quân sự); tone cảm xúc, đời thường.",
+  "nang_luong": "vua",
+  "chu_de": ["app", "dashboard", "phần mềm", "tính năng", "chỉ vào", "số liệu", "giao diện", "AI"]
+ }
+}

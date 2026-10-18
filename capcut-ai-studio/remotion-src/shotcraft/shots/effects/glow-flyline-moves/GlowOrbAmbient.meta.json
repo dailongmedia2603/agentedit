@@ -1,0 +1,29 @@
+{
+ "id": "glow-orb-ambient",
+ "component": "GlowOrbAmbient",
+ "card": "glow-flyline-moves",
+ "category": "effects",
+ "duration": 170,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.75, 1.25],
+ "hold": 70,
+ "slots": [
+  {"id": "kicker", "role": "kicker", "sample": "BẢN TIN SÁNG NAY", "max": 28, "optional": true, "note": "dòng nhỏ trên cùng thẻ (chuyên mục / tên chương trình)"},
+  {"id": "label", "role": "label", "sample": "Đang phát", "max": 14, "optional": true, "note": "nút trạng thái góc phải, 1–2 từ"},
+  {"id": "title", "role": "title", "sample": "Chậm lại một nhịp", "max": 40, "note": "câu chính ngắn, ngắn càng đẹp (chữ rất to)"},
+  {"id": "subtitle", "role": "subtitle", "sample": "Năm phút mỗi sáng để đầu óc thật sự nghỉ ngơi", "max": 80, "optional": true}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [],
+ "vi": {
+  "ten": "Thẻ kính mờ giữa quầng sáng trôi — trình phát",
+  "mo_ta": "Nền tối xanh đêm, ba quầng sáng lớn (xanh ngọc, xanh dương, cam san hô) trôi chậm phía sau một thẻ kính mờ giữa màn hình; màu sáng xuyên qua kính, viền thẻ hắt sáng theo quầng gần nhất. Trong thẻ giống trình phát nhạc/podcast: tiêu đề lớn hiện từng chữ từ mờ, câu phụ, dải sóng âm nhấp nhô và đồng hồ đếm ngược. Chuyển động rất chậm, êm, cuối cảnh đứng yên.",
+  "hop_khi": "Đoạn chậm, sâu lắng: giới thiệu podcast / tập mới / bài nhạc, chủ đề thiền, ngủ ngon, sức khỏe tinh thần, một câu nói cần ngẫm; mở đầu chương với không khí tĩnh, cao cấp kiểu sản phẩm công nghệ.",
+  "tranh_khi": "Khoảnh khắc năng lượng cao, sốc, hài; video tông sáng (giấy, trắng) — chuyển sáng↔tối gắt; câu dài hơn 1–2 dòng.",
+  "nang_luong": "thap",
+  "chu_de": ["podcast", "âm nhạc", "thiền", "sức khỏe tinh thần", "trích dẫn", "app", "không khí", "tiêu đề"]
+ }
+}

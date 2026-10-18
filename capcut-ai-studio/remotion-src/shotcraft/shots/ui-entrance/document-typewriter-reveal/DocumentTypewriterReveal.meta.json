@@ -1,0 +1,34 @@
+{
+ "id": "document-typewriter-reveal",
+ "component": "DocumentTypewriterReveal",
+ "card": "document-typewriter-reveal",
+ "category": "ui-entrance",
+ "duration": 150,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 126,
+ "slots": [
+  {"id": "title", "role": "title", "sample": "Báo cáo tuần 28 · Nhóm nội dung", "max": 48, "note": "tiêu đề tài liệu"},
+  {"id": "sections", "role": "item", "sample": "Tổng quan: Ba mục tiêu chính đều đạt, lượt xem tăng 18% so với tuần trước; Mẫu kịch bản mới đã áp dụng cho toàn bộ video|Video: Đăng 6 video ngắn, 2 video vượt mốc 100 nghìn lượt xem; Thử phụ đề tự động, tiết kiệm 3 giờ dựng mỗi tuần|Quảng cáo: Chi phí mỗi khách hàng giảm còn 42 nghìn đồng; Tạm dừng nhóm quảng cáo hiệu quả thấp|Tuần sau: Quay series mới về mẹo dùng AI; Chốt lịch đăng bài cho cả tháng", "max": 200, "list": {"min": 1, "max": 6}, "note": "mỗi mục = một phần của tài liệu, dạng 'Tiêu đề phần: ý 1; ý 2; ý 3' (dấu ':' sau tiêu đề, các ý cách nhau bằng ';'); tổng nội dung vừa một trang"},
+  {"id": "doc_label", "role": "label", "sample": "Tuần 28", "max": 18, "optional": true, "note": "nhãn ngắn của tài liệu trên thanh đầu / danh sách"},
+  {"id": "app", "role": "name", "sample": "Sổ tay nhóm", "max": 22, "optional": true, "note": "tên ứng dụng trên thanh trên cùng (có thương hiệu video thì dùng tên thương hiệu)"},
+  {"id": "history", "role": "item", "sample": "Báo cáo tuần 27|Báo cáo tuần 26|Báo cáo tuần 25|Báo cáo tuần 24|Báo cáo tuần 23|Báo cáo tuần 22", "max": 26, "list": {"min": 0, "max": 6}, "optional": true, "note": "các tài liệu cũ rơi vào danh sách bên trái"},
+  {"id": "tagline", "role": "title", "sample": "Viết báo cáo", "max": 28, "note": "nửa đầu câu khẩu hiệu cuối (chữ trắng)"},
+  {"id": "tagline_accent", "role": "title", "sample": "chỉ trong 5 phút.", "max": 28, "note": "nửa sau câu khẩu hiệu (màu nhấn)"}
+ ],
+ "images": [
+  {"id": "screen", "role": "screen", "aspect": "16:9", "optional": true, "note": "ảnh chụp một trang tài liệu / app thật (tỉ lệ bất kỳ; khung dọc nên dùng ảnh dọc). Có ảnh thì cửa sổ hiện ảnh này (phủ kín, canh trên) và được 'viết' ra theo từng dải ngang thay cho trang vẽ bằng chữ"}
+ ],
+ "brand": "optional",
+ "sfx": [{"at": 8, "type": "typing"}, {"at": 66, "type": "pop"}, {"at": 76, "type": "pop"}, {"at": 86, "type": "pop"}, {"at": 100, "type": "whoosh"}],
+ "vi": {
+  "ten": "Tài liệu tự viết ra trong cửa sổ app",
+  "mo_ta": "Sân khấu tối tím: một cửa sổ ứng dụng ghi chú / tài liệu nền giấy trắng ấm lơ lửng nghiêng 3D; camera bắt đầu cận tiêu đề rồi lùi dần ra toàn cửa sổ trong khi từng dòng chữ được 'viết' ra sau con trỏ tím (tiêu đề phần được tô nền tím), hai cột bên mở ra, các tài liệu cũ rơi vào danh sách; cuối cùng câu khẩu hiệu lớn hiện từng từ bên dưới.",
+  "hop_khi": "Nói về viết báo cáo / ghi chú / soạn tài liệu / lập kế hoạch, AI viết nội dung giúp, tóm tắt cuộc họp, tổng kết tuần; demo app ghi chú, Notion, Google Docs; liệt kê kết quả công việc dạng gạch đầu dòng.",
+  "tranh_khi": "Không có nội dung dạng văn bản / danh sách; khoảnh khắc cảm xúc, năng lượng cao; nội dung quá dài (hơn khoảng 15 dòng).",
+  "nang_luong": "thap",
+  "chu_de": ["tài liệu", "ghi chú", "báo cáo", "app", "AI viết", "danh sách", "năng suất", "kế hoạch"]
+ }
+}

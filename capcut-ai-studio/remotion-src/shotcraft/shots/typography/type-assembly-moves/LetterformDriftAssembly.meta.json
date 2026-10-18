@@ -1,0 +1,26 @@
+{
+ "id": "drift-assembly",
+ "component": "LetterformDriftAssembly",
+ "card": "type-assembly-moves",
+ "category": "typography",
+ "duration": 150,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.3],
+ "hold": 84,
+ "slots": [
+  {"id": "title", "role": "name", "sample": "Bứt Phá", "max": 24, "optional": true, "note": "tên thương hiệu / tên sản phẩm / từ khóa 1–3 từ; bỏ trống = tên thương hiệu của video"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 0, "type": "riser"}, {"at": 45, "type": "click"}, {"at": 80, "type": "boom"}],
+ "vi": {
+  "ten": "Chữ trôi từ bốn phía ghép lại — kiểu mở đầu phim",
+  "mo_ta": "Nền xám trắng: các ký tự của một từ/tên rất to trôi chậm từ nhiều hướng vào giữa, mờ nhòe, xoay nghiêng và to hơn như bay từ trước ống kính, rồi lần lượt khớp vào vị trí — mỗi chữ đậm lên một nhịp khi khóa; ghép xong cả từ “thở” phóng nhẹ rồi trở lại, có bóng mờ dưới chân chữ. Kiểu mở đầu phim (Stranger Things), trang trọng.",
+  "hop_khi": "Xướng tên thương hiệu / sản phẩm / chương trình / tên phần mới một cách trang trọng; nhấn một từ khóa then chốt của video (“Kỷ luật”, “Tự do tài chính”); mở đầu video hoặc mở chương.",
+  "tranh_khi": "Câu dài (chỉ hợp 1–3 từ); nội dung gấp gáp nhịp nhanh; video tone tối.",
+  "nang_luong": "vua",
+  "chu_de": ["tên thương hiệu", "từ khóa", "mở đầu", "logo chữ", "chương mới", "tiêu đề"]
+ }
+}

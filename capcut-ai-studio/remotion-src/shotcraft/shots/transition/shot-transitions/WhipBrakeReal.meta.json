@@ -1,0 +1,112 @@
+{
+ "id": "whip-pan",
+ "component": "WhipBrakeReal",
+ "card": "shot-transitions",
+ "category": "transition",
+ "duration": 130,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
+ "hold": 100,
+ "slots": [
+  {
+   "id": "kicker",
+   "role": "kicker",
+   "sample": "Danh mục dự án",
+   "max": 28,
+   "optional": true,
+   "note": "nhãn nhỏ in hoa góc trên (tên bộ sưu tập / danh mục)"
+  },
+  {
+   "id": "label",
+   "role": "label",
+   "sample": "Mô hình hiệu quả",
+   "max": 30,
+   "optional": true,
+   "note": "tên của thẻ đích, hiện dưới đầu phát khi dừng"
+  }
+ ],
+ "images": [
+  {
+   "id": "target",
+   "role": "screen",
+   "aspect": "any",
+   "note": "ảnh ĐÍCH được dừng lại và phóng to để đọc (màn hình app, trang web, ảnh sản phẩm, slide...) — tỉ lệ bất kỳ, hiện trọn ảnh (contain) trên nền chính nó làm mờ"
+  },
+  {
+   "id": "shot1",
+   "role": "screen",
+   "aspect": "any",
+   "optional": true,
+   "note": "ảnh các thẻ lướt qua trên hành lang (cùng chủ đề với ảnh đích); không có -> thẻ dashboard trung tính"
+  },
+  {
+   "id": "shot2",
+   "role": "screen",
+   "aspect": "any",
+   "optional": true
+  },
+  {
+   "id": "shot3",
+   "role": "screen",
+   "aspect": "any",
+   "optional": true
+  },
+  {
+   "id": "shot4",
+   "role": "screen",
+   "aspect": "any",
+   "optional": true
+  },
+  {
+   "id": "shot5",
+   "role": "screen",
+   "aspect": "any",
+   "optional": true
+  },
+  {
+   "id": "shot6",
+   "role": "screen",
+   "aspect": "any",
+   "optional": true
+  }
+ ],
+ "brand": "none",
+ "sfx": [
+  {
+   "at": 24,
+   "type": "whoosh"
+  },
+  {
+   "at": 82,
+   "type": "click"
+  },
+  {
+   "at": 88,
+   "type": "pop"
+  }
+ ],
+ "vi": {
+  "ten": "Lia máy phanh gấp — lướt hành lang thẻ rồi dừng đúng thẻ cần xem",
+  "mo_ta": "Nền giấy sáng: một hàng thẻ ảnh nằm ngang trên 'hành lang' có thước kẻ và đầu phát đỏ cố định giữa khung. Giữ yên ~0.8s, rồi máy lia vụt sang ngang (nhòe chuyển động mạnh, bộ đếm số kiểu bánh xe quay tít), phanh gấp và trượt chậm dừng đúng thẻ số 09; thẻ đó nhấc lên phóng to 1.2× để đọc, các thẻ khác mờ đi, tên thẻ hiện dưới đầu phát.",
+  "hop_khi": "Chọn ra MỘT thứ nổi bật trong nhiều lựa chọn: 'trong hàng chục mẫu, đây là cái tốt nhất', tìm đúng tính năng / sản phẩm / dự án / bài viết; chuyển nhanh tới màn hình cần nói tiếp; khoe portfolio rồi dừng ở case nổi bật.",
+  "tranh_khi": "Chỉ có 1 ảnh và không cần cảm giác 'nhiều lựa chọn'; nội dung trầm, chậm; ảnh đích không đủ nét để phóng to.",
+  "nang_luong": "cao",
+  "chu_de": [
+   "chuyển cảnh",
+   "lựa chọn",
+   "portfolio",
+   "danh mục",
+   "sản phẩm",
+   "app",
+   "nổi bật",
+   "tìm kiếm"
+  ]
+ }
+}

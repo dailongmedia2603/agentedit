@@ -1,0 +1,27 @@
+{
+ "id": "split-text-stagger",
+ "component": "SplitTextStagger",
+ "card": "type-assembly-moves",
+ "category": "typography",
+ "duration": 130,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.3],
+ "hold": 72,
+ "slots": [
+  {"id": "title", "role": "title", "sample": "Làm ít hơn. Đạt nhiều hơn.", "max": 40, "note": "câu chốt ngắn, càng ngắn chữ càng to (tối đa 2 dòng ngang / 3 dòng dọc)"},
+  {"id": "kicker", "role": "kicker", "sample": "", "max": 28, "optional": true, "note": "dòng nhỏ màu nhấn phía trên (tùy chọn)"}
+ ],
+ "images": [],
+ "brand": "none",
+ "sfx": [{"at": 12, "type": "swoosh"}],
+ "vi": {
+  "ten": "Chữ trồi lên từng ký tự từ đường cắt",
+  "mo_ta": "Nền xám trắng sạch, chữ đậm rất to ở giữa: từng ký tự lần lượt trồi lên từ một đường cắt vô hình (nhô quá một chút rồi đáp xuống, có nhòe chuyển động), một gạch chân màu nhấn mọc từ trái sang phải dưới dòng chữ. Gọn, lý tính, dễ đọc.",
+  "hop_khi": "Nhấn một câu chốt / khẩu hiệu / con số ngắn mà người nói vừa nói: kết luận, nguyên tắc, lời khuyên, tên phần mới; tone chuyên nghiệp, công nghệ, kinh doanh, giáo dục.",
+  "tranh_khi": "Câu dài hơn ~8 từ; khoảnh khắc cảm xúc cần chất liệu ấm; video tone tối.",
+  "nang_luong": "vua",
+  "chu_de": ["tiêu đề", "câu chốt", "khẩu hiệu", "chữ động", "kết luận"]
+ }
+}

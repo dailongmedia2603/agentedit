@@ -1,0 +1,34 @@
+{
+ "id": "barn-door-split",
+ "component": "BarnDoorSplit",
+ "card": "page-turn-transitions",
+ "category": "transition",
+ "duration": 150,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 110,
+ "slots": [
+  {"id": "old_kicker", "role": "kicker", "sample": "PHIÊN BẢN HIỆN TẠI", "max": 26, "optional": true, "note": "nhãn nhỏ trang CŨ"},
+  {"id": "old_title", "role": "title", "sample": "Phiên bản 3", "max": 22, "note": "tên cái CŨ (bản cũ, cách cũ, phương án A) — nên cùng khuôn với new_title"},
+  {"id": "old_subtitle", "role": "subtitle", "sample": "Làm thủ công, mất cả buổi chiều.", "max": 60, "optional": true, "note": "mô tả cái cũ"},
+  {"id": "new_kicker", "role": "kicker", "sample": "GIỚI THIỆU", "max": 26, "optional": true, "note": "nhãn nhỏ trang MỚI (Ra mắt, Giới thiệu, Từ hôm nay)"},
+  {"id": "new_title", "role": "title", "sample": "Phiên bản 4", "max": 22, "note": "tên cái MỚI; TỪ CUỐI được tô gradient cam phát sáng"},
+  {"id": "new_subtitle", "role": "subtitle", "sample": "Một câu lệnh, ra ngay video hoàn chỉnh.", "max": 60, "optional": true, "note": "lợi ích của cái mới"},
+  {"id": "stat_labels", "role": "label", "sample": "Thời gian xuất|Thao tác thủ công|Khung hình / giây", "max": 22, "list": {"min": 0, "max": 3}, "optional": true, "note": "tên các chỉ số so sánh (0-3 ô)"},
+  {"id": "stat_old", "role": "number", "sample": "64s|12|6", "max": 9, "list": {"min": 0, "max": 3}, "optional": true, "note": "giá trị CŨ, cùng thứ tự stat_labels"},
+  {"id": "stat_new", "role": "number", "sample": "11,8s|0|30", "max": 9, "list": {"min": 0, "max": 3}, "optional": true, "note": "giá trị MỚI (số chạy từ cũ sang mới; giữ đơn vị của giá trị mới)"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 20, "type": "riser"}, {"at": 40, "type": "whoosh"}, {"at": 72, "type": "click"}],
+ "vi": {
+  "ten": "Cửa đôi tách đôi — cái cũ nhường chỗ cái mới",
+  "mo_ta": "Trang CŨ màu xám lạnh như tấm kim loại (nhãn, tiêu đề lớn, câu phụ, 3 ô số liệu). Một vệt sáng mảnh chạy dọc chính giữa, khe nứt mở ra rồi trang cũ tách thành hai cánh cửa trượt vụt ra hai bên (mép cửa bắt ánh cam); trang MỚI cùng bố cục trên nền đen ấm lao tới từ ánh sáng chói: tiêu đề mới với từ cuối phát sáng cam, câu phụ hiện từng từ, các con số chạy từ giá trị cũ sang giá trị mới.",
+  "hop_khi": "Chuyển chương 'cũ → mới': ra mắt phiên bản mới, cách làm cũ vs cách làm mới, trước và sau khi dùng công cụ / AI, đổi chiến lược (phương án A → B), nâng cấp sản phẩm; nhất là khi có số liệu cải thiện (thời gian, chi phí, doanh số).",
+  "tranh_khi": "Hai thứ không có quan hệ thay thế; dùng quá 2 lần mỗi video; nội dung chỉ một ý không có 'cũ'; video tone sáng nhẹ nhàng.",
+  "nang_luong": "cao",
+  "chu_de": ["ra mắt", "phiên bản mới", "so sánh", "trước sau", "nâng cấp", "chuyển cảnh", "số liệu", "cải thiện"]
+ }
+}

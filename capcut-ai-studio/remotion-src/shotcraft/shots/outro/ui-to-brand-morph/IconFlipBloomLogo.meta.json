@@ -1,0 +1,26 @@
+{
+ "id": "icon-flip-bloom",
+ "component": "IconFlipBloomLogo",
+ "card": "ui-to-brand-morph",
+ "category": "outro",
+ "duration": 130,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 104,
+ "slots": [
+  {"id": "name", "role": "name", "sample": "", "max": 24, "optional": true, "note": "tên sản phẩm / kênh / thương hiệu hiện cạnh logo; bỏ trống = tên thương hiệu của video"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 2, "type": "pop"}, {"at": 34, "type": "swoosh"}, {"at": 46, "type": "pop"}, {"at": 66, "type": "whoosh"}],
+ "vi": {
+  "ten": "Icon lật mình thành logo — tên thương hiệu rơi vào chỗ",
+  "mo_ta": "Nền sáng dịu, một icon laptop mặt cười nảy lên, lắc lư lấy đà hai nhịp, rồi lật theo trục dọc bẹp thành một vạch mảnh (có bóng mờ kéo theo); qua điểm mỏng nhất nó bung ra thành logo (logo thật của thương hiệu, hoặc khung bo góc với chữ viết tắt), rồi logo dịch sang bên (khung dọc: dịch lên) nhường chỗ cho tên thương hiệu hiện từng chữ, mỗi chữ từ to mờ thu nhỏ lại rõ nét.",
+  "hop_khi": "Kết video / outro: chốt tên kênh, tên sản phẩm, thương hiệu ('đó chính là [tên app]', 'theo dõi [tên kênh]'); khoảnh khắc tiết lộ app / công cụ đứng sau kết quả; chuyển từ nói về tính năng sang giới thiệu thương hiệu.",
+  "tranh_khi": "Video không có thương hiệu / tên sản phẩm cụ thể để chốt; giữa video khi còn nhiều nội dung; tone tối, nghiêm trọng.",
+  "nang_luong": "vua",
+  "chu_de": ["logo", "thương hiệu", "outro", "kết video", "app", "tiết lộ", "ra mắt"]
+ }
+}

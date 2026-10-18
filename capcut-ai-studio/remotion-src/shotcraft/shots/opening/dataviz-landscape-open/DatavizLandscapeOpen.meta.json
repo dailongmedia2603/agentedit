@@ -1,0 +1,29 @@
+{
+ "id": "dataviz-landscape-open",
+ "component": "DatavizLandscapeOpen",
+ "card": "dataviz-landscape-open",
+ "category": "opening",
+ "duration": 180,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 148,
+ "slots": [
+  {"id": "kicker", "role": "kicker", "sample": "BÁO CÁO DỮ LIỆU 2026", "max": 30, "optional": true, "note": "dòng nhỏ màu nhấn trên tiêu đề; bỏ trống = tên thương hiệu"},
+  {"id": "line1", "role": "title", "sample": "Mọi luồng dữ liệu,", "max": 30, "note": "nửa đầu câu tiêu đề (chữ trắng)"},
+  {"id": "line2", "role": "title", "sample": "về một nơi.", "max": 26, "note": "nửa sau câu tiêu đề (màu nhấn) — vế chốt"},
+  {"id": "tags", "role": "item", "sample": "Đơn hàng|Khách hàng|Tồn kho|Thanh toán|Vận chuyển|Đánh giá", "max": 14, "list": {"min": 3, "max": 6}, "optional": true, "note": "các nguồn / luồng nhỏ đổ về (1-2 từ mỗi nhãn), hiện như thẻ nhỏ nổi trên các nhánh"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 0, "type": "riser"}, {"at": 110, "type": "whoosh"}],
+ "vi": {
+  "ten": "Mở màn dòng chảy dữ liệu — nhánh đổ về trục chính",
+  "mo_ta": "Nền tối, một mặt đất phối cảnh 3D thật: một dòng sáng xanh vàng chói (trục chính) uốn từ sát ống kính chạy về điểm tụ ở chân trời, hơn mười nhánh xám mọc từ hai bên và đổ vào nó; các thẻ nhãn nhỏ (#01 Đơn hàng, #02 Khách hàng...) cắm trên các nhánh, xung sáng chạy dọc dòng chảy. Máy quay bay thấp chậm rãi tiến về phía trước rồi dừng êm; điểm tụ bừng sáng và tiêu đề lớn hai phần hiện từng từ trên bầu trời.",
+  "hop_khi": "Mở đầu video / mở chương về dữ liệu, hệ thống, nền tảng gom nhiều thứ về một chỗ: 'tất cả dữ liệu của bạn về một nơi', 'kết nối mọi kênh bán hàng', AI tổng hợp thông tin, giới thiệu phần mềm quản lý, dashboard, tự động hóa quy trình; tone công nghệ, điềm tĩnh, sang.",
+  "tranh_khi": "Khoảnh khắc cần nhanh / đập mạnh (đây là đoạn không khí chậm 6 giây); video tone sáng, đời thường; nội dung không liên quan dữ liệu / hệ thống; dùng quá 1 lần mỗi video.",
+  "nang_luong": "thap",
+  "chu_de": ["dữ liệu", "mở đầu", "nền tảng", "kết nối", "hệ thống", "AI", "tự động hóa", "công nghệ"]
+ }
+}

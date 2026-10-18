@@ -2,7 +2,8 @@
 // Doi bo cuc co the "morph" (khung A-roll truot/co gian sang vi tri moi) thay vi cat thang.
 import React from 'react'
 import { AbsoluteFill, Img, OffthreadVideo, Sequence, useCurrentFrame, useVideoConfig } from 'remotion'
-import type { RSBackground, RSMedia, RSRect, RSScene } from './types'
+import type { RSBackground, RSMedia, RSRect, RSScene, RenderSpec } from './types'
+import { ShotPlayer } from './shotcraft/ShotPlayer'
 import { ease, mediaUrl } from './Layers'
 import { gradeFilter } from './look'
 
@@ -202,6 +203,41 @@ const PanelMedia: React.FC<{ m: RSMedia; dur: number; base?: string }> = ({ m, d
     )
   }
   return <AbsoluteFill style={{ transform: `scale(${sc}) translate(${tx}%, ${ty}%)`, filter: filt }}>{media}</AbsoluteFill>
+}
+
+// ---------------------------------------------------------------------------
+// MAU SHOT (kho video-shotcraft): insert = canh toan man hinh (A-roll an, ve DUOI lop chu / phu de);
+// overlay = lop trong suot de len canh cat (ve TREN A-roll)
+// ---------------------------------------------------------------------------
+const ShotScene: React.FC<{ s: RSScene; base?: string; theme?: RenderSpec['shotTheme'] }> = ({ s, base, theme }) => {
+  const { width: W, height: H } = useVideoConfig()
+  const sh = s.shot!
+  const images: Record<string, string> = {}
+  for (const [k, v] of Object.entries(sh.images || {})) if (v) images[k] = mediaUrl(base, v)
+  return (
+    <ShotPlayer id={sh.id} texts={sh.texts} images={images} rate={sh.rate} width={W} height={H} theme={theme || null} brand={sh.brand || null} />
+  )
+}
+
+export const SceneShots: React.FC<{ scenes?: RSScene[]; base?: string; theme?: RenderSpec['shotTheme']; kind: 'insert' | 'overlay' }> = ({
+  scenes,
+  base,
+  theme,
+  kind
+}) => {
+  const { fps } = useVideoConfig()
+  if (!scenes) return null
+  return (
+    <>
+      {scenes
+        .filter((s) => s.shot && (s.shot.kind || 'insert') === kind)
+        .map((s) => (
+          <Sequence key={s.id + '-shot'} from={Math.round(s.start * fps)} durationInFrames={Math.max(1, Math.round((s.end - s.start) * fps))} premountFor={Math.round(fps)}>
+            <ShotScene s={s} base={base} theme={theme} />
+          </Sequence>
+        ))}
+    </>
+  )
 }
 
 export const ScenePanels: React.FC<{ scenes?: RSScene[]; base?: string }> = ({ scenes, base }) => {

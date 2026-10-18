@@ -1,0 +1,106 @@
+{
+ "id": "cast-ensemble",
+ "component": "CursorCastEnsemble",
+ "card": "collab-cursor-moves",
+ "category": "interaction",
+ "duration": 156,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.8,
+  1.25
+ ],
+ "hold": 112,
+ "slots": [
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Ra mắt khoá học trước thứ Sáu.",
+   "max": 50,
+   "note": "câu được gõ từng chữ trên tấm thẻ giữa (mục tiêu / việc cần làm của cả nhóm)"
+  },
+  {
+   "id": "names",
+   "role": "name",
+   "sample": "Lan|Minh|Hà|Tuấn|Vy",
+   "max": 10,
+   "list": {
+    "min": 5,
+    "max": 5
+   },
+   "optional": true,
+   "note": "5 tên ngắn gắn trên 5 con trỏ; người thứ 5 là người gõ chữ"
+  },
+  {
+   "id": "notes",
+   "role": "item",
+   "sample": "Mở đầu bằng câu hỏi|Thiết kế ảnh bìa|Kịch bản 5 tập|Quay ở studio|Đăng ký: 214|Lồng tiếng",
+   "max": 26,
+   "list": {
+    "min": 4,
+    "max": 6
+   },
+   "note": "ghi chú dán quanh thẻ (việc nhỏ / ý tưởng)"
+  },
+  {
+   "id": "board",
+   "role": "label",
+   "sample": "Kế hoạch ra mắt",
+   "max": 28,
+   "optional": true,
+   "note": "tên bảng ở góc trên"
+  }
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [
+  {
+   "at": 4,
+   "type": "pop"
+  },
+  {
+   "at": 9,
+   "type": "pop"
+  },
+  {
+   "at": 13,
+   "type": "pop"
+  },
+  {
+   "at": 18,
+   "type": "pop"
+  },
+  {
+   "at": 24,
+   "type": "pop"
+  },
+  {
+   "at": 48,
+   "type": "typing"
+  },
+  {
+   "at": 106,
+   "type": "ding"
+  }
+ ],
+ "vi": {
+  "ten": "Bảng làm việc nhóm — 5 con trỏ có tên bay vào, một người gõ mục tiêu",
+  "mo_ta": "Bảng trắng online kiểu Figma/Miro: lưới chấm, 4-6 tờ ghi chú màu pastel, một tấm thẻ lớn ở giữa. Năm con trỏ chuột màu khác nhau kèm bảng tên lần lượt bay vào (avatar góc phải bật lên theo), lượn lờ tự nhiên; một con trỏ đứng ở dòng tiêu đề và gõ từng chữ câu mục tiêu, thẻ chuyển 'Bản nháp' → 'Sẵn sàng'; cuối cùng cả nhóm tụ lại quanh thẻ.",
+  "hop_khi": "Nói về làm việc nhóm, cộng tác online, cả team cùng lên kế hoạch, công cụ quản lý dự án / bảng trắng, làm việc từ xa, \"cả đội cùng vào làm\"; giới thiệu app cộng tác hoặc mục tiêu chung của nhóm.",
+  "tranh_khi": "Nói về một người làm một mình; nội dung không liên quan công việc / nhóm; cần năng lượng cao, nhịp nhanh (cảnh khá nhẹ nhàng, ~5 giây).",
+  "nang_luong": "thap",
+  "chu_de": [
+   "làm việc nhóm",
+   "cộng tác",
+   "app",
+   "quản lý dự án",
+   "kế hoạch",
+   "làm việc từ xa",
+   "bảng trắng",
+   "mục tiêu"
+  ]
+ }
+}

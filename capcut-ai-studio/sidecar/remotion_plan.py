@@ -1484,12 +1484,18 @@ def _build_spec(plan, log=None):
     faces = p.get("faces") if isinstance(p.get("faces"), dict) else {}
     scenes = MD.scenes_to_spec(p, duration, kit, assets_by_id, changes) if p.get("scenes") else []
     layers = MD.layers_to_spec(p, duration, scenes, assets_by_id, faces, changes, kit=kit) if p.get("layers") else []
+    import shot_lib
+    if scenes and shot_lib.windows(scenes):
+        # canh shot (kho video-shotcraft) tu ve day du -> lop do hoa R4 trong khoang do bo (truoc khi gan tieng)
+        layers = shot_lib.drop_layers(scenes, layers, changes)
     if p.get("text_lib"):
         # caption hero / hook da chon mau Kho Text -> lop mau (truoc khi gan tieng: tieng cua mau di theo lop)
         MD.text_lib_captions(p, layers, duration, changes)
     motion = bool(scenes or layers)
     if layers:
         p["audio"] = list(p.get("audio") or []) + MD.layer_sfx(layers, changes)
+    if scenes and any(sc.get("shot") for sc in scenes):
+        p["audio"] = list(p.get("audio") or []) + shot_lib.sfx(scenes, changes)
     if p.get("fx"):
         import fx_flow as FX
         p["audio"] = list(p.get("audio") or []) + FX.fx_sfx(p, changes)
@@ -1520,8 +1526,8 @@ def _build_spec(plan, log=None):
     for a in auds:
         st = providers._f(a.get("start"))
         if (a.get("role") or "sfx") != "bgm":
-            if a.get("_tpl"):
-                pass        # tieng cua mau Kho Text: gan lien hoat canh cua mau -> luon giu
+            if a.get("_tpl") or a.get("_shot"):
+                pass        # tieng cua mau Kho Text / mau shot: gan lien hoat canh cua mau -> luon giu
             elif MD.is_text_sfx(a):
                 # chu hien CUNG LUC voi mot tieng khac (< TEXT_SFX_SAME) -> dung chung tieng do, khong chong 2 tieng
                 if any(abs(st - providers._f(x.get("start"))) < MD.TEXT_SFX_SAME
@@ -1581,6 +1587,8 @@ def _build_spec(plan, log=None):
         "scenes": scenes,
         "layers": layers,
     }
+    if any(sc.get("shot") for sc in scenes):
+        spec["shotTheme"] = shot_lib.theme(p)
     # LUAT karaoke <= KARAOKE_MAX_WORDS chu / luc: chia TRUOC ne chu noi bat / bao ve mat (tinh tren khoi chu that)
     spec["captions"] = split_karaoke(spec["captions"], changes)
     if p.get("brand_guide"):
@@ -1597,6 +1605,9 @@ def _build_spec(plan, log=None):
             FX.fx_to_spec(p, spec, changes)
         except Exception as ex:
             changes.append("bo qua hieu ung tu viet (%s)" % str(ex)[:160])
+    if any(sc.get("shot") for sc in spec["scenes"]):
+        # chu hero -> chu anh / hieu ung tu viet sinh sau cung khong duoc de len canh shot; meme chen trung -> bo canh shot
+        shot_lib.clear_spec(spec, changes)
     # MAT NGUOI NOI khong bi che (user 2026-10-03): chu / chu anh hook / anh / huy hieu — tuyet doi o hook. Chay sau
     # khi moi lop da co (caption hero -> chu anh, hieu ung tu viet), truoc tach nguoi + do tuong phan (tinh tren vi tri moi)
     try:

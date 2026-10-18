@@ -1,0 +1,107 @@
+{
+ "id": "outro-group-photo-launch",
+ "component": "OutroGroupPhotoLaunch",
+ "card": "outro-group-photo-launch",
+ "category": "outro",
+ "duration": 145,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
+ "hold": 80,
+ "slots": [
+  {
+   "id": "name",
+   "role": "name",
+   "sample": "Nhà Sáng Tạo",
+   "max": 22,
+   "optional": true,
+   "note": "tên thương hiệu / tên kênh / tên sản phẩm in to ở giữa; bỏ trống = dùng tên thương hiệu của video (không có cả hai thì chỉ còn câu chào)"
+  },
+  {
+   "id": "tagline",
+   "role": "cta",
+   "sample": "Hẹn gặp lại ở video tiếp theo",
+   "max": 48,
+   "optional": true,
+   "note": "câu chào / slogan / lời kêu gọi ngắn dưới tên"
+  }
+ ],
+ "images": [
+  {
+   "id": "img1",
+   "role": "photo",
+   "aspect": "any",
+   "optional": false,
+   "note": "các ảnh bay vào quây quanh tên (khoảnh khắc trong video, sản phẩm, ảnh màn hình app); cắt vừa khung thẻ; thiếu thì vẽ thẻ giao diện trung tính — bắt buộc ít nhất 1 ảnh; thiếu khung nào thì lặp lại ảnh đã có"
+  },
+  {
+   "id": "img2",
+   "role": "photo",
+   "aspect": "any",
+   "optional": true
+  },
+  {
+   "id": "img3",
+   "role": "photo",
+   "aspect": "16:9",
+   "optional": true
+  },
+  {
+   "id": "img4",
+   "role": "photo",
+   "aspect": "any",
+   "optional": true
+  },
+  {
+   "id": "img5",
+   "role": "photo",
+   "aspect": "16:9",
+   "optional": true
+  },
+  {
+   "id": "bg",
+   "role": "photo",
+   "aspect": "any",
+   "optional": true,
+   "note": "ảnh nền phía sau, bị làm mờ dần"
+  }
+ ],
+ "brand": "optional",
+ "sfx": [
+  {
+   "at": 4,
+   "type": "riser"
+  },
+  {
+   "at": 42,
+   "type": "boom"
+  },
+  {
+   "at": 62,
+   "type": "ding"
+  }
+ ],
+ "vi": {
+  "ten": "Kết video kiểu lễ ra mắt — ảnh bay về chụp “ảnh tập thể” quanh tên thương hiệu",
+  "mo_ta": "Nền kem ấm sáng: một vệt sáng quét qua, rồi 9 mảnh (5 khung ảnh + thanh menu, ô tìm kiếm, nhãn “▲ 18% tăng trưởng”, thanh báo cáo) lần lượt bay vào từ bốn phía có xoay nhẹ và nảy khi chạm chỗ, quây thành một bức “ảnh tập thể”; máy quay hạ xuống từ góc hơi chúc rồi đẩy chậm. Logo + tên thương hiệu hiện từng chữ như dập nổi ở giữa với đèn sân khấu phía sau, bụi vàng bay lên, gạch chân mọc ra và câu chào hiện dưới. Cuối cùng tắt dần về tối.",
+  "hop_khi": "Cảnh KẾT video: chào tạm biệt, cảm ơn đã xem, hẹn video sau, nhắc tên kênh / thương hiệu / sản phẩm, tổng kết “tất cả những thứ trên đều nằm trong …”; kết video ra mắt sản phẩm, tổng hợp nhiều tính năng.",
+  "tranh_khi": "Giữa video (cảnh tự tắt về đen ở cuối); không có tên thương hiệu / kênh để hiện; video tone tối, buồn.",
+  "nang_luong": "cao",
+  "chu_de": [
+   "kết thúc",
+   "outro",
+   "logo",
+   "thương hiệu",
+   "ra mắt",
+   "cảm ơn",
+   "tổng kết",
+   "tên kênh"
+  ]
+ }
+}

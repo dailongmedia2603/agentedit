@@ -1,0 +1,34 @@
+{
+ "id": "changelog-scroll-brake",
+ "component": "ChangelogScrollBrake",
+ "card": "scroll-brake-moves",
+ "category": "data",
+ "duration": 150,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 84,
+ "slots": [
+  {"id": "header", "role": "title", "sample": "Nhật ký cập nhật", "max": 26, "optional": true, "note": "tiêu đề trang cố định ở trên (Nhật ký cập nhật, Lịch sử dự án, Hành trình 2026)"},
+  {"id": "title", "role": "title", "sample": "Bàn dựng chuyển động", "max": 40, "note": "TÊN của bản phát hành / tính năng / cột mốc được nhấn mạnh (dòng mà danh sách dừng lại)"},
+  {"id": "desc", "role": "subtitle", "sample": "Mọi cảnh quay, tinh chỉnh tại một nơi.", "max": 70, "optional": true, "note": "một câu mô tả dòng đó"},
+  {"id": "version", "role": "label", "sample": "v2.41", "max": 8, "optional": true, "note": "mã phiên bản / số thứ tự ngắn"},
+  {"id": "kind", "role": "label", "sample": "Ra mắt", "max": 12, "optional": true, "note": "nhãn loại (Ra mắt, Tính năng, Cột mốc)"},
+  {"id": "date", "role": "label", "sample": "Hôm nay", "max": 10, "optional": true, "note": "ngày ngắn (Hôm nay, 18/10)"},
+  {"id": "badge", "role": "label", "sample": "Mới", "max": 6, "optional": true, "note": "huy hiệu nhỏ cạnh tiêu đề"},
+  {"id": "history", "role": "item", "sample": "Xuất video nhanh hơn|Phụ đề tự động|Thư viện nhạc nền", "max": 34, "list": {"min": 0, "max": 8}, "optional": true, "note": "tên các cập nhật / việc đã làm TRƯỚC đó (mới nhất trước), hiện mờ ngay trên dòng chính"},
+  {"id": "planned", "role": "item", "sample": "Video dọc 9:16|Xuất hàng loạt", "max": 34, "list": {"min": 0, "max": 5}, "optional": true, "note": "kế hoạch sắp tới, hiện viền nét đứt dưới dòng chính"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 14, "type": "riser"}, {"at": 62, "type": "boom"}, {"at": 68, "type": "pop"}],
+ "vi": {
+  "ten": "Nhật ký cập nhật cuộn nhanh rồi phanh gấp",
+  "mo_ta": "Nền sáng, một cột dài các thẻ cập nhật (mã phiên bản, nhãn Tính năng / Cải tiến / Sửa lỗi, tên, ngày) vụt lên rất nhanh đến mức nhòe thành dải, rồi giảm tốc dài và phanh đúng vào thẻ chính giữa màn hình: thẻ đó nổi lên, viền màu nhấn, nhãn 'Ra mắt' và huy hiệu 'MỚI', các thẻ khác mờ đi; tiêu đề trang cố định ở trên.",
+  "hop_khi": "Nói về việc liên tục cập nhật rồi nhấn vào bản / tính năng mới nhất: 'chúng tôi ra hơn 40 bản cập nhật năm nay, và đây là bản lớn nhất', công bố tính năng mới của app / phần mềm, cột mốc trong hành trình dự án, tìm thấy 'cái quan trọng nhất' giữa một danh sách dài.",
+  "tranh_khi": "Không có một mục chính để dừng lại; nội dung cảm xúc / đời thường không liên quan sản phẩm số; video tone tối; dùng liền với mẫu dòng thời gian ngang.",
+  "nang_luong": "cao",
+  "chu_de": ["cập nhật", "ra mắt", "tính năng mới", "app", "phần mềm", "danh sách", "cột mốc", "lịch sử"]
+ }
+}

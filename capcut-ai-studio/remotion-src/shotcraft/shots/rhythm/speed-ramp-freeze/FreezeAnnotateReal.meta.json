@@ -1,0 +1,33 @@
+{
+ "id": "freeze-annotate",
+ "component": "FreezeAnnotateReal",
+ "card": "speed-ramp-freeze",
+ "category": "rhythm",
+ "duration": 158,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 96,
+ "slots": [
+  {"id": "note", "role": "quote", "sample": "Làm cái này trước!", "max": 36, "note": "lời phê tay ngắn chỉ vào thẻ được khoanh (2–6 từ)"},
+  {"id": "name", "role": "name", "sample": "Minh · trưởng nhóm", "max": 30, "optional": true, "note": "chữ ký người phê (tên · vai trò)"},
+  {"id": "label", "role": "label", "sample": "Buổi duyệt sản phẩm", "max": 28, "optional": true, "note": "nhãn nhỏ góc phải trên, cạnh tên thương hiệu"}
+ ],
+ "images": [
+  {"id": "focus", "role": "photo", "aspect": "6:5", "note": "ảnh của thẻ ĐƯỢC DỪNG HÌNH và khoanh tròn (ảnh sản phẩm, màn hình, ảnh minh hoạ…); tỉ lệ bất kỳ, tự cắt vừa thẻ ngang 1.2:1"},
+  {"id": "card1", "role": "photo", "aspect": "6:5", "optional": true, "note": "các thẻ khác chạy qua trong dòng (thiếu thì là thẻ khung xám trung tính)"},
+  {"id": "card2", "role": "photo", "aspect": "6:5", "optional": true},
+  {"id": "card3", "role": "photo", "aspect": "6:5", "optional": true}
+ ],
+ "brand": "optional",
+ "sfx": [{"at": 45, "type": "click"}, {"at": 54, "type": "swoosh"}, {"at": 66, "type": "pop"}, {"at": 112, "type": "whoosh"}],
+ "vi": {
+  "ten": "Dừng hình khoanh bút — chỉ vào một thẻ",
+  "mo_ta": "Nền trắng sáng, một dải thẻ ảnh trượt ngang liên tục, góc trái có đồng hồ 'TRỰC TIẾP' chạy. Bỗng khung hình DỪNG phắt: chớp trắng, bốn góc khung ngắm xanh bật vào, đồng hồ chuyển 'TẠM DỪNG'; thẻ ở giữa được nhấc lên, các thẻ khác mờ xám. Bút dạ xanh vẽ tay một vòng khoanh quanh thẻ, mũi tên cong và lời phê đậm hiện lên kèm chữ ký; rồi mực mờ đi, để lại một ghim bình luận '1' trên góc thẻ và dải thẻ chạy tiếp.",
+  "hop_khi": "Người nói muốn dừng lại chỉ rõ MỘT lựa chọn trong nhiều thứ: 'khoan, nhìn cái này nè', 'trong số này, mẫu này là tốt nhất', 'đây là lỗi mọi người hay gặp'; nhận xét, review, chấm điểm, chọn sản phẩm/mẫu thiết kế, giảng giải có 'gạch chân ý chính'.",
+  "tranh_khi": "Không có ảnh nào phù hợp cho thẻ được khoanh; chỉ có một thứ duy nhất (không có gì để chọn giữa); nhịp video đang rất nhanh liên tục (đoạn dừng 2 giây sẽ bị hẫng); tối đa 2 lần mỗi video.",
+  "nang_luong": "vua",
+  "chu_de": ["nhận xét", "review", "lựa chọn", "sản phẩm", "thiết kế", "chỉ ra", "danh sách", "so sánh"]
+ }
+}

@@ -1,0 +1,33 @@
+{
+ "id": "card-flock-tumble",
+ "component": "CardFlockTumble",
+ "card": "card-flock-tumble",
+ "category": "transition",
+ "duration": 135,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 112,
+ "slots": [
+  {"id": "title", "role": "title", "sample": "ĐỘT PHÁ", "max": 18, "note": "1-2 từ cực mạnh, chữ khổng lồ nghiêng (nên in hoa); cũng làm tường chữ viền nền"},
+  {"id": "kicker", "role": "kicker", "sample": "Bản cập nhật mới", "max": 30, "optional": true, "note": "dòng nhỏ trên chữ lớn; trống thì hiện tên thương hiệu"},
+  {"id": "subtitle", "role": "subtitle", "sample": "Mọi công cụ bạn cần, gói gọn trong một ứng dụng.", "max": 70, "optional": true},
+  {"id": "labels", "role": "label", "sample": "Hộp thư|Công việc|Tổng quan", "max": 14, "list": {"min": 3, "max": 3}, "optional": true, "note": "tên 3 trang/tính năng trên 3 thẻ giao diện"}
+ ],
+ "images": [
+  {"id": "screen1", "role": "screen", "aspect": "7:5", "optional": true, "note": "ảnh chụp màn hình app/web (thẻ sau cùng); phủ kín thẻ, canh trên"},
+  {"id": "screen2", "role": "screen", "aspect": "7:5", "optional": true, "note": "thẻ giữa"},
+  {"id": "screen3", "role": "screen", "aspect": "7:5", "optional": true, "note": "thẻ trước nhất"}
+ ],
+ "brand": "optional",
+ "sfx": [{"at": 10, "type": "whoosh"}, {"at": 62, "type": "riser"}, {"at": 70, "type": "boom"}, {"at": 74, "type": "whoosh"}],
+ "vi": {
+  "ten": "Ba thẻ giao diện lật bay → hút vào → vòng khói + chữ khổng lồ",
+  "mo_ta": "Nền tím đen cực quang: ba thẻ giao diện ứng dụng (hộp thư, danh sách việc, tổng quan — hoặc ảnh chụp màn hình thật) lật bay 3D từ cạnh mỏng rồi xếp bậc thang, xoay chậm, rồi bị HÚT vụt vào tâm, lóe sáng trắng và nổ ra một vòng khói hồng tím loang rộng; ngay đó một TỪ KHỔNG LỒ nghiêng phát sáng đập vào giữa, dòng nhỏ phía trên và câu phụ phía dưới hiện lên như poster ra mắt.",
+  "hop_khi": "Cao trào: gom nhiều tính năng/màn hình của một app hay phần mềm thành một thông điệp chốt; ra mắt sản phẩm, công bố bản cập nhật lớn; chuyển từ phần demo tính năng sang câu khẩu hiệu.",
+  "tranh_khi": "Nội dung nhẹ nhàng, tâm sự, đời thường; không liên quan app/phần mềm; câu chốt dài; dùng nhiều lần trong một video (chỉ dành cho đỉnh năng lượng).",
+  "nang_luong": "cao",
+  "chu_de": ["app", "phần mềm", "ra mắt", "tính năng", "dashboard", "cao trào", "khẩu hiệu", "chuyển cảnh"]
+ }
+}

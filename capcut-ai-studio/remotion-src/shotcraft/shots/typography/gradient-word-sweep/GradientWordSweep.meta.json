@@ -1,0 +1,28 @@
+{
+ "id": "gradient-word-sweep",
+ "component": "GradientWordSweep",
+ "card": "gradient-word-sweep",
+ "category": "typography",
+ "duration": 105,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 40,
+ "slots": [
+  {"id": "keyword", "role": "title", "sample": "Siêu tốc", "max": 16, "note": "TỪ KHÓA được 'nạp điện' (1-2 từ): điểm bán hàng / động từ mạnh trong câu nói, vd 'Nhanh gấp 10', 'Miễn phí', 'Tự động'"},
+  {"id": "rest", "role": "title", "sample": "dựng video", "max": 24, "optional": true, "note": "phần còn lại của câu ngay sau từ khóa (chữ trắng)"},
+  {"id": "line2", "role": "subtitle", "sample": "chỉ với một câu lệnh", "max": 32, "optional": true, "note": "dòng thứ hai, chữ trắng"}
+ ],
+ "images": [],
+ "brand": "none",
+ "sfx": [{"at": 12, "type": "riser"}, {"at": 30, "type": "ding"}, {"at": 35, "type": "pop"}],
+ "vi": {
+  "ten": "Từ khóa được nạp điện — dải màu quét sáng",
+  "mo_ta": "Nền đen, câu khẩu hiệu chữ trắng nghiêng to giữa khung (1-2 dòng hiện lên từ mờ). Riêng TỪ KHÓA bị một dải màu gradient xanh–tím–hồng–cam quét rất nhanh từ trái sang phải như được nạp năng lượng, mép quét sáng chói nhất; sau đó từ khóa phát sáng 'thở' và thỉnh thoảng lóe những tia chớp tím hồng mảnh giữa các chữ.",
+  "hop_khi": "Câu nói có MỘT từ đắt cần nhấn mạnh: tốc độ ('nhanh gấp 10 lần'), sức mạnh AI, 'miễn phí', 'tự động', 'siêu', con số ấn tượng; cao trào năng lượng, khẩu hiệu sản phẩm công nghệ.",
+  "tranh_khi": "Câu dài nhiều ý; nội dung buồn / nghiêm túc / nhẹ nhàng; không có từ nào nổi bật để nhấn.",
+  "nang_luong": "cao",
+  "chu_de": ["khẩu hiệu", "nhấn mạnh", "AI", "công nghệ", "tốc độ", "điểm bán hàng"]
+ }
+}

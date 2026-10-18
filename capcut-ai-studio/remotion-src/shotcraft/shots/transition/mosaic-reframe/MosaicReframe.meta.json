@@ -1,0 +1,192 @@
+{
+ "id": "mosaic-reframe",
+ "component": "MosaicReframe",
+ "card": "mosaic-reframe",
+ "category": "transition",
+ "duration": 214,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.25
+ ],
+ "hold": 186,
+ "slots": [
+  {
+   "id": "label",
+   "role": "label",
+   "sample": "Bảng phân cảnh",
+   "max": 24,
+   "optional": true,
+   "note": "tên bảng / bộ sưu tập ở đầu trang (cạnh tên thương hiệu)"
+  },
+  {
+   "id": "modes",
+   "role": "label",
+   "sample": "Lưới|Ghép|Xòe",
+   "max": 10,
+   "list": {
+    "min": 3,
+    "max": 3
+   },
+   "optional": true,
+   "note": "3 nhãn của công tắc bố cục"
+  },
+  {
+   "id": "feature_kicker",
+   "role": "kicker",
+   "sample": "ẢNH NỔI BẬT",
+   "max": 24,
+   "optional": true
+  },
+  {
+   "id": "feature_title",
+   "role": "title",
+   "sample": "Giờ vàng",
+   "max": 24,
+   "optional": true,
+   "note": "tên ảnh chính (chữ serif trên ảnh lớn)"
+  },
+  {
+   "id": "feature_note",
+   "role": "label",
+   "sample": "Cảnh 01 · Zoom nhanh · 4,5 giây",
+   "max": 40,
+   "optional": true
+  },
+  {
+   "id": "title1",
+   "role": "title",
+   "sample": "Mọi cảnh quay,",
+   "max": 28,
+   "note": "vế 1 tiêu đề lớn cuối cảnh"
+  },
+  {
+   "id": "title2",
+   "role": "title",
+   "sample": "đúng trình tự.",
+   "max": 28,
+   "optional": true,
+   "note": "vế 2 (nghiêng, màu nhấn)"
+  },
+  {
+   "id": "subtitle",
+   "role": "subtitle",
+   "sample": "Từ ý tưởng đến bản dựng, gọn trên một bảng.",
+   "max": 70,
+   "optional": true
+  }
+ ],
+ "images": [
+  {
+   "id": "img1",
+   "role": "photo",
+   "optional": true,
+   "note": "ảnh chính (ô lớn ở bố cục ghép); ảnh tỉ lệ bất kỳ"
+  },
+  {
+   "id": "img2",
+   "role": "photo",
+   "optional": true,
+   "note": "gửi 3-12 ảnh; ít hơn 12 thì các ô lặp lại vòng ảnh đã có; không có ảnh = ảnh phim minh họa vẽ sẵn"
+  },
+  {
+   "id": "img3",
+   "role": "photo",
+   "optional": true
+  },
+  {
+   "id": "img4",
+   "role": "photo",
+   "optional": true
+  },
+  {
+   "id": "img5",
+   "role": "photo",
+   "optional": true
+  },
+  {
+   "id": "img6",
+   "role": "photo",
+   "optional": true
+  },
+  {
+   "id": "img7",
+   "role": "photo",
+   "optional": true
+  },
+  {
+   "id": "img8",
+   "role": "photo",
+   "optional": true
+  },
+  {
+   "id": "img9",
+   "role": "photo",
+   "optional": true
+  },
+  {
+   "id": "img10",
+   "role": "photo",
+   "optional": true
+  },
+  {
+   "id": "img11",
+   "role": "photo",
+   "optional": true
+  },
+  {
+   "id": "img12",
+   "role": "photo",
+   "optional": true
+  }
+ ],
+ "brand": "optional",
+ "sfx": [
+  {
+   "at": 2,
+   "type": "pop"
+  },
+  {
+   "at": 52,
+   "type": "click"
+  },
+  {
+   "at": 56,
+   "type": "whoosh"
+  },
+  {
+   "at": 128,
+   "type": "click"
+  },
+  {
+   "at": 132,
+   "type": "swoosh"
+  },
+  {
+   "at": 158,
+   "type": "swoosh"
+  }
+ ],
+ "vi": {
+  "ten": "Bảng 12 ảnh đổi bố cục — lưới, ghép, xòe bài",
+  "mo_ta": "Nền giấy màu cát: 12 ảnh (ảnh thật của video hoặc ảnh phim minh họa) hiện thành lưới đều; công tắc 3 nấc góc trên trượt sang nấc mới và cả bảng tự xếp lại thành bố cục ghép có một ảnh chính thật lớn kèm chú thích chữ serif; rồi lần nữa các ảnh được 'chia bài' thành một chuỗi ảnh polaroid viền trắng xòe chéo, mỗi tấm nghiêng thêm một chút, tiêu đề lớn hiện ở khoảng trống.",
+  "hop_khi": "Khoe một bộ sưu tập ảnh / sản phẩm / tác phẩm: portfolio, album ảnh, kho mẫu, menu món ăn, các mẫu thiết kế, khoảnh khắc chuyến đi; nói về 'nhiều cách sắp xếp / trình bày cùng một nội dung', app ảnh, công cụ thiết kế; chuyển cảnh nhẹ nhàng giữa hai phần.",
+  "tranh_khi": "Không có ảnh liên quan (ảnh minh họa vẽ sẵn chỉ hợp chủ đề nhiếp ảnh / du lịch / sáng tạo); nội dung số liệu; khoảnh khắc cần nhịp nhanh (cảnh dài ~7 giây).",
+  "nang_luong": "vua",
+  "chu_de": [
+   "bộ sưu tập",
+   "ảnh",
+   "portfolio",
+   "album",
+   "bố cục",
+   "thiết kế",
+   "sản phẩm",
+   "du lịch",
+   "chuyển cảnh"
+  ]
+ }
+}

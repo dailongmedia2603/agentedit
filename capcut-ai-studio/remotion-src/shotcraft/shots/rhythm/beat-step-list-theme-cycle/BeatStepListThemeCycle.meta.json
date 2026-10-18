@@ -1,0 +1,29 @@
+{
+ "id": "beat-step-list-theme-cycle",
+ "component": "BeatStepListThemeCycle",
+ "card": "beat-step-list-theme-cycle",
+ "category": "rhythm",
+ "duration": 140,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 108,
+ "slots": [
+  {"id": "lead", "role": "title", "sample": "Video của bạn", "max": 18, "optional": true, "note": "cụm đứng yên đi trước các từ được chọn (vd \"Làm cho nó\", \"Sản phẩm của bạn\")"},
+  {"id": "items", "role": "item", "sample": "hiện đại|vui nhộn|cảm xúc|mạnh mẽ|của riêng bạn.", "max": 16, "list": {"min": 3, "max": 5}, "note": "1-3 từ mỗi mục, cùng loại (tính từ / lợi ích); mục đầu = trạng thái mở, MỤC CUỐI = câu chốt dừng lại"},
+  {"id": "fillers", "role": "item", "sample": "tối giản|gọn gàng|bền bỉ|tinh tế", "max": 16, "list": {"min": 4, "max": 4}, "optional": true, "note": "4 cụm mờ đệm (2 trên, 2 dưới) cùng loại với items; bỏ trống = danh sách quay vòng"},
+  {"id": "subtitle", "role": "subtitle", "sample": "Một sản phẩm, muôn vàn phong cách.", "max": 48, "optional": true, "note": "khẩu hiệu nhỏ hiện sau nhịp cuối"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 30, "type": "click"}, {"at": 48, "type": "click"}, {"at": 66, "type": "click"}, {"at": 84, "type": "pop"}],
+ "vi": {
+  "ten": "Danh sách nhảy theo nhịp, viên thuốc đổi màu",
+  "mo_ta": "Nền tối, chữ cố định (vd 'Video của bạn') cạnh một viên thuốc màu; danh sách từ cuộn LÊN TỪNG NHỊP (~0,6 giây một nhịp), viên thuốc đứng yên 'bắt' từ mới, mỗi nhịp đồng loạt đổi màu viên thuốc + màu nền + kiểu chữ (đậm, nghiêng, serif, in hoa) có nảy nhẹ; 3-4 nhịp rồi dừng ở từ cuối màu vàng, khẩu hiệu nhỏ hiện bên dưới.",
+  "hop_khi": "Liệt kê nhanh nhiều tính từ/lợi ích/phong cách cùng loại (\"nhanh hơn, rẻ hơn, đẹp hơn\", \"dùng cho bán hàng, học tập, giải trí\"), nhiều chủ đề/giao diện của một app; đoạn nhịp nhanh khớp nhạc; câu \"…và quan trọng nhất là…\" với từ chốt ở cuối.",
+  "tranh_khi": "Các mục dài cả câu; nội dung trầm, nghiêm túc; chỉ có 1-2 ý; cần người xem đọc kỹ.",
+  "nang_luong": "cao",
+  "chu_de": ["danh sách", "tính từ", "lợi ích", "phong cách", "giao diện", "app", "nhịp nhanh", "đổi chủ đề"]
+ }
+}

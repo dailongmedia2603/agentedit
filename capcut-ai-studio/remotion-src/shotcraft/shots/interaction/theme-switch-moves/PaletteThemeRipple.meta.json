@@ -1,0 +1,27 @@
+{
+ "id": "palette-theme-ripple",
+ "component": "PaletteThemeRipple",
+ "card": "theme-switch-moves",
+ "category": "interaction",
+ "duration": 156,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 95,
+ "slots": [
+  {"id": "title", "role": "title", "sample": "Thư viện ảnh", "max": 22, "note": "tiêu đề lớn của trang app (tên mục / tên app)"},
+  {"id": "command", "role": "label", "sample": "Chuyển sang giao diện tối", "max": 34, "optional": true, "note": "lệnh được chọn trong bảng lệnh; nên chứa chữ 'tối' (chữ được gõ)"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 12, "type": "pop"}, {"at": 24, "type": "typing"}, {"at": 46, "type": "click"}, {"at": 61, "type": "whoosh"}],
+ "vi": {
+  "ten": "Gõ lệnh → bảng lệnh thu thành chấm → sóng tối lan ra",
+  "mo_ta": "Một app thư viện ảnh nền sáng (tiêu đề lớn, lưới ảnh bìa màu sắc, thanh đang phát phía dưới). Bảng lệnh kiểu ⌘K rơi xuống giữa màn hình, chữ 'tối' được gõ từng ký tự, dòng 'Chuyển sang giao diện tối' sáng đỏ và được nhấn Enter; bảng lệnh tắt như TV cũ (ép thành vạch sáng rồi thành chấm), chấm sáng giữ một nhịp rồi một vòng sóng tròn viền trắng-cam lan ra, chỗ sóng qua giao diện chuyển sang bản tối, ảnh bìa tỏa sáng trong nền tối.",
+  "hop_khi": "Nói về chế độ tối / dark mode, phím tắt, bảng lệnh, thao tác nhanh trong app; khoe một tính năng chỉ cần gõ một lệnh là đổi cả giao diện; app ảnh / nhạc / thư viện nội dung.",
+  "tranh_khi": "Nội dung không liên quan app / phần mềm; đã có cảnh đổi giao diện khác trong video; người xem không quen phần mềm (bảng lệnh khó hiểu).",
+  "nang_luong": "vua",
+  "chu_de": ["chế độ tối", "bảng lệnh", "phím tắt", "app", "giao diện", "tính năng"]
+ }
+}

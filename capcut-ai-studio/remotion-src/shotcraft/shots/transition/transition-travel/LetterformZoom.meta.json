@@ -1,0 +1,32 @@
+{
+ "id": "letterform-zoom",
+ "component": "LetterformZoom",
+ "card": "transition-travel",
+ "category": "transition",
+ "duration": 150,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 126,
+ "slots": [
+  {"id": "word", "role": "title", "sample": "BÍ QUYẾT", "max": 12, "note": "1-2 từ NGẮN (tự in hoa) làm tên chương / chủ đề; chữ là lỗ khoét để máy quay xuyên qua"},
+  {"id": "kicker", "role": "kicker", "sample": "Chương 02", "max": 20, "optional": true, "note": "nhãn ngắn phía trên, vd 'Phần 2', 'Bước 3'"},
+  {"id": "subtitle", "role": "subtitle", "sample": "Ba bước đơn giản ai cũng làm được", "max": 60, "optional": true},
+  {"id": "page_kicker", "role": "kicker", "sample": "Bước 1 · Chuẩn bị", "max": 30, "optional": true, "note": "trang sau khi xuyên qua: nhãn nhỏ"},
+  {"id": "page_title", "role": "title", "sample": "Lên kế hoạch trước khi quay", "max": 40, "note": "trang sau: tiêu đề lớn (ý chính của đoạn tiếp theo)"},
+  {"id": "page_subtitle", "role": "subtitle", "sample": "Biết rõ mình muốn nói gì, video sẽ gọn và cuốn hơn.", "max": 80, "optional": true},
+  {"id": "items", "role": "item", "sample": "Chọn chủ đề|Viết kịch bản|Quay thử|Dựng và đăng", "max": 28, "list": {"min": 2, "max": 4}, "optional": true, "note": "các bước / hạng mục trên thẻ tiến độ, lần lượt chạy đầy 100%"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 2, "type": "swoosh"}, {"at": 34, "type": "riser"}, {"at": 80, "type": "whoosh"}, {"at": 124, "type": "ding"}],
+ "vi": {
+  "ten": "Xuyên qua chữ — thẻ chương mở sang trang mới",
+  "mo_ta": "Nền đen ấm, một từ in hoa cực đậm khổng lồ được khoét thủng thành cửa sổ, bên trong lộ ánh vàng cam rực; nhãn chương phía trên và câu phụ phía dưới. Máy quay lao nhanh dần vào một nét chữ (có vệt nhòe zoom), lỗ chữ nở ra phủ kín màn hình và đưa người xem vào một trang vàng cam: tiêu đề lớn, câu mô tả, thẻ tiến độ trắng đếm số bước và các thanh chạy đầy, nhãn 'XONG' bật lên.",
+  "hop_khi": "Chuyển sang phần / chương mới của video ('phần 2', 'bí quyết thứ nhất', 'bước tiếp theo'); mở đầu một danh sách bước làm; chuyển cảnh năng lượng cao giữa hai ý.",
+  "tranh_khi": "Từ khóa dài (>2 từ); đã dùng cảnh 'chữ làm cửa sổ' khác trong video; nội dung trầm, cảm xúc nhẹ.",
+  "nang_luong": "cao",
+  "chu_de": ["chuyển chương", "chuyển cảnh", "mở đầu", "các bước", "tiến độ", "danh sách"]
+ }
+}

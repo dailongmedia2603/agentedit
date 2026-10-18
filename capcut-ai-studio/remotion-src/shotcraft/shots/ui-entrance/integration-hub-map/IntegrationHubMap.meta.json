@@ -1,0 +1,30 @@
+{
+ "id": "integration-hub-map",
+ "component": "IntegrationHubMap",
+ "card": "integration-hub-map",
+ "category": "ui-entrance",
+ "duration": 150,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 80,
+ "slots": [
+  {"id": "old_title", "role": "label", "sample": "Quy trình thủ công", "max": 28, "note": "tên trang CŨ (cách làm cũ / vấn đề) — đọc được ở cận cảnh đầu"},
+  {"id": "old_note", "role": "subtitle", "sample": "Mỗi ngày phải mở năm ứng dụng khác nhau, sao chép dữ liệu bằng tay rồi gửi báo cáo qua email. Mất hàng giờ mà vẫn dễ sai sót, thông tin nằm rải rác khắp nơi.", "max": 200, "optional": true, "note": "đoạn mô tả nỗi khổ cách cũ (tối đa 4 dòng nhỏ)"},
+  {"id": "title", "role": "title", "sample": "Trung tâm bán hàng", "max": 28, "note": "tên trang MỚI = nơi gom mọi thứ (tên sản phẩm / tính năng)"},
+  {"id": "items", "role": "item", "sample": "Đơn hàng mới #1024|Tin nhắn khách hàng|Tồn kho cập nhật|Chiến dịch email tháng 10|Báo cáo doanh thu tuần|Hoá đơn đã lưu trữ|Đồng bộ dữ liệu cửa hàng", "max": 40, "list": {"min": 3, "max": 7}, "optional": true, "note": "các dòng trong trang mới"},
+  {"id": "apps", "role": "label", "sample": "", "max": 18, "list": {"min": 5, "max": 5}, "optional": true, "note": "5 tên nguồn/ứng dụng được nối vào, theo thứ tự icon: web, giỏ hàng, email, tin nhắn, biểu đồ (vd Website|Shopee|Email|Zalo|Báo cáo); bỏ trống = không nhãn"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 14, "type": "whoosh"}, {"at": 21, "type": "boom"}, {"at": 52, "type": "pop"}, {"at": 62, "type": "riser"}],
+ "vi": {
+  "ten": "Lật trang cũ thành trung tâm — 5 ứng dụng nối ống sáng",
+  "mo_ta": "Nền tối tím neon, cận cảnh một trang tài liệu 'cách làm cũ'; trang lật nhanh 180° (chớp sáng ở cạnh) thành trang quản lý mới và lùi máy ra. Năm biểu tượng ứng dụng (web, giỏ hàng, email, tin nhắn, biểu đồ) cùng bật lên quanh trang, rồi năm ống sáng cầu vồng cùng lúc nối vào, các chấm sáng chạy liên tục theo ống vào trang như đang truyền dữ liệu. Khung dọc: trang to giữa, 3 biểu tượng trên, 2 dưới.",
+  "hop_khi": "Nói về TÍCH HỢP / kết nối mọi công cụ về một nơi (\"quản lý tất cả trong một app\", \"đồng bộ Shopee, Zalo, website\"), chuyển từ cách làm thủ công sang hệ thống mới, ra mắt phiên bản mới, tự động hoá, AI gom dữ liệu.",
+  "tranh_khi": "Không nói về phần mềm / công cụ / quy trình; cần hiện logo thật của các ứng dụng (đây là icon chung); video tone sáng nhẹ nhàng.",
+  "nang_luong": "cao",
+  "chu_de": ["tích hợp", "kết nối", "app", "phần mềm", "tự động hoá", "chuyển đổi số", "dashboard", "AI", "phiên bản mới"]
+ }
+}

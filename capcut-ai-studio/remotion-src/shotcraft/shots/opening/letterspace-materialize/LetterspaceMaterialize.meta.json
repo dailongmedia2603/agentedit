@@ -1,0 +1,26 @@
+{
+ "id": "letterspace-materialize",
+ "component": "LetterspaceMaterialize",
+ "card": "letterspace-materialize",
+ "category": "opening",
+ "duration": 105,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.2],
+ "hold": 70,
+ "slots": [
+  {"id": "name", "role": "name", "sample": "sáng tạo mỗi ngày", "max": 24, "note": "1-4 từ được 'viết' ra bằng nét mảnh, chữ thường giãn rộng: tên sản phẩm / kênh / thương hiệu hoặc một từ khóa chủ đề; trống -> tên thương hiệu video. Chữ hoa sẽ thành chữ thường"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 16, "type": "riser"}, {"at": 68, "type": "ding"}],
+ "vi": {
+  "ten": "Chữ kết tinh — nét mảnh tự viết trên mặt hồ hoàng hôn",
+  "mo_ta": "Phong cảnh hồ lúc chạng vạng (trời tím hồng, dải núi, mặt nước lấp lánh, chậm rãi tiến gần). Một dòng chữ thường giãn rộng, nét đơn mảnh phát sáng tự VIẾT ra: mọi chữ cái (kể cả dấu tiếng Việt) cùng bắt đầu và cùng hoàn thành một lúc, rồi lóe sáng nhẹ; bóng chữ in mờ dưới mặt nước. Tĩnh lặng, sang trọng.",
+  "hop_khi": "Mở đầu / kết video bằng tên thương hiệu, tên kênh, tên sản phẩm; chốt một từ khóa cảm xúc (vd 'bình yên', 'khởi đầu mới'); khoảnh khắc chậm, truyền cảm hứng, du lịch, lifestyle, chữa lành.",
+  "tranh_khi": "Câu dài (hơn ~4 từ), số liệu, danh sách; nhịp nhanh / năng lượng cao; nội dung kỹ thuật cần đọc kỹ.",
+  "nang_luong": "thap",
+  "chu_de": ["logo", "tên thương hiệu", "mở đầu", "kết thúc", "chữ viết tay", "thiên nhiên", "cảm hứng", "lifestyle"]
+ }
+}

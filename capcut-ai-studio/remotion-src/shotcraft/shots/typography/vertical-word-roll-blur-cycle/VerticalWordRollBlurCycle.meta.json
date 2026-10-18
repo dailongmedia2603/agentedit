@@ -1,0 +1,27 @@
+{
+ "id": "vertical-word-roll-blur-cycle",
+ "component": "VerticalWordRollBlurCycle",
+ "card": "vertical-word-roll-blur-cycle",
+ "category": "typography",
+ "duration": 150,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 100,
+ "slots": [
+  {"id": "stem", "role": "title", "sample": "Dành cho", "max": 16, "note": "vế đầu câu, đứng yên (vd \"Dành cho\", \"Phù hợp với\", \"Làm được\")"},
+  {"id": "words", "role": "item", "sample": "nhà sáng tạo|chủ shop|giáo viên|tất cả mọi người", "max": 18, "list": {"min": 3, "max": 5}, "note": "các từ thay nhau cuộn ở cuối câu; 1-4 từ mỗi mục, độ dài gần nhau; MỤC CUỐI = kết luận (thường dài nhất)"}
+ ],
+ "images": [],
+ "brand": "none",
+ "sfx": [{"at": 24, "type": "click"}, {"at": 54, "type": "click"}, {"at": 84, "type": "click"}],
+ "vi": {
+  "ten": "Câu khẩu hiệu — từ cuối cuộn dọc như vòng quay",
+  "mo_ta": "Nền sáng sạch, một câu ngắn: vế đầu đứng yên, từ cuối nằm trong một vòng quay dọc lật lên 2-4 lần (các dòng trên/dưới mờ nhoè như trống quay); mỗi lần dừng, từ ở giữa chuyển từ xám sang màu nhấn, từ cuối là kết luận. Cuối cảnh cả câu mờ đi. Khung dọc: vế đầu ở trên, vòng quay ngay dưới, chữ to giữa màn hình.",
+  "hop_khi": "Người nói liệt kê đối tượng / công dụng theo một khuôn câu: \"dành cho nhà sáng tạo, chủ shop, giáo viên… và tất cả mọi người\", \"làm được video, ảnh, bài viết\"; câu bán hàng ngắn gọn, giới thiệu sản phẩm/app cho nhiều nhóm người.",
+  "tranh_khi": "Không có cấu trúc liệt kê (chỉ 1 ý); các mục quá dài hoặc chênh lệch độ dài lớn; khoảnh khắc cần năng lượng cao, giật mạnh; video tone tối.",
+  "nang_luong": "vua",
+  "chu_de": ["khẩu hiệu", "liệt kê", "đối tượng khách hàng", "công dụng", "giới thiệu sản phẩm", "app"]
+ }
+}

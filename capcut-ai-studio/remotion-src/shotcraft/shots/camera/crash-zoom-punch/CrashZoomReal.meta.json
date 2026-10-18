@@ -1,0 +1,31 @@
+{
+ "id": "crash-zoom-punch",
+ "component": "CrashZoomReal",
+ "card": "crash-zoom-punch",
+ "category": "camera",
+ "duration": 132,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 110,
+ "slots": [
+  {"id": "kicker", "role": "kicker", "sample": "TẬP TRUNG VÀO ĐÂY", "max": 28, "optional": true, "note": "nhãn ngắn trên con số, in hoa"},
+  {"id": "number", "role": "number", "sample": "−41%", "max": 7, "note": "con số nổi bật từ lời nói, chỉ số + đơn vị (vd 3x, +120%, 2 triệu)"},
+  {"id": "title", "role": "title", "sample": "chi phí vận hành", "max": 32, "note": "con số này nói về cái gì (2–5 từ)"},
+  {"id": "subtitle", "role": "subtitle", "sample": "cùng chất lượng, nhờ tự động hoá từng bước", "max": 70, "optional": true, "note": "giải thích ngắn 1 câu"}
+ ],
+ "images": [
+  {"id": "screen", "role": "screen", "aspect": "any", "note": "ảnh thật bất kỳ tỉ lệ: ảnh chụp màn hình app/web/dashboard (ngang → cửa sổ trình duyệt, dọc → khung điện thoại) hoặc ảnh minh hoạ; máy quay đập vào VÙNG GIỮA ảnh nên chi tiết quan trọng cần nằm ở giữa"}
+ ],
+ "brand": "optional",
+ "sfx": [{"at": 36, "type": "whoosh"}, {"at": 46, "type": "boom"}, {"at": 71, "type": "pop"}],
+ "vi": {
+  "ten": "Zoom giật vào chi tiết + con số lớn",
+  "mo_ta": "Ảnh (màn hình app/web trong cửa sổ trình duyệt, hoặc ảnh dọc trong khung điện thoại) đứng nghiêng trên sân khấu tối ánh cam; bốn góc ngắm màu cam khoá vào vùng giữa ảnh, rồi máy quay ĐẬP giật vào cực nhanh (6 khung, có nhoè chuyển động), nảy nhẹ, chớp sáng, xung quanh tối lại. Sau đó khung lùi sang trái (dọc: lên trên) nhường chỗ cho một con số rất to hiện từng ký tự kèm tiêu đề và câu giải thích.",
+  "hop_khi": "Người nói chỉ thẳng vào một chi tiết trên màn hình/app/dashboard rồi đọc con số kết quả: 'nhìn chỗ này nè', 'giảm 41% chi phí', 'tăng gấp 3 doanh thu'; khoe kết quả, số liệu ấn tượng gắn với một sản phẩm, trang web, báo cáo.",
+  "tranh_khi": "Không có con số cụ thể; không có ảnh màn hình/ảnh chi tiết phù hợp; chi tiết quan trọng nằm sát mép ảnh (máy quay luôn đập vào giữa); đã dùng một cú zoom giật khác gần đó (tối đa 2 lần/video).",
+  "nang_luong": "cao",
+  "chu_de": ["số liệu", "dashboard", "app", "website", "kết quả", "tăng trưởng", "chi tiết", "điện thoại", "báo cáo"]
+ }
+}

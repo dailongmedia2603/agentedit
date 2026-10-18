@@ -1,0 +1,27 @@
+{
+ "id": "white-flash-logo-simplify-cut",
+ "component": "WhiteFlashLogoSimplifyCut",
+ "card": "white-flash-logo-simplify-cut",
+ "category": "transition",
+ "duration": 120,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 96,
+ "slots": [
+  {"id": "name", "role": "name", "sample": "Ánh Dương", "max": 18, "optional": true, "note": "tên sản phẩm / kênh / chiến dịch hiện thành chữ to (ngắn càng đẹp); bỏ trống = tên thương hiệu của video"},
+  {"id": "tagline", "role": "subtitle", "sample": "Đơn giản là đẹp.", "max": 50, "optional": true, "note": "khẩu hiệu ngắn dưới tên, hiện sau khi chớp trắng"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 34, "type": "riser"}, {"at": 46, "type": "boom"}, {"at": 78, "type": "ding"}],
+ "vi": {
+  "ten": "Tên kim loại lỏng chớp trắng thành logo phẳng",
+  "mo_ta": "Nền tối tím có bụi sáng: tên sản phẩm cỡ rất lớn bằng chất kim loại lỏng óng ánh cầu vồng, có vệt sáng chạy qua, bóng phản chiếu dưới chân. Chữ sáng dần, một vệt lóe ngang kéo ra rồi một chớp trắng nổ từ tâm chữ phủ kín màn hình; khi sáng dịu xuống, cùng vị trí đó là tên ở dạng phẳng màu mực trên nền giấy sáng, kèm logo (nếu có), gạch nhấn hổ phách và khẩu hiệu chạy lên.",
+  "hop_khi": "Khoảnh khắc công bố tên: ra mắt sản phẩm, giới thiệu thương hiệu / kênh / chiến dịch, chốt cuối video bằng tên + khẩu hiệu; chuyển từ phần trình diễn hoành tráng sang thông điệp chính thức.",
+  "tranh_khi": "Không có tên cụ thể để xướng; tên dài hơn 3–4 từ; nội dung nhẹ nhàng / buồn; ngay sau đó là cảnh tối (cảnh kết thúc trên nền sáng).",
+  "nang_luong": "cao",
+  "chu_de": ["logo", "ra mắt", "thương hiệu", "tên sản phẩm", "khẩu hiệu", "kết thúc", "công bố", "chuyển cảnh"]
+ }
+}

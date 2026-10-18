@@ -1,0 +1,34 @@
+{
+ "id": "oscilloscope-stream",
+ "component": "OscilloscopeStreamV2",
+ "card": "chart-live-moves",
+ "category": "data",
+ "duration": 165,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 118,
+ "slots": [
+  {"id": "label", "role": "kicker", "sample": "Lượt truy cập · thời gian thực", "max": 40, "note": "đang đo cái gì (vd 'Đơn hàng mỗi phút', 'Người xem livestream')"},
+  {"id": "value", "role": "number", "sample": "1.350", "max": 9, "note": "mức BÌNH THƯỜNG, chỉ chữ số (vd 1.350 / 12,5); số lớn nhảy quanh mức này"},
+  {"id": "peak", "role": "number", "sample": "2.680", "max": 12, "note": "giá trị ĐỈNH đột biến (lớn hơn value), có thể kèm đơn vị; đỉnh sóng chạm đúng số này"},
+  {"id": "unit", "role": "label", "sample": "lượt/giây", "max": 14, "optional": true, "note": "đơn vị của value/peak"},
+  {"id": "event", "role": "label", "sample": "Đột biến", "max": 16, "optional": true, "note": "nhãn sự kiện ghim ở đỉnh (vd 'Viral', 'Flash sale', 'Sự cố')"},
+  {"id": "stat1_label", "role": "label", "sample": "Độ trễ", "max": 18, "optional": true},
+  {"id": "stat1", "role": "number", "sample": "126 ms", "max": 10, "optional": true, "note": "số phụ 1 TẠI ĐỈNH (lúc thường hiện ~1/3), có thể kèm đơn vị"},
+  {"id": "stat2_label", "role": "label", "sample": "Tỉ lệ lỗi", "max": 18, "optional": true},
+  {"id": "stat2", "role": "number", "sample": "0,14%", "max": 10, "optional": true, "note": "số phụ 2 TẠI ĐỈNH"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 0, "type": "riser"}, {"at": 56, "type": "ding"}, {"at": 60, "type": "pop"}, {"at": 104, "type": "click"}],
+ "vi": {
+  "ten": "Màn hình sóng trực tiếp — đột biến vọt đỉnh",
+  "mo_ta": "Màn hình giám sát nền xanh đêm phủ kín khung: đường sóng phát sáng chạy liên tục từ phải sang trái như máy đo nhịp, con số lớn nhảy theo thời gian thực, chấm LIVE nhấp nháy. Giữa chừng sóng vọt một đỉnh nhọn màu đỏ san hô, số lớn phóng to và đỏ lên, nhãn sự kiện ghim ở đỉnh kèm giá trị; cuối cùng dòng chảy phanh lại (TẠM DỪNG) và máy quay khẽ đẩy về đỉnh.",
+  "hop_khi": "Nói về số liệu TRỰC TIẾP / thời gian thực bỗng tăng vọt: lượt truy cập, đơn hàng flash sale, người xem livestream, video viral, server quá tải, giá coin/cổ phiếu nhảy, hệ thống giám sát, dashboard vận hành.",
+  "tranh_khi": "Số liệu tăng đều theo tháng/năm (dùng biểu đồ tăng trưởng); so sánh nhiều nhóm; câu không có con số; tone nhẹ nhàng đời sống.",
+  "nang_luong": "cao",
+  "chu_de": ["số liệu", "thời gian thực", "dashboard", "giám sát", "đột biến", "tăng vọt", "livestream", "viral", "server"]
+ }
+}

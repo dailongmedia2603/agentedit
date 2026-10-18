@@ -1,0 +1,27 @@
+{
+ "id": "logo-shrink-wordmark-lockup",
+ "component": "LogoShrinkWordmarkLockup",
+ "card": "logo-shrink-wordmark-lockup",
+ "category": "outro",
+ "duration": 132,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.25],
+ "hold": 112,
+ "slots": [
+  {"id": "name", "role": "name", "sample": "Góc Công Nghệ", "max": 24, "optional": true, "note": "tên kênh / thương hiệu / sản phẩm nói trong video; bỏ trống = dùng tên thương hiệu của video"},
+  {"id": "tagline", "role": "subtitle", "sample": "Mỗi ngày một mẹo hay", "max": 48, "optional": true, "note": "khẩu hiệu / lời chào cuối ngắn; ≤ 28 ký tự được in hoa giãn chữ"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 2, "type": "whoosh"}, {"at": 36, "type": "boom"}, {"at": 60, "type": "typing"}, {"at": 95, "type": "ding"}],
+ "vi": {
+  "ten": "Outro logo — vòng neon thu nhỏ thành logo + tên",
+  "mo_ta": "Nền tối: vòng neon tím có khe hở to đầy màn hình xoay và thu nhỏ cực nhanh về giữa, khép kín thành chữ O trắng rồi hoá thành logo (logo thật của kênh hoặc khung vuông có chữ viết tắt), loé một vòng sóng xung kích. Logo trượt sang trái nhường chỗ, tên kênh/thương hiệu hiện từng chữ cái từ trái sang phải, cuối cùng dòng khẩu hiệu màu tím nhạt hiện bên dưới.",
+  "hop_khi": "Cảnh kết video: chào tạm biệt, nhắc tên kênh / thương hiệu / sản phẩm, 'theo dõi kênh để xem thêm', ký tên cuối video; hoặc lúc giới thiệu tên thương hiệu / sản phẩm lần đầu.",
+  "tranh_khi": "Giữa video khi đang giảng nội dung; không có tên kênh/thương hiệu nào để hiện; video tone sáng, nhẹ nhàng.",
+  "nang_luong": "vua",
+  "chu_de": ["logo", "outro", "kết video", "thương hiệu", "tên kênh", "khẩu hiệu", "ra mắt"]
+ }
+}

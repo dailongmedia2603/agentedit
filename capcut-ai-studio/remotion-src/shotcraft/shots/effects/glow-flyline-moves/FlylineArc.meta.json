@@ -1,0 +1,28 @@
+{
+ "id": "flyline-arc",
+ "component": "FlylineArc",
+ "card": "glow-flyline-moves",
+ "category": "effects",
+ "duration": 140,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.3],
+ "hold": 86,
+ "slots": [
+  {"id": "title", "role": "label", "sample": "Tổng quan tuần này", "max": 30, "optional": true, "note": "tên trang dashboard (khung dọc: tiêu đề to phía trên)"},
+  {"id": "labels", "role": "label", "sample": "Chi phí quảng cáo|Doanh thu|Khách hàng mới", "max": 22, "list": {"min": 3, "max": 3}, "note": "đúng 3 nhãn: thẻ xuất phát → thẻ đích 1 → thẻ đích 2 (chuỗi nhân quả)"},
+  {"id": "values", "role": "number", "sample": "12,4 triệu|86 triệu|+1.240", "max": 12, "list": {"min": 3, "max": 3}, "note": "đúng 3 con số tương ứng 3 nhãn; chỉ số + đơn vị ngắn"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 10, "type": "swoosh"}, {"at": 32, "type": "pop"}, {"at": 46, "type": "swoosh"}, {"at": 68, "type": "pop"}],
+ "vi": {
+  "ten": "Đường sáng nối số liệu trên dashboard tối",
+  "mo_ta": "Màn hình dashboard tối (thẻ số liệu, biểu đồ nhỏ) hơi mờ làm nền; một đường cong phát sáng với đầu sáng chạy từ thẻ thứ nhất \"bắn\" sang thẻ thứ hai, thẻ đó lóe viền sáng và vòng sóng; rồi đường thứ hai nối tiếp sang thẻ thứ ba. Ba thẻ được nối mang nhãn và con số lấy từ lời nói. Sau đó đứng yên.",
+  "hop_khi": "Giải thích quan hệ nhân quả giữa các chỉ số: \"chi phí quảng cáo kéo doanh thu, doanh thu kéo khách mới\"; dòng chảy dữ liệu, kết nối giữa các bộ phận, phễu bán hàng, báo cáo kinh doanh, dashboard của app/phần mềm.",
+  "tranh_khi": "Không có số liệu cụ thể; nội dung cảm xúc / đời sống; video tông sáng; có nhiều hơn 3 chỉ số cần nối.",
+  "nang_luong": "vua",
+  "chu_de": ["dashboard", "số liệu", "dữ liệu", "kết nối", "nhân quả", "kinh doanh", "báo cáo", "phần mềm"]
+ }
+}

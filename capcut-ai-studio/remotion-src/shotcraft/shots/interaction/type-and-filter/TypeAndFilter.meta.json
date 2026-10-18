@@ -1,0 +1,148 @@
+{
+ "id": "type-and-filter",
+ "component": "TypeAndFilter",
+ "card": "type-and-filter",
+ "category": "interaction",
+ "duration": 73,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.85,
+  1.2
+ ],
+ "hold": 56,
+ "slots": [
+  {
+   "id": "title",
+   "role": "label",
+   "sample": "Thư viện dự án",
+   "max": 30,
+   "optional": true,
+   "note": "tên trang trên thanh đầu (cạnh tên thương hiệu)"
+  },
+  {
+   "id": "query",
+   "role": "label",
+   "sample": "tự động",
+   "max": 24,
+   "note": "từ khóa được gõ vào ô tìm kiếm (1-4 từ, ngắn)"
+  },
+  {
+   "id": "target",
+   "role": "name",
+   "sample": "Trợ lý trả lời tự động",
+   "max": 34,
+   "note": "tên thẻ kết quả còn lại sau khi lọc (thứ đang được nói tới)"
+  },
+  {
+   "id": "target_meta",
+   "role": "label",
+   "sample": "Cập nhật hôm qua · 12 mục",
+   "max": 30,
+   "optional": true
+  },
+  {
+   "id": "items",
+   "role": "item",
+   "sample": "Kịch bản quay sản phẩm|Bảng màu thương hiệu|Lịch đăng bài tháng 11|Ảnh hậu trường|Mẫu phụ đề nhanh|Báo cáo doanh thu quý|Ý tưởng video ngắn",
+   "max": 34,
+   "list": {
+    "min": 3,
+    "max": 7
+   },
+   "optional": true,
+   "note": "tên các thẻ khác trên lưới (sẽ bị lọc mất)"
+  }
+ ],
+ "images": [
+  {
+   "id": "cover",
+   "role": "screen",
+   "aspect": "16:10",
+   "optional": true,
+   "note": "ảnh bìa của thẻ KẾT QUẢ được tìm thấy (sản phẩm, màn hình, ảnh minh họa) — phủ kín phần trên thẻ (cắt mép)"
+  },
+  {
+   "id": "shot1",
+   "role": "photo",
+   "aspect": "16:10",
+   "optional": true,
+   "note": "ảnh bìa các thẻ khác trên lưới (bị lọc đi); không có -> bìa màu vẽ sẵn"
+  },
+  {
+   "id": "shot2",
+   "role": "photo",
+   "aspect": "16:10",
+   "optional": true
+  },
+  {
+   "id": "shot3",
+   "role": "photo",
+   "aspect": "16:10",
+   "optional": true
+  },
+  {
+   "id": "shot4",
+   "role": "photo",
+   "aspect": "16:10",
+   "optional": true
+  },
+  {
+   "id": "shot5",
+   "role": "photo",
+   "aspect": "16:10",
+   "optional": true
+  },
+  {
+   "id": "shot6",
+   "role": "photo",
+   "aspect": "16:10",
+   "optional": true
+  },
+  {
+   "id": "shot7",
+   "role": "photo",
+   "aspect": "16:10",
+   "optional": true
+  }
+ ],
+ "brand": "optional",
+ "sfx": [
+  {
+   "at": 10,
+   "type": "typing"
+  },
+  {
+   "at": 42,
+   "type": "whoosh"
+  },
+  {
+   "at": 58,
+   "type": "click"
+  },
+  {
+   "at": 62,
+   "type": "swoosh"
+  }
+ ],
+ "vi": {
+  "ten": "Gõ tìm kiếm rồi lọc — lưới thẻ thu về đúng một kết quả",
+  "mo_ta": "Giao diện thư viện sáng (thanh đầu, ô tìm kiếm, lưới thẻ có ảnh bìa). Máy quay áp sát ô tìm kiếm, từ khóa được gõ từng chữ với con trỏ nhấp nháy; kéo ra toàn cảnh, các thẻ khác lần lượt mờ và chìm xuống, thẻ kết quả nổi lên trượt về ô đầu tiên; mũi tên chuột lướt tới, click (2 vòng gợn sóng + viền sáng) rồi máy đẩy sát vào thẻ đó. Ngắn ~2.4s, thường nối bằng chớp sáng sang cảnh tiếp.",
+  "hop_khi": "Diễn tả thao tác tìm kiếm / lọc / chọn trong app, website, kho dữ liệu: 'chỉ cần gõ X là ra ngay', tìm đúng sản phẩm / tài liệu / mẫu; demo tính năng tìm kiếm thông minh; dẫn vào phần chi tiết của một mục.",
+  "tranh_khi": "Không nói về phần mềm / tìm kiếm; nội dung cần giữ lâu để đọc (cảnh ngắn, đẩy máy ở cuối); từ khóa dài.",
+  "nang_luong": "vua",
+  "chu_de": [
+   "tìm kiếm",
+   "app",
+   "website",
+   "giao diện",
+   "lọc",
+   "thao tác",
+   "thư viện",
+   "demo tính năng"
+  ]
+ }
+}

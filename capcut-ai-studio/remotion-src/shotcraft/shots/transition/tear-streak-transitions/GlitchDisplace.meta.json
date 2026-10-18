@@ -1,0 +1,31 @@
+{
+ "id": "glitch-displace",
+ "component": "GlitchDisplace",
+ "card": "tear-streak-transitions",
+ "category": "transition",
+ "duration": 135,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 100,
+ "slots": [
+  {"id": "title_a", "role": "title", "sample": "Đang chuẩn bị ra mắt", "max": 40, "note": "trạng thái TRƯỚC (đang làm / đang chờ / cách cũ)"},
+  {"id": "title_b", "role": "title", "sample": "Chính thức lên sóng.", "max": 40, "note": "trạng thái SAU (đã xong / kết quả); TỪ CUỐI tô xanh ngọc phát sáng"},
+  {"id": "kicker_a", "role": "kicker", "sample": "PHIÊN BẢN 4.0 · ĐANG CẬP NHẬT", "max": 34, "optional": true, "note": "dòng nhỏ in hoa trên tiêu đề trước"},
+  {"id": "kicker_b", "role": "kicker", "sample": "PHIÊN BẢN 4.0 · ĐÃ XONG 18/18", "max": 34, "optional": true, "note": "dòng nhỏ in hoa trên tiêu đề sau"},
+  {"id": "number", "role": "number", "sample": "41ms", "max": 8, "optional": true, "note": "con số lớn của trạng thái sau (số + đơn vị ngắn, vd 2,5x / 120% / 41ms); tự đếm tới giá trị"},
+  {"id": "label", "role": "label", "sample": "phản hồi trung bình", "max": 40, "optional": true, "note": "chú thích dưới con số"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 30, "type": "click"}, {"at": 44, "type": "whoosh"}, {"at": 54, "type": "boom"}, {"at": 62, "type": "ding"}],
+ "vi": {
+  "ten": "Bảng điều khiển bị nhiễu sóng xé ngang rồi chuyển trạng thái",
+  "mo_ta": "Nền xanh đêm kiểu bảng điều khiển phần mềm: tiêu đề lớn trạng thái trước, % tiến độ chạy tới 99%, biểu đồ đường, 18 ô sáng dần, log máy chủ. Giây ~1.5 cả trang bị XÉ thành 16 dải ngang giật trái-phải dữ dội, bóng màu xanh lệch, vạch quét nhấp nháy (glitch kỹ thuật số) — giữa cơn nhiễu cắt sang trạng thái sau: tiêu đề mới (từ cuối xanh ngọc phát sáng), con số lớn đếm tới, 18/18 ô sáng xanh, 3 chỉ số hiện lên.",
+  "hop_khi": "Khoảnh khắc chuyển trạng thái đột ngột: 'và rồi... đã xong', ra mắt / lên sóng / cập nhật phiên bản, hệ thống chuyển từ cũ sang mới, trước/sau khi áp dụng giải pháp, sự cố / lỗi hệ thống được khắc phục; chủ đề phần mềm, app, server, công nghệ, AI, dữ liệu.",
+  "tranh_khi": "Nội dung nhẹ nhàng, đời thường, cảm xúc; video tone sáng; đã có nhiều chuyển cảnh mạnh gần nhau (năng lượng cao dễ loãng); không có ý 'trước → sau'.",
+  "nang_luong": "cao",
+  "chu_de": ["glitch", "chuyển trạng thái", "ra mắt", "cập nhật", "phần mềm", "dashboard", "công nghệ", "trước sau", "hệ thống"]
+ }
+}

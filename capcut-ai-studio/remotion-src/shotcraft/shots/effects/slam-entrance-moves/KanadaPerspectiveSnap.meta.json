@@ -1,0 +1,33 @@
+{
+ "id": "kanada-perspective-snap",
+ "component": "KanadaPerspectiveSnap",
+ "card": "slam-entrance-moves",
+ "category": "effects",
+ "duration": 120,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 56,
+ "slots": [
+  {"id": "badge", "role": "label", "sample": "RA MẮT", "max": 16, "optional": true, "note": "nhãn ngắn in hoa trên thẻ (MỚI, RA MẮT, SẮP CÓ…)"},
+  {"id": "title", "role": "title", "sample": "Phiên bản mới", "max": 32, "note": "tên sản phẩm / sự kiện / thông điệp chính, 2–5 từ"},
+  {"id": "subtitle", "role": "subtitle", "sample": "Nhanh hơn, gọn hơn, thông minh hơn.", "max": 60, "optional": true},
+  {"id": "meta", "role": "label", "sample": "THỨ SÁU · 20:00", "max": 28, "optional": true, "note": "dòng thông tin nhỏ: thời gian, giá, thông số"},
+  {"id": "cta", "role": "cta", "sample": "Xem ngay", "max": 18, "optional": true, "note": "chữ trên nút"},
+  {"id": "caption", "role": "subtitle", "sample": "Công chiếu tối thứ Sáu", "max": 50, "optional": true, "note": "dòng chữ dưới thẻ; tên thương hiệu tự nối thêm"}
+ ],
+ "images": [
+  {"id": "cover", "role": "photo", "aspect": "1:1", "optional": true, "note": "ảnh minh hoạ nửa trái thẻ (khung dọc: nửa trên); không có thì vẽ tranh hoàng hôn thành phố neon"}
+ ],
+ "brand": "optional",
+ "sfx": [{"at": 2, "type": "whoosh"}, {"at": 20, "type": "boom"}, {"at": 34, "type": "swoosh"}],
+ "vi": {
+  "ten": "Thẻ ra mắt quăng vào phối cảnh kiểu anime",
+  "mo_ta": "Nền tím đêm, một thẻ ra mắt (ảnh/tranh hoàng hôn + tiêu đề lớn, nhãn, nút 'Xem ngay') bị QUĂNG từ trái vào với phối cảnh méo kiểu mắt cá, vệt tốc độ phía sau, rồi 'bộp' phẳng lại có nảy nhẹ, rung màn hình 2 khung và một vòng tia tập trung kiểu manga toả ra. Chữ trong thẻ trượt vào trễ một nhịp, dòng chú thích hiện từng từ bên dưới.",
+  "hop_khi": "Công bố / ra mắt một sản phẩm, tập phim, khoá học, sự kiện, bản cập nhật: 'và đây là phiên bản mới', 'tối thứ Sáu này công chiếu', 'giới thiệu khoá học X'; khoảnh khắc 'nó đến rồi' năng động, trẻ trung.",
+  "tranh_khi": "Tone nghiêm túc, chậm; không có gì để 'ra mắt'; đã dùng một cảnh đập/rung khác gần đó (tối đa 2 lần mỗi video).",
+  "nang_luong": "cao",
+  "chu_de": ["ra mắt", "sản phẩm", "sự kiện", "khoá học", "phim", "thông báo", "cập nhật"]
+ }
+}

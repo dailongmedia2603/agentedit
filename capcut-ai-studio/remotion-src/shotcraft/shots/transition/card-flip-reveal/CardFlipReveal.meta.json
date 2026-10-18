@@ -1,0 +1,31 @@
+{
+ "id": "card-flip-reveal",
+ "component": "CardFlipReveal",
+ "card": "card-flip-reveal",
+ "category": "transition",
+ "duration": 150,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 80,
+ "slots": [
+  {"id": "kicker", "role": "kicker", "sample": "KẾT QUẢ SAU BA THÁNG", "max": 30, "optional": true, "note": "nhãn chuyên mục ngắn màu vàng trên tiêu đề, in hoa"},
+  {"id": "title", "role": "title", "sample": "Ba tính năng. Ba kết quả.", "max": 44, "note": "câu dẫn ngắn phía trên hàng thẻ"},
+  {"id": "names", "role": "name", "sample": "Trợ lý AI|Quy trình tự động|Tìm kiếm nhanh", "max": 20, "list": {"min": 2, "max": 3}, "note": "tên tính năng / giải pháp in to ở mặt trước mỗi thẻ (2–4 từ); cùng số mục với values"},
+  {"id": "descs", "role": "subtitle", "sample": "Gõ một câu, ra ngay bản nháp.|Việc lặp lại, máy tự làm.|Mọi tài liệu, tìm là thấy.", "max": 40, "list": {"min": 2, "max": 3}, "optional": true, "note": "mô tả 1 câu ngắn dưới tên tính năng (mặt trước)"},
+  {"id": "values", "role": "number", "sample": "3,2×|−41%|0,2s", "max": 7, "list": {"min": 2, "max": 3}, "note": "con số kết quả lật ra ở mặt sau — chỉ số + đơn vị ngắn (vd 3×, −41%, 2 giờ, 10K)"},
+  {"id": "labels", "role": "label", "sample": "nhanh hơn ở bản đầu tiên|thời gian làm thủ công|để tìm đúng thứ cần", "max": 34, "list": {"min": 2, "max": 3}, "note": "nhãn giải thích con số (mặt sau), viết thường"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 2, "type": "swoosh"}, {"at": 42, "type": "click"}, {"at": 54, "type": "click"}, {"at": 66, "type": "click"}],
+ "vi": {
+  "ten": "Lật thẻ 3D — tính năng lật ra con số kết quả",
+  "mo_ta": "Nền tối điện ảnh, 2–3 thẻ tối đứng trên mặt sàn bóng: mặt trước mỗi thẻ có giao diện app nhỏ (ô gõ lệnh, quy trình, ô tìm kiếm) cùng tên tính năng. Lần lượt từng thẻ ngả nhẹ ra sau rồi lật 180° quanh trục dọc, có vệt sáng lướt qua cạnh thẻ, bật hơi quá rồi đứng lại — mặt sau trắng sáng hiện CON SỐ rất to kèm nhãn giải thích. Kết thúc là một hàng thẻ trắng với các con số. Khung dọc: các thẻ nằm ngang xếp chồng từ trên xuống.",
+  "hop_khi": "Nói “tính năng/giải pháp này mang lại kết quả gì”: liệt kê 2–3 tính năng của app / sản phẩm / dịch vụ rồi chốt bằng số liệu (nhanh hơn 3 lần, giảm 40% chi phí, tiết kiệm 2 giờ/ngày); so sánh trước–sau bằng con số, báo cáo kết quả dự án, case study.",
+  "tranh_khi": "Không có con số cụ thể; chỉ có 1 ý hoặc hơn 3 ý; nội dung cảm xúc / đời thường không liên quan sản phẩm; video tone sáng nhẹ nhàng.",
+  "nang_luong": "vua",
+  "chu_de": ["tính năng", "kết quả", "số liệu", "so sánh", "app", "sản phẩm", "AI", "case study", "tăng trưởng"]
+ }
+}

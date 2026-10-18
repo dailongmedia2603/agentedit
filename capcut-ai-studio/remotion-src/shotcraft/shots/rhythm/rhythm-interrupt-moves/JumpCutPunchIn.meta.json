@@ -1,0 +1,26 @@
+{
+ "id": "jump-cut-punch-in",
+ "component": "JumpCutPunchIn",
+ "card": "rhythm-interrupt-moves",
+ "category": "rhythm",
+ "duration": 135,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.3],
+ "hold": 71,
+ "slots": [],
+ "images": [
+  {"id": "photo", "role": "screen", "optional": true, "note": "ảnh chụp màn hình / ảnh minh họa bất kỳ tỉ lệ; 3 nấc phóng vào CHÍNH GIỮA ảnh nên chi tiết cần nhấn phải nằm giữa. Không có ảnh thì dùng dashboard giả"}
+ ],
+ "brand": "none",
+ "sfx": [{"at": 35, "type": "click"}, {"at": 70, "type": "click"}],
+ "vi": {
+  "ten": "Nhảy cắt phóng to 3 nấc",
+  "mo_ta": "Một màn hình dashboard sáng (hoặc ảnh / ảnh chụp màn hình thật) đứng yên, rồi bị cắt cứng phóng to 2 lần liền — 1x → 1,6x → 2,6x, cùng một tâm — mỗi cú nhảy có nháy tối 2 khung như tiếng tích. Ô mục tiêu có viền chọn màu nhấn, viền đậm lên ở cú nhảy cuối; góc tối siết dần hướng mắt vào giữa, cuối cảnh đứng yên.",
+  "hop_khi": "Nhấn mạnh kiểu \"nhìn đây — gần hơn — chính là nó\": chỉ số quan trọng trên báo cáo, một chi tiết trong ảnh chụp màn hình, con số gây sốc; nhịp dứt khoát, phong cách phóng sự / tài liệu.",
+  "tranh_khi": "Ảnh độ phân giải thấp (phóng 2,6x sẽ vỡ); chi tiết cần nhấn không nằm giữa ảnh; tone mềm mại, cảm xúc chậm.",
+  "nang_luong": "vua",
+  "chu_de": ["phóng to", "nhấn mạnh", "dashboard", "số liệu", "ảnh chụp màn hình", "chi tiết", "jump cut"]
+ }
+}

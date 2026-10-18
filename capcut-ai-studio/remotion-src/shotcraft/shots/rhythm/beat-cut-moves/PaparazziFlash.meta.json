@@ -1,0 +1,32 @@
+{
+ "id": "paparazzi-flash",
+ "component": "PaparazziFlash",
+ "card": "beat-cut-moves",
+ "category": "rhythm",
+ "duration": 140,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 76,
+ "slots": [
+  {"id": "kicker", "role": "kicker", "sample": "GIẢI THƯỞNG · 2026", "max": 26, "optional": true, "note": "nhãn giải / dịp, ngắn, in hoa"},
+  {"id": "title", "role": "title", "sample": "Sản phẩm của năm", "max": 34, "note": "tên danh hiệu / thành tích (tự xuống 2 dòng khi dài)"},
+  {"id": "label", "role": "label", "sample": "Top", "max": 8, "optional": true, "note": "chữ nhỏ đứng trước con số: Top, Hạng, Số, x"},
+  {"id": "number", "role": "number", "sample": "1", "max": 7, "note": "CON SỐ được 'đăng quang' — chỉ chữ số + đơn vị ngắn (1, 98%, 10K, 5 sao); càng ngắn càng to"},
+  {"id": "caption", "role": "subtitle", "sample": "bán chạy nhất toàn thị trường", "max": 44, "optional": true, "note": "câu giải thích con số; dòng cuối tô vàng"},
+  {"id": "name", "role": "name", "sample": "Kênh Sáng Tạo", "max": 26, "optional": true, "note": "người / sản phẩm / kênh nhận danh hiệu; bỏ trống = tên thương hiệu của video"},
+  {"id": "tagline", "role": "subtitle", "sample": "Do chính khách hàng bình chọn", "max": 44, "optional": true, "note": "một câu nhỏ dưới tên"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 30, "type": "click"}, {"at": 52, "type": "click"}, {"at": 70, "type": "click"}, {"at": 70, "type": "boom"}],
+ "vi": {
+  "ten": "Chụp ảnh đèn flash — vinh danh con số",
+  "mo_ta": "Nền tối kiểu thảm đỏ lễ trao giải (tường logo lặp lại, đèn flash máy ảnh khác lóe lên), giữa là tấm thẻ giải thưởng: vòng nguyệt quế vàng, tên danh hiệu, con số cực lớn (vd 'Top 1') kèm câu giải thích và tên người nhận. Khung ngắm máy ảnh (góc ngắm, tốc độ, ISO, đèn đang sạc). Ba cú chớp trắng như bấm máy liên tiếp, mỗi cú cắt cứng vào gần hơn: toàn cảnh → tấm thẻ → cận con số, rồi đứng yên như một bức ảnh với chữ 'ĐÃ LƯU'.",
+  "hop_khi": "Khoảnh khắc đỉnh cao cần 'đăng quang': công bố thành tích, xếp hạng số 1, giải thưởng, kỷ lục doanh số, con số ấn tượng nhất của video ('chúng tôi đứng top 1', 'bán được 10.000 đơn', 'đạt 5 sao'); cao trào trước khi chốt.",
+  "tranh_khi": "Dùng quá 1 lần trong video (đây là cú đánh mạnh nhất); nội dung buồn / nghiêm túc / tin tiêu cực; không có con số hay danh hiệu rõ ràng; video không có âm thanh tiếng chụp ảnh.",
+  "nang_luong": "cao",
+  "chu_de": ["giải thưởng", "thành tích", "top 1", "kỷ lục", "con số", "vinh danh", "cao trào", "flash"]
+ }
+}

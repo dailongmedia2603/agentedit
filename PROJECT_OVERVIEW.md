@@ -2051,6 +2051,44 @@ B1 -> B2 -> B3 hook -> R4 -> R5 -> TXT / GFX -> FX -> B6 -> B7 (khong DD-chi-dao
   render; plan moi khong sinh `bgFocus` / `subjectFx` nua).
 - Du lieu nguoi dung khong dong toi: `~/.capcut-studio/director_memory.json` (bo qua), plan cu co `chi_dao` (bo qua).
 
+## 24. KHO SHOT & MOTION (video-shotcraft) + FULL-SCREEN B-ROLL (2026-10-18)
+
+User: "lay TOAN BO kho shot & motion (vincentwei1021.github.io/video-shotcraft/library.html), ke ca HUD / terminal /
+dien thoai; buoc plan doc duoc toan bo kho de chon mau phu hop tung phan; khi phu hop thi co Full-screen B-roll".
+
+- **Kho**: 152 mau Remotion cua video-shotcraft (150 style cua thu vien 124 the + 2 bien the them: `crash-impact` (kieu dam dung cua
+  the crash-zoom-punch) va `clipcard-looping` (doan video THAT trong the — B-roll tu video nguon / tu lieu)) (Apache-2.0, commit 43bd349) vendor vao
+  `remotion-src/shotcraft/` (`LICENSE`, `NOTICE.md`; ban sao giay phep di kem bundle o `remotion-src/public/licenses/`).
+  `shots/<loai>/<the>/<Component>.tsx` + `<Component>.meta.json` (o chu / o anh / do dai / `hold` / toc do / bo cuc doc /
+  SFX theo nhip / mo ta TIENG VIET `vi`). `styles.json` = 150 style key goc -> file. `PORTING.md` = quy tac port.
+- **Runtime** (`runtime.tsx`): luc vendor, `useCurrentFrame` / `useVideoConfig` / `staticFile` cua code mau tro sang day ->
+  khung goc 30fps nhan `rate` (het mau giu khung cuoi), san khau ao 1920 x height, anh mau -> o anh. Noi dung that qua
+  `useText` / `useList` / `useImage` / `useBrand`; do chu `fitSize` / `wrapLines` / `measureText` (font nap xong moi do —
+  `ShotStage` delayRender cho font). Fixtures: `FONT.*` = font cua shot (Be Vietnam Pro / Playfair / Barlow Condensed — du
+  dau tieng Viet, dong goi; them Be Vietnam Pro 300/400/400i + Playfair 400/400i trong `fonts.ts`), `BRAND` / `ShotcraftMark`
+  = thuong hieu CUA VIDEO (khong co -> dau hieu trung tinh, an ten), `Stage` tu phu nen phan bleed khung doc.
+  `theme.ts`: mau nhan (accent / accent2) cua 8 bo LOOKS theo mau video, tu chinh do sang cho du tuong phan.
+- **Khung doc** (`ShotStage.tsx`): `portrait.mode` `native` (mau tu bo cuc theo height ~3413) hoac `band` (khoi 1920x1080,
+  `zoom` + `focusY`, nen phu tren-duoi). Khung ngang: phong vua.
+- **Danh muc cho plan**: `node scripts/shotcraft-sync.mjs` (`--check` chi kiem) doc moi meta -> `registry.ts` (import cho
+  ShotPlayer) + `sidecar/references/shotcraft_catalog.json`. CHAY LAI moi khi them / sua meta.
+- **R4** (`sidecar/shot_lib.py`, noi trong `motion_design.gpt_rm_design`): prompt R4 nhan `rules_text()` (khi nao dung canh
+  motion graphic toan man hinh, luat cung) + `prompt_block()` = TOAN BO 152 mau (~190k ky tu; R4 req_timeout 450s khi co kho). Scene `"layout": "graphic"` +
+  `"shot": {id, texts, images: {o: asset id | {source_id, src_time}}, brand_name?}`; mau `overlay` (chop sang) `layout full`.
+  `audit()` -> loi cung vao vong tu sua R4. Khoa cache R4 co `shots` = `shot_lib.fingerprint()`.
+- **Kiem bang code** (`scenes_to_spec` -> `spec_shot`): o bat buoc, <= max x 1.35 ky tu, o so co chu so, danh sach dung so
+  muc, anh giai duoc (asset / cat khung / cat doan video nguon -> `~/.capcut-studio/cache/shot_clips/`), ten thuong hieu phai
+  CO trong loi noi, moi mau 1 lan / video; do dai -> `rate` trong `meta.rate` (ngan -> keo dai neu con cho, dai -> cat bot).
+  `enforce_spacing`: tong <= 30% video, cach nhau >= 2.5s. Sai -> bo canh (log trong changes).
+- **build_spec**: `drop_layers` (lop R4 trong canh shot bo / cat duoi, TRUOC gan tieng), `sfx` (tieng theo nhip mau, co `_shot`
+  -> luon giu), `spec.shotTheme` (Brand Guideline > style.palette), `clear_spec` (chu anh hero / hieu ung tu viet de len ->
+  bo; meme chen trung -> bo canh shot). FX-plan thay `canh_shot_toan_man_hinh` trong khoanh khac.
+- **Renderer**: `RSScene.shot` (types.ts); `Scenes.tsx SceneShots` — insert ve trong VideoLayer (A-roll an vi layout graphic),
+  overlay ve tren A-roll; `hideSubs` an phu de khi mau co chu.
+- **Xem thu 1 mau**: `node scripts/shot-still.mjs <file.tsx> [--props p.json] [--video]` (bundle rieng mau do -> sheet doc +
+  ngang; anh mau trong `remotion-src/shotcraft/.preview-public/`, khong len git).
+- **Kiem**: `HOME=$(mktemp -d) ../CapCutAPI/.venv/bin/python tests/test_shotcraft.py` + `node scripts/shotcraft-sync.mjs --check`.
+
 ## 12. CodeGraph
 
 CodeGraph `0.9.9` da duoc cai va index tai root workspace:

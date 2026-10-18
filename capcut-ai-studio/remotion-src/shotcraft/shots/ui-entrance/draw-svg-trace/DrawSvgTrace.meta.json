@@ -1,0 +1,35 @@
+{
+ "id": "draw-svg-trace",
+ "component": "DrawSvgTrace",
+ "card": "draw-svg-trace",
+ "category": "ui-entrance",
+ "duration": 132,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 92,
+ "slots": [
+  {"id": "kicker", "role": "kicker", "sample": "BÁO CÁO · THÁNG 10", "max": 32, "optional": true, "note": "dòng nhãn đầu thẻ, in hoa"},
+  {"id": "tag", "role": "label", "sample": "bản 3 · 1080p", "max": 16, "optional": true, "note": "nhãn nhỏ góc phải đầu thẻ"},
+  {"id": "lead", "role": "title", "sample": "Cắt đúng nhịp nhạc", "max": 34, "note": "câu dẫn ngay trên từ trọng tâm"},
+  {"id": "key", "role": "number", "sample": "100%", "max": 10, "note": "TỪ / SỐ trọng tâm, chữ to nhất, được gạch chân bút dạ đỏ (vd 100%, x3, 0 đồng, MIỄN PHÍ)"},
+  {"id": "body", "role": "subtitle", "sample": "Mọi cú cắt đều rơi đúng phách mạnh của bài nhạc.", "max": 110, "optional": true, "note": "câu giải thích 1-3 dòng"},
+  {"id": "chart_label", "role": "label", "sample": "NĂNG LƯỢNG · TỪNG CẢNH", "max": 28, "optional": true, "note": "nhãn biểu đồ cột (hoặc ảnh)"},
+  {"id": "bars", "role": "number", "sample": "", "max": 6, "list": {"min": 3, "max": 12}, "optional": true, "note": "giá trị các cột (tương đối, tăng dần thì đẹp); bỏ trống = cột minh họa tăng dần"},
+  {"id": "note", "role": "label", "sample": "cập nhật 2 phút trước", "max": 40, "optional": true, "note": "dòng ký tên cuối thẻ (cạnh tên thương hiệu)"}
+ ],
+ "images": [
+  {"id": "image", "role": "photo", "aspect": "1:1", "optional": true, "note": "ảnh / ảnh chụp màn hình thay cho biểu đồ cột (khung dọc: ảnh ngang rộng hết thẻ)"}
+ ],
+ "brand": "optional",
+ "sfx": [{"at": 10, "type": "typing"}, {"at": 50, "type": "click"}, {"at": 56, "type": "pop"}, {"at": 74, "type": "swoosh"}],
+ "vi": {
+  "ten": "Nét bút vẽ viền thẻ — gạch chân điểm nhấn",
+  "mo_ta": "Trang giấy trắng ngà có lưới chấm: bốn góc hiện dấu căn in, một nét mực có đầu bút chạy vòng quanh vẽ ra viền thẻ lớn; khép vòng thì nét đậm lên một nhịp, thẻ nổi lên và nội dung 'lên mực' từ trên xuống — dòng nhãn, câu dẫn, TỪ/SỐ trọng tâm cực to, câu giải thích, cột biểu đồ mọc lên (hoặc ảnh); cuối cùng một nét bút dạ đỏ gạch chân từ trọng tâm.",
+  "hop_khi": "Điểm danh MỘT ý/kết quả quan trọng cần nhấn: 'kết quả là 100%', 'chi phí bằng 0', 'tăng gấp 3', công bố con số kết quả, tóm tắt bài học, giới thiệu một tính năng hay một sản phẩm (kèm ảnh); tone tri thức, review, chia sẻ kinh nghiệm.",
+  "tranh_khi": "Danh sách nhiều ý (dùng mẫu danh sách); khoảnh khắc năng lượng cao cần đập mạnh; video tone tối.",
+  "nang_luong": "vua",
+  "chu_de": ["điểm nhấn", "con số", "kết quả", "thẻ thông tin", "báo cáo", "gạch chân", "vẽ tay", "tóm tắt"]
+ }
+}

@@ -1,0 +1,112 @@
+{
+ "id": "page-waterfall-wall",
+ "component": "PageWaterfallWall",
+ "card": "page-waterfall-wall",
+ "category": "ui-entrance",
+ "duration": 150,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {
+  "mode": "native"
+ },
+ "rate": [
+  0.7,
+  1.4
+ ],
+ "hold": 20,
+ "slots": [
+  {
+   "id": "title",
+   "role": "title",
+   "sample": "Hơn 200 mẫu có sẵn",
+   "max": 40,
+   "optional": true,
+   "note": "câu ngắn nổi giữa khung trên nền kính mờ (vd 'Hơn 200 mẫu có sẵn'); để trống nếu chỉ cần bức tường ảnh"
+  }
+ ],
+ "images": [
+  {
+   "id": "shot1",
+   "role": "screen",
+   "aspect": "any",
+   "note": "ảnh chụp màn hình / trang web / giao diện app / mẫu thiết kế / ảnh sản phẩm — tỉ lệ bất kỳ; càng nhiều ảnh KHÁC NHAU càng đẹp (nên 3-9 ảnh)"
+  },
+  {
+   "id": "shot2",
+   "role": "screen",
+   "aspect": "any",
+   "optional": true
+  },
+  {
+   "id": "shot3",
+   "role": "screen",
+   "aspect": "any",
+   "optional": true
+  },
+  {
+   "id": "shot4",
+   "role": "screen",
+   "aspect": "any",
+   "optional": true
+  },
+  {
+   "id": "shot5",
+   "role": "screen",
+   "aspect": "any",
+   "optional": true
+  },
+  {
+   "id": "shot6",
+   "role": "screen",
+   "aspect": "any",
+   "optional": true
+  },
+  {
+   "id": "shot7",
+   "role": "screen",
+   "aspect": "any",
+   "optional": true
+  },
+  {
+   "id": "shot8",
+   "role": "screen",
+   "aspect": "any",
+   "optional": true
+  },
+  {
+   "id": "shot9",
+   "role": "screen",
+   "aspect": "any",
+   "optional": true
+  }
+ ],
+ "brand": "none",
+ "sfx": [
+  {
+   "at": 0,
+   "type": "whoosh"
+  },
+  {
+   "at": 16,
+   "type": "pop"
+  }
+ ],
+ "vi": {
+  "ten": "Bức tường ảnh chảy — 3 cột màn hình cuộn ngược chiều",
+  "mo_ta": "Nền tối, một bức tường nghiêng ra sau (phối cảnh 3D) gồm 3 cột thẻ ảnh chụp màn hình bo góc cuộn liên tục với tốc độ khác nhau, cột giữa cuộn ngược chiều; máy quay chậm rãi tiến gần. Cảm giác 'nhiều đến xem không hết'. Có thể kèm một câu ngắn nổi giữa khung trên nền kính mờ.",
+  "hop_khi": "Khoe số lượng / độ phong phú: rất nhiều mẫu, nhiều tính năng, nhiều trang, nhiều sản phẩm, kho template, danh mục khóa học, portfolio nhiều dự án, hàng loạt bài đăng / video đã làm; câu kiểu 'có hàng trăm mẫu', 'tất cả những thứ này đều làm bằng...'.",
+  "tranh_khi": "Chỉ có 1-2 ảnh (sẽ lặp lại lộ rõ); cần người xem đọc chi tiết một màn hình; video không có ảnh chụp giao diện / sản phẩm.",
+  "nang_luong": "vua",
+  "chu_de": [
+   "app",
+   "website",
+   "giao diện",
+   "mẫu thiết kế",
+   "template",
+   "danh mục",
+   "portfolio",
+   "số lượng",
+   "sản phẩm"
+  ]
+ }
+}

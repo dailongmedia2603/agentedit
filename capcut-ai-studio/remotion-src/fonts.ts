@@ -2,6 +2,10 @@
 // trong bundle -> render khong can mang. Them font moi: cai @fontsource/<ten> (hoac dat file
 // vao src/assets/fonts + local-fonts.css), import o day, them 1 muc "fonts" trong
 // sidecar/assets/remotion_catalog.json.
+// Kho shot (shotcraft) dung them do dam 300/400 + nghieng cua Be Vietnam Pro va Playfair 400
+import '@fontsource/be-vietnam-pro/300.css'
+import '@fontsource/be-vietnam-pro/400.css'
+import '@fontsource/be-vietnam-pro/400-italic.css'
 import '@fontsource/be-vietnam-pro/500.css'
 import '@fontsource/be-vietnam-pro/600.css'
 import '@fontsource/be-vietnam-pro/700.css'
@@ -25,6 +29,11 @@ import '@fontsource/dancing-script/700.css'
 import '@fontsource/roboto-condensed/600.css'
 import '@fontsource/roboto-condensed/800.css'
 import '@fontsource/great-vibes/400.css'
+import '@fontsource/jetbrains-mono/400.css'
+import '@fontsource/jetbrains-mono/500.css'
+import '@fontsource/jetbrains-mono/700.css'
+import '@fontsource/playfair-display/400.css'
+import '@fontsource/playfair-display/400-italic.css'
 import '@fontsource/playfair-display/700.css'
 import '@fontsource/playfair-display/700-italic.css'
 import '@fontsource/playfair-display/900-italic.css'

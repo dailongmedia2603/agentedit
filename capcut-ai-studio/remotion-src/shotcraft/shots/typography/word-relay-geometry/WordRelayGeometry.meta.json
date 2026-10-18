@@ -1,0 +1,27 @@
+{
+ "id": "word-relay-geometry",
+ "component": "WordRelayGeometry",
+ "card": "word-relay-geometry",
+ "category": "typography",
+ "duration": 180,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 158,
+ "slots": [
+  {"id": "words", "role": "title", "sample": "Nhanh hơn|Chặt hơn|Mạnh hơn", "max": 14, "list": {"min": 3, "max": 3}, "note": "đúng 3 từ/cụm lợi ích CÙNG cú pháp, 1–2 từ mỗi cụm; cụm thứ 3 là kết luận (được nhấn ánh kim)"},
+  {"id": "subs", "role": "subtitle", "sample": "Một câu lệnh, ra ngay video hoàn chỉnh.|Mọi đoạn cắt đều khớp nhịp nhạc.|Thành phẩm như studio chuyên nghiệp làm.", "max": 50, "list": {"min": 3, "max": 3}, "optional": true, "note": "câu giải thích ngắn dưới từng cụm, cùng thứ tự"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 2, "type": "whoosh"}, {"at": 56, "type": "whoosh"}, {"at": 116, "type": "whoosh"}, {"at": 146, "type": "ding"}],
+ "vi": {
+  "ten": "Ba từ lợi ích tiếp sức — mỗi từ một hình học",
+  "mo_ta": "Nền tối kiểu phim, ba cụm từ lớn lần lượt thay nhau ở giữa màn hình (mỗi cụm ~2 giây): chữ hiện viền trước rồi tô trắng quét ngang, cụm cũ thu nhỏ mờ đi. Cụm 1 có vòng tròn nét đứt + vành vạch chia quay và một vệt sao chổi chạy vòng; cụm 2 có ba vòng tròn tự vẽ rồi xích lại khoá vào nhau; cụm 3 (kết luận) được quét ánh kim loại rồi bừng trắng, có vệt sáng dưới chân. Dưới mỗi cụm là câu giải thích, góc dưới có thanh tiến độ 01/02/03.",
+  "hop_khi": "Người nói nêu 3 lợi ích / 3 giá trị / 3 điểm song song: 'nhanh hơn, rẻ hơn, hiệu quả hơn', 'uy tín – tận tâm – chuyên nghiệp'; tóm tắt 3 ý chính, giá trị cốt lõi thương hiệu, phần giữa video cần nhịp đều có cao trào ở ý thứ ba.",
+  "tranh_khi": "Không phải đúng 3 ý; các ý dài (> 2 từ) hoặc không cùng cú pháp; cần hình ảnh sản phẩm cụ thể.",
+  "nang_luong": "vua",
+  "chu_de": ["lợi ích", "giá trị", "3 ý", "danh sách", "thương hiệu", "tóm tắt", "câu chốt"]
+ }
+}

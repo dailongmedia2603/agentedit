@@ -1,0 +1,29 @@
+{
+ "id": "theme-sweep-toggle",
+ "component": "ThemeSweepToggle",
+ "card": "theme-switch-moves",
+ "category": "interaction",
+ "duration": 140,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 96,
+ "slots": [
+  {"id": "title", "role": "title", "sample": "Tuần 14 – 18 tháng 9", "max": 26, "note": "tiêu đề lớn của lịch (tuần / tháng / tên kế hoạch)"},
+  {"id": "kicker", "role": "label", "sample": "TUẦN 38", "max": 12, "optional": true, "note": "nhãn rất ngắn cạnh tiêu đề"},
+  {"id": "subtitle", "role": "subtitle", "sample": "Ra mắt sản phẩm · thứ Sáu", "max": 36, "optional": true, "note": "ghi chú mốc quan trọng"},
+  {"id": "name", "role": "name", "sample": "", "max": 18, "optional": true, "note": "tên app lịch trên thanh đầu; bỏ trống = tên thương hiệu của video"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 8, "type": "click"}, {"at": 14, "type": "whoosh"}, {"at": 78, "type": "ding"}],
+ "vi": {
+  "ten": "Bật chế độ tối — đường quét ngày sang đêm",
+  "mo_ta": "Cận cảnh công tắc mặt trời/mặt trăng trên thanh đầu một ứng dụng lịch tuần màu sáng: con trỏ bấm, núm gạt sang mặt trăng; một đường ranh giới nghiêng 15° có viền sáng cam như hoàng hôn quét từ phải sang trái, chỗ nó đi qua cả giao diện lẫn nền đổi sang bản tối ban đêm có sao, đồng thời máy quay lùi ra toàn cảnh lịch; quét xong, ô 'hôm nay', vạch giờ hiện tại và viền cửa sổ sáng lên.",
+  "hop_khi": "Nói về chế độ tối / dark mode, đổi giao diện, tùy chỉnh app; quản lý lịch, sắp xếp công việc trong tuần; câu chuyển 'từ ngày sang đêm', 'làm việc cả ngày lẫn đêm'.",
+  "tranh_khi": "Nội dung không liên quan app / phần mềm / lịch; đã dùng một cảnh đổi giao diện khác trong video (chỉ nên dùng 1 lần).",
+  "nang_luong": "vua",
+  "chu_de": ["chế độ tối", "giao diện", "app", "lịch", "kế hoạch", "năng suất"]
+ }
+}

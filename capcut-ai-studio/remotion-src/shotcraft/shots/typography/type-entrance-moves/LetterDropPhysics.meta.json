@@ -1,0 +1,27 @@
+{
+ "id": "letter-drop-physics",
+ "component": "LetterDropPhysics",
+ "card": "type-entrance-moves",
+ "category": "typography",
+ "duration": 150,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 125,
+ "slots": [
+  {"id": "word", "role": "title", "sample": "Bùng nổ", "max": 16, "note": "1-3 từ ngắn, tự IN HOA (từ khóa, tên sản phẩm / kênh, chủ đề chương); dài quá sẽ tự xuống 2 hàng"},
+  {"id": "subtitle", "role": "subtitle", "sample": "Mọi thứ đều rơi đúng nhịp.", "max": 60, "optional": true, "note": "câu phụ ngắn hiện sau cùng"}
+ ],
+ "images": [],
+ "brand": "none",
+ "sfx": [{"at": 28, "type": "pop"}, {"at": 64, "type": "pop"}, {"at": 110, "type": "click"}],
+ "vi": {
+  "ten": "Chữ rơi nảy vật lý",
+  "mo_ta": "Nền sáng có đường chân trời mảnh: từng chữ cái IN HOA đậm rơi từ trên cao xuống (nhanh dần, có vệt mờ chuyển động), đập xuống sàn, nảy 2 lần, bẹp rồi đứng nghiêng ngả lệch nhau kèm bóng đổ dưới chân; đến nhịp cuối cả hàng chữ cùng 'đứng nghiêm' thẳng lại, câu phụ hiện lên phía dưới. Vui nhộn, có trọng lượng.",
+  "hop_khi": "Mở đầu / chuyển chương với một từ khóa ngắn (tên chủ đề, tên sản phẩm, tên kênh, 'Mẹo số 1', 'Sale'), tone vui vẻ, hài hước, năng lượng tích cực; nhấn mạnh một từ người nói vừa thốt ra.",
+  "tranh_khi": "Câu dài nhiều hơn 3 từ; nội dung nghiêm túc, buồn, chuyên môn cao; đã có một hiệu ứng chữ mạnh ngay cạnh.",
+  "nang_luong": "cao",
+  "chu_de": ["tiêu đề", "từ khóa", "mở đầu", "chương mới", "vui nhộn", "tên sản phẩm"]
+ }
+}

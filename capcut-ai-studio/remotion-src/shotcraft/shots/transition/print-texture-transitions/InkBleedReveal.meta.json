@@ -1,0 +1,31 @@
+{
+ "id": "ink-bleed-reveal",
+ "component": "InkBleedReveal",
+ "card": "print-texture-transitions",
+ "category": "transition",
+ "duration": 130,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.2],
+ "hold": 100,
+ "slots": [
+  {"id": "kicker", "role": "kicker", "sample": "CHƯƠNG 02", "max": 24, "optional": true, "note": "nhãn chương / phần, in hoa ngắn"},
+  {"id": "line1", "role": "title", "sample": "Mọi thứ bắt đầu", "max": 24, "note": "dòng tiêu đề 1 trên trang giấy"},
+  {"id": "line2", "role": "title", "sample": "từ một trang trắng.", "max": 24, "optional": true, "note": "dòng tiêu đề 2, in nghiêng"},
+  {"id": "subtitle", "role": "subtitle", "sample": "Câu chuyện về lần làm lại từ đầu.", "max": 60, "optional": true}
+ ],
+ "images": [
+  {"id": "photo", "role": "photo", "note": "cảnh mới hiện ra sau vết mực loang, phủ kín khung (tỉ lệ bất kỳ, cắt cover); tránh ảnh cận mặt người / logo nổi bật (mảnh vỡ mực lộ ra giữa chừng)"}
+ ],
+ "brand": "none",
+ "sfx": [{"at": 14, "type": "pop"}, {"at": 20, "type": "swoosh"}],
+ "vi": {
+  "ten": "Mực loang trên giấy — mở chương mới ra ảnh",
+  "mo_ta": "Trang giấy ngà kiểu sách in: nhãn chương nhỏ, tiêu đề chữ có chân lớn (dòng 2 nghiêng) và câu phụ. Một giọt mực rơi xuống rồi loang ra với viền tua rua như mực thấm giấy, có quầng ướt nhạt bên ngoài; bên trong vết loang là ảnh của cảnh mới hiện dần, loang kín cả khung rồi đứng yên trên ảnh.",
+  "hop_khi": "Mở chương / phần mới của câu chuyện rồi dẫn vào hình ảnh minh họa: kể chuyện cá nhân, hồi tưởng, văn hóa, sách, nghệ thuật, ẩm thực truyền thống; video tone nhẹ nhàng, chậm, giấy mực.",
+  "tranh_khi": "Đoạn nhịp nhanh, năng lượng cao; video công nghệ tối màu; ảnh mới là cận mặt người hoặc logo; dùng quá 2 lần trong video.",
+  "nang_luong": "thap",
+  "chu_de": ["chuyển cảnh", "chương mới", "kể chuyện", "giấy mực", "hồi tưởng", "văn hóa", "nghệ thuật", "ảnh"]
+ }
+}

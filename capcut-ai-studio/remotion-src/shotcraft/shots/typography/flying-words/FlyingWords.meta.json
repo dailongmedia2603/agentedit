@@ -1,0 +1,28 @@
+{
+ "id": "flying-words",
+ "component": "FlyingWords",
+ "card": "flying-words",
+ "category": "typography",
+ "duration": 180,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.75, 1.3],
+ "hold": 40,
+ "slots": [
+  {"id": "words", "role": "item", "sample": "Dòng thời gian|Khung hình|Chuyển động|Máy quay|Chiều sâu|Thị sai|Nhòe động|Nhịp điệu|Lớp ảnh|Kịch bản|Chữ viết|Ánh sáng|Hạt phim|Âm thanh|Bắt nhịp|Hiệu ứng|Chuyển cảnh|Màu sắc|Bố cục|Giọng đọc|Phân cảnh|Góc quay", "max": 18, "list": {"min": 6, "max": 22}, "note": "từ khóa ngắn 1-3 từ cùng chủ đề; ít hơn 22 thì tự lặp lại"},
+  {"id": "kicker", "role": "kicker", "sample": "BỘ CÔNG CỤ DỰNG PHIM", "max": 26, "optional": true, "note": "nhãn nhỏ trên tiêu đề, in hoa"},
+  {"id": "title", "role": "title", "sample": "Mọi thứ bạn cần cho một thước phim.", "max": 48, "note": "câu chính đứng yên giữa màn hình"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 0, "type": "riser"}, {"at": 90, "type": "whoosh"}],
+ "vi": {
+  "ten": "Đường hầm từ khóa bay xuyên qua",
+  "mo_ta": "Nền xanh đêm sâu: hàng chục từ khóa (chữ trắng, vài từ xanh phát sáng, vài từ nghiêng serif) từ xa giữa màn hình lao thẳng về phía người xem, phóng to rồi vụt qua hai bên với vệt nhòe tốc độ, giữa các vòng elip mảnh và vệt sao như đang bay trong đường hầm. Câu tiêu đề chính đứng yên ở giữa, có nhãn nhỏ phía trên; chuyển động liên tục, cảm giác \"rất nhiều thứ\".",
+  "hop_khi": "Người nói kể ra cả loạt khái niệm / tính năng / kỹ năng / lĩnh vực (\"AI, dữ liệu, tự động hóa, marketing…\"), nói về lượng thông tin khổng lồ, thế giới công nghệ, mở đầu chủ đề lớn, hoặc câu chốt kiểu \"tất cả trong một\".",
+  "tranh_khi": "Chỉ có 1-2 ý cụ thể cần đọc kỹ; tone nhẹ nhàng, ấm áp, sáng màu; danh sách cần thứ tự (bước 1-2-3) vì từ khóa bay ngẫu nhiên, không đọc được hết.",
+  "nang_luong": "cao",
+  "chu_de": ["từ khóa", "danh sách", "công nghệ", "AI", "tính năng", "kỹ năng", "tất cả trong một", "mở đầu", "thông tin"]
+ }
+}

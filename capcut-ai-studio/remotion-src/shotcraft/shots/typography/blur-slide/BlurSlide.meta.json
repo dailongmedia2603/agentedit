@@ -1,0 +1,31 @@
+{
+ "id": "blur-slide",
+ "component": "BlurSlide",
+ "card": "blur-slide",
+ "category": "typography",
+ "duration": 120,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.3],
+ "hold": 80,
+ "slots": [
+  {"id": "kicker", "role": "kicker", "sample": "GHI CHÚ PHÁT HÀNH", "max": 28, "optional": true, "note": "nhãn chuyên mục ngắn, in hoa"},
+  {"id": "line1", "role": "title", "sample": "Mỗi lần ra mắt", "max": 22, "note": "nửa đầu câu chốt"},
+  {"id": "line2", "role": "title", "sample": "đều thật điện ảnh.", "max": 22, "note": "nửa sau câu chốt; TỪ CUỐI được nhấn màu nghiêng"},
+  {"id": "subtitle", "role": "subtitle", "sample": "Công thức cảnh quay và chuyển động máy, do trợ lý AI dựng.", "max": 80, "optional": true},
+  {"id": "label", "role": "label", "sample": "SỐ 07 — THÁNG 10", "max": 22, "optional": true, "note": "nhãn nhỏ góc phải đầu trang"},
+  {"id": "folio", "role": "number", "sample": "07", "max": 3, "optional": true, "note": "số lớn mờ phía sau (số thứ tự / con số)"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 10, "type": "swoosh"}, {"at": 30, "type": "swoosh"}],
+ "vi": {
+  "ten": "Tiêu đề tạp chí — chữ hiện từ mờ từng từ",
+  "mo_ta": "Trang giấy sáng kiểu tạp chí: tiêu đề serif lớn hiện TỪNG TỪ từ vùng mờ (trượt lên + rõ dần), từ cuối nghiêng màu nhấn; câu phụ hiện nối theo, đường kẻ mảnh và số lớn mờ phía sau tạo chiều sâu. Nhẹ nhàng, sang, dễ đọc.",
+  "hop_khi": "Câu chốt / thông điệp chính cần người xem ĐỌC trọn (định nghĩa, kết luận, lời khuyên); mở một phần mới; tone tri thức, chia sẻ kinh nghiệm, doanh nghiệp.",
+  "tranh_khi": "Khoảnh khắc sốc / năng lượng cao cần đập mạnh; video tone tối, gắt; câu quá dài (> 2 dòng).",
+  "nang_luong": "vua",
+  "chu_de": ["tiêu đề", "câu chốt", "thông điệp", "chương mới", "tạp chí"]
+ }
+}

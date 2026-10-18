@@ -1,0 +1,32 @@
+{
+ "id": "brake-reticle-lock",
+ "component": "BrakeReticleLock",
+ "card": "scroll-brake-moves",
+ "category": "data",
+ "duration": 150,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 75,
+ "slots": [
+  {"id": "header", "role": "label", "sample": "Nhật ký cập nhật", "max": 30, "optional": true, "note": "tên trang trên thanh đầu (Nhật ký cập nhật, Danh sách việc, Lịch sử đơn)"},
+  {"id": "title", "role": "title", "sample": "Bàn dựng chuyển động", "max": 40, "note": "TÊN mục được khóa ngắm (tính năng mới, việc quan trọng nhất, sản phẩm được chọn)"},
+  {"id": "desc", "role": "subtitle", "sample": "Mọi cảnh quay, tinh chỉnh tại một nơi.", "max": 70, "optional": true, "note": "một câu mô tả mục đó"},
+  {"id": "version", "role": "label", "sample": "v2.41", "max": 8, "optional": true, "note": "mã / số thứ tự ngắn"},
+  {"id": "date", "role": "label", "sample": "Hôm nay", "max": 10, "optional": true},
+  {"id": "tag", "role": "label", "sample": "Vừa ra mắt", "max": 20, "optional": true, "note": "nhãn đen bật ra cạnh mục (Vừa ra mắt, Quan trọng nhất, Bán chạy)"},
+  {"id": "history", "role": "item", "sample": "Xuất video nhanh hơn|Phụ đề tự động|Thư viện nhạc nền", "max": 34, "list": {"min": 0, "max": 8}, "optional": true, "note": "các mục khác ngay phía trên (mới nhất trước), hiện mờ"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 12, "type": "riser"}, {"at": 59, "type": "boom"}, {"at": 59, "type": "click"}, {"at": 63, "type": "pop"}],
+ "vi": {
+  "ten": "Danh sách phanh gấp — khung ngắm khóa mục tiêu",
+  "mo_ta": "Nền sáng kiểu giao diện app: một danh sách thẻ dài (icon loại, tên, mô tả, mã phiên bản, ngày) tăng tốc cuộn lên đến nhòe, giảm tốc mạnh vượt quá một chút rồi bật lại dừng; ĐÚNG khoảnh khắc phanh, bốn góc ngắm chữ L màu nhấn bay từ ngoài vào kẹp chặt thẻ ở giữa (nảy nhẹ), thẻ sáng viền, các thẻ khác mờ đi, một nhãn đen 'Vừa ra mắt' bật ra cạnh thẻ.",
+  "hop_khi": "Nhấn mạnh MỘT mục giữa danh sách dài với lực mạnh: 'trong hàng trăm tính năng, đây là cái đáng giá nhất', công bố cập nhật mới của app, chọn ra sản phẩm / việc quan trọng nhất, 'tìm thấy rồi'; video công nghệ, phần mềm, năng suất.",
+  "tranh_khi": "Không có mục chính rõ ràng; video tone tối hoặc cảm xúc nhẹ nhàng; đã dùng mẫu nhật ký cập nhật phanh gấp gần đó (cùng họ chuyển động).",
+  "nang_luong": "cao",
+  "chu_de": ["cập nhật", "tính năng mới", "danh sách", "chọn lọc", "app", "phần mềm", "nhấn mạnh", "khóa mục tiêu"]
+ }
+}

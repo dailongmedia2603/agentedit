@@ -56,3 +56,7 @@ r2-publish.json
 
 # Icon cua ky nang GetTime (bat buoc di kem thu muc ky nang)
 !gettime/agent-edit/icon.png
+
+# Kho shot: thu muc xem thu (scripts/shot-still.mjs)
+capcut-ai-studio/remotion-src/shotcraft/.preview/
+capcut-ai-studio/remotion-src/shotcraft/.preview-public/

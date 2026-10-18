@@ -1,0 +1,32 @@
+{
+ "id": "neon-frame-forerun",
+ "component": "NeonFrameForerun",
+ "card": "neon-frame-forerun",
+ "category": "ui-entrance",
+ "duration": 140,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 110,
+ "slots": [
+  {"id": "title", "role": "title", "sample": "Chào buổi sáng, Lan", "max": 32, "note": "lời chào / tiêu đề trang của app"},
+  {"id": "label", "role": "label", "sample": "Thứ Ba, 14/10", "max": 18, "optional": true, "note": "dòng nhỏ cạnh tiêu đề (ngày, trạng thái)"},
+  {"id": "stat_labels", "role": "label", "sample": "Khách mới hôm nay|Đơn đang xử lý|Doanh thu tuần", "max": 22, "list": {"min": 3, "max": 3}, "note": "tên 3 chỉ số trên 3 thẻ"},
+  {"id": "stat_values", "role": "number", "sample": "126|38|+24%", "max": 6, "list": {"min": 3, "max": 3}, "note": "3 con số lớn tương ứng (chỉ số + đơn vị ngắn); thẻ thứ 3 tô màu nhấn"},
+  {"id": "stat_notes", "role": "label", "sample": "+12 so với hôm qua|TB 4 phút|kỷ lục", "max": 18, "list": {"min": 3, "max": 3}, "optional": true, "note": "ghi chú nhỏ cạnh mỗi con số"},
+  {"id": "items", "role": "item", "sample": "Gọi lại cho khách hàng mới|Duyệt nội dung bài đăng|Chốt báo giá dự án|Gửi báo cáo tuần", "max": 36, "list": {"min": 2, "max": 4}, "note": "các dòng việc / mục trong danh sách"},
+  {"id": "name", "role": "name", "sample": "Không gian làm việc", "max": 24, "optional": true, "note": "tên app / workspace; bỏ trống = tên thương hiệu của video"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 2, "type": "whoosh"}, {"at": 21, "type": "ding"}, {"at": 22, "type": "riser"}, {"at": 54, "type": "pop"}],
+ "vi": {
+  "ten": "Khung neon vẽ trước — giao diện app sáng lên, thẻ rơi xuống",
+  "mo_ta": "Nền tối tím hồng. Hai đốm sáng chạy từ cạnh trái theo hai ngả vẽ nên một khung neon chữ nhật nghiêng phối cảnh mạnh, gặp nhau ở cạnh phải và lóe sáng; phía sau là đường hầm nhiều khung neon lùi sâu lần lượt bật đèn. Trong khung, trang chủ của một app sáng dần lên; logo, menu, lời chào lớn, 3 thẻ số liệu và danh sách việc lơ lửng có bóng rồi lần lượt rơi xuống dán vào trang. Cuối cảnh đường hầm neon tắt dần, giao diện còn lại sáng rõ.",
+  "hop_khi": "Giới thiệu / ra mắt app, phần mềm, dashboard, nền tảng SaaS lần đầu; \"đây là màn hình chính của…\"; đoạn nói về số liệu kinh doanh + việc cần làm trong ngày; mở đầu phần demo sản phẩm số tone công nghệ, cyber.",
+  "tranh_khi": "Nội dung không liên quan app / phần mềm; tone ấm áp đời thường, sáng màu; câu nói ngắn dưới 3 giây.",
+  "nang_luong": "cao",
+  "chu_de": ["app", "dashboard", "ra mắt", "phần mềm", "số liệu", "danh sách", "giao diện", "công nghệ"]
+ }
+}

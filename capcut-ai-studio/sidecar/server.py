@@ -1356,6 +1356,7 @@ def _remotion_autoplan(b):
     import media_vision
     import motion_design
     import remotion_plan
+    import shot_lib
     import user_media
     brief = _normalize_source_brief(b.get("brief"))
     if not brief:
@@ -1591,6 +1592,8 @@ def _remotion_autoplan(b):
             "src_desc": [(sv.get("summary"), sv.get("on_screen_text")) for sv in brief.get("sources") or []
                          if isinstance(sv, dict)],
             "docs": hashlib.sha1((motion_design.dsl_doc() + motion_design.glossary_doc()).encode("utf-8")).hexdigest(),
+            # KHO SHOT (video-shotcraft): danh muc / luat doi -> R4 chay lai
+            "shots": shot_lib.fingerprint(),
             "ref": providers.phong_cach_cho_buoc(reference_analysis, "effects"),
             # "flow" giu trong khoa cache: ket qua R4 da luu khi con nut "Luong Edit moi" van dung lai duoc
             "flow": "v2",

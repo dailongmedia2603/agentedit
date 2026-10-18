@@ -1,0 +1,32 @@
+{
+ "id": "outline-word-fill",
+ "component": "OutlineWordFill",
+ "card": "outline-word-fill",
+ "category": "typography",
+ "duration": 90,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 70,
+ "slots": [
+  {"id": "word", "role": "title", "sample": "Nhanh hơn", "max": 16, "note": "MỘT từ / cụm rất ngắn là lợi ích chính (1-2 từ, vd 'Nhanh hơn', 'Miễn phí', 'Gấp 10 lần'); dài hơn sẽ bị thu nhỏ"},
+  {"id": "kicker", "role": "kicker", "sample": "TỐC ĐỘ LÀM VIỆC", "max": 24, "optional": true, "note": "dòng nhỏ trên chữ; bỏ trống = tên thương hiệu"},
+  {"id": "subtitle", "role": "subtitle", "sample": "Một câu lệnh, ra ngay video hoàn chỉnh.", "max": 60, "optional": true, "note": "câu phụ dưới chữ, tối đa 2 dòng"},
+  {"id": "before_label", "role": "label", "sample": "TRƯỚC", "max": 8, "optional": true, "note": "nhãn số cũ (bên trái)"},
+  {"id": "before", "role": "number", "sample": "1 tuần", "max": 10, "optional": true, "note": "giá trị cũ (số + đơn vị ngắn)"},
+  {"id": "after_label", "role": "label", "sample": "SAU", "max": 8, "optional": true, "note": "nhãn số mới (bên phải)"},
+  {"id": "after", "role": "number", "sample": "4 giờ", "max": 10, "optional": true, "note": "giá trị mới — sáng cam khi chữ bật sáng"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 2, "type": "whoosh"}, {"at": 54, "type": "boom"}],
+ "vi": {
+  "ten": "Chữ rỗng bật sáng — đóng đinh một từ khóa",
+  "mo_ta": "Nền đen ấm: một từ cực lớn dạng chữ rỗng (viền mảnh) lao từ sát mặt người xem co về giữa khung; vòng tròn nét đứt kiểu bản vẽ kỹ thuật thu nhỏ quanh chữ và xoay chậm, hai vạch ngang nét đứt chạy từ mép khung vào như ống ngắm, kèm số đo 'TRƯỚC 1 tuần' / 'SAU 4 giờ'. Viền chữ nóng dần rồi trong một khung hình chữ bật đặc trắng rực, lóe sáng cam, vòng tròn khóa lại; dòng nhỏ phía trên và câu phụ phía dưới hiện lên.",
+  "hop_khi": "Câu chốt một lợi ích bằng MỘT từ: 'nhanh hơn', 'rẻ hơn', 'miễn phí', 'gấp 10 lần', 'tự động'; so sánh trước / sau bằng con số (thời gian, chi phí); nhấn mạnh từ khóa đúng nhịp nhạc khi giới thiệu app, AI, công cụ.",
+  "tranh_khi": "Câu dài nhiều ý; cần đọc nhiều chữ; tone nhẹ nhàng / cảm xúc buồn; dùng liền với mẫu chữ chuyển tiếp từng từ khác; video tone sáng.",
+  "nang_luong": "cao",
+  "chu_de": ["từ khóa", "lợi ích", "nhấn mạnh", "trước sau", "tốc độ", "so sánh", "AI", "app"]
+ }
+}

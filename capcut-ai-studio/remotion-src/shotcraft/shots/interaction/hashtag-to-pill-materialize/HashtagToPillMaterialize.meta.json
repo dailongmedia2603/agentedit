@@ -1,0 +1,29 @@
+{
+ "id": "hashtag-to-pill-materialize",
+ "component": "HashtagToPillMaterialize",
+ "card": "hashtag-to-pill-materialize",
+ "category": "interaction",
+ "duration": 120,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 84,
+ "slots": [
+  {"id": "tag", "role": "label", "sample": "giảm cân", "max": 20, "note": "từ khóa / hashtag 1-3 từ, không cần dấu #"},
+  {"id": "title", "role": "title", "sample": "Hành trình giảm cân của tôi", "max": 48, "note": "tiêu đề trang ghi chú hiện ra cuối"},
+  {"id": "body", "role": "subtitle", "sample": "Ba tháng, mười hai cân và một thói quen nhỏ: mỗi tối viết lại mình đã ăn gì, tập gì. Đơn giản vậy thôi.", "max": 140, "optional": true, "note": "đoạn văn ngắn 1-3 câu trong trang ghi chú"},
+  {"id": "crumb", "role": "label", "sample": "Ghi chú", "max": 18, "optional": true, "note": "mục cha trên đường dẫn đầu trang"}
+ ],
+ "images": [],
+ "brand": "none",
+ "sfx": [{"at": 8, "type": "typing"}, {"at": 48, "type": "pop"}, {"at": 66, "type": "swoosh"}, {"at": 83, "type": "click"}],
+ "vi": {
+  "ten": "Gõ hashtag biến thành nhãn trong trang ghi chú",
+  "mo_ta": "Nền trắng, giữa màn hình gõ từng chữ '#từ khóa' với con trỏ đỏ; đến nhịp thì CẮT CỨNG thành một viên nhãn bo tròn to (biểu tượng nhãn + từ khóa), dừng một chút rồi thu nhỏ trượt lên góc trái, rồi lại cắt cứng sang trang ghi chú hoàn chỉnh nền kem: tiêu đề xanh đậm, nhãn xanh lá nằm đúng chỗ, đoạn văn phía dưới. Gọn, dứt khoát, kiểu demo app ghi chú.",
+  "hop_khi": "Nói về gắn thẻ / phân loại / hashtag / chủ đề; demo app ghi chú, nhật ký, quản lý công việc; khi người nói nêu một chủ đề rồi kể nội dung bên trong ('chủ đề hôm nay là...', 'mình ghi lại hết vào...'); giới thiệu một series theo hashtag.",
+  "tranh_khi": "Không có từ khóa ngắn rõ ràng; nội dung cảm xúc mạnh hoặc cần năng lượng cao; video tone tối.",
+  "nang_luong": "vua",
+  "chu_de": ["hashtag", "từ khóa", "ghi chú", "app", "phân loại", "chủ đề", "nhật ký"]
+ }
+}

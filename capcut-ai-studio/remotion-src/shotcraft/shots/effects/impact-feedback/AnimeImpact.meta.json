@@ -1,0 +1,28 @@
+{
+ "id": "anime-impact",
+ "component": "AnimeImpact",
+ "card": "impact-feedback",
+ "category": "effects",
+ "duration": 120,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 50,
+ "slots": [
+  {"id": "number", "role": "number", "sample": "+248%", "max": 9, "note": "con số đắt giá nhất trong lời nói (số + đơn vị ngắn)"},
+  {"id": "title", "role": "subtitle", "sample": "Kỷ lục mới chỉ sau một chiến dịch", "max": 70, "note": "câu chốt giải thích con số"},
+  {"id": "kicker", "role": "label", "sample": "Doanh thu tháng này", "max": 30, "optional": true, "note": "nhãn của thẻ (chỉ số gì)"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 22, "type": "riser"}, {"at": 28, "type": "whoosh"}, {"at": 34, "type": "boom"}],
+ "vi": {
+  "ten": "Cú đấm anime — zoom giật vào thẻ số liệu, loé âm bản",
+  "mo_ta": "Toàn cảnh một dashboard phần mềm sáng (thanh bên, 6 thẻ số liệu tiếng Việt), thẻ mục tiêu sáng viền màu nhấn. Camera lùi nhẹ lấy đà rồi ZOOM GIẬT cực nhanh vào thẻ đó; đúng lúc dừng, 3 khung hình loé thành âm bản đen trắng + tia tốc độ kiểu manga + lệch màu đỏ/xanh, rồi rung màn hình và dừng lại cận cảnh thẻ: nhãn, CON SỐ LỚN, câu chốt và biểu đồ cột có cột cuối vọt lên.",
+  "hop_khi": "Khoảnh khắc 'bùm' của video: công bố con số gây sốc / kết quả kỷ lục (tăng 248%, doanh thu x3, 1 triệu lượt xem), cao trào khi nói về dashboard, app, báo cáo, tăng trưởng; chỉ dùng MỘT lần ở đỉnh cảm xúc.",
+  "tranh_khi": "Không có con số nổi bật; nội dung nhẹ nhàng, cảm xúc, sang trọng; đã dùng hiệu ứng mạnh khác gần đó; số liệu tiêu cực / buồn.",
+  "nang_luong": "cao",
+  "chu_de": ["số liệu", "dashboard", "con số", "kỷ lục", "tăng trưởng", "báo cáo", "app", "cao trào"]
+ }
+}

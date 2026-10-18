@@ -1,0 +1,28 @@
+{
+ "id": "wireframe-draw-on",
+ "component": "WireframeDrawOn",
+ "card": "wall-reveal-moves",
+ "category": "ui-entrance",
+ "duration": 150,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 120,
+ "slots": [
+  {"id": "title", "role": "label", "sample": "Tổng quan", "max": 28, "note": "tên trang / tên app trên giao diện (khung dọc: tiêu đề to đầu trang)"},
+  {"id": "items", "role": "item", "sample": "Người dùng hoạt động|Trang xem nhiều|Doanh thu|Mục tiêu quý|Lượt triển khai|Phiên truy cập", "max": 24, "list": {"min": 3, "max": 6}, "note": "nhãn các thẻ / tính năng trên giao diện, 1–4 từ"},
+  {"id": "values", "role": "number", "sample": "12.480|48.210|1,2 tỷ|86%|214|3.912", "max": 10, "list": {"min": 3, "max": 6}, "optional": true, "note": "con số lớn tương ứng từng thẻ; bỏ trống = thẻ chỉ có nhãn + biểu đồ"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 20, "type": "typing"}, {"at": 88, "type": "swoosh"}],
+ "vi": {
+  "ten": "Bản vẽ phác thảo hóa thành giao diện thật",
+  "mo_ta": "Nền giấy xanh nhạt có lưới chấm như bản thiết kế. Các đường mảnh xanh xám tự vẽ ra bố cục một ứng dụng / dashboard (thanh bên, thanh trên, các thẻ với biểu đồ, thanh tiến độ, lưới nhiệt) theo từng nhóm; rồi một vạch sáng màu hổ phách quét từ trái sang phải, chỗ nào vạch đi qua thì bản phác thảo biến thành giao diện thật đầy đủ màu, chữ và số.",
+  "hop_khi": "Nói về quá trình thiết kế → sản phẩm thật, xây dựng app / phần mềm / website, \"từ ý tưởng thành hiện thực\", ra mắt giao diện mới, giới thiệu các tính năng trên dashboard của sản phẩm.",
+  "tranh_khi": "Không liên quan sản phẩm số; video tông tối; cần đập mạnh nhanh (cảnh chậm ~4 giây mới hoàn chỉnh); đã dùng một cảnh 'cả bức tường thẻ sáng lên' khác trong video.",
+  "nang_luong": "vua",
+  "chu_de": ["thiết kế", "app", "phần mềm", "dashboard", "giao diện", "từ ý tưởng đến sản phẩm", "ra mắt", "website"]
+ }
+}

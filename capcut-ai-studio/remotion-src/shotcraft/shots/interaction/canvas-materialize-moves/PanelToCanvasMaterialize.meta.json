@@ -1,0 +1,31 @@
+{
+ "id": "panel-to-canvas",
+ "component": "PanelToCanvasMaterialize",
+ "card": "canvas-materialize-moves",
+ "category": "interaction",
+ "duration": 150,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 116,
+ "slots": [
+  {"id": "items", "role": "item", "sample": "Video giới thiệu sản phẩm|Livestream ngày đầu|Ưu đãi cho khách cũ|Bài đăng đếm ngược|Email cảm ơn", "max": 32, "list": {"min": 3, "max": 5}, "note": "3 mục ĐẦU là 3 mục được chọn và bay lên bảng thành thẻ; mục 4-5 (nếu có) là lựa chọn không được chọn"},
+  {"id": "notes", "role": "subtitle", "sample": "Quay gọn trong 30 giây đầu.|Chốt khung giờ 20h tối.|Giảm 20% trong tuần đầu.", "max": 40, "list": {"min": 0, "max": 3}, "optional": true, "note": "ghi chú ngắn trên 3 thẻ, theo thứ tự 3 mục đầu"},
+  {"id": "title", "role": "title", "sample": "Kế hoạch ra mắt", "max": 26, "note": "tên bảng / kế hoạch / dự án"},
+  {"id": "kicker", "role": "kicker", "sample": "Bảng kế hoạch", "max": 22, "optional": true, "note": "nhãn nhỏ cạnh logo"},
+  {"id": "panel", "role": "label", "sample": "Gợi ý từ AI", "max": 24, "optional": true, "note": "tiêu đề bảng danh sách bên phải / bên dưới"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 14, "type": "click"}, {"at": 24, "type": "click"}, {"at": 34, "type": "click"}, {"at": 52, "type": "click"}, {"at": 60, "type": "whoosh"}, {"at": 86, "type": "pop"}]
+ ,
+ "vi": {
+  "ten": "Chọn mục trong danh sách bay lên bảng",
+  "mo_ta": "Giao diện app tông be ấm: bảng danh sách 3-5 mục, con trỏ chuột lần lượt tick 3 mục rồi bấm nút 'Đưa lên bảng'; 3 hàng nhấc lên, bay vòng cung lệch nhịp và biến hình thành 3 thẻ ghi chú nằm nghiêng trên bảng trắng chấm bi (tiêu đề serif lớn), chỗ cũ trong danh sách thành khung nét đứt 'Đã lên bảng', bộ đếm 'mục đã ghim' tăng lên. Khung dọc: bảng + thẻ ở trên, danh sách ở dưới, thẻ bay lên.",
+  "hop_khi": "Nói về chọn lọc / lên kế hoạch / sắp xếp ý tưởng: 'mình chọn ra 3 việc quan trọng nhất', công cụ AI gợi ý rồi đưa vào kế hoạch, app quản lý công việc, Miro/Notion/Trello, chuyển danh sách thành hành động.",
+  "tranh_khi": "Không có danh sách cụ thể; các mục quá dài (> 32 ký tự); video tông tối hoặc cần nhịp gắt.",
+  "nang_luong": "vua",
+  "chu_de": ["app", "danh sách", "kế hoạch", "AI", "quản lý công việc", "ý tưởng", "giao diện", "chọn lọc"]
+ }
+}

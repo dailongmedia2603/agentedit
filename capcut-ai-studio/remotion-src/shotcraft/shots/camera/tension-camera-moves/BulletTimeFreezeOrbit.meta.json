@@ -1,0 +1,30 @@
+{
+ "id": "bullet-time-freeze-orbit",
+ "component": "BulletTimeFreezeOrbit",
+ "card": "tension-camera-moves",
+ "category": "camera",
+ "duration": 170,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 138,
+ "slots": [
+  {"id": "kicker", "role": "kicker", "sample": "DOANH THU · TUẦN NÀY", "max": 28, "optional": true, "note": "nhãn nhỏ màu xanh đầu bảng, in hoa"},
+  {"id": "title", "role": "title", "sample": "Tổng đơn hàng", "max": 26, "note": "tên chỉ số chính"},
+  {"id": "number", "role": "number", "sample": "184920", "max": 9, "note": "CHỈ CHỮ SỐ (tối đa 9 chữ số); bộ đếm cuộn từ 0 lên, tự thêm dấu chấm hàng nghìn"},
+  {"id": "values", "role": "number", "sample": "14k|18k|16k|22k|20k|26k|31k", "max": 6, "list": {"min": 4, "max": 7}, "note": "giá trị mỗi cột (số + đơn vị ngắn); chiều cao cột theo con số; cột CUỐI là cột nổi bật"},
+  {"id": "labels", "role": "label", "sample": "T2|T3|T4|T5|T6|T7|CN", "max": 6, "list": {"min": 4, "max": 7}, "optional": true, "note": "nhãn trục dưới mỗi cột, cùng số mục với values"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 2, "type": "riser"}, {"at": 42, "type": "whoosh"}, {"at": 84, "type": "swoosh"}, {"at": 102, "type": "boom"}, {"at": 118, "type": "pop"}],
+ "vi": {
+  "ten": "Thời gian ngừng trôi — máy quay vòng quanh biểu đồ đóng băng",
+  "mo_ta": "Bảng dữ liệu kính xanh đêm lơ lửng trong không gian 3D (sàn lưới, tường chấm): các cột tăng dần lệch nhịp, đỉnh cột phun tia lửa xanh trắng, bộ đếm số lớn cuộn nhanh. Giữa chừng thời gian phanh gấp và ĐỨNG HẲN — cột dừng nửa chừng, tia lửa treo lơ lửng giữa không trung — trong khi máy quay vòng sang hông ~52° rồi trở về (kiểu Ma Trận); rồi thời gian chạy tiếp, cột mọc đủ, nhãn giá trị bật lên, cột cuối sáng rực.",
+  "hop_khi": "Khoảnh khắc khoe con số / tăng trưởng đáng 'dừng lại để nhìn': doanh thu kỷ lục, lượt xem bùng nổ, kết quả chiến dịch; 'và đây là điều xảy ra…' trước khi chốt số; video tài chính, kinh doanh online, báo cáo dữ liệu, AI.",
+  "tranh_khi": "Không có số liệu; đoạn nói nhẹ nhàng cảm xúc; dùng nhiều lần trong một video (chỉ 1 lần là đắt).",
+  "nang_luong": "cao",
+  "chu_de": ["số liệu", "tăng trưởng", "biểu đồ", "doanh thu", "dashboard", "kỷ lục", "dữ liệu"]
+ }
+}

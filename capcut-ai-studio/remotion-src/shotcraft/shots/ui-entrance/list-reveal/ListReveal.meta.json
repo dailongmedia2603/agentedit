@@ -1,0 +1,31 @@
+{
+ "id": "list-reveal",
+ "component": "ListReveal",
+ "card": "list-reveal",
+ "category": "ui-entrance",
+ "duration": 120,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.3],
+ "hold": 86,
+ "slots": [
+  {"id": "items", "role": "item", "sample": "Trang chủ|Cảnh quay|Bản dựng|Góp ý|Cài đặt|Đăng xuất", "max": 26, "list": {"min": 3, "max": 8}, "note": "các mục menu / danh sách; MỤC ĐẦU được tô sáng (mục đang chọn / quan trọng nhất)"},
+  {"id": "keys", "role": "label", "sample": "⌘1|⌘2|⌘3||⌘,|", "max": 8, "list": {"min": 0, "max": 8}, "optional": true, "note": "nhãn nhỏ bên phải từng mục (phím tắt, số, giá…); để trống mục nào thì mục đó không có"},
+  {"id": "badge", "role": "number", "sample": "3", "max": 3, "optional": true, "note": "số thông báo trên mục thứ 4"},
+  {"id": "kicker", "role": "kicker", "sample": "BÀN LÀM VIỆC", "max": 30, "optional": true},
+  {"id": "title", "role": "title", "sample": "Mọi cảnh quay, trong tầm tay.", "max": 48, "note": "câu chốt cạnh danh sách"},
+  {"id": "subtitle", "role": "subtitle", "sample": "Công thức, bản dựng và kịch bản — chỉ cách một phím bấm.", "max": 90, "optional": true}
+ ],
+ "images": [],
+ "brand": "none",
+ "sfx": [{"at": 2, "type": "click"}, {"at": 22, "type": "swoosh"}, {"at": 46, "type": "whoosh"}],
+ "vi": {
+  "ten": "Menu ứng dụng hiện từng mục — tiêu đề bên cạnh",
+  "mo_ta": "Nền than chì tối: một cột menu kiểu thanh bên ứng dụng (icon nét mảnh + tên mục + phím tắt/số) hiện TỪNG MỤC cách nhau đều, mỗi mục phóng nhẹ từ mờ sang nét rồi 'khớp' vào chỗ; mục đầu là thanh trắng sáng có vệt lóe; cả cột trôi lên rất chậm như đang thở. Khi danh sách hiện được nửa, tiêu đề lớn và câu phụ trồi lên bên cạnh (khung dọc: bên dưới).",
+  "hop_khi": "Liệt kê 3-8 mục theo kiểu giao diện: các tính năng / mục menu của một app, phần mềm, website; các bước, các gói dịch vụ, mục lục video; đoạn dẫn chậm rãi khi giới thiệu giao diện sản phẩm.",
+  "tranh_khi": "Danh sách cần số liệu so sánh (dùng biểu đồ); khoảnh khắc cao trào cần đập mạnh; nội dung đời thường không liên quan app/giao diện (dùng mẫu danh sách khác).",
+  "nang_luong": "thap",
+  "chu_de": ["danh sách", "menu", "app", "giao diện", "tính năng", "các bước", "mục lục", "phần mềm"]
+ }
+}

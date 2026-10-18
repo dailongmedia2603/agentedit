@@ -1,0 +1,27 @@
+{
+ "id": "bezier-source-converge-merge",
+ "component": "BezierSourceConvergeMerge",
+ "card": "bezier-source-converge-merge",
+ "category": "ui-entrance",
+ "duration": 168,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.3],
+ "hold": 160,
+ "slots": [
+  {"id": "sources", "role": "item", "sample": "Website|Facebook|Zalo|Email", "max": 14, "list": {"min": 3, "max": 5}, "note": "tên các nguồn / kênh / công cụ được gom lại, 1-2 từ mỗi mục"},
+  {"id": "title", "role": "title", "sample": "Mọi nguồn dữ liệu, về chung một nơi", "max": 48, "note": "câu chốt về việc hợp nhất / gom về một chỗ, hiện cuối cảnh dưới huy hiệu"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 8, "type": "swoosh"}, {"at": 58, "type": "whoosh"}, {"at": 120, "type": "pop"}, {"at": 141, "type": "ding"}],
+ "vi": {
+  "ten": "Nhiều nguồn hội tụ về một điểm",
+  "mo_ta": "Nền sáng tối giản: 3-5 nút tròn trắng có biểu tượng và nhãn tên nguồn (vd Website, Facebook, Zalo) nối bằng các đường cong mảnh tới một huy hiệu logo. Chấm màu nhấn chạy dọc đường như dữ liệu đang chảy; rồi các nút trượt theo đường cong, thu nhỏ và bị 'hút' vào huy hiệu, huy hiệu nảy nhẹ + gợn sóng, đường cong rút đi, cuối cùng chỉ còn logo và câu chốt hiện từng từ bên dưới. Khung dọc: nguồn xếp hàng ngang trên cùng, dòng chảy đổ xuống.",
+  "hop_khi": "Nói về việc gom nhiều kênh / công cụ / dữ liệu về một chỗ: tích hợp, đồng bộ, 'một ứng dụng thay cho cả chục ứng dụng', CRM gom khách từ nhiều kênh, hợp nhất báo cáo, nền tảng tất cả trong một.",
+  "tranh_khi": "Nội dung không có ý 'nhiều thành một'; cần năng lượng cao / sốc; có hơn 5 nguồn cần kể tên.",
+  "nang_luong": "vua",
+  "chu_de": ["tích hợp", "hợp nhất", "dữ liệu", "đa kênh", "nền tảng", "app", "tự động hóa", "CRM"]
+ }
+}

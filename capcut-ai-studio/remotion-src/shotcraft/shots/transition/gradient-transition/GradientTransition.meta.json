@@ -1,0 +1,31 @@
+{
+ "id": "gradient-transition",
+ "component": "GradientTransition",
+ "card": "gradient-transition",
+ "category": "transition",
+ "duration": 200,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.25],
+ "hold": 162,
+ "slots": [
+  {"id": "line1", "role": "title", "sample": "Một khởi đầu mới.", "max": 40, "note": "câu mở (hiện 0.2-1.7s rồi tan đi)"},
+  {"id": "line2", "role": "title", "sample": "Tập trung vào điều quan trọng.", "max": 40, "note": "câu thứ hai (2.2-3.8s rồi tan đi)"},
+  {"id": "kicker", "role": "kicker", "sample": "Giới thiệu", "max": 20, "optional": true, "note": "nhãn nhỏ in hoa trên tên ở màn chốt"},
+  {"id": "name", "role": "name", "sample": "Trợ lý AI Mây", "max": 24, "optional": true, "note": "tên sản phẩm / kênh / dự án ở màn chốt; trống -> dùng tên thương hiệu video; không có cả hai -> tagline thành dòng lớn"},
+  {"id": "tagline", "role": "subtitle", "sample": "Biến ý tưởng thành video chỉ trong vài phút.", "max": 60, "optional": true, "note": "câu khẩu hiệu / lời hứa dưới tên"},
+  {"id": "label", "role": "label", "sample": "Ra mắt tháng 10", "max": 30, "optional": true, "note": "chữ nhỏ góc dưới trái (ngày, sự kiện, chuyên mục)"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 4, "type": "riser"}, {"at": 58, "type": "swoosh"}, {"at": 120, "type": "swoosh"}, {"at": 130, "type": "boom"}],
+ "vi": {
+  "ten": "Nền gradient biến hình — hai câu rồi màn ra mắt tên",
+  "mo_ta": "Nền tối tím-hồng-xanh băng đổi liên tục: dải sáng tuyến tính quét xoay góc → đốm sáng tròn trôi chéo và nở to → vòng màu xoáy chậm dần. Mỗi pha một câu chữ trắng rất lớn hiện từng từ từ mờ rồi tan đi; pha cuối hiện nhãn nhỏ, logo + tên lớn (giãn chữ thu về) và câu khẩu hiệu. Nhẹ, sang, kiểu teaser sự kiện ra mắt.",
+  "hop_khi": "Mở đầu video / mở một chương mới, giới thiệu tên sản phẩm, kênh, dự án, sự kiện ra mắt; hai câu dẫn dắt ngắn rồi chốt tên (vd 'Một khởi đầu mới… Tập trung vào điều quan trọng… Giới thiệu X'); khoảnh khắc cảm hứng, tầm nhìn.",
+  "tranh_khi": "Cần số liệu, danh sách, hình ảnh minh họa; câu dài hơn ~2 dòng; nhịp nhanh, gấp (cảnh dài 6-7s, nhịp chậm).",
+  "nang_luong": "thap",
+  "chu_de": ["ra mắt", "giới thiệu", "mở đầu", "chương mới", "tên sản phẩm", "thương hiệu", "khẩu hiệu", "cảm hứng"]
+ }
+}

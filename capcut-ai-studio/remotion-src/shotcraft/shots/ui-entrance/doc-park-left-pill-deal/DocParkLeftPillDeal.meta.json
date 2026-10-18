@@ -1,0 +1,30 @@
+{
+ "id": "doc-park-left-pill-deal",
+ "component": "DocParkLeftPillDeal",
+ "card": "doc-park-left-pill-deal",
+ "category": "ui-entrance",
+ "duration": 174,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.2],
+ "hold": 136,
+ "slots": [
+  {"id": "items", "role": "item", "sample": "Giao hàng nhanh|Giá hợp lý|Cần thêm size", "max": 22, "list": {"min": 2, "max": 3}, "note": "2-3 kết luận rút ra từ tài liệu, mỗi cái 1-4 từ"},
+  {"id": "captions", "role": "subtitle", "sample": "Khách khen tốc độ giao hàng|Mức giá được đánh giá vừa túi tiền|Nhiều người hỏi thêm cỡ lớn hơn", "max": 48, "list": {"min": 2, "max": 3}, "note": "câu giải thích ngắn cho từng kết luận, cùng thứ tự"},
+  {"id": "evidence", "role": "quote", "sample": "Gần 87% khách hài lòng với thời gian nhận hàng chỉ trong hai ngày.|Đa số cho rằng giá bán ngang hoặc thấp hơn các cửa hàng cùng loại.|Khoảng một phần ba bình luận đề nghị bổ sung cỡ XL và XXL.", "max": 70, "list": {"min": 0, "max": 3}, "optional": true, "note": "câu 'bằng chứng' trong tài liệu được tô sáng cho từng kết luận; bỏ trống = dùng captions"},
+  {"id": "scores", "role": "number", "sample": "92%|88%|95%", "max": 5, "list": {"min": 0, "max": 3}, "optional": true, "note": "số nhỏ cuối mỗi viên (độ tin cậy / tỉ lệ)"},
+  {"id": "doc_title", "role": "title", "sample": "Báo cáo phản hồi khách hàng · Quý 3", "max": 44, "optional": true, "note": "tiêu đề tài liệu đang được đọc"}
+ ],
+ "images": [],
+ "brand": "none",
+ "sfx": [{"at": 45, "type": "pop"}, {"at": 83, "type": "pop"}, {"at": 121, "type": "pop"}],
+ "vi": {
+  "ten": "Tài liệu dạt sang bên, AI rút ra 3 kết luận từng viên một",
+  "mo_ta": "Nền sáng; một trang tài liệu / báo cáo trắng đang tự cuộn chậm (như đang được đọc) rồi trượt dạt sang trái (khung dọc: lên trên) và thu nhỏ lại. Bên cạnh lần lượt bật ra 2-3 viên kết luận bo tròn có biểu tượng; mỗi viên vừa đáp xuống thì câu bằng chứng trong tài liệu được tô sáng, có đường nối tới viên đó, và một câu giải thích hiện bên dưới đậm dần từng chữ rồi mờ đi trước viên kế tiếp.",
+  "hop_khi": "Người nói tóm tắt kết luận / insight rút ra từ một tài liệu, báo cáo, khảo sát, hợp đồng, CV, review khách hàng; AI đọc tài liệu và đưa ra nhận định; liệt kê 2-3 điểm chính có căn cứ; tone phân tích, tư vấn.",
+  "tranh_khi": "Không có nguồn tài liệu / dữ liệu để dẫn chứng; hơn 3 ý; cần năng lượng cao (cảnh chậm, nhẹ ~6 giây); video tone tối.",
+  "nang_luong": "thap",
+  "chu_de": ["AI", "phân tích tài liệu", "báo cáo", "khảo sát", "kết luận", "danh sách", "insight", "tóm tắt"]
+ }
+}

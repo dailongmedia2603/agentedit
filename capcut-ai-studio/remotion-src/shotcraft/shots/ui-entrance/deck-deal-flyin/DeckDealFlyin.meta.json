@@ -1,0 +1,37 @@
+{
+ "id": "deck-deal-flyin",
+ "component": "DeckDealFlyin",
+ "card": "deck-deal-flyin",
+ "category": "ui-entrance",
+ "duration": 150,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 112,
+ "slots": [
+  {"id": "title", "role": "title", "sample": "Nội dung mới,", "max": 22, "note": "dòng 1 tiêu đề (đậm)"},
+  {"id": "title2", "role": "subtitle", "sample": "đổ về mỗi ngày.", "max": 22, "note": "dòng 2 tiêu đề (mảnh)"},
+  {"id": "label", "role": "label", "sample": "BÀI VIẾT ĐÃ ĐĂNG", "max": 24, "optional": true, "note": "nhãn sau bộ đếm chạy tới 26 (vd SẢN PHẨM, ĐƠN HÀNG MỚI, MẪU THIẾT KẾ), in hoa"},
+  {"id": "items", "role": "item", "sample": "Mẹo bán hàng online|Ý tưởng video ngắn|Lịch đăng bài tuần này|Kịch bản livestream|Báo cáo doanh thu|Bộ ảnh sản phẩm mới", "max": 32, "list": {"min": 3, "max": 10}, "optional": true, "note": "tiêu đề trên các thẻ (chỉ dùng khi KHÔNG có ảnh)"},
+  {"id": "sections", "role": "label", "sample": "NỔI BẬT|MỚI NHẤT|ĐƯỢC YÊU THÍCH|GỢI Ý CHO BẠN", "max": 22, "list": {"min": 4, "max": 4}, "optional": true, "note": "4 tiêu mục nhỏ trên trang nền"}
+ ],
+ "images": [
+  {"id": "photo1", "role": "screen", "aspect": "any", "optional": true, "note": "ảnh cho các lá bài (ảnh chụp màn hình, ảnh sản phẩm, thumbnail video, bài đăng...) — 26 lá xoay vòng dùng các ảnh có; không có ảnh -> thẻ vẽ tay tiếng Việt"},
+  {"id": "photo2", "role": "screen", "aspect": "any", "optional": true},
+  {"id": "photo3", "role": "screen", "aspect": "any", "optional": true},
+  {"id": "photo4", "role": "screen", "aspect": "any", "optional": true},
+  {"id": "photo5", "role": "screen", "aspect": "any", "optional": true},
+  {"id": "photo6", "role": "screen", "aspect": "any", "optional": true}
+ ],
+ "brand": "optional",
+ "sfx": [{"at": 30, "type": "whoosh"}, {"at": 40, "type": "swoosh"}, {"at": 60, "type": "swoosh"}, {"at": 100, "type": "pop"}],
+ "vi": {
+  "ten": "Chia bài — 26 thẻ bay ào vào lưới trang",
+  "mo_ta": "Bàn đá tối, cận cảnh một chồng thẻ được máy quay lượn vòng; chồng thẻ nhún xuống lấy đà rồi từng thẻ bị 'chia bài' bay vào lưới một trang web sáng bên cạnh, càng lúc càng nhanh, mỗi thẻ đáp xuống nảy nhẹ. Máy quay đuổi theo, nâng cao rồi ngả thành góc nhìn chéo thấy cả bảng đầy thẻ; bộ đếm chạy tới 26 và tiêu đề hai dòng trồi lên. Thẻ là ảnh thật (chụp màn hình, sản phẩm, bài đăng) hoặc thẻ nội dung tiếng Việt.",
+  "hop_khi": "Nói về SỐ LƯỢNG lớn nội dung / sản phẩm / đơn hàng / bài đăng đổ về liên tục: \"hàng trăm mẫu\", \"mỗi ngày ra hàng chục video\", kho template, danh mục sản phẩm, portfolio, thư viện; khoe kết quả làm được nhiều.",
+  "tranh_khi": "Chỉ có 1-2 thứ để khoe; nội dung cần đọc chi tiết từng thẻ (thẻ nhỏ, bay nhanh); mở đầu video ngay giây đầu; video tone sáng nhẹ nhàng.",
+  "nang_luong": "cao",
+  "chu_de": ["số lượng", "kho nội dung", "danh mục sản phẩm", "portfolio", "app", "website", "bài đăng", "template"]
+ }
+}

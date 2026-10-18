@@ -1,0 +1,37 @@
+{
+ "id": "carousel-3d",
+ "component": "Carousel3D",
+ "card": "carousel-3d",
+ "category": "ui-entrance",
+ "duration": 168,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.3],
+ "hold": 150,
+ "slots": [
+  {"id": "items", "role": "item", "sample": "Quản lý đơn hàng|Chăm sóc khách|Báo cáo doanh thu|Kho hàng|Thanh toán|Khuyến mãi|Vận chuyển|Đánh giá", "max": 22, "list": {"min": 4, "max": 8}, "note": "tên tính năng / sản phẩm / mẫu, 1-4 từ; ít hơn 8 thì vòng lặp lại"},
+  {"id": "stats", "role": "number", "sample": "1.250|98%|+32%|320|3 giây|15%|63 tỉnh|4,9★", "max": 8, "list": {"min": 1, "max": 8}, "optional": true, "note": "con số lớn trên từng thẻ, theo thứ tự items"},
+  {"id": "title", "role": "kicker", "sample": "Mọi tính năng trong một ứng dụng", "max": 40, "optional": true, "note": "tiêu đề nhỏ góc trên"}
+ ],
+ "images": [
+  {"id": "photo1", "role": "screen", "aspect": "3:2", "optional": true, "note": "ảnh cho mục 1 (ảnh chụp màn hình / ảnh sản phẩm), thay hình vẽ trên thẻ"},
+  {"id": "photo2", "role": "screen", "aspect": "3:2", "optional": true},
+  {"id": "photo3", "role": "screen", "aspect": "3:2", "optional": true},
+  {"id": "photo4", "role": "screen", "aspect": "3:2", "optional": true},
+  {"id": "photo5", "role": "screen", "aspect": "3:2", "optional": true},
+  {"id": "photo6", "role": "screen", "aspect": "3:2", "optional": true},
+  {"id": "photo7", "role": "screen", "aspect": "3:2", "optional": true},
+  {"id": "photo8", "role": "screen", "aspect": "3:2", "optional": true}
+ ],
+ "brand": "optional",
+ "sfx": [{"at": 8, "type": "swoosh"}, {"at": 29, "type": "swoosh"}, {"at": 50, "type": "swoosh"}, {"at": 71, "type": "swoosh"}],
+ "vi": {
+  "ten": "Băng chuyền thẻ 3D xoay vòng",
+  "mo_ta": "Nền tối than chì, 8 thẻ đứng thành vòng tròn 3D trên mặt sàn phản chiếu, cả vòng xoay đều và cứ ~0,7 giây lại khựng một nhịp; thẻ ở chính giữa phía trước sáng viền xanh chanh, nhô ra, phụ đề lớn bên dưới cuộn đổi tên theo thẻ đó. Mỗi thẻ có hình vẽ (hoặc ảnh), con số lớn và tên mục.",
+  "hop_khi": "Giới thiệu một loạt tính năng / sản phẩm / mẫu / dịch vụ / tích hợp (\"app có đủ: đơn hàng, kho, thanh toán…\"); thư viện, bộ sưu tập; đoạn liệt kê nhiều thứ cùng loại, nền cho lời nói dài.",
+  "tranh_khi": "Chỉ có 1-2 mục; cần một điểm nhấn mạnh có mở đầu/kết thúc rõ (vòng xoay liên tục, không có cao trào); chủ đề cảm xúc, đời thường.",
+  "nang_luong": "vua",
+  "chu_de": ["danh sách", "tính năng", "sản phẩm", "app", "bộ sưu tập", "thư viện", "dịch vụ", "3D"]
+ }
+}

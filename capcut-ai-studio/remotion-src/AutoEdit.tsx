@@ -29,7 +29,7 @@ import {
 } from './look'
 import { LayersLayer } from './Layers'
 import { FxLayer, fxTransformAt, fxTransformFilters } from './FxLayer'
-import { SceneBackdrop, ScenePanels, arollStateAt } from './Scenes'
+import { SceneBackdrop, ScenePanels, SceneShots, arollStateAt } from './Scenes'
 
 /** Duong am luong nhac nen [giay, volume] -> volume tai giay t (noi suy tuyen tinh, kep 0..1). */
 export function envAt(env: [number, number][], t: number): number {
@@ -459,6 +459,7 @@ const VideoLayer: React.FC<{ spec: RenderSpec; subject?: boolean }> = ({ spec, s
     <AbsoluteFill>
       {!subject && <SceneBackdrop scenes={spec.scenes} base={spec.mediaBase} />}
       {!subject && <ScenePanels scenes={spec.scenes} base={spec.mediaBase} />}
+      {!subject && <SceneShots scenes={spec.scenes} base={spec.mediaBase} theme={spec.shotTheme} kind="insert" />}
       <div
         style={{
           position: 'absolute',
@@ -606,7 +607,10 @@ export const AutoEdit: React.FC<AutoEditProps> = ({ spec }) => {
   }
   const layers = spec.layers || []
   // Chu nhan "thay cho phu de" dang hien -> an phu de de khong hai khoi chu danh nhau
-  const hideSubs = layers.some((L) => L.replacesSubtitle && t >= L.start && t <= L.end)
+  const hideSubs =
+    layers.some((L) => L.replacesSubtitle && t >= L.start && t <= L.end) ||
+    // canh motion graphic co chu (kho shot) -> chu cua mau da noi dung y, an phu de cho khoi chong
+    (spec.scenes || []).some((s) => s.shot?.hideSubs && t >= s.start && t < s.end)
   // Lop "sau nguoi": chi co nghia khi co ban tach nguoi cua clip -> ve A-roll, lop chu, roi NGUOI de len
   const behind = layers.filter((L) => L.behind)
   const hasSubject = spec.clips.some((c) => !!c.subject)
@@ -625,6 +629,7 @@ export const AutoEdit: React.FC<AutoEditProps> = ({ spec }) => {
       {hasBehind && <LayersLayer layers={behind} base={spec.mediaBase} maxTrack={100} />}
       {hasSubject && <FxLayer fx={spec.fx} layer="behind" base={spec.mediaBase} />}
       {drawSubject && <VideoLayer spec={spec} subject />}
+      <SceneShots scenes={spec.scenes} base={spec.mediaBase} theme={spec.shotTheme} kind="overlay" />
       {/* meme DE LEN nam tren ca ban tach nguoi (truoc day ban tach nguoi ve sau -> che meme trung nguoi noi) */}
       {spec.overlays.map((o) => (
         <Sequence key={o.id} from={toFrame(o.start, fps)} durationInFrames={Math.max(1, toFrame(o.end - o.start, fps))} premountFor={Math.round(fps)}>

@@ -1,0 +1,29 @@
+{
+ "id": "corner-spotlight-reveal",
+ "component": "CornerSpotlightReveal",
+ "card": "spotlight-sweep-moves",
+ "category": "effects",
+ "duration": 130,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.25],
+ "hold": 100,
+ "slots": [
+  {"id": "title", "role": "title", "sample": "Thư viện", "max": 18, "note": "tiêu đề trang lớn ở góc trên-trái — chỗ ánh sáng chạm tới đầu tiên (tên tính năng / tên app)"},
+  {"id": "tabs", "role": "label", "sample": "Tất cả|Video|Hình ảnh|Tài liệu|Lưu trữ", "max": 12, "list": {"min": 3, "max": 5}, "optional": true, "note": "các tab ngắn dưới tiêu đề, tab đầu được chọn"}
+ ],
+ "images": [
+  {"id": "screen", "role": "screen", "aspect": "16:9", "optional": true, "note": "ảnh chụp màn hình app / web; ánh sáng mở từ góc trên-trái nên phần quan trọng nên ở góc đó. Có ảnh thì thay cả trang (không hiện tiêu đề / tab)"}
+ ],
+ "brand": "none",
+ "sfx": [{"at": 0, "type": "riser"}],
+ "vi": {
+  "ten": "Đốm sáng góc trái lan dần thắp sáng màn hình",
+  "mo_ta": "Màn hình đen; một đốm sáng trắng nóng xuất hiện ở góc trên-trái rồi nở rộng ĐỀU như đèn pha, chỗ nào được chiếu thì trang giao diện sáng (cận cảnh, nghiêng nhẹ, camera trôi chậm): tiêu đề trang lớn hiện trước, rồi hàng tab, rồi các dòng danh sách; cuối cùng ánh sáng phủ kín toàn màn hình.",
+  "hop_khi": "Mở đầu phần giới thiệu một tính năng / trang trong app (\"tính năng thứ nhất là Thư viện…\"), chuyển cảnh từ màn đen sang màn hình sản phẩm, khoảnh khắc \"bật sáng\" ý tưởng; tone tối, tinh tế.",
+  "tranh_khi": "Cần thông tin hiện ngay lập tức; video tone sáng, vui nhộn; nội dung không liên quan giao diện / phần mềm.",
+  "nang_luong": "thap",
+  "chu_de": ["app", "tính năng", "giao diện", "chuyển cảnh", "mở đầu", "ánh sáng", "phần mềm"]
+ }
+}

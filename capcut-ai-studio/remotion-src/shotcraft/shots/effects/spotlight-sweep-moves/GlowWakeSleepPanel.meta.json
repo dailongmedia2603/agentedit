@@ -1,0 +1,26 @@
+{
+ "id": "glow-wake-sleep-panel",
+ "component": "GlowWakeSleepPanel",
+ "card": "spotlight-sweep-moves",
+ "category": "effects",
+ "duration": 140,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.8, 1.25],
+ "hold": 60,
+ "slots": [],
+ "images": [
+  {"id": "screen", "role": "screen", "aspect": "16:10", "optional": true, "note": "ảnh chụp màn hình app / web hiện trong tấm giao diện nghiêng; không có thì là giao diện xám trừu tượng"}
+ ],
+ "brand": "optional",
+ "sfx": [{"at": 4, "type": "riser"}, {"at": 60, "type": "swoosh"}],
+ "vi": {
+  "ten": "Đèn quét tím đánh thức giao diện trong bóng tối",
+  "mo_ta": "Phông đen hoàn toàn; một tấm giao diện phần mềm nghiêng chéo trong không gian 3D chỉ hiện ra ở nơi luồng sáng chiếu tới. Một vệt sáng tím-hồng rực, nhoè, chạy đều từ trái sang phải sát mép trên tấm giao diện, lướt qua logo làm nó sáng viền, tới mép phải thì bật một vệt sáng dọc; ánh sáng đi tới đâu giao diện tỉnh dậy tới đó, đi qua rồi thì chìm lại vào bóng tối.",
+  "hop_khi": "Mở màn bí ẩn khi giới thiệu một app / phần mềm / nền tảng mới (\"và đây là…\"), teaser ra mắt sản phẩm số, đoạn chuyển sang phần demo; tone tối, công nghệ, sang trọng.",
+  "tranh_khi": "Cần người xem đọc thông tin cụ thể (giao diện chỉ thấy một phần, phần lớn chìm trong tối); tone sáng vui tươi; nội dung không liên quan phần mềm.",
+  "nang_luong": "thap",
+  "chu_de": ["app", "phần mềm", "ra mắt", "teaser", "giao diện", "bí ẩn", "công nghệ", "ánh sáng"]
+ }
+}

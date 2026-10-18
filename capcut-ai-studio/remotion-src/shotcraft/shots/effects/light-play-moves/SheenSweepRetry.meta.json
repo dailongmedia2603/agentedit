@@ -1,0 +1,33 @@
+{
+ "id": "sheen-sweep",
+ "component": "SheenSweepRetry",
+ "card": "light-play-moves",
+ "category": "effects",
+ "duration": 150,
+ "kind": "insert",
+ "dark": false,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.25],
+ "hold": 108,
+ "slots": [
+  {"id": "title", "role": "title", "sample": "Đặc quyền, theo cách riêng.", "max": 40, "note": "tiêu đề 2-6 từ"},
+  {"id": "kicker", "role": "kicker", "sample": "Ra mắt gói mới", "max": 26, "optional": true, "note": "nhãn nhỏ màu nhấn, tự in hoa (mặc định = tên thương hiệu)"},
+  {"id": "body", "role": "subtitle", "sample": "Thẻ hội viên kim loại, ưu đãi trọn đời cho một trăm người đầu tiên.", "max": 90, "optional": true},
+  {"id": "cta", "role": "cta", "sample": "Đăng ký ngay", "max": 24, "optional": true, "note": "nút kêu gọi hành động"},
+  {"id": "card_name", "role": "name", "sample": "Hội viên Vàng", "max": 22, "optional": true, "note": "tên khắc trên thẻ (tên gói / thương hiệu)"},
+  {"id": "card_label", "role": "label", "sample": "Thành viên", "max": 18, "optional": true, "note": "nhãn nhỏ trên thẻ, tự in hoa"},
+  {"id": "card_holder", "role": "name", "sample": "NGUYỄN MINH ANH", "max": 22, "optional": true, "note": "tên chủ thẻ"},
+  {"id": "card_tier", "role": "label", "sample": "VIP", "max": 8, "optional": true, "note": "hạng thẻ, 1 từ ngắn"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 4, "type": "whoosh"}, {"at": 58, "type": "swoosh"}, {"at": 92, "type": "pop"}],
+ "vi": {
+  "ten": "Thẻ kim loại cao cấp — vệt sáng lướt qua",
+  "mo_ta": "Nền màu cát ấm: một tấm thẻ titan đen bóng (chip vàng, chữ khắc tên gói, tên chủ thẻ, hạng thẻ) nâng lên nằm nghiêng 3D; giữa chừng thẻ xoay nhẹ về phía nguồn sáng và một vệt sáng chéo lướt qua mặt thẻ đúng một lần làm chữ khắc lóe lên. Bên cạnh (khung dọc: phía dưới) là tiêu đề đậm trồi lên từng dòng, câu mô tả và nút kêu gọi hành động.",
+  "hop_khi": "Giới thiệu gói hội viên / thẻ VIP / thẻ tín dụng / gói Premium / đặc quyền khách hàng thân thiết; ra mắt sản phẩm cao cấp; câu nói về ưu đãi độc quyền, nâng cấp tài khoản, 'chỉ dành cho...'.",
+  "tranh_khi": "Nội dung không liên quan tới thẻ, gói, hội viên hay sản phẩm cao cấp; tone bình dân vui nhộn; đã có hiệu ứng ánh sáng khác trong video.",
+  "nang_luong": "thap",
+  "chu_de": ["thẻ hội viên", "VIP", "cao cấp", "ưu đãi", "ra mắt", "thẻ tín dụng", "gói premium"]
+ }
+}

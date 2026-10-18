@@ -1,0 +1,30 @@
+{
+ "id": "pull-back-isolation",
+ "component": "PullBackIsolation",
+ "card": "tension-camera-moves",
+ "category": "camera",
+ "duration": 150,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 100,
+ "slots": [
+  {"id": "number", "role": "number", "sample": "99,9%", "max": 9, "note": "con số chốt trên thẻ chính (số + đơn vị ngắn như %, k, tr, đ; đơn vị cuối được thu nhỏ)"},
+  {"id": "label", "role": "label", "sample": "Tỉ lệ khách hài lòng", "max": 30, "note": "tên chỉ số"},
+  {"id": "badge", "role": "label", "sample": "90 ngày", "max": 14, "optional": true, "note": "nhãn nhỏ góc phải (khoảng thời gian / phạm vi)"},
+  {"id": "start", "role": "label", "sample": "90 ngày trước", "max": 16, "optional": true, "note": "nhãn đầu trái dải lịch sử"},
+  {"id": "end", "role": "label", "sample": "Hôm nay", "max": 16, "optional": true, "note": "nhãn đầu phải dải lịch sử"}
+ ],
+ "images": [],
+ "brand": "none",
+ "sfx": [{"at": 0, "type": "whoosh"}, {"at": 30, "type": "riser"}, {"at": 110, "type": "ding"}],
+ "vi": {
+  "ten": "Kéo lùi cô lập — chỉ còn một con số giữa bóng tối",
+  "mo_ta": "Mở đầu cận cảnh sát một thẻ chỉ số trắng với con số rất lớn (vd 99,9%) và dải lịch sử xanh; máy quay từ từ kéo lùi để lộ nhiều thẻ số liệu xung quanh, rồi các thẻ đó lần lượt tắt từ gần ra xa (mờ, tối, chìm xuống) trong khi nền chuyển từ sáng sang tối sâu; cuối cùng chỉ còn một thẻ phát sáng lơ lửng giữa màn hình, đứng yên.",
+  "hop_khi": "Câu chốt / kết luận quanh MỘT con số quan trọng nhất ('sau tất cả, điều duy nhất quan trọng là…', 'kết quả cuối cùng: 99,9%'); kết thúc phần báo cáo, khép lại video; nhấn mạnh tỉ lệ, chỉ số uy tín, cam kết.",
+  "tranh_khi": "Cần năng lượng cao hoặc giới thiệu nhiều số liệu; giữa video khi còn nhiều ý tiếp theo (đây là dấu chấm hết); không có con số.",
+  "nang_luong": "thap",
+  "chu_de": ["số liệu", "kết luận", "con số", "chỉ số", "báo cáo", "uy tín", "kết thúc"]
+ }
+}

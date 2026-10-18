@@ -1,0 +1,29 @@
+{
+ "id": "bento-light-up",
+ "component": "BentoLightUp",
+ "card": "wall-reveal-moves",
+ "category": "ui-entrance",
+ "duration": 150,
+ "kind": "insert",
+ "dark": true,
+ "portrait": {"mode": "native"},
+ "rate": [0.85, 1.2],
+ "hold": 100,
+ "slots": [
+  {"id": "kicker", "role": "kicker", "sample": "TÍNH NĂNG", "max": 24, "optional": true, "note": "dòng nhỏ màu hổ phách trên tiêu đề (có thương hiệu thì hiện logo + tên trước)"},
+  {"id": "title", "role": "title", "sample": "Mọi thứ bạn cần, gói gọn một nơi.", "max": 48},
+  {"id": "items", "role": "item", "sample": "Người dùng|Trang xem nhiều|Doanh thu|Mục tiêu quý|Lịch hoạt động|Phiên truy cập", "max": 22, "list": {"min": 3, "max": 6}, "note": "nhãn từng ô (tính năng / hạng mục), 1–4 từ"},
+  {"id": "values", "role": "number", "sample": "12.480|48.210|1,2 tỷ|86%|214|3.912", "max": 10, "list": {"min": 3, "max": 6}, "optional": true, "note": "con số lớn trong từng ô; bỏ trống = ô chỉ có nhãn + biểu đồ"}
+ ],
+ "images": [],
+ "brand": "optional",
+ "sfx": [{"at": 20, "type": "click"}, {"at": 32, "type": "click"}, {"at": 44, "type": "click"}, {"at": 56, "type": "click"}, {"at": 68, "type": "click"}, {"at": 80, "type": "ding"}],
+ "vi": {
+  "ten": "Bức tường ô bento sáng lần lượt",
+  "mo_ta": "Nền tối ấm, một bức tường 3–6 ô thẻ kiểu bento (rộng hẹp xen kẽ) nằm sẵn nhưng tối mờ. Lần lượt từng ô: một vệt sáng hổ phách chạy vòng quanh viền như sao chổi, rồi nội dung ô (nhãn, con số, biểu đồ nhỏ) bừng sáng và nảy nhẹ lên; đủ các ô thì cả bức tường nhích gần lại rồi đứng yên. Tiêu đề lớn phía trên.",
+  "hop_khi": "Liệt kê các tính năng / hạng mục của sản phẩm, app, gói dịch vụ một cách trang trọng: \"ứng dụng có đủ: quản lý đơn, báo cáo, khách hàng...\"; tổng quan dashboard, các chỉ số chính; đoạn giới thiệu thương hiệu cần cảm giác cao cấp.",
+  "tranh_khi": "Chỉ có 1–2 ý; nội dung đời thường không phải sản phẩm; video tông sáng; đã dùng cảnh bản vẽ thành giao diện (wireframe) trong cùng video.",
+  "nang_luong": "vua",
+  "chu_de": ["tính năng", "danh sách", "dashboard", "app", "sản phẩm", "bento", "tổng quan", "số liệu"]
+ }
+}
