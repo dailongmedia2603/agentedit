@@ -89,7 +89,7 @@ const VAR_NAME = /^[a-z_][a-z0-9_]{0,63}$/
 export async function paMe(token?: string, base?: string) {
   return paCall<{ id: string; name: string; email: string; role: string; stats?: { totalDevices: number; onlineDevices: number; totalScripts: number; totalSchedules: number } }>(
     '/me',
-    { token, base, retries: 0, timeoutMs: 20000 }
+    { token, base, retries: 1, timeoutMs: 20000 }
   )
 }
 

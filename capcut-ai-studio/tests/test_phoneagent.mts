@@ -302,6 +302,21 @@ console.log('[1] ket noi')
   check('token sai -> 401 + cau tieng Viet', e?.status === 401 && /thu hồi|không hợp lệ/.test(e.message), e?.message)
   const me = await A.paMe(TOKEN, BASE)
   check('/me ok', me.name === 'Test User' && me.stats?.onlineDevices === 1)
+  // fetch cua Node loi mang ("fetch failed", nguyen nhan trong cause) -> tu thu lai bang net.fetch cua Electron
+  const realFetch = globalThis.fetch
+  let undiciFails = 1
+  globalThis.fetch = (async (...a: Parameters<typeof fetch>) => {
+    if (undiciFails-- > 0) throw new TypeError('fetch failed', { cause: Object.assign(new Error('other side closed'), { code: 'UND_ERR_SOCKET' }) })
+    return realFetch(...a)
+  }) as typeof fetch
+  const me2 = await A.paMe(TOKEN, BASE).catch((e) => e)
+  check('undici loi mang -> net.fetch thu lai thanh cong', (me2 as any)?.name === me.name, me2)
+  globalThis.fetch = (async () => {
+    throw new TypeError('fetch failed', { cause: Object.assign(new Error('unable to get local issuer certificate'), { code: 'UNABLE_TO_GET_ISSUER_CERT_LOCALLY' }) })
+  }) as typeof fetch
+  const bad = await A.paMe(TOKEN, BASE).catch((e) => e)
+  globalThis.fetch = realFetch
+  check('loi mang hien nguyen nhan that', /UNABLE_TO_GET_ISSUER_CERT_LOCALLY/.test(String((bad as Error)?.message)) && /Chromium/.test(String((bad as Error)?.message)), String((bad as Error)?.message))
   C.setPhoneAgentConfig({ token: TOKEN, base: BASE })
   const mk = C.phoneAgentMasked()
   check('luu token + base (che token)', mk.has_key && mk.base === BASE && !mk.key_hint.includes('aaaaaaaaaaaa'), mk)

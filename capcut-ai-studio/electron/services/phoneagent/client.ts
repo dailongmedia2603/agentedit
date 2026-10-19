@@ -2,7 +2,7 @@
 // + source github.com/dailongmedia2603/phoneclaw-dashboard. Base mac dinh https://phoneagent.io.vn/api/v1/external,
 // xac thuc header X-API-Token: pa_live_... Moi response JSON {success, data | error}; 429 kem Retry-After.
 // Token luu MA HOA bang safeStorage trong <userData>/phoneagent.enc (file rieng, khong dung secrets.enc cua cac AI).
-import { app, safeStorage } from 'electron'
+import { app, net, safeStorage } from 'electron'
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import { join } from 'path'
 
@@ -85,6 +85,38 @@ export class PhoneAgentError extends Error {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
+/** Nguyen nhan that cua loi mang (undici chi bao "fetch failed", nguyen nhan nam trong e.cause). */
+function netCause(e: unknown): string {
+  const err = e as { message?: string; cause?: { code?: string; message?: string; errors?: { code?: string; message?: string }[] } }
+  const c = err?.cause
+  const sub = c?.errors?.[0]
+  const code = c?.code || sub?.code || ''
+  const msg = c?.message || sub?.message || ''
+  const base = String(err?.message || e)
+  return code || msg ? `${base} — ${[code, msg && msg !== code ? msg : ''].filter(Boolean).join(': ')}` : base
+}
+
+/**
+ * fetch cua Node (undici) loi MANG (khong phai het gio) -> thu lai bang net.fetch cua Electron (tang mang Chromium: proxy /
+ * VPN he thong, kho chung chi macOS / Windows, chap nhan header phan hoi "le" ma undici tu choi). 2026-10-19: user bao
+ * "Kiem tra ket noi" -> "fetch failed" trong khi curl + undici tu Terminal deu goi duoc.
+ */
+async function fetchWithFallback(url: string, init: RequestInit): Promise<Response> {
+  try {
+    return await fetch(url, init)
+  } catch (e) {
+    if ((e as Error)?.name === 'AbortError' || typeof net?.fetch !== 'function') throw e
+    try {
+      return (await net.fetch(url, init as never)) as unknown as Response
+    } catch (e2) {
+      if ((e2 as Error)?.name === 'AbortError') throw e2
+      const err = new Error(netCause(e) + ' | Chromium: ' + String((e2 as Error)?.message || e2))
+      err.name = 'NetworkError'
+      throw err
+    }
+  }
+}
+
 /** Doi loi cua may chu sang cau tieng Viet de hieu (giu nguyen chi tiet goc). */
 function friendly(status: number, err: string): string {
   if (status === 401) {
@@ -131,7 +163,7 @@ export async function paCall<T = unknown>(path: string, opts: CallOpts = {}): Pr
     const t = setTimeout(() => ctl.abort(), opts.timeoutMs ?? 30000)
     let r: Response
     try {
-      r = await fetch(url, {
+      r = await fetchWithFallback(url, {
         method: opts.method || 'GET',
         signal: ctl.signal,
         headers: {
@@ -147,7 +179,7 @@ export async function paCall<T = unknown>(path: string, opts: CallOpts = {}): Pr
       const msg =
         (e as Error)?.name === 'AbortError'
           ? 'Phone Agent không phản hồi (quá thời gian chờ).'
-          : 'Không kết nối được Phone Agent (' + base.replace(/^https?:\/\//, '').split('/')[0] + '): ' + String((e as Error)?.message || e)
+          : 'Không kết nối được Phone Agent (' + base.replace(/^https?:\/\//, '').split('/')[0] + '): ' + netCause(e)
       lastErr = new PhoneAgentError(msg, 0, true)
       if (attempt < retries) {
         await sleep(1000 * 2 ** attempt)
