@@ -117,10 +117,18 @@ TRA_LOI = {
     "Hook-FX": {"effects": [{"type": "shake", "source_id": "source_1", "src_start": 8.2, "src_end": 8.8, "anchor": "hook",
                              "why": "cu soc 'dung lam the' can rung manh"}]},
     # bo tao am thanh earshot (sfx_gen): hook chon tieng TAO, khong lay tieng khong loi cua kho
-    "Hook-SFX": {"audio": [{"gen": {"sound": "pro_impact/short"}, "source_id": "source_1", "src_time": 8.1,
-                            "anchor": "hook", "purpose": "punch", "why": "dam mo hook"}]},
+    "Hook-SFX": {"audio": [{"gen": {"sound": "impact/punch"}, "source_id": "source_1", "src_time": 8.02,
+                            "anchor": "hook", "purpose": "punch", "why": "dam mo hook"},
+                           {"gen": {"sound": "whoosh_big/swell"}, "source_id": "source_1", "src_time": 9.4,
+                            "anchor": "hook", "purpose": "transition", "why": "dan vao cau chot"}]},
 }
 NHAN = {}      # step_label -> payload user da parse
+
+
+def _dd(xs):
+    """thu tu buoc, bo R4-design-fix + lan goi lai lien tiep cung buoc (vd Hook-visual hoi lai khi JSON thieu truong)."""
+    xs = [x for x in xs if x != "R4-design-fix"]
+    return [x for i, x in enumerate(xs) if i == 0 or xs[i - 1] != x]
 SYS = {}       # step_label -> system prompt
 THU_TU = []
 
@@ -157,9 +165,10 @@ try:
     check("remotion/autoplan chay xong", r.status_code == 200 and d.get("ok"), (r.status_code, d.get("error")))
     # FX-plan khong dat hieu ung nao -> hook chua co hinh: AI tu viet lai (Hook-FX-plan) truoc, khong duoc thi
     # chon trong kho (Hook-FX)
-    check("thu tu cac buoc dung (+ luat hook bo sung sau cung)", [x for x in THU_TU if x != "R4-design-fix"] ==
-          ["B1-select", "B2-timeline", "B3-hook", "R4-design", "R5-captions", "FX-plan", "B6-inserts", "B7-audio",
-           "Hook-FX-plan", "Hook-FX", "Hook-SFX"], THU_TU)
+    # Hook-visual (2026-10-20): hinh minh hoa hook theo noi dung, chay TRUOC FX-plan (AI gia tra thieu truong -> hoi lai 1 lan)
+    check("thu tu cac buoc dung (+ hinh minh hoa hook truoc FX + luat hook bo sung sau cung)", _dd(THU_TU) ==
+          ["B1-select", "B2-timeline", "B3-hook", "R4-design", "R5-captions", "Hook-visual", "FX-plan", "B6-inserts",
+           "B7-audio", "Hook-FX-plan", "Hook-FX", "Hook-SFX"], THU_TU)
     check("R4 thiet ke: khong khai hieu ung (buoc FX lam), khong con luat hook R4 cua luong cu",
           'KHONG khai "effects"' in SYS.get("R4-design", "") and "LUAT HOOK" not in SYS.get("R4-design", ""))
     _p0 = d.get("plan") or {}
@@ -176,7 +185,7 @@ try:
           (_hs.get("hook") or {}).get("anchor") == "hook" and _hs.get("gen_catalog") and _hs.get("bo_am_thanh")
           and _hs.get("hieu_ung_hinh"), _hs)
     check("Hook-SFX: kho chi con tieng co giong noi (kit-boom khong loi bi loai)", _hs.get("sfx_catalog") == [], _hs.get("sfx_catalog"))
-    check("SFX hook = tieng TAO earshot", any(a.get("anchor") == "hook" and (a.get("gen") or {}).get("sound") == "pro_impact/short"
+    check("SFX hook = tieng TAO earshot", any(a.get("anchor") == "hook" and (a.get("gen") or {}).get("sound") == "impact/punch"
                                                for a in _p0.get("audio") or []), _p0.get("audio"))
     check("plan co bo tieng cua video (am_thanh, mac dinh theo tone khi B7 khong chon)",
           ((_p0.get("am_thanh") or {}).get("bo") or {}).get("pop") and (_p0.get("am_thanh") or {}).get("nguon") == "mac_dinh",
@@ -325,16 +334,16 @@ try:
                                        "y_nghia": "lam ro y dang noi luc do (du lieu test)", "why_fit": "vet toa tu mat bung ra dung luc noi 'ba ty' nhan manh cu soc",
                                        "visual": "10 vet trang mo toa tu tam mat, bung ra 0.3s roi tat dan"},
                                       {"id": "fx2", "kind": "transform", "source_id": "source_1", "anchor": "hook",
-                                       "src_start": 8.1, "src_end": 9.9,
+                                       "src_start": 8.1, "src_end": 9.9, "dac_biet": "dap + rung manh toan khung",
                                        "context": "hook mo bang cau 'dung lam the' dut khoat, nguoi noi nghiem mat",
                                        "goal": "nguoi xem giat minh dung lai ngay giay dau",
                                        "y_nghia": "lam ro y dang noi luc do (du lieu test)", "why_fit": "rung manh ngan dung chu 'dung' lam cau canh bao dap vao mat",
-                                       "visual": "2 cu dap camera 20% o chu 'dung' va chu 'the', moi cu 0.3s"}],
+                                       "visual": "3 cu dap camera 25% o chu 'dung', 'lam' va 'the', moi cu 0.3s"}],
                           "bo_qua": [{"moment": "m2", "ly_do": "loi khuyen nhe nhang, khong can hieu ung"}]}
     TRA_LOI["FX-code"] = {"effects": [{"id": "fx1", "fit_check": {"ok": True, "reason": "dung cu soc"},
                                        "code": "function render(ctx){ const k = env(ctx.t, ctx.d); return h('svg', {width: ctx.W, height: ctx.H}, h('circle', {cx: 540, cy: 700, r: 200 * k + 1, fill: 'none', stroke: alpha('#ffffff', k), 'stroke-width': 6})) }"},
                                       {"id": "fx2", "fit_check": {"ok": True, "reason": "dung cau canh bao"},
-                                       "code": "function transform(ctx){ const p = (c) => clamp(1 - Math.abs(ctx.t - c) / 0.15, 0, 1); return {scale: 1 + 0.2 * Math.max(p(0.08), p(1.2))}; }"}]}
+                                       "code": "function transform(ctx){ const p = (c) => clamp(1 - Math.abs(ctx.t - c) / 0.15, 0, 1); const q = Math.max(p(0.08), p(0.85), p(1.6)); return {scale: 1 + 0.25 * q, x: 24 * q * Math.sin(ctx.t * 90)}; }"}]}
     with server.app.test_client() as c:
         # client cu con gui edit_flow "v1" (nut da go) -> van chay luong moi
         r = c.post("/remotion/autoplan", json={"brief": BRIEF, "fresh": True, "edit_flow": "v1",
@@ -342,7 +351,8 @@ try:
     d11 = r.get_json() or {}
     check("chay xong (edit_flow 'v1' cu bi bo qua)", r.status_code == 200 and d11.get("ok"), d11.get("error"))
     seq = [x for x in THU_TU if x != "R4-design-fix"]
-    check("v2: FX-plan + FX-code chay sau R5, truoc B6", seq.index("FX-plan") == seq.index("R5-captions") + 1
+    check("v2: FX-plan + FX-code chay sau R5 (+ Hook-visual), truoc B6", seq.index("FX-plan") > seq.index("R5-captions")
+          and seq.index("Hook-visual") < seq.index("FX-plan")
           and seq.index("FX-code") == seq.index("FX-plan") + 1 and seq.index("B6-inserts") > seq.index("FX-code"), seq)
     fxp = NHAN.get("FX-plan", {})
     km = fxp.get("khoanh_khac") or []
@@ -424,9 +434,9 @@ try:
     d12 = r.get_json() or {}
     moc = {lab: (a, b) for lab, a, b in MOC}
     check("chay xong", r.status_code == 200 and d12.get("ok"), d12.get("error"))
-    check("thu tu cac buoc Claude giu nguyen nhu cu", [x for x in THU_TU if x != "R4-design-fix"][:9] ==
-          ["B1-select", "B2-timeline", "B3-hook", "R4-design", "R5-captions", "FX-plan", "FX-code", "B6-inserts",
-           "B7-audio"], THU_TU)
+    check("thu tu cac buoc Claude giu nguyen nhu cu (+ Hook-visual truoc FX)", _dd(THU_TU)[:10] ==
+          ["B1-select", "B2-timeline", "B3-hook", "R4-design", "R5-captions", "Hook-visual", "FX-plan", "FX-code",
+           "B6-inserts", "B7-audio"], THU_TU)
     lan_luot = sorted(MOC, key=lambda x: x[1])
     check("KHONG co 2 luot Claude nao chay cung luc", all(b[1] >= a[2] - 1e-3 for a, b in zip(lan_luot, lan_luot[1:])),
           [(lab, round(a - t_bat_dau, 2), round(b - t_bat_dau, 2)) for lab, a, b in lan_luot])

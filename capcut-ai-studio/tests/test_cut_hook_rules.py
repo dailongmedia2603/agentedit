@@ -270,10 +270,13 @@ def fake_build(pl):
 
 def ai_step(name, payload, fn):
     if name == "Hook-SFX":
-        return {"audio": [{"sfx_id": "voice", "src_time": 61.9}, {"sfx_id": "ding", "src_time": 61.9, "why": "chot"}]}
+        return {"audio": [{"sfx_id": "voice", "src_time": 61.9}, {"sfx_id": "vine-boom", "src_time": 61.84, "why": "dap mo"},
+                          {"sfx_id": "soft-whoosh", "src_time": 64.4, "why": "dan vao chuyen canh"}]}
     if name == "Hook-FX":
-        return {"effects": [{"type": "zoom_punch", "src_start": 61.88, "src_end": 62.4, "intensity": 0.8, "why": "dap mo hook"},
-                            {"type": "shake", "src_start": 63.8, "src_end": 64.4, "why": "soc o cau chot"}]}
+        return {"effects": [{"type": "zoom_punch", "src_start": 61.88, "src_end": 62.4, "intensity": 1.0, "why": "dap mo hook"},
+                            {"type": "flash", "src_start": 61.88, "src_end": 62.1, "intensity": 0.8, "why": "chop cung cu dap"},
+                            {"type": "shake", "src_start": 63.3, "src_end": 63.8, "why": "soc o cau chot"},
+                            {"type": "zoom_punch", "src_start": 64.6, "src_end": 65.2, "intensity": 0.9, "why": "dap cau chot"}]}
     return None
 
 
@@ -281,22 +284,25 @@ import engine  # noqa: E402
 orig_resolve = engine.resolve_plan_sfx
 engine.resolve_plan_sfx = lambda pl, **kw: pl
 pl, sp, rep, notes = hook_rule.ensure(copy.deepcopy(plan), fake_build(plan)[0], fake_build, ai_step, sfx_catalog=CAT)
-check("AI bo sung SFX (bo tieng co giong nguoi) + hieu ung toan khung 2 nhip, anchor hook",
-      [a["sfx_id"] for a in pl["audio"]] == ["ding"] and pl["audio"][0]["anchor"] == "hook"
-      and [e["type"] for e in pl["scene_effects"]] == ["zoom_punch", "shake"] and pl["scene_effects"][0]["anchor"] == "hook",
-      (pl["audio"], pl["scene_effects"]))
-check("sau bo sung: hook dat (muc vua mac dinh)", not hook_rule._problems(hook_rule.check(sp, "vua", pl)) and rep is not None,
-      hook_rule.check(sp, "vua", pl)["yeu"])
+check("AI bo sung 2 lop SFX (bo tieng co giong nguoi) + cu mo chong dap+chop, anchor hook",
+      sorted(a["sfx_id"] for a in pl["audio"]) == ["soft-whoosh", "vine-boom"] and pl["audio"][0]["anchor"] == "hook"
+      and [e["type"] for e in pl["scene_effects"]] == ["zoom_punch", "flash", "shake", "zoom_punch"]
+      and pl["scene_effects"][0]["anchor"] == "hook", (pl["audio"], pl["scene_effects"], notes))
+check("sau bo sung: hook dat (muc MANH mac dinh)", not hook_rule._problems(hook_rule.check(sp, "manh", pl)) and rep is not None,
+      hook_rule.check(sp, "manh", pl)["yeu"])
 pl, sp, rep, notes = hook_rule.ensure(copy.deepcopy(plan), fake_build(plan)[0], fake_build, lambda n, p_, f: None,
                                       sfx_catalog=CAT)
-check("AI khong tra loi -> du phong muc vua (tieng dam + dap camera 2 nhip), ghi ro, DAT",
-      pl["audio"] and pl["audio"][0]["sfx_id"] == "vine-boom" and [e["type"] for e in pl["scene_effects"]][:2] == ["zoom_punch", "zoom_punch"]
-      and any("du phong" in n for n in notes) and not hook_rule._problems(hook_rule.check(sp, "vua", pl)),
-      (pl["scene_effects"], notes))
+check("AI khong tra loi -> du phong muc MANH (2 lop tieng: dam + whoosh; dap + chop + rung + dap), ghi ro, DAT",
+      [a["sfx_id"] for a in pl["audio"]] == ["vine-boom", "soft-whoosh"]
+      and [e["type"] for e in pl["scene_effects"]] == ["zoom_punch", "flash", "shake", "zoom_punch"]
+      and any("du phong" in n for n in notes) and not hook_rule._problems(hook_rule.check(sp, "manh", pl)),
+      (pl["audio"], pl["scene_effects"], notes))
 ok_spec = {"duration": 30, "clips": [{"kind": "hook", "start": 0, "end": 4}],
-           "effects": [{"type": "zoom_punch", "intensity": 0.8, "start": 0.2, "end": 0.8},
-                       {"type": "zoom_punch", "intensity": 0.8, "start": 2.0, "end": 2.6}],
-           "audio": [{"role": "sfx", "start": 0.1}]}
+           "effects": [{"type": "zoom_punch", "intensity": 1.0, "start": 0.05, "end": 0.6},
+                       {"type": "flash", "intensity": 0.8, "start": 0.05, "end": 0.3},
+                       {"type": "zoom_punch", "intensity": 0.9, "start": 1.4, "end": 2.0},
+                       {"type": "shake", "intensity": 0.9, "start": 2.8, "end": 3.4}],
+           "audio": [{"role": "sfx", "start": 0.05}, {"role": "sfx", "start": 2.8}]}
 pl, sp, rep, notes = hook_rule.ensure(copy.deepcopy(plan), ok_spec, fake_build, ai_step, sfx_catalog=CAT)
 check("hook da dat -> khong goi AI, khong dung lai (ghi so do)", rep is None and sp is ok_spec and "đạt" in notes[0], notes)
 
@@ -305,7 +311,11 @@ check("muc do: B3 ghi -> dung", hook_rule.muc_do({"hook": {"attention": {"muc_do
 check("muc do: yeu cau edit 'vui, bat trend' THANG B3 'vua'",
       hook_rule.muc_do({"hook": {"attention": {"muc_do": "vua"}}}, {"edit_request": {"style": "nhanh, vui, bắt trends"}})[0] == "manh")
 check("muc do: doan theo tone", hook_rule.muc_do({}, {"tone": "kể chuyện nhẹ nhàng, sâu lắng"})[0] == "nhe"
-      and hook_rule.muc_do({}, {"tone": "chia sẻ kiến thức"})[0] == "vua")
+      and hook_rule.muc_do({}, {"tone": "chia sẻ kiến thức"})[0] == "manh")
+check("muc do (2026-10-19): B3 ghi 'vua' + style 'cong nghe, sach, khong mau me' -> hook van MANH",
+      hook_rule.muc_do({"hook": {"attention": {"muc_do": "vua"}}},
+                       {"edit_request": {"style": "công nghệ, hiện đại, sạch, không màu mè"}})[0] == "manh"
+      and hook_rule.muc_do({}, {"edit_request": {"style": "sang trọng, tối giản"}})[0] == "manh")
 FPS = 30
 push = {"scale": [1 + 0.06 * min(1, i / 50.0) for i in range(60)]}                   # day may cham 6%
 punch = {"scale": [1 + 0.16 * min(1, i / 4.0) for i in range(20)]}                    # dap 16% trong 0.13s roi GIU
@@ -358,7 +368,73 @@ check("hook dap roi dung im (nhu video moi) -> muc manh: CHUA DAT vi dung im qua
       any("đứng im" in x for x in r["yeu"]["visual"]), r["yeu"])
 beats3 = {"scale": [1 + 0.2 * max(0.0, 1 - min(abs(i - c) for c in (2, 40, 80)) / 5.0) for i in range(120)]}
 r = hook_rule.check(hook_spec([], fxt=[{"id": "h", "start": 0.0, "end": 4.0, "values": beats3}]), "manh")
-check("3 cu dap 20% (0.07s, 1.3s, 2.7s) -> dat muc manh", not r["yeu"]["visual"], r["yeu"])
+check("3 cu dap 20% (0.07s, 1.3s, 2.7s) -> du cu mo + nhip muc manh (chi con thieu hieu ung DAC BIET)",
+      [x for x in r["yeu"]["visual"] if "ĐẶC BIỆT" not in x] == [] and any("ĐẶC BIỆT" in x for x in r["yeu"]["visual"]),
+      r["yeu"])
+# HIEU UNG DAC BIET (2026-10-19, user: "khong chi zoom — can set danh, mua, rung toan man hinh..."): lop tu viet KHAI
+# dac_biet + do thay ro toan khung moi tinh; zoom / vignette khong khai -> khong tinh
+ZIG = "M 820 0 L 700 260 L 860 420 L 690 700 L 900 900 L 720 1180 L 880 1400 L 760 1700"
+bolt = frames_file("bolt", lambda i: SVG % (('<rect x="0" y="0" width="1080" height="1920" fill="rgba(230,240,255,0.85)"/>'
+                                            if i == 1 else "") + ('<path d="%s M 860 420 L 1000 600 M 900 900 L 1040 1080" '
+                                            'fill="none" stroke="white" stroke-width="22"/>' % ZIG if 1 <= i <= 9 else "")),
+                   n=24)
+# 'kinh vo' AI 2026-10-19: chum nut nho o goc tren + lop toi deu + vien do mong -> khai dac biet nhung KHONG thay
+tiny = frames_file("tiny", lambda i: SVG % ('<rect x="0" y="0" width="1080" height="1920" fill="rgba(10,22,38,0.2)"/>'
+                                           '<rect x="4" y="4" width="1072" height="1912" fill="none" stroke="#ff5c5c" '
+                                           'stroke-width="14"/><path d="M 900 300 L 640 400 M 900 300 L 700 420 M 900 300 '
+                                           'L 760 430 M 900 300 L 820 440" stroke="#ff9a9a" stroke-width="6"/>'), n=40)
+sp_db = hook_spec([], fxt=[{"id": "h", "start": 0.0, "end": 4.0, "values": beats3}],
+                  fx=[{"id": "fxset", "start": 0.0, "end": 0.8, "file": bolt}])
+r_no = hook_rule.check(sp_db, "manh", {"fx": [{"id": "fxset", "anchor": "hook", "kind": "overlay"}]})
+r_ok = hook_rule.check(sp_db, "manh", {"fx": [{"id": "fxset", "anchor": "hook", "kind": "overlay", "dac_biet": "set danh"}]})
+check("lop toan khung KHONG khai dac_biet -> chua tinh", any("ĐẶC BIỆT" in x for x in r_no["yeu"]["visual"]), r_no["yeu"])
+check("lop set danh KHAI dac_biet + do thay ro -> DAT", not r_ok["yeu"]["visual"] and r_ok["do"]["dac_biet"] == ["fxset"],
+      (r_ok["yeu"], r_ok["do"].get("dac_biet")))
+r_flash = hook_rule.check(hook_spec([], fxt=[{"id": "h", "start": 0.0, "end": 4.0, "values": beats3}],
+                                    fx=[{"id": "fl", "start": 0.0, "end": 0.8,
+                                         "file": frames_file("flash", lambda i: SVG % '<rect x="0" y="0" width="1080" '
+                                                             'height="1920" fill="rgba(255,255,255,0.85)"/>' if i < 3 else "")}]),
+                          "manh", {"fx": [{"id": "fl", "anchor": "hook", "kind": "overlay", "dac_biet": "chop"}]})
+check("chop trang deu ca khung (khai dac biet) KHONG tinh la hieu ung dac biet", any("ĐẶC BIỆT" in x for x in r_flash["yeu"]["visual"]),
+      r_flash["yeu"])
+sp_tiny = hook_spec([], fxt=[{"id": "h", "start": 0.0, "end": 4.0, "values": beats3}],
+                    fx=[{"id": "kv", "start": 0.0, "end": 1.7, "file": tiny}])
+r_tiny = hook_rule.check(sp_tiny, "manh", {"fx": [{"id": "kv", "anchor": "hook", "kind": "overlay", "dac_biet": "kinh vo"}]})
+check("'kinh vo' ve chum nho o goc (do that) -> bao VE QUA NHO", any("quá NHỎ" in x for x in r_tiny["yeu"]["visual"]),
+      r_tiny["yeu"])
+sp_tiny_rung = dict(sp_tiny, fxTransforms=sp_tiny["fxTransforms"] + [{"id": "rg", "start": 0.9, "end": 1.6, "values": shake}])
+r_tr = hook_rule.check(sp_tiny_rung, "manh", {"fx": [{"id": "kv", "anchor": "hook", "kind": "overlay", "dac_biet": "kinh vo"}]})
+check("lop dac biet khai ra ma ve nho -> van bao du co rung (lan 1 video 2026-10-19)",
+      any("quá NHỎ" in x for x in r_tr["yeu"]["visual"]), r_tr["yeu"])
+sp_two = dict(sp_db, fx=sp_db["fx"] + [{"id": "kv", "start": 0.0, "end": 1.7, "file": tiny}])
+r_two = hook_rule.check(sp_two, "manh", {"fx": [{"id": "fxset", "anchor": "hook", "kind": "overlay", "dac_biet": "set"},
+                                                {"id": "kv", "anchor": "hook", "kind": "overlay", "dac_biet": "vet phu"}]})
+check("co lop dac biet chinh du lon -> lop phu nho di kem khong bi bao", not r_two["yeu"]["visual"], r_two["yeu"])
+r = hook_rule.check(hook_spec([{"type": "light_leak", "intensity": 0.8, "start": 0.1, "end": 3.5}]), "nhe")
+check("muc nhe: khong bat buoc hieu ung dac biet (chi huong dan trong prompt)", not r["yeu"]["visual"], r["yeu"])
+import hook_fx  # noqa: E402
+mh = {"source_id": "source_1", "src_start": 91.93, "src_end": 96.14, "anchor": "hook", "caption": "RỚT HỢP ĐỒNG",
+      "loi_noi": [{"text": "bị rớt hợp đồng."}]}
+check("du phong chi chon hinh khi cau noi DUNG ve no: 'rot hop dong' KHONG ra set (tia tap trung trung tinh); mua; gioi thieu",
+      hook_fx.pick_preset(mh) == "tia_tap_trung"
+      and hook_fx.pick_preset(dict(mh, caption="", loi_noi=[{"text": "cơn bão sét đánh sập server"}])) == "set_danh"
+      and hook_fx.pick_preset(dict(mh, caption="", loi_noi=[{"text": "mình đã khóc rất nhiều"}])) == "mua"
+      and hook_fx.pick_preset(dict(mh, caption="", loi_noi=[{"text": "mình là chuyên gia CapCut"}])) == "nen_truyen_tranh"
+      and hook_fx.pick_preset(dict(mh, caption="", loi_noi=[{"text": "bí quyết x2 doanh thu"}])) == "tia_tap_trung")
+pe = hook_fx.preset_effects("set_danh", mh)
+check("du phong set danh = lop set (khai dac_biet, anchor hook) + rung/chop cung nhip",
+      [e["kind"] for e in pe] == ["overlay", "transform"] and all(e["anchor"] == "hook" and hook_fx.declared(e) for e in pe)
+      and pe[0]["src_end"] - pe[0]["src_start"] <= 1.0 and hook_fx.preset_sound("set_danh") == "impact/blast", pe)
+import fx_flow  # noqa: E402
+if fx_flow.node_bin()[0]:
+    face = {"x": 518, "y": 1056, "w": 380, "h": 480}
+    jobs = [{"id": n, "kind": v[1], "code": v[0], "duration": min(v[3], 1.5), "fps": 30, "W": 1080, "H": 1920, "face": face,
+             "params": {"colors": [], "intensity": 1.0}, "palette": {}, "avoid": []} for n, v in hook_fx.PRESETS.items()]
+    jobs.append({"id": "rung", "kind": "transform", "code": hook_fx.SHAKE_FLASH, "duration": 0.9, "fps": 30, "W": 1080,
+                 "H": 1920, "face": face, "params": {"intensity": 1.0, "hits": [0.03, 0.3]}, "palette": {}, "avoid": []})
+    rr = fx_flow.run_runtime("check", jobs)
+    check("4 hieu ung dac biet viet san + rung/chop chay dat hop cach ly (tat dinh, nhe)",
+          all((rr.get(j["id"]) or {}).get("ok") for j in jobs), {k: v.get("errors") for k, v in rr.items()})
 r = hook_rule.check(hook_spec([{"type": "light_leak", "intensity": 0.8, "start": 0.1, "end": 3.5}]), "nhe")
 check("tone nhe: vet sang am ro rang, muot -> DAT muc nhe", not r["yeu"]["visual"], r["yeu"])
 r = hook_rule.check(hook_spec([], fxt=[{"id": "fxs", "start": 0.05, "end": 0.8, "values": shake}]), "nhe")
@@ -372,6 +448,66 @@ r = hook_rule.check(hook_spec([{"type": "zoom_punch", "intensity": 0.9, "start":
                                {"type": "zoom_punch", "intensity": 0.9, "start": 2.0, "end": 2.6}],
                               aud=[{"role": "sfx", "start": 2.4, "volume": 0.7}]), "vua")
 check("SFX hook vao muon (2.4s) -> yeu am thanh", r["yeu"]["sound"], r["yeu"])
+# video that 2026-10-19 (user: hook nhat, khong co am thanh cao trao): zoom 14% luc 0.13s roi giu + lop toan khung bat /
+# TAT o duoi hook (truoc day duoc do 2.00 -> "dat") + 1 impact (+0.3 dB) + knock -7.1 dB + riser -8.7 dB -> CHUA DAT
+z14 = {"scale": [1 + 0.14 * min(1, i / 4.0) for i in range(53)]}
+dark = frames_file("dark", lambda i: SVG % '<rect x="0" y="0" width="1080" height="1920" fill="rgba(0,0,0,0.55)"/>', n=20)
+sp19 = hook_spec([], fxt=[{"id": "fx1", "start": 0.0, "end": 1.77, "values": z14}],
+                 fx=[{"id": "fx3", "start": 3.6, "end": 4.26, "file": dark}],
+                 aud=[{"role": "sfx", "start": 0.02, "rel": 0.3}, {"role": "sfx", "start": 1.92, "rel": -7.1},
+                      {"role": "sfx", "start": 3.51, "rel": -8.7}])
+r = hook_rule.check(sp19, "manh")
+check("hook 2026-10-19: cu mo zoom 14% YEU (khong lay nhip lop bat/tat o duoi hook lam diem manh)",
+      any("cú mở" in x for x in r["yeu"]["visual"]) and r["do"]["manh_nhat"] < 1.3 <= r["do"]["manh_nhat_ca_hook"], r["do"])
+check("hook 2026-10-19: chi 1 SFX nghe ro -> yeu am thanh (can >= 2)",
+      any("SFX nghe rõ" in x for x in r["yeu"]["sound"]) and r["do"]["so_sfx_ro"] == 1, r["yeu"])
+r = hook_rule.check(hook_spec([], aud=[{"role": "sfx", "start": 0.02, "rel": -8.7}, {"role": "sfx", "start": 2.0, "rel": 1.0}]),
+                    "manh")
+check("SFX mo -8.7 dB so voi giong = qua nho cho hook manh", any("SFX mở hook" in x for x in r["yeu"]["sound"]), r["yeu"])
+r = hook_rule.check(hook_spec([], aud=[{"role": "sfx", "start": 0.02, "rel": 0.8, "name": "Tạo: pro_impact/short"},
+                                       {"role": "sfx", "start": 3.5, "rel": -0.8, "name": "Tạo: pro_riser/air_gate"}]), "manh")
+check("tieng mo to nhung MONG (pro_impact/short) -> yeu am thanh", any("quá mỏng" in x for x in r["yeu"]["sound"]), r["yeu"])
+r = hook_rule.check(hook_spec([], aud=[{"role": "sfx", "start": 0.02, "rel": 3.5, "name": "Tạo: impact/punch"},
+                                       {"role": "sfx", "start": 3.5, "rel": -0.8, "name": "Tạo: pro_riser/air_gate"}]), "manh")
+check("tieng mo impact co duoi + riser -> am thanh hook DAT", not r["yeu"]["sound"], r["yeu"])
+
+# HINH MINH HOA THEO NOI DUNG (hook_visual, 2026-10-20: user che set khong hop 'rot hop dong')
+import hook_visual  # noqa: E402
+from PIL import Image, ImageDraw  # noqa: E402
+hv_png = os.path.join(TMP, "hopdong.png")
+im = Image.new("RGBA", (600, 800), (0, 0, 0, 0))
+ImageDraw.Draw(im).rectangle((40, 40, 560, 760), fill=(250, 250, 245, 255))
+im.save(hv_png)
+mh2 = dict(mh, loi_noi=[{"start": 91.79, "end": 93.7, "text": "bị rớt hợp đồng."}])
+bad = hook_visual.clean({"dong_tac": "set_danh", "vat": {"prompt": "x" * 30}}, mh2)
+sp_hv = hook_visual.clean({"chu_the": "hợp đồng", "bien_co": "bị rớt", "y_tuong": "tờ hợp đồng bị xé đôi rồi rơi",
+                           "dong_tac": "xe_doi", "vat": {"ten": "hợp đồng", "prompt": "a signed paper contract, studio photo"},
+                           "dau": {"chu": "hủy", "mau": "#E53935"}, "xuat_hien": 91.0, "hanh_dong": 92.0, "ben": "phai",
+                           "am_thanh": {"xuat_hien": "khong_co_tieng_nay", "hanh_dong": ["swipe/glide"]}}, mh2)
+check("Hook-visual: dong tac ngoai bo dong tac (set...) -> bo; gio kep vao hook, bien co sau vat >= 0.6s; tieng sai -> mac dinh",
+      bad is None and sp_hv and sp_hv["xuat_hien"] == 91.93 and sp_hv["hanh_dong"] >= 91.93 + 0.6
+      and sp_hv["tieng_vao"] == hook_visual.TIENG_MAC_DINH["xe_doi"][0] and sp_hv["tieng_bien_co"] == ["swipe/glide"]
+      and sp_hv["dau"]["chu"] == "HỦY", sp_hv)
+pl_hv = {"hook": {"source_id": "source_1", "src_start": 91.93, "src_end": 96.14}, "layers": [], "assets": [], "audio": []}
+lay = hook_visual.apply(pl_hv, sp_hv, hv_png, mh2)
+ids = [L["id"] for L in lay]
+check("xe doi = vat nguyen den luc bien co + 2 nua mep rang cua roi ra 2 ben + dau HUY; tat ca anchor hook",
+      ids[0] == "hv_obj" and sum(1 for i in ids if i.startswith("hv_p")) == 2 and "hv_dau" in ids
+      and all(L["anchor"] == "hook" and L.get("hook_visual") for L in lay)
+      and all(os.path.isfile(a["path"]) for a in pl_hv["assets"]) and pl_hv["hook"]["minh_hoa"]["dong_tac"] == "xe_doi"
+      and len(pl_hv["hook"]["minh_hoa"]["nhip_giay_tu_dau_hook"]) >= 2, (ids, pl_hv["hook"]["minh_hoa"]))
+halves = [L for L in lay if L["id"].startswith("hv_p")]
+check("2 nua tach ra 2 phia va roi khoi khung", halves[0]["keyframes"][-1]["y"] > 1.0
+      and (halves[0]["keyframes"][-1]["x"] - halves[0]["x"]) * (halves[1]["keyframes"][-1]["x"] - halves[1]["x"]) < 0, halves)
+aud = hook_visual.build_audio(sp_hv, mh2, lay)
+check("tieng theo TUNG hanh dong: vat vao luc dap xuong + tieng xe giay dung luc bien co",
+      [a["gen"]["sound"] for a in aud][:2] == ["whoosh_fast/heavy", "swipe/glide"]
+      and abs(aud[1]["src_time"] - sp_hv["hanh_dong"]) < 0.01 and all(a["anchor"] == "hook" for a in aud), aud)
+sp_vis = hook_spec([], fxt=[{"id": "h", "start": 0.0, "end": 4.0, "values": beats3}],
+                   layers=[{"id": "hv_obj_57", "type": "image", "start": 0.0, "end": 1.2}])
+r_vis = hook_rule.check(sp_vis, "manh", {"fx": []})
+check("hinh minh hoa (hv_obj) trong hook = hieu ung dac biet", not r_vis["yeu"]["visual"]
+      and any(x.startswith("minh_hoa:") for x in r_vis["do"]["dac_biet"]), r_vis)
 
 # tone nhe + hieu ung hook gat -> AI lam lai em hon; hieu ung gat bi bo
 plan_n = copy.deepcopy(plan)

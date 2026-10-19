@@ -1312,6 +1312,16 @@ SPEC_MEDIA_VERSION = 12    # 12 = mau Kho Text: bo cuc chu that khong de chu (tp
                            # 11 = nhac nen = 20% tieng nguoi (quy tac plan) + bao ve mat xet theo tung thoi diem (2026-10-06)
 
 
+def _hook_layer(a, kept, st, gap):
+    """Tieng hook `a` dung sat (< gap) CHI cac tieng hook khac (toi da 1, khac tieng) -> duoc chong lop."""
+    def hooky(x):
+        return x.get("anchor") == "hook" or bool(x.get("_hook_rule"))
+    if not hooky(a):
+        return False
+    near = [x for x in kept if (x.get("role") or "sfx") != "bgm" and st - providers._f(x.get("start")) < gap]
+    return (len(near) == 1 and hooky(near[0]) and near[0].get("sfx_id") != a.get("sfx_id"))
+
+
 def build_spec(plan, log=None):
     """Plan Remotion (ban THO, gio than video) -> (spec, report). Ham thuan, chay lai bao nhieu
     lan cung ra mot ket qua, khong sua `plan` truyen vao. Khung (doc / ngang) lay tu plan["canvas"] — moi phep do
@@ -1597,6 +1607,9 @@ def _build_spec(plan, log=None):
                     changes.append("audio %s %.2fs: chu hien cung luc voi tieng khac -> dung chung tieng do"
                                    % (a.get("sfx_id"), st))
                     continue
+            elif st - last < sfx_gap and _hook_layer(a, kept, st, sfx_gap):
+                # tieng HOOK chong lop (vd impact + whoosh o cu mo, 2026-10-19: hook can am thanh day) -> giu ca hai
+                changes.append("audio %s (hook): chong lop voi tieng hook dung cung luc" % a.get("sfx_id"))
             elif st - last < sfx_gap:
                 # tieng HOOK (AI / luat hook chon) uu tien hon tieng chu tu gan dung sat (truoc 2026-10-15 tieng chu o
                 # 0.0s chan mat tieng hook o 0.02s -> hook im / luat hook chen du phong)

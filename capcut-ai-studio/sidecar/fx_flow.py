@@ -28,7 +28,7 @@ import providers
 HERE = os.path.dirname(os.path.abspath(__file__))
 RUNTIME = os.path.join(HERE, "fx_runtime.mjs")
 FX_CACHE = os.path.join(os.path.expanduser("~"), ".capcut-studio", "cache", "fx")
-FX_VERSION = 2              # 2 = khoanh khac hook rieng + kiem net ve qua mat (2026-10-16)
+FX_VERSION = 3              # 3 = hieu ung DAC BIET cho hook + cong thuc ve (hook_fx, 2026-10-19); 2 = khoanh khac hook rieng
 MAX_FX = 12
 MIN_FX_SEC, MAX_FX_SEC = 0.3, 6.0
 CODE_BATCH = 4
@@ -463,6 +463,8 @@ def sanitize_plan(res, moments, changes):
                 "params": {"colors": cols, "intensity": round(max(0.1, min(1.0, f(e.get("intensity"), 0.7))), 2)}}
         if anc == "hook":
             item["anchor"] = "hook"
+        if len(_txt(e.get("dac_biet"))) >= 3:
+            item["dac_biet"] = _txt(e.get("dac_biet"), 160)   # hieu ung DAC BIET cua hook (luat hook do co / khong)
         if len(_txt(e.get("y_nghia"))) >= 12:
             item["y_nghia"] = _txt(e.get("y_nghia"), 300)
         import ref_pack
@@ -550,6 +552,8 @@ def gpt_fx_code(effects, fix=None, log=None, brand=None, cands=None):
         rows = []
         for e in part:
             r = {k: e.get(k) for k in ("id", "kind", "layer", "context", "goal", "why_fit", "visual", "sync", "params")}
+            if e.get("dac_biet"):
+                r["dac_biet"] = e["dac_biet"]
             if e.get("theo_mau"):
                 r["theo_mau"] = e["theo_mau"]
             r["do_dai_giay"] = round(e["src_end"] - e["src_start"], 2)
@@ -568,6 +572,9 @@ def gpt_fx_code(effects, fix=None, log=None, brand=None, cands=None):
         if brand_guide.view(brand, "fx"):
             user["brand_guideline"] = brand_guide.view(brand, "fx")
         system = _p("_FX_CODE_SYSTEM") + brand_guide.rule_text(brand, "fx") + CV.note("fx")
+        if any(e.get("anchor") == "hook" or e.get("dac_biet") for e in part):
+            import hook_fx
+            system += hook_fx.CODE_RECIPES      # cong thuc ve set / mua / manga / glitch / nen truyen tranh cho hook
         if part_cands:
             system += "\n\n" + fx_lib._p("_FX_REUSE_NOTE")
         # CHI anh hieu ung goc cua cac hieu ung TRONG LO NAY co "theo_mau" (ref_pack)
@@ -850,6 +857,9 @@ def _avoid_in_spec(spec, st, en, W, H):
 
 
 ZOOM_MAX_STEP = 0.03        # scale doi toi da moi khung (30fps) — GIU KHOP remotion_plan.ZOOM_MAX_STEP
+# HOOK (2026-10-19): cu DAP camera mo hook phai gat (dap 25% trong ~4 khung) — 0.03/khung kep moi cu zoom don o diem 1.2
+# (luat hook muc manh can 1.3) nen hieu ung AI tu viet khong bao gio du manh. Van khong cho nhay 1 khung.
+ZOOM_HOOK_STEP = 0.06
 
 
 _NEUTRAL = {"scale": 1.0, "x": 0.0, "y": 0.0, "rotate": 0.0, "blur": 0.0, "brightness": 1.0, "contrast": 1.0,
@@ -891,7 +901,7 @@ def boost_values(values, gain):
     return out
 
 
-def smooth_scale(values, fps=30):
+def smooth_scale(values, fps=30, max_step=None):
     """Luat ZOOM MUOT (2026-10-01) cho hieu ung bien doi khung TU VIET: code AI co the nhay scale trong 1 khung
     (vd 1 -> 1.2 ngay khung dau, hoac tat hieu ung khi khung dang phong) = 'zoom giat'. Gioi han toc do doi scale
     moi khung (<= ZOOM_MAX_STEP @30fps) theo CA HAI chieu, truoc hieu ung va sau hieu ung la 1.0 (khung goc)
@@ -899,7 +909,7 @@ def smooth_scale(values, fps=30):
     arr = (values or {}).get("scale")
     if not isinstance(arr, list) or not arr:
         return values, 0
-    r = ZOOM_MAX_STEP * 30.0 / float(fps or 30)
+    r = (max_step or ZOOM_MAX_STEP) * 30.0 / float(fps or 30)
     x = [float(v) for v in arr]
     y, prev = [], 1.0
     for v in x:                                    # xuoi: bat dau tu khung goc
@@ -993,7 +1003,7 @@ def fx_to_spec(p, spec, changes):
             vals = boost_values(r.get("values") or {}, e.get("_boost"))
             if e.get("_boost"):
                 changes.append("%s: luat hook — khuech dai chuyen dong x%.1f (giu y tuong cua hieu ung)" % (e["id"], float(e["_boost"])))
-            vals, n_fix = smooth_scale(vals, fps)
+            vals, n_fix = smooth_scale(vals, fps, ZOOM_HOOK_STEP if e.get("anchor") == "hook" else None)
             if n_fix:
                 changes.append("%s: zoom muot — gioi han toc do doi scale (%d khung)" % (e["id"], n_fix))
             spec.setdefault("fxTransforms", []).append({"id": e["id"], "start": round(st, 3), "end": round(st + job["duration"], 3),
@@ -1015,18 +1025,34 @@ def fx_to_spec(p, spec, changes):
 FX_ZOOM_GAP = 20.0          # hieu ung tu viet co zoom (scale) cach nhau toi thieu (giay timeline) — user 2026-10-18
 
 
+def _is_jitter(arr):
+    """x / y doi chieu lien tuc (rung) — khac dich tam theo zoom (mot chieu, tang / giam muot)."""
+    v = [float(x) for x in arr or []]
+    d = [b - a for a, b in zip(v, v[1:]) if abs(b - a) >= 0.5]
+    return sum(1 for a, b in zip(d, d[1:]) if a * b < 0) >= 3
+
+
 def _han_che_zoom_fx(spec, changes=None):
     """Hieu ung bien doi khung co ZOOM (scale lech > 3%) qua day -> bo phan zoom (giu sang / mau / rung cua no; con
-    rong thi bo ca hieu ung). Lan zoom dau duoc giu, lan sau phai cach >= FX_ZOOM_GAP."""
+    rong thi bo ca hieu ung). Lan zoom dau duoc giu, lan sau phai cach >= FX_ZOOM_GAP.
+    HOOK (3-5s dau) KHONG ap luat nay: hook phai co nhieu nhip manh (do that 2026-10-19: luat nay xoa zoom cua hieu ung
+    hook thu 2 -> khung nha ve 100% giua cau hook, hook nhat). Bo zoom thi bo ca dich tam x / y di kem (con lai thi
+    khung truot lech, lo mep); x / y la rung thi giu."""
+    import hook_rule
+    hook_end = hook_rule.window(spec)[1] if spec.get("clips") else 0.0
     last, keep, n_bo = -1e9, [], 0
     for t in sorted(spec.get("fxTransforms") or [], key=lambda x: x.get("start", 0)):
         vals = t.get("values") or {}
         sc = vals.get("scale") or []
         if sc and max(abs(float(v) - 1.0) for v in sc) > 0.03:
-            if float(t.get("start", 0)) - last >= FX_ZOOM_GAP:
-                last = float(t.get("start", 0))
+            st = float(t.get("start", 0))
+            if st < hook_end - 0.05 or st - last >= FX_ZOOM_GAP:
+                last = max(last, st)
             else:
                 vals.pop("scale", None)
+                for k in ("x", "y"):
+                    if k in vals and not _is_jitter(vals[k]):
+                        vals.pop(k)
                 n_bo += 1
                 if not any(vals.values()):
                     continue

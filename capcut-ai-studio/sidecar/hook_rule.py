@@ -17,19 +17,32 @@ import json
 import math
 import os
 
+import hook_fx
 import providers
 
-HOOK_RULE_VERSION = 3
+HOOK_RULE_VERSION = 5        # 5 = bat buoc hieu ung DAC BIET toan man hinh (hook_fx, 2026-10-19)
 NO_HOOK_SEC = 3.5            # video khong co ban sao hook: "hook" = 3.5s dau video
 
-# Nguong theo muc. Diem 1 NHIP (~1.0 = ro, dut khoat tren dien thoai — vd khung dap vao 15% trong 0.2s).
-# min: nhip TOAN KHUNG manh nhat; hit: nhip toan khung dau tien phai cham truoc; beats: so nhip thay doi toi thieu;
+# Nguong theo muc. Diem 1 NHIP (~1.0 = ro tren dien thoai — vd khung dap vao 15% trong 0.2s).
+# min: CU MO toan khung (bat dau trong `hit` giay dau) phai manh toi muc nay; beats: so nhip thay doi toi thieu;
 # gap: hinh khong duoc DUNG IM lau hon (giay); max: tran cho tone nhe.
+# snd_hit: SFX mo phai vao truoc; snd_rel: SFX mo to toi thieu (dB so voi giong); snd_n: so SFX nghe ro trong hook.
+# 2026-10-19 (user: "hook nhat, khong co am thanh cao trao — hook phai co am thanh manh + hieu ung manh"): hook
+# MAC DINH "manh" cho moi video (muc "vua" khong con duoc chon cho hook, giu de doc plan cu); nguong cao hon: zoom
+# 14% + vignette + 1 tieng impact ngan (video 2026-10-19) KHONG con dat.
 LEVELS = {
-    "nhe": {"ten": "nhẹ", "min": 0.45, "hit": 0.8, "max": 1.5, "snd_hit": 1.5, "beats": 1, "gap": None},
-    "vua": {"ten": "vừa", "min": 0.8, "hit": 0.5, "max": None, "snd_hit": 1.0, "beats": 2, "gap": 2.0},
-    "manh": {"ten": "mạnh", "min": 1.1, "hit": 0.5, "max": None, "snd_hit": 1.0, "beats": 3, "gap": 1.5},
+    "nhe": {"ten": "nhẹ", "min": 0.6, "hit": 0.6, "max": 1.5, "snd_hit": 1.0, "snd_rel": -3.0, "snd_n": 1,
+            "beats": 1, "gap": None},
+    "vua": {"ten": "vừa", "min": 1.0, "hit": 0.4, "max": None, "snd_hit": 0.6, "snd_rel": -2.0, "snd_n": 2,
+            "beats": 2, "gap": 2.0},
+    "manh": {"ten": "mạnh", "min": 1.3, "hit": 0.3, "max": None, "snd_hit": 0.4, "snd_rel": -1.0, "snd_n": 2,
+             "beats": 3, "gap": 1.5},
 }
+SND_COUNT_REL = -6.0         # SFX hook to toi muc nay (dB so voi giong) moi tinh vao so tieng "nghe ro" (snd_n)
+# tieng MONG / NGAN / UI: to may cung khong lam duoc tieng MO cua hook muc vua / manh (video 2026-10-19: pro_impact/short
+# 0.67s +0.8 dB van "nhat") — nhan theo ten tieng trong spec ("Tạo: pro_impact/short", id kho...)
+HOOK_THIN = ("pro_impact/short", "pro_impact/air", "pop", "click", "tap/", "pro_tap", "tick", "knock", "toggle",
+             "typing", "downlifter", "notify", "ding", "pluck")
 ORDER = ("nhe", "vua", "manh")
 BEAT_MIN = 0.35              # thay doi nho hon -> khong tinh la 1 nhip
 FULL_REACH = 0.35            # lop hinh phu >= 35% khung moi tinh la hieu ung TOAN KHUNG
@@ -44,6 +57,12 @@ CATALOG_STRENGTH = {"zoom_punch": 1.2, "shake": 1.4, "flash": 1.5, "rgb_split": 
 CATALOG_SUSTAIN = {"shake", "pulse", "ken_burns", "vignette", "film_grain", "pan_left", "pan_right", "letterbox", "bw",
                    "light_leak"}
 HARSH_TYPES = {"shake", "flash", "rgb_split", "fisheye"}
+# hieu ung kho tinh la DAC BIET (khong chi zoom / mau): rung, mat ca, tach mau
+SPECIAL_KHO = {"shake", "fisheye", "rgb_split"}
+SPECIAL_MIN = 0.6            # lop dac biet phai thay doi ro (nhip >= muc nay) va phu ca khung
+SPECIAL_NET = 20.0           # lop dac biet (front) phai co NET VE trai >= 20% o luoi khung, giu >= ~6 khung
+SPECIAL_BEHIND = 35.0        # lop dac biet SAU nguoi (nen truyen tranh...): phu duc >= 35% khung
+NET_HOLD = 3                 # lay mau thu 3 cao nhat (mau cach 2 khung) -> net phai giu ~6 khung, khong tinh loe 1-2 khung
 # khuech dai chuyen dong hieu ung hook AI tu viet (fx_flow.boost_values) truoc khi dung du phong kho
 AMPLIFY_STEPS = (1.4, 1.8, 2.4)
 
@@ -51,45 +70,56 @@ LUAT_HOOK = """
 
 # ⛔ LUAT HOOK — BAT BUOC MOI VIDEO (luat cua app, luon ap dung)
 Hook = 3-5s dau video (ban sao doan hook o DAU video; khong co hook = ~3.5s dau): nguoi xem quyet dinh o lai hay
-luot trong chinh khoang nay. BAT BUOC:
-1. It nhat MOT hieu ung TOAN KHUNG (tac dong CA khung hinh: vd rung khung, dap / keo camera, hieu ung tap trung
-   (toi / nhoe vien keo mat vao chu the), loe / quet sang, chuyen mau ca khung...) — icon, huy hieu, chu nho KHONG
-   tinh. La diem NOI BAT NHAT video, CHAM vao mat NGAY dau (<= 0.5s; muc "nhe" <= 0.8s), nhin thay RO tren dien thoai.
-2. NHIP: hook KHONG duoc DUNG IM. Muc "vua": >= 2 nhip thay doi ro (hieu ung / chu bat / hinh vao / cut), khong dung
-   im qua 2s; muc "manh": >= 3 nhip, khong dung im qua 1.5s (vd dap o tu nhan 1, rung / loe o tu nhan 2, doi nhip o
-   cau chot); muc "nhe": chuyen dong muot lien tuc duoc. Mot hieu ung co the chua nhieu nhip.
-3. AM THANH (SFX) du thu hut, vao trong ~1s dau (muc "nhe" ~1.5s), trung nhip hinh / loi noi.
-4. MUC DO theo TONE + TINH CHAT video — YEU CAU CUA NGUOI DUNG (edit_request: phong cach, muc dich) UU TIEN NHAT:
-   - "nhe": ke chuyen nhe nhang, tam su, cam dong, chua lanh, sang trong, thu gian -> RO RANG nhung EM: tap trung /
-     lay net / vet sang / chuyen dong muot — KHONG rung, loe gat, glitch, dap camera manh.
-   - "vua": chia se kien thuc, huong dan, review, gioi thieu -> DUT KHOAT, ro net, nhanh gon.
-   - "manh": nguoi dung ghi vui / bat trend / nhanh / hai / drama / soc / nang luong cao -> manh tay, nhip gat,
-     chong lop.
-   Muc do la TINH CHAT, KHONG phai ly do de lam nhe: muc nao cung phai nhin thay / nghe thay RO ngay tu dau.
+luot trong chinh khoang nay. Hook PHAI la doan MANH NHAT, GAY CHU Y NHAT ca video — ca HINH lan TIENG. BAT BUOC:
+1. CU MO (cham trong <= 0.3s dau; muc "nhe" <= 0.6s): MOT cu dap TOAN KHUNG that ro (tac dong CA khung: vd dap camera
+   >= 20% trong <= 0.15s, chop sang trang 2-3 khung, rung khung, keo / lia camera nhanh, doi mau ca khung...; chong 2
+   lop cang tot) — icon, huy hieu, chu nho KHONG tinh. Day la nhip MANH NHAT ca video. Zoom 10-15% / day may cham /
+   vignette / ha bao hoa mot minh la QUA NHAT, KHONG du.
+2. NHIP: hook KHONG duoc dung im. Muc "manh": >= 3 nhip ro (vd dap o tu nhan 1, chop / rung / dap tiep o tu nhan 2, doi
+   nhip o cau chot), khong dung im qua 1.5s; moi nhip sau cung phai thay ro (zoom them >= 8% nhanh, chop, rung, lia...).
+   Muc "nhe": chuyen dong lon, lien tuc, muot. Mot hieu ung co the chua nhieu nhip.
+3. AM THANH MANH: >= 2 SFX (muc "nhe" >= 1) trung cac nhip chinh; tieng MO vao NGAY dau (<= 0.4s; "nhe" <= 1s) va to
+   ngang / hon giong noi. Cu mo = tieng CO LUC + CO DUOI (impact / sub drop / boom; chong whoosh neu hop), cac nhip sau =
+   impact / whoosh / riser dan vao chuyen canh cuoi hook. Hook KHONG co nhac nen -> SFX la TOAN BO nang luong cua hook.
+   KHONG dung tieng UI nho (click, tap, knock, pop, tick) hay downlifter lam tieng chinh cua hook.
+4. MUC DO: MAC DINH "manh" cho MOI video (chia se kien thuc, review, cong nghe... deu "manh"). CHI "nhe" khi noi dung la
+   tam su / cam dong / chua lanh / thu gian (hoac nguoi dung yeu cau nhe nhang) -> van MANH ve tac dong nhung EM ve chat:
+   day / keo camera lon va nhanh, loe / vet sang ca khung, doi mau, boom tram co duoi, whoosh lon mem — KHONG rung,
+   glitch, nhay gat.
+   PHONG CACH nguoi dung ghi (sach, toi gian, sang trong, cong nghe, chuyen nghiep, khong mau me...) quyet dinh CHAT
+   hieu ung (sach = dap zoom gon + chop sang trang + quet sang / doi mau ca khung, tieng impact sach co sub) — KHONG
+   phai ly do lam hook nhe di. "Khong mau me" = khong trang tri thua, KHONG phai hook yeu.
 KHONG co loai hieu ung mac dinh / bat buoc: tu chon loai hop noi dung + cam xuc cau hook + muc do tren. Phai giai
-thich duoc vi sao hop — khong trang tri cho co. He thong DO tren ban dung: nhip toan khung manh nhat, thoi diem cham,
-so nhip, khoang dung im, do gat; khong dat -> bi yeu cau lam lai."""
+thich duoc vi sao hop — khong trang tri cho co. He thong DO tren ban dung: cu mo toan khung (do manh + luc cham), so
+nhip, khoang dung im, do gat, co hieu ung DAC BIET, so SFX + do to SFX so voi giong; khong dat -> bi yeu cau lam lai.""" + hook_fx.GUIDE
 
 _BUOC = {
     "B3": "\nO BUOC NAY: chon doan hook CO khoanh khac du luc de dat hieu ung hinh + am thanh (nhan giong, con so, "
-          "cu soc, cau hoi...). Ghi vao hook.attention = {\"muc_do\": \"nhe|vua|manh\", \"ly_do_muc_do\": \"<theo yeu cau "
-          "edit cua nguoi dung + tone / tinh chat video + cam xuc cau hook>\", \"visual\": \"<y tuong hieu ung TOAN KHUNG "
-          "+ cac nhip + vi sao hop>\", \"sound\": \"<y tuong am thanh + vi sao hop>\", \"at\": <gio NGUON cua khoanh "
-          "khac dat hieu ung>} — la GOI Y cho cac buoc sau (khong phai ten hieu ung trong kho). Nguoi dung ghi phong "
-          "cach vui / bat trend / nhanh -> muc_do \"manh\"; nhe nhang / cam xuc -> \"nhe\".",
+          "cu soc, cau hoi...). Ghi vao hook.attention = {\"muc_do\": \"manh|nhe\", \"ly_do_muc_do\": \"<theo yeu cau "
+          "edit cua nguoi dung + tinh chat video + cam xuc cau hook>\", \"visual\": \"<y tuong cu MO toan khung + cac "
+          "nhip + vi sao hop>\", \"dac_biet\": \"<hieu ung DAC BIET toan man hinh hop cau hook (set danh / mua / tia "
+          "tap trung / nen truyen tranh / glitch...) + vi sao hop>\", \"sound\": \"<y tuong >= 2 SFX manh (tieng mo co luc "
+          "+ co duoi), khop hieu ung dac biet + vi sao hop>\", "
+          "\"at\": <gio NGUON cua khoanh khac dat hieu ung>} — la GOI Y cho cac buoc sau (khong phai ten hieu ung trong "
+          "kho). muc_do mac dinh \"manh\"; chi \"nhe\" khi noi dung tam su / cam dong / chua lanh (hoac nguoi dung "
+          "ghi nhe nhang). Phong cach sach / toi gian / khong mau me -> van \"manh\" (chi doi CHAT hieu ung).",
     "R4": "\nO BUOC NAY: \"effects\" PHAI co hieu ung TOAN KHUNG \"anchor\": \"hook\" (src_start sat dau hook) dat muc do "
-          "+ so nhip cua hook (hook.y_tuong_gay_chu_y.muc_do neu co; khong co thi theo yeu cau edit / tone) — tu chon "
-          "loai hop nhat voi cau hook.",
+          "+ so nhip cua hook (hook.y_tuong_gay_chu_y.muc_do neu co; khong co thi \"manh\") — tu chon loai hop nhat voi "
+          "cau hook.",
     "FX": "\nO BUOC NAY: PHAI co hieu ung TOAN KHUNG o khoanh khac \"la_hook\" voi \"anchor\": \"hook\" (hieu ung cua ban "
           "sao o dau video), cham sat dau hook, du so nhip cua muc do (hook.y_tuong_gay_chu_y.muc_do neu co; khong co "
-          "thi theo yeu cau edit / tone) — khong duoc dua hook vao \"bo_qua\". Icon / huy hieu nho chi la lop phu them, "
-          "khong thay duoc hieu ung toan khung. Video khong co hook thi dat o khoanh khac dau tien. Hieu ung hook phai "
-          "la hieu ung noi bat nhat trong cac hieu ung ban de xuat.",
-    "B7": "\nO BUOC NAY: PHAI co it nhat 1 SFX cho hook: \"anchor\": \"hook\", source_id = hook.source_id, src_time sat "
-          "hook.src_start (vao trong ~1s dau; muc nhe ~1.5s) — trung nhip hieu ung hinh cua hook (xem "
-          "da_co_tren_timeline.hieu_ung_hook); muc manh nen co tieng o ca cac nhip sau. Chon tieng theo noi dung + cam "
-          "xuc cau hook + muc do (nhe: em, muot; manh: dam, gat), doc use_when, khong mac dinh mot tieng nao. Video "
-          "khong co hook -> SFX nay dat trong ~1s dau video.",
+          "thi \"manh\") — khong duoc dua hook vao \"bo_qua\". Icon / huy hieu nho chi la lop phu them, khong thay duoc "
+          "hieu ung toan khung. Video khong co hook thi dat o khoanh khac dau tien. Hieu ung hook phai la hieu ung MANH "
+          "NHAT trong cac hieu ung ban de xuat (luat \"zoom chi khi can\" KHONG ap cho hook: hook duoc dap zoom nhieu "
+          "nhip). Moi hieu ung hook ket thuc thi tu nha ve 100% — hieu ung sau KHONG duoc gia dinh khung con dang zoom." + hook_fx.FX_NOTE,
+    "B7": "\nO BUOC NAY: PHAI co >= 2 SFX cho hook (muc nhe >= 1): \"anchor\": \"hook\", source_id = hook.source_id. "
+          "Tieng MO: src_time = hook.src_start (vao <= 0.4s dau), tieng co luc + co duoi (impact / sub drop / boom; "
+          "chong whoosh neu hop), trung cu mo cua hieu ung hinh (xem da_co_tren_timeline.hieu_ung_hook); cac tieng sau "
+          "o nhip 2 / cau chot / riser-whoosh dan vao chuyen canh cuoi hook. Hook khong co nhac nen -> SFX la toan bo "
+          "nang luong: chon ban DAY, CO LUC (khong lay ban ngan / mong / tieng UI click-tap-knock-pop / downlifter cho "
+          "hook, ke ca khi bo tieng cua video la 'gon / toi gian'). Chon theo noi dung + cam xuc cau hook (nhe: boom "
+          "tram mem, whoosh lon mem; manh: impact dam, sub drop), doc use_when, khong mac dinh mot tieng nao. Video "
+          "khong co hook -> dat trong ~1s dau video." + hook_fx.B7_NOTE,
 }
 
 
@@ -101,7 +131,8 @@ def luat(buoc):
 # ---------------------------------------------------------------------------
 # MUC DO theo YEU CAU EDIT > B3 > tone
 # ---------------------------------------------------------------------------
-_NHE = ("nhẹ nhàng", "tâm sự", "sâu lắng", "cảm động", "xúc động", "chữa lành", "thư giãn", "sang trọng", "ấm áp",
+# "sang trọng" / "sạch" / "tối giản" la CHAT hieu ung, khong phai nang luong thap -> khong o day (2026-10-19)
+_NHE = ("nhẹ nhàng", "tâm sự", "sâu lắng", "cảm động", "xúc động", "chữa lành", "thư giãn", "ấm áp",
         "bình yên", "tĩnh", "chậm rãi", "buồn", "hoài niệm", "trầm", "thủ thỉ", "healing", "chill")
 _MANH = ("vui", "hài", "bắt trend", "trend", "sốc", "drama", "kịch tính", "năng lượng", "hào hứng", "sôi động",
          "giật gân", "bùng nổ", "cháy", "hype", "nhanh", "gắt", "phấn khích", "troll", "meme")
@@ -124,9 +155,10 @@ def request_level(story):
 
 
 def muc_do(plan, story=None):
-    """(muc, ly_do). Uu tien: YEU CAU EDIT cua nguoi dung (phong cach / muc dich: "vui, bat trend, nhanh" -> manh;
-    "nhe nhang" -> nhe) > B3 ghi hook.attention.muc_do > doan theo tone + phong cach. (Do that 2026-09-28: user ghi
-    "nhanh, vui, bat trends" ma B3 chon "vua" -> hook qua hien.)"""
+    """(muc, ly_do) — chi "manh" hoac "nhe". Uu tien: YEU CAU EDIT cua nguoi dung ("vui, bat trend" -> manh; "nhe
+    nhang" -> nhe) > B3 ghi hook.attention.muc_do = "nhe" (noi dung tam su / cam dong) > doan theo tone > MAC DINH
+    "manh". (Do that 2026-09-28: user ghi "nhanh, vui" ma B3 chon "vua" -> hook qua hien. 2026-10-19: style "cong nghe,
+    sach, khong mau me" -> B3 chon "vua" -> zoom 14% + 1 tieng impact ngan, user che hook nhat -> bo muc "vua" cho hook.)"""
     st = story or {}
     req = st.get("edit_request") if isinstance(st.get("edit_request"), dict) else {}
     rl = request_level(st)
@@ -136,13 +168,15 @@ def muc_do(plan, story=None):
     att = hk.get("attention") if isinstance(hk.get("attention"), dict) else {}
     m = str(att.get("muc_do") or "").strip().lower()
     m = {"nhẹ": "nhe", "vừa": "vua", "mạnh": "manh"}.get(m, m)
-    if m in LEVELS:
+    if m == "nhe":
         return m, "AI chọn theo tone: %s" % str(att.get("ly_do_muc_do") or "")[:160]
+    if m in LEVELS:
+        return "manh", "hook luôn mạnh (AI ghi %s: %s)" % (m, str(att.get("ly_do_muc_do") or "")[:140])
     parts = [st.get("tone"), " ".join(str(v) for v in req.values() if isinstance(v, str)),
              (plan.get("style_kit") or {}).get("mood") if isinstance(plan.get("style_kit"), dict) else None]
     txt = " ".join(str(x) for x in parts if x)
     lv = _level_of(txt)
-    return (lv, "đoán theo tone: %s" % txt[:160]) if lv else ("vua", "mặc định (tone chưa rõ)")
+    return (lv, "đoán theo tone: %s" % txt[:160]) if lv else ("manh", "mặc định: hook luôn mạnh")
 
 
 # ---------------------------------------------------------------------------
@@ -248,7 +282,7 @@ def _overlay_events(path, start):
     import numpy as np
     step = 2 if n <= 180 else max(2, n // 90)
     pick = list(range(0, n, step)) + [n]                      # + 1 mau "da tat" sau khung cuoi
-    prev, ok, rows = np.zeros((384, 216), dtype=np.float32), 0, []
+    prev, ok, rows, net = np.zeros((384, 216), dtype=np.float32), 0, [], []
     for i in pick:
         fr = frames[idx[i]] if i < n and 0 <= idx[i] < len(frames) else ""
         a = _raster(fr) if fr and "<" in fr else None
@@ -256,6 +290,7 @@ def _overlay_events(path, start):
         ok += 1 if a is not None else 0
         dlt = float(np.abs(al - prev).mean())
         rows.append((i, float(al.mean()), float((al > 0.1).mean()), dlt))
+        net.append(_stroke_cells(al))
         prev = al
     if not ok and any(frames[j] for j in idx if 0 <= j < len(frames)):
         return None
@@ -263,8 +298,27 @@ def _overlay_events(path, start):
     c = [r[3] / 0.02 for r in rows]
     ev = _group([v >= BEAT_MIN for v in c], c, fps / step, start)
     harsh = any(r[3] >= 0.2 for r in rows)
-    do = {"do_phu_%": round(max(r[1] for r in rows) * 100, 1), "vung_phu_%": round(reach * 100, 1)}
+    do = {"do_phu_%": round(max(r[1] for r in rows) * 100, 1), "vung_phu_%": round(reach * 100, 1),
+          # net ve THAT (noi tren lop phu deu) giu duoc vai khung: % o luoi trong khung co net — hang thu NET_HOLD
+          "net_ve_o_%": round((sorted(net, reverse=True) + [0.0] * NET_HOLD)[NET_HOLD - 1] * 100, 1),
+          "phu_duc_%": round(max(float(r[2]) for r in rows) * 100, 1)}
     return ev, reach >= FULL_REACH, harsh, do
+
+
+def _stroke_cells(al, gy=10, gx=6):
+    """Ti le o luoi (bo 5% mep) co NET VE noi len tren lop phu deu (alpha >= trung vi + 0.25): lop toi / chop trang deu
+    ca khung = 0; vet set / mua / tia trai rong = cao; chum net nho o goc = thap (do that 2026-10-19: 'kinh vo' AI ve
+    chum nut nho goc tren ~15% o)."""
+    import numpy as np
+    h, w = al.shape
+    m = int(0.05 * w)
+    st = (al >= max(0.3, float(np.median(al)) + 0.25))[m:h - m, m:w - m]
+    H, W = st.shape
+    if not H or not W:
+        return 0.0
+    hit = sum(1 for yy in range(gy) for xx in range(gx)
+              if st[yy * H // gy:(yy + 1) * H // gy, xx * W // gx:(xx + 1) * W // gx].mean() >= 0.015)
+    return hit / float(gy * gx)
 
 
 def _catalog_events(e):
@@ -321,7 +375,7 @@ def measure(spec, plan=None):
                 False, False, {"uoc_theo_cuong_do": True})
         else:
             ev, full, harsh, do = r
-            add(e, "lop_hinh", ev, full, harsh, do)
+            add(e, "lop_hinh", ev, full, harsh, dict(do, layer=e.get("layer") or "front"))
     clips = [c for c in spec.get("clips") or [] if isinstance(c, dict) and c.get("kind") in ("hook", "body")]
     for c0, c1 in zip(clips, clips[1:]):                      # jump-cut / cut = nhip toan khung
         t = providers._f(c1.get("start"))
@@ -395,23 +449,57 @@ def check(spec, level=None, plan=None):
     ff = [m for m in ev_hook if m["full"] and m["kind"] != "cut"]
     body_ff = [m["s"] for m in ms if m["full"] and m["kind"] != "cut" and not in_hook(m["t0"], m["t1"])]
     yeu_v, yeu_s = [], []
-    best = max(ff, key=lambda m: m["s"], default=None)
-    combined = 0.0
-    if best:
-        others = [m for m in ff if m is not best and m["t0"] < best["t1"] + 0.2 and m["t1"] > best["t0"] - 0.2]
-        combined = round(best["s"] + 0.35 * max([m["s"] for m in others] or [0.0]), 2)
+
+    def stacked(pool):
+        """Nhip manh nhat trong pool + 35% nhip chong cung luc (dap + chop cung luc manh hon tung cai)."""
+        best = max(pool, key=lambda m: m["s"], default=None)
+        if not best:
+            return 0.0
+        others = [m for m in pool if m is not best and m["t0"] < best["t1"] + 0.2 and m["t1"] > best["t0"] - 0.2]
+        return round(best["s"] + 0.35 * max([m["s"] for m in others] or [0.0]), 2)
+    # do CU MO (nhip bat dau trong L["hit"] giay dau) — khong lay nhip manh nhat bat ky dau: do that 2026-10-19 lop
+    # vignette TAT o 0.2s cuoi hook duoc tinh 2.00 -> hook zoom 14% van "dat"
+    combined = stacked([m for m in ff if m["t0"] <= L["hit"]])
+    combined_all = stacked(ff)
     body_max = max(body_ff or [0.0])
     need = round(max(L["min"], min(0.75 * body_max, 1.5 * L["min"])), 2)
     early = min([m["t0"] for m in ff if m["s"] >= 0.6 * L["min"]] or [None], key=lambda v: 99 if v is None else v)
+    # hieu ung DAC BIET (hook_fx): hieu ung tu viet KHAI "dac_biet" + do thay ro toan khung, hoac kho rung / mat ca / RGB
+    decl = {str(e.get("id")) for e in (plan or {}).get("fx") or []
+            if isinstance(e, dict) and e.get("anchor") == "hook" and hook_fx.declared(e)}
+    def visible(m):
+        dd = m.get("do") or {}
+        if "net_ve_o_%" not in dd:
+            return True               # khong ve ra anh duoc de do -> tin khai bao
+        if dd.get("layer") == "behind":
+            return dd.get("phu_duc_%", 0) >= SPECIAL_BEHIND
+        return dd.get("net_ve_o_%", 0) >= SPECIAL_NET
+    decl_ev = [m for m in ev_hook if str(m["id"]) in decl and m["kind"] == "lop_hinh"]
+    decl_ok = {str(m["id"]) for m in decl_ev if m["s"] >= SPECIAL_MIN and visible(m)}     # trai rong (net_ve_o) thay cho % diem anh
+    decl_bad = sorted({"%s (nét chỉ ở %.0f%% ô khung)" % (m["id"], (m.get("do") or {}).get("net_ve_o_%", 0))
+                       for m in decl_ev if str(m["id"]) not in decl_ok and not visible(m)})
+    # chi bao "ve qua nho" khi KHONG lop dac biet nao AI khai du lon (lop phu nho di kem lop chinh da dat thi duoc)
+    decl_bad = [] if decl_ok else decl_bad
+    # rung toan man hinh (user: "hoac rung toan man hinh") = dac biet: hieu ung kho rung / mat ca / RGB, transform rung gat
+    # HINH MINH HOA theo noi dung (hook_visual: anh that cua vat + dong tac) = hieu ung dac biet cua hook
+    hv = {"minh_hoa:" + str(L.get("id")) for L in spec.get("layers") or []
+          if isinstance(L, dict) and str(L.get("id") or "").startswith("hv_obj") and in_hook(providers._f(L.get("start")),
+                                                                                         providers._f(L.get("end")))}
+    if hv:
+        decl_bad = []
+    special = sorted(decl_ok | hv | {str(m["id"]) for m in ev_hook if (m["kind"] == "kho" and m.get("type") in SPECIAL_KHO)
+                                     or (m["kind"] == "chuyen_dong_khung" and m["harsh"])})
     beats = _beats([m for m in ev_hook if m["s"] >= BEAT_MIN])
     gap = _longest_gap([m for m in ev_hook if m["s"] >= BEAT_MIN], a, max(a, end - 0.1))
     if vis or ev_hook:
         if not ff:
             yeu_v.append("chưa có hiệu ứng TOÀN KHUNG (icon / huy hiệu / chữ nhỏ không tính)")
         elif combined < need:
-            yeu_v.append("nhịp toàn khung mạnh nhất %.2f (mức %s cần >= %.2f%s)" % (
-                combined, L["ten"], need, "; phải nổi bật hơn hiệu ứng toàn khung mạnh nhất thân video %.2f" % body_max
-                if need > L["min"] else ""))
+            yeu_v.append("cú mở TOÀN KHUNG (%.1fs đầu) chỉ mạnh %.2f — nhịp toàn khung mạnh nhất cả hook %.2f (mức %s "
+                         "cần cú mở >= %.2f%s)" % (
+                             L["hit"], combined, combined_all, L["ten"], need,
+                             "; phải nổi bật hơn hiệu ứng toàn khung mạnh nhất thân video %.2f" % body_max
+                             if need > L["min"] else ""))
         if ff and (early is None or early > L["hit"]):
             yeu_v.append("hiệu ứng toàn khung đủ rõ đầu tiên chạm lúc %s (cần <= %.1fs)" % (
                 "không có" if early is None else "%.2fs" % early, L["hit"]))
@@ -419,29 +507,49 @@ def check(spec, level=None, plan=None):
             yeu_v.append("chỉ có %d nhịp thay đổi (mức %s cần >= %d)" % (len(beats), L["ten"], L["beats"]))
         if L["gap"] and gap[0] > L["gap"]:
             yeu_v.append("hình đứng im %.1fs (%.1fs-%.1fs; mức %s tối đa %.1fs)" % (gap[0], gap[1], gap[2], L["ten"], L["gap"]))
+        if level != "nhe" and decl_bad:
+            yeu_v.append("hiệu ứng ĐẶC BIỆT vẽ quá NHỎ / mờ: %s — cần nét trải >= %.0f%% ô khung, giữ >= 0.2s; phải LỚN, "
+                         "trải rộng; né mặt bằng cách CẮT nét đi qua mặt, KHÔNG thu nhỏ hiệu ứng vào góc" % (
+                             "; ".join(decl_bad), SPECIAL_NET))
+        if level != "nhe" and not special:
+            yeu_v.append("chưa có HIỆU ỨNG ĐẶC BIỆT toàn màn hình hợp câu hook (vd sét đánh, mưa, tia tập trung, nền truyện "
+                         "tranh sau người, kính vỡ, glitch, rung mạnh...) — zoom / đổi màu / vignette không tính%s" % (
+                             "; hiệu ứng khai đặc biệt nhưng đo không thấy rõ toàn khung: %s" % ", ".join(sorted(decl))
+                             if decl else ""))
         if level == "nhe":
             harsh = sorted({str(m["id"]) for m in ev_hook if m["harsh"]})
             if harsh or (L["max"] and combined > L["max"]):
                 yeu_v.append("quá gắt với tone nhẹ nhàng (%s)" % (", ".join(harsh) or "quá mạnh %.2f" % combined))
-    snd_early = [x for x in snd if float(x["start"]) <= L["snd_hit"] and _audible(x)]
+    snd_early = [x for x in snd if float(x["start"]) <= L["snd_hit"] and _audible(x, L["snd_rel"])]
+    snd_ro = [x for x in snd if _audible(x, SND_COUNT_REL)]
+    thin = [x for x in snd_early if any(k in str(x.get("name") or x.get("id") or "").lower() for k in HOOK_THIN)]
+    if level != "nhe" and snd_early and len(thin) == len(snd_early):
+        yeu_s.append("tiếng mở hook quá mỏng / ngắn (%s) — mức %s cần tiếng CÓ LỰC + CÓ ĐUÔI (impact / sub drop / boom, "
+                     "chồng whoosh lớn)" % (", ".join(str(x.get("name") or x.get("id")) for x in thin)[:120], L["ten"]))
     if snd and not snd_early:
         first = min(snd, key=lambda x: float(x["start"]))
-        yeu_s.append("SFX hook đầu tiên vào lúc %.2fs / âm lượng %.2f%s (cần vào <= %.1fs, không bị hạ quá nhỏ)" % (
-            float(first["start"]), providers._f(first.get("volume"), 1.0),
-            "" if first.get("rel") is None else " = %+.1f dB so với giọng" % float(first["rel"]), L["snd_hit"]))
+        yeu_s.append("SFX mở hook vào lúc %.2fs / âm lượng %.2f%s (mức %s cần vào <= %.1fs và to >= %+.0f dB so với "
+                     "giọng — tiếng có lực, có đuôi)" % (
+                         float(first["start"]), providers._f(first.get("volume"), 1.0),
+                         "" if first.get("rel") is None else " = %+.1f dB so với giọng" % float(first["rel"]),
+                         L["ten"], L["snd_hit"], L["snd_rel"]))
+    if snd and len(snd_ro) < L["snd_n"]:
+        yeu_s.append("hook chỉ có %d SFX nghe rõ (mức %s cần >= %d: tiếng mở + tiếng ở nhịp sau / dẫn vào chuyển cảnh)" % (
+            len(snd_ro), L["ten"], L["snd_n"]))
     return {"visual": vis, "sound": [x.get("name") or x.get("id") for x in snd], "thieu": thieu,
             "yeu": {"visual": yeu_v, "sound": yeu_s}, "window": (a, b),
-            "do": {"muc": level, "manh_nhat": combined, "can": need, "cham": early, "so_nhip": len(beats),
+            "do": {"muc": level, "manh_nhat": combined, "manh_nhat_ca_hook": combined_all, "can": need, "cham": early,
+                   "so_nhip": len(beats), "so_sfx_ro": len(snd_ro), "dac_biet": special,
                    "nhip_luc": beats, "dung_im_lau_nhat": gap[0], "than_video_max": body_max,
                    "hieu_ung_hook": [{k: m.get(k) for k in ("id", "kind", "type", "t0", "t1", "s", "full", "harsh")}
                                      for m in ev_hook]}}
 
 
-def _audible(x):
-    """SFX nghe ro so voi giong noi cua video: co "rel" (dB so voi giong, mix_sfx do) -> >= SND_MIN_REL; khong thi
+def _audible(x, min_rel=SND_MIN_REL):
+    """SFX nghe ro so voi giong noi cua video: co "rel" (dB so voi giong, mix_sfx do) -> >= min_rel; khong thi
     theo volume nhu cu."""
     if x.get("rel") is not None:
-        return providers._f(x.get("rel"), -99.0) >= SND_MIN_REL
+        return providers._f(x.get("rel"), -99.0) >= min_rel
     return providers._f(x.get("volume"), 1.0) >= SND_MIN_VOL
 
 
@@ -479,16 +587,20 @@ def hook_moment(plan, transcript_data=None):
 # AI bo sung / lam lai SFX
 # ---------------------------------------------------------------------------
 _HOOK_FIX_SFX_PROMPT = """Ban la SOUND DESIGNER short-form. Am thanh cua HOOK (3-5s dau video) CHUA DAT luat cua app: hook
-BAT BUOC co it nhat MOT SFX du thu hut, gay chu y, vao trong ~1s dau (muc "nhe" ~1.5s). Ly do chua dat: van_de.
-Chon 1 (toi da 2) SFX tu sfx_catalog cho hook.
-
+BAT BUOC co am thanh MANH, CAO TRAO — hook khong co nhac nen nen SFX la toan bo nang luong cua no. Ly do chua dat: van_de.
+Chon 2-3 SFX cho hook (muc "nhe": 1-2), xep thanh LOP:
+  1. Tieng MO: src_time = hook.src_start (vao <= 0.4s dau, "nhe" <= 1s), trung cu mo cua hieu ung hinh: tieng CO LUC
+     + CO DUOI (impact / sub drop / boom), co the chong 1 whoosh cung luc cho day.
+  2. Tieng o nhip 2 / tu nhan / cau chot (impact / whoosh), hoac riser / whoosh dan vao chuyen canh cuoi hook.
 - Doc hook: loi_noi (gio nguon), caption, ly_do_chon, y_tuong_gay_chu_y (neu co), hieu_ung_hinh (hieu ung hinh dang
   co trong hook), cau_chuyen (tone) va muc_do:
-  "nhe" (ke chuyen nhe nhang, tam su...) -> tieng EM, muot (vd whoosh mem, riser nhe, chuong, lap lanh) — khong tieng
-  dam gat / meme; "vua" -> ro, dut khoat; "manh" -> dam, gat, bat tai.
+  "manh" (mac dinh) -> dam, co luc, bat tai; "nhe" (tam su, cam dong...) -> van RO va DAY nhung EM: boom tram mem,
+  whoosh lon mem, riser em — khong tieng gat / meme.
+- KHONG dung tieng UI nho (click, tap, knock, pop, tick), downlifter hay ban ngan / mong lam tieng chinh cua hook,
+  ke ca khi bo tieng cua video la "gon / toi gian" (hook duoc phep day hon bo tieng).
 - Chon tieng theo NOI DUNG + CAM XUC cau hook + muc_do: doc summary / use_when / avoid_when. KHONG co tieng mac dinh.
   Tieng co giong nguoi (has_speech) -> khong dung.
-- Dat sat dau hook hoac trung nhip hieu ung hinh trong ~1s dau. Muon cu dam roi dung luc X thi src_time = X - peak_time.
+- Muon cu dam roi dung luc X thi src_time = X - peak_time.
 - src_time = gio NGUON, nam trong [hook.src_start, hook.src_end]; "anchor" = hook.anchor (giu nguyen).
 
 SCHEMA DAU RA (CHI JSON):
@@ -537,28 +649,52 @@ def clean_sfx(res, moment, sfx_catalog):
         if moment.get("anchor") == "hook":
             item["anchor"] = "hook"
         out.append(item)
-        if len(out) >= 2:
+        if len(out) >= 3:
             break
     return out
 
 
-def fallback_sfx(moment, sfx_catalog, level="vua", palette=None):
-    """Du phong khi AI khong chon duoc: nhe -> tieng em (whoosh / riser / chuong); vua / manh -> tieng dam. Video co bo
-    tieng earshot (palette) -> tieng whoosh / boom CUA bo do (cung chat ca video)."""
+HOOK_BOOM_OK = ("impact/", "sub_drop/", "pro_sub_drop/", "pro_impact/deep", "pro_impact/rumble", "pro_impact/swell")
+HOOK_WHOOSH_OK = ("whoosh_big/", "pro_whoosh_big/")
+HOOK_BOOM = "impact/punch"           # cu dap dien anh, duoi ~2.8s (bo tieng 'gon' cua video chi co pro_impact/short)
+HOOK_WHOOSH = "whoosh_big/swell"
+
+
+def fallback_sfx(moment, sfx_catalog, level="vua", palette=None, boom=None):
+    """Du phong khi AI khong chon duoc. nhe -> 1 whoosh lon mem; vua / manh -> 2 lop: tieng DAP co duoi ngay dau hook +
+    whoosh lon o nhip sau. Video co bo tieng earshot -> dung tieng boom / whoosh CUA bo neu du day (impact co duoi,
+    whoosh lon); bo 'gon / toi gian' (vd pro_impact/short 0.67s) -> tieng hook rieng du luc."""
     soft = level == "nhe"
     import sfx_gen
     if palette and sfx_gen.available():
-        e = ((palette.get("bo") or {}).get("whoosh" if soft else "boom")
-             or sfx_gen.default_palette(palette.get("tong"))["bo"]["whoosh" if soft else "boom"])
-        g = sfx_gen.clean_gen(e)
-        if g:
+        bo = palette.get("bo") or {}
+        dflt = sfx_gen.default_palette(palette.get("tong"))["bo"]
+
+        def pick(fam, ok, strong):
+            g = sfx_gen.clean_gen(bo.get(fam) or dflt[fam])
+            if g and g["sound"].startswith(ok):
+                return g
+            return sfx_gen.clean_gen({"sound": strong})
+        dur = max(1.0, moment["src_end"] - moment["src_start"])
+        if soft:
+            plan_ = [(pick("whoosh", HOOK_WHOOSH_OK, "pro_whoosh_big/swell"), 0.25, "transition")]
+        else:
+            g_boom = sfx_gen.clean_gen({"sound": boom}) if boom else None   # tieng khop hieu ung dac biet (set...)
+            plan_ = [(g_boom or pick("boom", HOOK_BOOM_OK, HOOK_BOOM), 0.02, "punch"),
+                     (pick("whoosh", HOOK_WHOOSH_OK, HOOK_WHOOSH), round(min(dur - 0.3, max(1.2, 0.6 * dur)), 2),
+                      "transition")]
+        out = []
+        for g, at, purpose in plan_:
+            if not g:
+                continue
             item = {"sfx_id": "es:" + g["sound"], "gen": g, "source_id": moment["source_id"],
-                    "src_time": round(moment["src_start"] + (0.25 if soft else 0.02), 3),
-                    "purpose": "transition" if soft else "punch", "why": "du phong luat hook (AI khong chon duoc SFX)",
-                    "_hook_rule": "fallback"}
+                    "src_time": round(moment["src_start"] + at, 3), "purpose": purpose,
+                    "why": "du phong luat hook muc %s (AI khong chon duoc SFX du manh)" % level, "_hook_rule": "fallback"}
             if moment.get("anchor") == "hook":
                 item["anchor"] = "hook"
-            return [item]
+            out.append(item)
+        if out:
+            return out
 
     def score(x):
         s = 0
@@ -588,12 +724,22 @@ def fallback_sfx(moment, sfx_catalog, level="vua", palette=None):
         sid = sfx_kit.family_file("whoosh" if soft else "boom")[0]
     if not sid:
         return []
-    item = {"sfx_id": sid, "source_id": moment["source_id"], "src_time": round(moment["src_start"] + 0.02, 3),
-            "purpose": "transition" if soft else "punch", "why": "du phong luat hook (AI khong chon duoc SFX)",
-            "_hook_rule": "fallback"}
-    if moment.get("anchor") == "hook":
-        item["anchor"] = "hook"
-    return [item]
+    picks = [(sid, 0.02, "transition" if soft else "punch")]
+    if not soft:                     # lop 2: whoosh / riser o nhip sau (khac tieng mo)
+        sweep = [x["id"] for x in pool if x["id"] != sid and any(
+            k in (str(x.get("sound_type") or "") + " " + str(x.get("emotion") or "")).lower()
+            for k in ("whoosh", "swoosh", "riser", "impact", "boom"))]
+        if sweep:
+            dur = max(1.0, moment["src_end"] - moment["src_start"])
+            picks.append((sweep[0], round(min(dur - 0.3, max(1.2, 0.6 * dur)), 2), "transition"))
+    out = []
+    for s_id, at, purpose in picks:
+        item = {"sfx_id": s_id, "source_id": moment["source_id"], "src_time": round(moment["src_start"] + at, 3),
+                "purpose": purpose, "why": "du phong luat hook (AI khong chon duoc SFX)", "_hook_rule": "fallback"}
+        if moment.get("anchor") == "hook":
+            item["anchor"] = "hook"
+        out.append(item)
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -601,12 +747,13 @@ def fallback_sfx(moment, sfx_catalog, level="vua", palette=None):
 # ---------------------------------------------------------------------------
 _HOOK_FIX_VISUAL_PROMPT = """Ban la EDITOR short-form. Hieu ung hinh cua HOOK (3-5s dau video) CHUA DAT luat cua app: hook BAT
 BUOC co hieu ung hinh gay chu y, NOI BAT NHAT video, cham ngay dau (<= 0.5s; muc "nhe" <= 0.8s) va nhin thay ro.
-Ly do chua dat (co so do that): van_de. Chon 1-3 hieu ung TOAN KHUNG tu danh_muc cho hook, dat o cac NHIP khac
+Ly do chua dat (co so do that): van_de. Chon 2-4 hieu ung TOAN KHUNG tu danh_muc cho hook, dat o cac NHIP khac
 nhau (nhip dau sat dau hook, cac nhip sau bam tu nhan / cau chot trong loi_noi) cho du yeu_cau (so nhip, khong dung im).
 
 - Doc hook: loi_noi (gio nguon), caption, ly_do_chon, y_tuong_gay_chu_y (neu co), cau_chuyen (tone, phong cach) va
-  muc_do: "nhe" (ke chuyen nhe nhang, tam su...) -> ro rang nhung EM, muot — KHONG rung / loe / glitch / mat ca;
-  "vua" -> dut khoat, ro net; "manh" -> manh tay, co the chong 2 hieu ung.
+  muc_do: "manh" (mac dinh) -> manh tay: cu mo CHONG 2 hieu ung (vd zoom_punch 0.9-1.0 + flash) ngay dau hook, cac
+  nhip sau dap / rung / chop tiep; phong cach sach / toi gian chi doi CHAT (it glitch), KHONG giam do manh.
+  "nhe" (tam su, cam dong...) -> ro rang nhung EM, muot — KHONG rung / loe / glitch / mat ca.
 - Chon loai hop NOI DUNG + CAM XUC cau hook + muc_do: doc look / use_when / avoid_when. KHONG co loai mac dinh.
   intensity du lon de NHIN THAY RO o muc do do.
 - src_start sat dau hook (hook.src_start); do dai trong khoang "duration" cua hieu ung.
@@ -660,7 +807,7 @@ def clean_effects(res, moment, level=None):
         if moment.get("anchor") == "hook":
             item["anchor"] = "hook"
         out.append(item)
-        if len(out) >= 3:
+        if len(out) >= 4:
             break
     return out
 
@@ -714,7 +861,8 @@ def hook_visuals(plan):
     out = []
     for e in plan.get("fx") or []:
         if isinstance(e, dict) and e.get("anchor") == "hook":
-            out.append({"loai": "tu_viet", "mo_ta": str(e.get("visual") or "")[:240], "muc_tieu": e.get("goal"),
+            out.append({"loai": "tu_viet", "dac_biet": e.get("dac_biet"), "mo_ta": str(e.get("visual") or "")[:240],
+                        "muc_tieu": e.get("goal"),
                         "src_start": e.get("src_start"), "src_end": e.get("src_end"), "anchor": "hook"})
     for e in plan.get("scene_effects") or []:
         if isinstance(e, dict) and e.get("anchor") == "hook":
@@ -749,9 +897,10 @@ def ensure(plan, spec, build, step, sfx_catalog=None, transcript_data=None, stor
     head = "mức %s (%s)" % (L["ten"], why_level)
 
     def so_do(dd):
-        return "toàn khung mạnh nhất %.2f/%.2f, chạm lúc %s, %d nhịp, đứng im lâu nhất %.1fs" % (
+        return "cú mở toàn khung %.2f/%.2f, chạm lúc %s, %d nhịp, đứng im lâu nhất %.1fs, đặc biệt: %s, %d SFX rõ" % (
             dd.get("manh_nhat") or 0, dd.get("can") or 0, "%.2fs" % dd["cham"] if dd.get("cham") is not None else "-",
-            dd.get("so_nhip") or 0, dd.get("dung_im_lau_nhat") or 0)
+            dd.get("so_nhip") or 0, dd.get("dung_im_lau_nhat") or 0, ", ".join(dd.get("dac_biet") or []) or "-",
+            dd.get("so_sfx_ro") or 0)
     if not _problems(res):
         msg = "hook đạt %s — %s" % (head, so_do(d))
         say("Luật hook: " + msg, "ok")
@@ -763,6 +912,7 @@ def ensure(plan, spec, build, step, sfx_catalog=None, transcript_data=None, stor
     if moment is None:
         return plan, spec, None, notes + ["khong xac dinh duoc khoanh khac hook"]
     report = None
+    chosen = {}                       # hieu ung dac biet du phong da chon -> tieng du phong khop hinh
 
     def drop_hook(pred):
         plan["fx"] = [e for e in plan.get("fx") or [] if not (isinstance(e, dict) and e.get("anchor") == "hook" and pred(e))]
@@ -780,8 +930,23 @@ def ensure(plan, spec, build, step, sfx_catalog=None, transcript_data=None, stor
         if use_fallback:
             if gat:
                 drop_hook(lambda e: e.get("id") in harsh or e.get("type") in harsh)
-            plan["scene_effects"] = list(plan.get("scene_effects") or []) + fallback_effect(moment, level, r["do"].get("can"))
-            notes.append("hieu ung hinh hook: du phong muc %s (AI khong dat)" % level)
+            thieu_db = any("ĐẶC BIỆT" in x for x in r["yeu"]["visual"])
+            chi_db = thieu_db and len(r["yeu"]["visual"]) == 1
+            if thieu_db:
+                # hieu ung DAC BIET viet san hop cau hook (set / mua / tia tap trung / nen truyen tranh)
+                name = hook_fx.pick_preset(moment, story, level)
+                got = hook_fx.preset_effects(name, moment)
+                if not chi_db:
+                    got = [e for e in got if e["kind"] != "transform"]     # rung / chop da co trong du phong kho
+                if any(e["kind"] == "transform" for e in got):
+                    drop_hook(lambda e: e.get("kind") == "transform")       # khong chong 2 transform
+                plan["fx"] = [e for e in plan.get("fx") or [] if not str(e.get("id") or "").startswith("hookfx_")] + got
+                chosen["preset"] = name
+                notes.append("hieu ung DAC BIET hook: du phong '%s' (%s)" % (name, hook_fx.PRESETS[name][5]))
+            if not chi_db:
+                plan["scene_effects"] = list(plan.get("scene_effects") or []) + fallback_effect(
+                    moment, level, r["do"].get("can"))
+                notes.append("hieu ung hinh hook: du phong muc %s (AI khong dat)" % level)
             return True
         vd = van_de_visual(r)
         if fx_ctx and fx_ctx.get("moments"):
@@ -815,7 +980,7 @@ def ensure(plan, spec, build, step, sfx_catalog=None, transcript_data=None, stor
                         e["anchor"] = "hook"
             ch = []
             got = fx_flow.build_effects(res_p, hm, fx_ctx.get("faces"), fx_ctx.get("palette"), step=step, changes=ch,
-                                        log=log, brand=brand, project=fx_ctx.get("project"))[:2]
+                                        log=log, brand=brand, project=fx_ctx.get("project"))[:3]
             got = fx_flow.drop_dup_motifs(got, plan.get("layers") or [], ch)
             for c in ch:
                 notes.append("FX hook: %s" % c)
@@ -843,7 +1008,8 @@ def ensure(plan, spec, build, step, sfx_catalog=None, transcript_data=None, stor
         vd = r["yeu"]["sound"] or ["hook chua co SFX"]
         pal = plan.get("am_thanh")
         if use_fallback:
-            got = fallback_sfx(moment, sfx_catalog, level, palette=pal)
+            got = fallback_sfx(moment, sfx_catalog, level, palette=pal,
+                               boom=hook_fx.preset_sound(chosen["preset"]) if chosen.get("preset") else None)
             tag = "du phong"
         else:
             import sfx_gen
@@ -859,10 +1025,10 @@ def ensure(plan, spec, build, step, sfx_catalog=None, transcript_data=None, stor
         if use_fallback:
             # tieng hook AI chon van QUA NHO (vd click 25 ms cua bo toi gian) -> thay bang tieng du phong o cung luc (giu
             # lai thi luat gian cach SFX bo tieng du phong vi dung sat -> hook van im)
-            t0 = providers._f(got[0].get("src_time"))
+            ts = [providers._f(g.get("src_time")) for g in got]
             plan["audio"] = [a for a in plan.get("audio") or [] if not (
                 isinstance(a, dict) and (a.get("anchor") == "hook" or a.get("_hook_rule"))
-                and abs(providers._f(a.get("src_time"), -9) - t0) < 0.35)]
+                and any(abs(providers._f(a.get("src_time"), -9) - t0) < 0.35 for t0 in ts))]
         # dat DAU danh sach: resolve_plan_sfx cat bot khi qua so SFX toi da -> SFX hook khong bi cat
         plan["audio"] = got + list(plan.get("audio") or [])
         engine.resolve_plan_sfx(plan)

@@ -1840,6 +1840,37 @@ def _remotion_autoplan(b):
         import fx_flow
         if visual is not design:
             visual["effects"] = []          # R4 du phong (kho mau) -> khong dung hieu ung mau
+        # HINH MINH HOA HOOK THEO NOI DUNG (hook_visual, 2026-10-20): AI doc cau hook -> vat + bien co + dong tac + tieng,
+        # tao anh that cua vat (Codex, tach nen). Chay TRUOC FX-plan de camera hook dong bo theo nhip cua no.
+        hv_spec, hv_img, hv_m = None, None, None
+        if hook_info:
+            try:
+                import hook_visual
+                hv_m = {"source_id": hook_info["source_id"], "src_start": hook_info["src_start"],
+                        "src_end": hook_info["src_end"], "anchor": "hook", "caption": hook_info.get("caption"),
+                        "ly_do_chon": hook_info.get("reason"), "y_tuong_gay_chu_y": hook_info.get("y_tuong_gay_chu_y"),
+                        "loi_noi": providers._gon_loi_thoai((transcript_data or {}).get(hook_info["source_id"]),
+                                                            hook_info["src_start"], hook_info["src_end"])}
+                hv_spec = _step("Hook-visual", {"m": hv_m, "story": story, "style": style_phien, "v": hook_visual.VERSION},
+                                lambda: hook_visual.clean(hook_visual.design(
+                                    hv_m, story=story, style=style_phien, face=(faces or {}).get(hook_info["source_id"]),
+                                    log=logger.info), hv_m), optional=True)
+                if hv_spec:
+                    hv_img = hook_visual.make_image(hv_spec, style=(style_phien or {}).get("image_style") or "",
+                                                    log=logger.info)
+                if hv_spec and hv_img:
+                    tmp = {"hook": {}}
+                    hook_visual.apply(tmp, hv_spec, hv_img, hv_m, canvas.size())
+                    hook_info["minh_hoa"] = tmp["hook"]["minh_hoa"]
+                    run_log.emit("note", "Hình minh hoạ hook: %s — %s (%s)" % (
+                        hv_spec["chu_the"], hv_spec["y_tuong"], hv_spec["dong_tac"]), step="Hook-visual", level="ok",
+                        output=hv_spec)
+                elif hv_spec:
+                    run_log.emit("note", "Hình minh hoạ hook: không tạo được ảnh -> luật hook dùng hiệu ứng dự phòng",
+                                 step="Hook-visual", level="warn")
+            except Exception as ex:          # hinh minh hoa hong khong duoc lam hong lap ke hoach
+                hv_spec = hv_img = None
+                run_log.emit("note", "Hình minh hoạ hook lỗi: %s" % str(ex)[:200], step="Hook-visual", level="warn")
         run_log.emit("note", "AI tự đề xuất hiệu ứng theo bối cảnh từng khoảnh khắc rồi tự viết code", step="FX-plan")
         moments = fx_flow.fx_moments(segs_b2, transcript_data, emotion_map_data, key_moments_data, design=design,
                                      captions=captions.get("captions", []), faces=faces, hook=hook_info,
@@ -1855,6 +1886,8 @@ def _remotion_autoplan(b):
                    "lop": layer_texts, "v": fx_flow.FX_VERSION}
         if lop_hinh:
             fxp_key["hinh"] = lop_hinh
+        if (hook_info or {}).get("minh_hoa"):
+            fxp_key["minh_hoa"] = hook_info["minh_hoa"]      # camera hook dong bo hinh minh hoa
         if ref_pack.step_images("FX-plan"):
             fxp_key["pack"] = ref_pack.step_fp()
         if brand_guide.view(brand, "fx"):
@@ -2055,6 +2088,10 @@ def _remotion_autoplan(b):
         }
         remotion_plan.hook_caption(plan)
         plan = _attach_plan_sources(plan, brief)
+        if hv_spec and hv_img:
+            import hook_visual
+            hook_visual.apply(plan, hv_spec, hv_img, hv_m, canvas.size())
+            hook_visual.apply_audio(plan, hv_spec, hv_m)
         plan = engine.resolve_plan_sfx(plan)
         plan = engine.resolve_plan_inserts(plan)
         spec, report = remotion_plan.build_spec(plan, log=lambda m: run_log.emit("note", m, step="build"))

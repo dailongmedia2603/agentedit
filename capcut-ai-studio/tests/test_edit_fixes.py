@@ -63,6 +63,32 @@ fxs = {"fxTransforms": [{"id": "a", "start": 1.0, "values": {"scale": [1.0, 1.1,
 fx_flow._han_che_zoom_fx(fxs, [])
 check("FX: zoom sat nhau bi bo (giu hieu ung khac)", [t["id"] for t in fxs["fxTransforms"]] == ["a", "b", "d"]
       and "scale" not in fxs["fxTransforms"][1]["values"], fxs)
+# 2026-10-19: luat zoom xoa zoom cua hieu ung hook thu 2 -> khung nha ve 100% giua cau hook; con dich x/y -> truot lech
+fxh = {"clips": [{"kind": "hook", "start": 0, "end": 4.2}, {"kind": "body", "start": 4.2, "end": 60}],
+       "fxTransforms": [{"id": "h1", "start": 0.0, "values": {"scale": [1.0, 1.14, 1.16]}},
+                        {"id": "h2", "start": 1.77, "values": {"scale": [1.16, 1.21, 1.25], "x": [2, 4, 4]}},
+                        {"id": "b1", "start": 10.0, "values": {"scale": [1.0, 1.1, 1.0], "x": [0, 3, 0], "y": [0, -10, 0],
+                                                               "saturate": [1, 0.8, 1]}},
+                        {"id": "b2", "start": 12.0, "values": {"scale": [1.0, 1.1, 1.0],
+                                                               "x": [0, 9, -9, 9, -9, 9, -9, 0]}}]}
+fx_flow._han_che_zoom_fx(fxh, [])
+v = {t["id"]: t["values"] for t in fxh["fxTransforms"]}
+check("FX: zoom trong HOOK khong bi bo (nhieu nhip dap)", "scale" in v["h1"] and "scale" in v["h2"] and "x" in v["h2"], v)
+check("FX: bo zoom than video thi bo ca dich tam x/y (giu mau); x/y la rung thi giu",
+      set(v["b1"]) == {"saturate"} and set(v["b2"]) == {"x"}, v)
+import plan_guard  # noqa: E402
+mp = {"_voice_lufs": -16.0, "speech": [{"source_id": "s", "start": 10.0, "end": 14.0}, {"source_id": "s", "start": 20, "end": 40}],
+      "segments": [{"kind": "hook", "source_id": "s", "start": 10.0, "end": 14.0, "target_start": 0.0},
+                   {"kind": "body", "source_id": "s", "start": 20.0, "end": 40.0, "target_start": 4.0}],
+      "audio": [{"start": 0.02, "anchor": "hook", "_es": "impact", "_play_lufs": -10.0, "sfx_id": "es:impact/punch"},
+                {"start": 0.05, "anchor": "hook", "_es": "whoosh", "_play_lufs": -13.0, "sfx_id": "es:whoosh_big/swell"},
+                {"start": 2.5, "anchor": "hook", "_es": "riser", "_play_lufs": -12.0, "sfx_id": "es:riser/rush"},
+                {"start": 8.0, "_es": "impact", "_play_lufs": -15.0, "sfx_id": "es:pro_impact/short"}]}
+plan_guard.mix_sfx(mp, [])
+rel = [a["_rel_db"] for a in mp["audio"]]
+check("SFX hook: khong lui sau giong / khong nhuong nhau -> impact to hon giong, whoosh + riser ~ ngang giong",
+      rel[0] >= 3.0 and rel[1] >= -1.0 and rel[2] >= -1.0, rel)
+check("SFX than video van lui sau giong khi dang noi (khong doi)", rel[3] < 1.0, rel)
 
 print("[3] noi vap / lap chu")
 words = [("sợ", 90.52, 91.04), ("bị", 91.04, 91.52), ("bị", 91.52, 92.24), ("rớt", 92.84, 93.28), ("hợp", 93.28, 93.48),

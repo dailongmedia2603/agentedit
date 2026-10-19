@@ -867,6 +867,11 @@ SFX_ACCENT_REL = -3.0         # SFX tu gan khi CHU / HINH hien (lop do hoa, hieu
 MUSIC_VOICE_PCT = 20          # NHAC NEN = 20% tieng nguoi (bien do, = giong - 14 dB) — quy tac buoc lap ke hoach (user 10-06)
 SFX_REL_MIN_VOL = 0.01
 MEME_REL = 0.0                # tieng meme cat vao: khong to hon giong noi cua video
+# SFX CUA HOOK (anchor hook / luat hook, nam trong hook) — user 2026-10-19 "hook phai co am thanh manh, cao trao":
+# hook luon co loi noi + khong co nhac nen -> KHONG lui sau giong (bo SFX_DUCK_OVER_SPEECH), KHONG nho dan vi sat /
+# lap / da co tieng to; muc = max(muc theo loai, SAN) + GAIN (impact ~ giong +3.5 dB, whoosh / riser ~ giong -0.5 dB).
+SFX_HOOK_REL_FLOOR = -2.0
+SFX_HOOK_GAIN_DB = 1.5
 
 
 def _world_db(item):
@@ -980,13 +985,18 @@ def mix_sfx(plan, changes):
                 lufs = None
             a["_play_lufs"] = lufs
         accent = bool(a.get("_from_layer"))
+        is_hook = bool(hook_len) and st < hook_len + EPS and (a.get("anchor") == "hook" or bool(a.get("_hook_rule")))
         # bo tieng the gioi (plan cu): toi gian nho hon, dien anh day hon mot chut — TRU tieng cua HOOK (phai nghe ro,
         # do that 2026-10-15: toi_gian -4 dB lam SFX hook duoi nguong -> luat hook chen tieng du phong)
         wdb = 0.0 if a.get("anchor") == "hook" else _world_db(a)
+        fam_rel = SFX_ACCENT_REL if accent else SFX_REL.get(fam, SFX_REL["neutral"])
+        if is_hook:
+            fam_rel = max(SFX_REL.get(fam, SFX_REL["neutral"]), SFX_HOOK_REL_FLOOR) + SFX_HOOK_GAIN_DB
         if voice is not None and lufs is not None:
-            rel = SFX_ACCENT_REL if accent else SFX_REL.get(fam, SFX_REL["neutral"])
-            muc = min((SFX_MIX.get(fam) or SFX_MIX["neutral"])["lufs"], voice + rel) + wdb
-            if accent:
+            rel = fam_rel
+            muc = min((SFX_MIX.get(fam) or SFX_MIX["neutral"])["lufs"] + (SFX_HOOK_GAIN_DB if is_hook else 0.0),
+                      voice + rel) + wdb
+            if accent and not is_hook:
                 muc = min(muc, voice + SFX_REL.get(fam, SFX_REL["neutral"]) + wdb)
             vol, vmin = 10 ** ((muc - float(lufs)) / 20.0), SFX_REL_MIN_VOL
             ly_do = ["%s%s %.1f LUFS -> muc %.1f (giong video %.1f)" % (
@@ -996,29 +1006,31 @@ def mix_sfx(plan, changes):
             vol, vmin = sfx_base_volume(fam, lufs) * 10 ** (wdb / 20.0), SFX_VOL_MIN
             ly_do = [fam if lufs is None else "%s, do duoc %.1f LUFS" % (fam, float(lufs))]
         dang_noi = any(x <= st <= y for x, y in noi)
-        if dang_noi:
+        if is_hook:
+            ly_do.append("tieng HOOK -> khong lui sau giong, khong nho dan (hook phai manh)")
+        elif dang_noi:
             vol *= SFX_DUCK_OVER_SPEECH
             ly_do.append("roi dung luc dang noi -> lui sau giong")
-        if hook_len and st < hook_len + EPS:
+        if hook_len and st < hook_len + EPS and not is_hook:
             vol *= SFX_HOOK_BOOST
             ly_do.append("nam trong hook -> cho noi hon")
         khoa = a.get("sfx_id") or a.get("file") or ""
         # chi dem lan lap TRONG ~SFX_REPEAT_WINDOW giay truoc, toi da SFX_REPEAT_MAX_STEPS bac (user 2026-10-01: dem
         # ca video thi chu thu 15 cung tieng 'pop' con 0.85^14 ~ -20 dB = coi nhu mat tieng)
         truoc = [x for x in dem_lap.get(khoa, []) if st - x < SFX_REPEAT_WINDOW]
-        n = min(len(truoc), SFX_REPEAT_MAX_STEPS)
+        n = 0 if is_hook else min(len(truoc), SFX_REPEAT_MAX_STEPS)
         if n:
             vol *= SFX_REPEAT_DECAY ** n
             ly_do.append("tieng nay lap lan %d trong %.0fs -> nho dan" % (len(truoc) + 1, SFX_REPEAT_WINDOW))
         dem_lap[khoa] = truoc + [st]
-        if truoc_t is not None and st - truoc_t < SFX_CROWD_SEC:
+        if truoc_t is not None and st - truoc_t < SFX_CROWD_SEC and not is_hook:
             vol *= SFX_CROWD_DECAY
             ly_do.append("sat SFX truoc (%.1fs) -> nhuong" % (st - truoc_t))
         vol = max(vmin, min(SFX_VOL_MAX, vol))
         if voice is not None and lufs is not None:
             # KIEM LAI: muc to THAT khi phat (Remotion khong khuech dai qua 1.0) khong vuot tran theo giong noi
-            tran = voice + (SFX_ACCENT_REL if accent else SFX_REL.get(fam, SFX_REL["neutral"])) + min(0.0, wdb)
-            if hook_len and st < hook_len + EPS:
+            tran = voice + fam_rel + min(0.0, wdb)
+            if hook_len and st < hook_len + EPS and not is_hook:
                 tran += 20 * math.log10(SFX_HOOK_BOOST)
             that = float(lufs) + 20 * math.log10(max(1e-4, min(1.0, vol)))
             if that > tran + 0.3:
@@ -1026,7 +1038,9 @@ def mix_sfx(plan, changes):
                 ly_do.append("kiem lai: %.1f > tran %.1f LUFS -> ha" % (that, tran))
             a["_rel_db"] = round(float(lufs) + 20 * math.log10(max(1e-4, min(1.0, vol))) - voice, 1)
         to = (a.get("_rel_db") >= -0.5) if a.get("_rel_db") is not None else vol >= SFX_LOUD_MARK
-        if to:
+        if to and is_hook:
+            to_gan_day.append(st)
+        elif to:
             gan = [t for t in to_gan_day if st - t < SFX_LOUD_EVERY_SEC]
             if gan:
                 vol = round(vol * SFX_CROWD_DECAY, 3)

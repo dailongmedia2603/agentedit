@@ -540,7 +540,60 @@ dan tuyet doi toi file goc o videos, sourceBrief, referenceAnalysis, rmPlan, rmS
     keo mang nen canh dau khi gio tay (thua ~1.6% khung), hut tay vung nhanh. May khong co API -> cach cu.
 - SPEC_MEDIA_VERSION 7 (tach nguoi moi); 6: du an cu mo lai tu dung spec (gio chu + SFX hook moi, khong goi AI). Cat noi lai + luat
   hook (AI bo sung) chi co khi LAP KE HOACH LAI.
-- Test `tests/test_cut_hook_rules.py` (+ test_info_flow [0]/[11]).
+- 2026-10-19 (user: "hook dung doan nhung hieu ung mo nhat, khong co am thanh cao trao — hook phai am thanh manh + hieu
+  ung manh"), HOOK_RULE_VERSION 4. Do video IMG_4608: style "cong nghe, sach, khong mau me" -> B3 chon "vua" -> zoom 14%
+  + vignette + 1 tieng `pro_impact/short` (0.67s, bo tieng 'gon'); fx2 (zoom 116->125%) bi `fx_flow._han_che_zoom_fx` (luat
+  zoom cach 20s) XOA scale -> khung nha ve 100% giua cau hook; luat do bao "dat 2.00" vi lay nhip lop vignette TAT o 0.2s
+  cuoi hook. Sua:
+  - MUC: hook MAC DINH "manh"; B3 "vua" -> "manh"; chi "nhe" khi noi dung tam su / cam dong (B3 / tone / yeu cau edit).
+    Phong cach sach / toi gian / sang trong chi doi CHAT, khong lam nhe ("sang trọng" bo khoi `_NHE`).
+  - NGUONG (`LEVELS`): DO CU MO (nhip toan khung bat dau trong `hit`: manh 0.3s / nhe 0.6s, chong lop +35%) >= min (manh
+    1.3 / nhe 0.6), khong lay nhip manh nhat bat ky dau. Am thanh: SFX mo <= `snd_hit` (manh 0.4s) va `rel` >= `snd_rel`
+    (manh -1 dB / nhe -3 dB), >= `snd_n` SFX nghe ro (rel >= -6; manh 2 / nhe 1), tieng mo khong duoc chi la tieng MONG
+    (`HOOK_THIN`: pro_impact/short, pop, click, tap, knock, downlifter...).
+  - Hieu ung hook KHONG ap `_han_che_zoom_fx` (bo zoom than video thi bo ca dich tam x/y, rung giu) va zoom muot cho phep
+    `ZOOM_HOOK_STEP` 0.06/khung (0.03 kep moi cu zoom don o 1.2 -> amplify_visual khong bao gio dat).
+  - Mix (`plan_guard.mix_sfx`): SFX hook (anchor hook / `_hook_rule`, trong hook) khong lui sau giong, khong nho dan vi sat
+    / lap / tieng to; muc = max(SFX_REL loai, `SFX_HOOK_REL_FLOOR` -2) + `SFX_HOOK_GAIN_DB` 1.5 (impact ~ giong +3.5 dB).
+    `remotion_plan._hook_layer`: 2 tieng hook cung luc duoc chong lop (khong bi luat gian cach bo).
+  - Prompt (luat noi vao B3 / R4 / FX / B7, `_HOOK_FIX_SFX_PROMPT`, `sfx_gen._HOOK_RULES`): >= 2 SFX, tieng mo co luc + co
+    duoi; du phong `fallback_sfx` manh = `impact/punch` (hoac boom cua bo neu du day) + `whoosh_big/swell` o nhip sau;
+    `clean_effects` toi da 4 hieu ung. Chay lai plan that: amplify x1.8 giu y tuong fx1 (cu mo 1.53), impact/punch +3.5 dB.
+- 2026-10-19 (2) HIEU UNG DAC BIET (user: "khong chi am thanh, zoom — can set danh, mua, rung toan man hinh... hop cau
+  hook"; mau `mau-hook.mp4` = dong bang sticker vien vang + nen giay / halftone xe manh + sao + chu KHONG dap; `mau-hook-2.mp4`
+  = mat ca + nhoe xuyen tam + chu neon), HOOK_RULE_VERSION 5, FX_VERSION 3. `sidecar/hook_fx.py`:
+  - `GUIDE` (noi vao LUAT_HOOK -> B3 / R4 / FX / B7): tu dien hieu ung dac biet theo y / cam xuc cau hook (soc -> set /
+    kinh vo / glitch; buon -> mua; bung no -> no tia; to mo -> tia tap trung; gioi thieu -> nen truyen tranh sau nguoi...)
+    + ghep 3 lop camera / lop dac biet / tieng khop hinh. `FX_NOTE`: hook PHAI co overlay khai `"dac_biet"` + 1 transform
+    cung nhip (toi da 3). `B7_NOTE`: tieng khop hieu ung. `CODE_RECIPES` noi vao prompt FX-code khi lo co hieu ung hook.
+  - `check`: muc vua / manh BAT BUOC hieu ung dac biet = hieu ung tu viet KHAI `dac_biet` (fx_flow.sanitize_plan giu truong
+    nay) + do thay toan khung (nhip >= `SPECIAL_MIN` 0.6), hoac kho `SPECIAL_KHO` (shake / fisheye / rgb_split). Muc nhe
+    chi huong dan trong prompt.
+  - Du phong (`ensure.add_visual`): `pick_preset` theo loi noi / caption / cam xuc -> `PRESETS` viet san (set_danh, mua,
+    tia_tap_trung, nen_truyen_tranh [behind]) + `SHAKE_FLASH` (rung + chop) khi chi thieu dac biet; tieng du phong khop
+    (`preset_sound`, vd set -> impact/blast). Render that hook IMG_4608: set danh + chop + danh lai, impact/blast +2.4 dB,
+    -12 LUFS luc mo (ngang mau).
+  - DO "VE DU LON" (`_stroke_cells`, do that chay AI that 2026-10-20: 'kinh vo' AI khai phu 45% khung nhung code ve chum
+    nut nho goc tren ~15% o; lop toi deu + vien do mong lam luat cu tinh "toan khung"): luoi 6x10 (bo 5% mep), o co net
+    noi tren lop phu deu (alpha >= trung vi + 0.25) >= 1.5%; lay mau thu `NET_HOLD`=3 (net giu ~6 khung). Lop dac biet
+    front can >= `SPECIAL_NET` 20% o, behind can phu duc >= 35%. Chop trang deu = 0. Khong lop khai nao du lon -> bao "ve
+    qua NHO" (ke ca khi co rung). Prompt: hieu ung dac biet PHAI LON, ne mat = cat net qua mat, khong thu vao goc.
+    Chay lai rieng hook IMG_4608 bang AI that: lan 1 (truoc do net) kinh vo nho; lan 2 kinh vo lan nua tren khung + glitch +
+    HUD, AI tu sua 1 vong (dung im 1.6s, tieng mo -2.2 dB -> pro_sub_drop/low +3.5 dB), mo -10.3 LUFS.
+- 2026-10-20 (3) HINH MINH HOA HOOK THEO NOI DUNG (`sidecar/hook_visual.py`, buoc AI "Hook-visual", user: "hieu ung set
+  khong phu hop 'rot hop dong' — xay quy tac roi DUA VAO NOI DUNG hook de tao hieu ung + am thanh phu hop"). Luat cu chon
+  hieu ung theo CAM XUC (soc -> set / kinh vo) -> bo. Luat moi (hook_fx.GUIDE + `_HOOK_VISUAL_PROMPT`): CHU THE cu the + BIEN
+  CO trong cau hook -> DONG TAC code dung san (`DONG_TAC`: roi, xe_doi [2 nua mep rang cua], dong_dau, vo_vun [3x3],
+  bay_mat, bung_ra, tang_vot, bay_vao) + dau chu tuy chon + TIENG cua tung hanh dong (`TIENG_MAC_DINH`, AI chon earshot).
+  Codex tao ANH THAT cua vat (tach nen, cat sat) -> lop anh keyframe `hook_visual: True`, "anchor": "hook" (ngoai mat do
+  do hoa). Quay CAN (mat >= `CLOSEUP_FACE_W` 0.4 rong khung) -> vat dat SAU nguoi noi (behind, to 0.82) — dat canh mat thi
+  `protect_face` doi len tran + thu 52%. server: chay TRUOC FX-plan (hook_info["minh_hoa"] = nhip -> FX-plan hook chi lam
+  camera trung nhip, `hook_visual.FX_NOTE`), gan lop + tieng (`apply` / `apply_audio`) truoc build_spec. JSON schema PHANG
+  + hoi lai 1 lan khi thieu truong (do that: schema long bi doc lech). Luat hook: lop `hv_obj*` trong hook = dac biet.
+  Du phong (`hook_fx.pick_preset`) chi chon set / mua khi cau noi DUNG ve chung, con lai tia tap trung.
+  Chay that hook IMG_4608: hop dong ky + dau do roi vao sau nguoi -> xe doi o 'rot hop dong' -> 2 nua roi + dau HUY;
+  tieng whoosh_fast/heavy -> swipe/paper -> pro_zip/down -> impact/punch.
+- Test `tests/test_cut_hook_rules.py` (+ test_info_flow [0]/[11]), `tests/test_edit_fixes.py` (zoom hook, mix SFX hook).
 
 ## 11n. DOCTOR: kiem + TU CAI toan bo cong cu khi mo app (2026-09-28)
 
@@ -704,7 +757,7 @@ tieng; (3) chu anh AI: duoi 'g' hang tren con du manh tren hang duoi; (4) SFX kh
 - SFX THEO GIONG: `speech_cut.loudness_series` (ebur128 momentary moi 0.1s tren tieng doi STEREO + apad 0.5s cho SFX ngan,
   cache `-m2.npy`), `voice_level` (p90 khung co tieng cua doan dung), `playback_lufs`. `plan_guard.mix_sfx`: muc = min(muc
   tuyet doi SFX_MIX, giong + `SFX_REL[loai]`); SFX khi chu/hinh hien (`_from_layer`) <= giong + `SFX_ACCENT_REL` (-3 dB);
-  bo san volume 0.2; kiem lai tran; `_rel_db` -> spec audio `rel`. Luat hook nghe ro = `rel >= SND_MIN_REL` (-8 dB).
+  bo san volume 0.2; kiem lai tran; `_rel_db` -> spec audio `rel`. Luat hook nghe ro = `rel >= LEVELS[muc].snd_rel` (11m 2026-10-19).
   Meme cat vao: `_meme_volume` <= giong. Do that (render): video nho (giong -35) SFX cu +8..+20.6 dB -> moi +0.6..+3.8.
 - CHU ANH AI: prompt them dai trong >= 1/8 anh giua 2 hang tinh ca duoi g/y/p, dau nang, dau thanh + `_ROW_GAP_RULE` LUON
   noi vao prompt (ke ca ban user sua); `MAX_ROWS` 4; `slice_sheet` -> `row_masks`: gan TRON tung net (thanh phan lien

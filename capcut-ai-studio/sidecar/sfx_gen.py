@@ -667,10 +667,14 @@ SCHEMA THEM:
 _HOOK_RULES = """
 
 # BO TAO AM THANH (earshot) — uu tien hon sfx_catalog
-sfx_catalog chi con tieng co giong noi (khong dung cho hook). Chon 1 (toi da 2) tieng trong gen_catalog, khai
+sfx_catalog chi con tieng co giong noi (khong dung cho hook). Chon 2-3 tieng (muc "nhe" 1-2) trong gen_catalog, khai
 {"gen": {"sound": "<id>", "dur"?: s, "apex"?: s, "pitch"?: "C5"}} thay cho sfx_id. src_time = THOI DIEM tieng phai
-"vao" (code tu canh: whoosh -> dinh roi dung luc do; riser -> ket thuc dung luc do). bo_am_thanh = bo tieng cua video
-(nen chon cung chat). Muc "nhe": whoosh mem / chuong / riser nhe; "vua": whoosh ro, pop_in, impact gon; "manh": impact.
+"vao" (code tu canh: whoosh -> dinh roi dung luc do; riser -> ket thuc dung luc do). bo_am_thanh = bo tieng cua video:
+hook DUOC PHEP day / manh hon bo (bo "gon / toi gian" chi giu chat, khong giu do nho).
+Muc "manh" (mac dinh): tieng mo = impact/* (punch, deep, classic...), sub_drop/*, pro_sub_drop/*, pro_impact/deep |
+rumble | swell — co the chong whoosh_big / pro_whoosh_big; nhip sau = impact / whoosh_big / riser dan vao chuyen canh.
+Muc "nhe": pro_whoosh_big, whoosh_big mem, riser em, boom tram mem. KHONG dung pro_impact/short, pop_in, click, tap,
+tick, downlifter lam tieng chinh cua hook (qua ngan / qua nho -> hook nhat).
 """
 
 

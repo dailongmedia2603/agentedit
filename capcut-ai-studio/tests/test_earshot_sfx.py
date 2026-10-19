@@ -147,10 +147,16 @@ check("ngoai use -> luong cu", G.active() is None)
 print("[7] luat hook")
 import hook_rule     # noqa: E402
 m = {"source_id": "s", "src_start": 10.0, "src_end": 13.5, "anchor": "hook"}
-fb = hook_rule.fallback_sfx(m, [{"id": "meme", "has_speech": True}], "vua", palette=bo)
-check("du phong vua -> boom cua bo", fb and fb[0]["gen"]["sound"] == bo["bo"]["boom"]["sound"] and fb[0]["anchor"] == "hook", fb)
+fb = hook_rule.fallback_sfx(m, [{"id": "meme", "has_speech": True}], "manh", palette=bo)
+check("du phong manh -> 2 lop: tieng dap CO DUOI ngay dau + whoosh lon o nhip sau (bo 'gon' qua mong -> tieng hook rieng)",
+      len(fb) == 2 and fb[0]["gen"]["sound"].startswith(hook_rule.HOOK_BOOM_OK) and fb[0]["src_time"] <= 10.05
+      and fb[1]["gen"]["sound"].startswith(hook_rule.HOOK_WHOOSH_OK) and 11.0 < fb[1]["src_time"] < 13.5
+      and all(x["anchor"] == "hook" for x in fb), fb)
+bo_day = dict(bo, bo=dict(bo["bo"], boom={"sound": "sub_drop/808"}))
+fb3 = hook_rule.fallback_sfx(m, [], "manh", palette=bo_day)
+check("bo tieng da co boom du day -> dung boom cua bo", fb3[0]["gen"]["sound"] == "sub_drop/808", fb3)
 fb2 = hook_rule.fallback_sfx(m, [], "nhe", palette=bo)
-check("du phong nhe -> whoosh cua bo", fb2 and fb2[0]["gen"]["sound"] == bo["bo"]["whoosh"]["sound"], fb2)
+check("du phong nhe -> 1 whoosh LON mem", len(fb2) == 1 and fb2[0]["gen"]["sound"].startswith(hook_rule.HOOK_WHOOSH_OK), fb2)
 got = hook_rule.clean_sfx({"audio": [{"gen": {"sound": "pro_impact/short"}, "src_time": 9.0},
                                      {"sfx_id": "meme", "src_time": 11}]}, m, [{"id": "meme", "has_speech": True}])
 check("Hook-SFX: nhan tieng tao (kep vao hook), bo meme co giong", len(got) == 1 and got[0]["gen"]["sound"] ==

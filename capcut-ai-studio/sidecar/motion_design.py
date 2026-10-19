@@ -1223,6 +1223,8 @@ def layers_to_spec(p, duration, scenes, assets_by_id, faces, changes, kit=None):
             changes.append("layer%d: y %.2f roi vao vung TikTok che -> 0.78" % (i, L["y"]))
             L["y"] = 0.78
         L["_sfx"] = L0.get("sfx")
+        if L0.get("hook_visual"):
+            L["_hv"] = True          # hinh minh hoa hook (hook_visual): nhieu manh cung luc, khong tinh mat do do hoa
         out.append(L)
     if p.get("text_lib"):
         # cum chu da chon MAU KHO TEXT -> 1 lop "tpl" thay cac lop chu (+ nen chu) cua cum (ne mat: protect_face)
@@ -1246,11 +1248,13 @@ def layers_to_spec(p, duration, scenes, assets_by_id, faces, changes, kit=None):
     out.sort(key=lambda L: L["start"])
     kept = []
     for L in out:
-        win = [k for k in kept if L["start"] - k["start"] < 10] + [L]
-        if _beats(win) > MAX_LAYERS_PER_10S and not L.get("um"):   # tu lieu cua nguoi dung: giu
+        win = [k for k in kept if L["start"] - k["start"] < 10 and not k.get("_hv")] + [L]
+        if _beats(win) > MAX_LAYERS_PER_10S and not L.get("um") and not L.get("_hv"):   # tu lieu nguoi dung / hinh hook: giu
             changes.append("%s: qua %d nhip do hoa trong 10s -> bo (roi mat)" % (L["id"], MAX_LAYERS_PER_10S))
             continue
         kept.append(L)
+    for L in kept:
+        L.pop("_hv", None)
     return kept
 
 
