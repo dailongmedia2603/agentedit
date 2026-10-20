@@ -1678,6 +1678,15 @@ voi goi .app GIA: thay OK / ban moi khong mo -> tra ban cu / thieu ban moi / app
 tren ban DONG GOI THAT (mac: cai vao /Applications/Agent Edit Update Selftest.app; win: chi CI) — phieu sai chu ky bi tu choi,
 tai (cat giua chung) -> kiem -> thay app that -> mo lai ban moi.
 
+**Phat hanh 1.19.0 (2026-10-20, MVD dong goi):** user xac nhan quyen phan phoi rieng (muc 28), dong y phat hanh Mac
+Apple Silicon truoc khi Actions bi chan. Da build / ky / phat hanh truc tiep len R2 stable cho **darwin-arm64**
+(`20261020-1143`) va **darwin-x64** (`20261020-1146`, build / test qua Rosetta trong worktree rieng). Moi ban: selftest-packaged
+33/33, selftest-update 9/9, selftest-gettime 6/6; tsc + test_motion + npm run build dat. GitHub Release `v1.19.0` duoc tao tay,
+co DMG cho hai kien truc. **Windows CHUA phat hanh 1.19.0**: Actions run `39371098301` (tag `v1.19.0`) bi GitHub chan ngay
+job meta do thanh toan / spending limit, khong phai loi code. Sau khi xu ly Billing & plans: chay lai workflow de build / tu
+kiem / day Windows len R2; release da ton tai nen them file bang `gh release upload v1.19.0 --repo dailongmedia2603/agentedit ...`
+(buoc `gh release create` cua workflow cu se bao da ton tai). Khong bao da phat hanh Windows truoc khi cac buoc do dat.
+
 ## 16. CHE DO CLI + MAC INTEL + KY NANG GETTIME (2026-10-12)
 
 Muc tieu (user): ban dong lenh cua app de gan vao app agent khac (GetTime Desktop) — "tai tien ich + ky nang len, ra
