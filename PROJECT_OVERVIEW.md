@@ -593,7 +593,24 @@ dan tuyet doi toi file goc o videos, sourceBrief, referenceAnalysis, rmPlan, rmS
   Du phong (`hook_fx.pick_preset`) chi chon set / mua khi cau noi DUNG ve chung, con lai tia tap trung.
   Chay that hook IMG_4608: hop dong ky + dau do roi vao sau nguoi -> xe doi o 'rot hop dong' -> 2 nua roi + dau HUY;
   tieng whoosh_fast/heavy -> swipe/paper -> pro_zip/down -> impact/punch.
-- Test `tests/test_cut_hook_rules.py` (+ test_info_flow [0]/[11]), `tests/test_edit_fixes.py` (zoom hook, mix SFX hook).
+- 2026-10-20 (4) THAN VIDEO + LUAT Y NGHIA (user: "hieu ung lam cho co, khong muc dich; moi hieu ung phai co muc dich, phu
+  hop chu de — ca video"; "chen bong chat len anh xau"; "chia doi bi cat ngang"):
+  - `hook_fx.LUAT_Y_NGHIA` (10 dieu: khong chi tieu; muc dich + nguoi xem hieu them + bo di mat gi; the gioi cau chuyen; dien
+    nghia khong dien chu; khop sac thai; khong thua; doc duoc 1 giay (y o noi dung -> chu THAT app ve); phan mang y nhin
+    thay; THAM MY (bang mau + font video, khung chat / the co thiet ke, 1 khoi noi dung + 1 diem nhan); CHUYEN DONG MUOT)
+    noi bang code qua `creative.luat` vao MOI buoc thiet ke (B3 / R4 / R5 / FX / B6 / B7).
+  - `sidecar/body_pipeline.py` (server: sau luat hook): `body_visual` (the gioi cau chuyen + chon diem co muc dich ->
+    phan bien `review` 6 tieu chi -> dao dien SUA 1 luot `revise` -> duyet lai -> `clean` khong doi thiet ke; dat theo CHO
+    TRONG that `place_visible` (ngoai nguoi noi >= 85%, ne chu, vat >= W_MIN 0.4)), `split_visual` (KHUNG CHAT that cho canh
+    chia doi: tin hien dung luc noi, xep vao dai trong cua panel, khong lap hook, tieng ding / pop theo bo tieng),
+    `effect_review` (cong kiem duyet moi muc chen: FX / lop / SFX / meme — bo muc khong dat, khong sua), `body_rhythm`
+    (khoang dung im > 6s, nhe 9s -> chu nhan co muc dich hoac giu lang co chu dich). Moi buoc qua `_step` (cache), loi -> bo qua.
+  - Remotion: lop `chat` (`ChatCard` trong Layers.tsx: the kinh mo theo bang mau, dau the avatar + ten + trang thai, 3 cham
+    "dang go" truoc moi tin); `Scenes.sceneAt` VAO scene tu A-roll full -> truot tu FULL (`fromFull`) — truoc day vao chia
+    doi khung nguoi noi nhay thang; `MORPH_MIN` 0.35s cho split / card / circle / broll.
+  - Kiem duyet bang mat (AI xem anh that sau render, `body_visual.visual_qa`) moi co o kich ban thu, chua trong app.
+- Test `tests/test_cut_hook_rules.py` (+ test_info_flow [0]/[11]), `tests/test_edit_fixes.py` (zoom hook, mix SFX hook),
+  `tests/test_body_rules.py` (khung chat, split_visual, nhip, cong kiem duyet, body_pipeline).
 
 ## 11n. DOCTOR: kiem + TU CAI toan bo cong cu khi mo app (2026-09-28)
 

@@ -9,7 +9,10 @@ import { gradeFilter } from './look'
 
 export const FULL: RSRect = { x: 0, y: 0, w: 1, h: 1, radius: 0 }
 
-export function sceneAt(scenes: RSScene[] | undefined, t: number): { cur: RSScene | null; prev: RSScene | null; p: number } {
+export function sceneAt(
+  scenes: RSScene[] | undefined,
+  t: number
+): { cur: RSScene | null; prev: RSScene | null; p: number; fromFull?: boolean } {
   if (!scenes || !scenes.length) return { cur: null, prev: null, p: 1 }
   let idx = -1
   for (let i = 0; i < scenes.length; i++) if (t >= scenes[i].start && t < scenes[i].end) idx = i
@@ -25,7 +28,9 @@ export function sceneAt(scenes: RSScene[] | undefined, t: number): { cur: RSScen
   const prev = idx > 0 && Math.abs(scenes[idx - 1].end - cur.start) < 0.05 ? scenes[idx - 1] : null
   const m = cur.morph ?? 0
   const p = m > 0 ? ease('ease_in_out', (t - cur.start) / m) : 1
-  return { cur, prev, p }
+  // VAO scene tu khoang A-roll FULL (khong co scene ke truoc): truot TU FULL sang bo cuc moi (2026-10-20: truoc day chi
+  // morph khi thoat / scene -> scene, vao chia doi thi khung nguoi noi NHAY thang xuong nua duoi — "cat ngang")
+  return { cur, prev, p, fromFull: !prev && m > 0 }
 }
 
 const hidesAroll = (s: RSScene | null) => !!s && (s.layout === 'broll' || s.layout === 'graphic')
@@ -39,9 +44,9 @@ const lerp = (a: number, b: number, p: number) => a + (b - a) * p
 
 /** Khung A-roll tai gio t (px) + do hien. */
 export function arollStateAt(scenes: RSScene[] | undefined, t: number, W: number, H: number) {
-  const { cur, prev, p } = sceneAt(scenes, t)
+  const { cur, prev, p, fromFull } = sceneAt(scenes, t)
   const to = arollRect(cur)
-  const from = prev ? arollRect(prev) : to
+  const from = prev ? arollRect(prev) : fromFull ? FULL : to
   const r: RSRect = {
     x: lerp(from.x, to.x, p),
     y: lerp(from.y, to.y, p),
@@ -50,9 +55,9 @@ export function arollStateAt(scenes: RSScene[] | undefined, t: number, W: number
     radius: lerp(from.radius, to.radius, p)
   }
   const visTo = hidesAroll(cur) ? 0 : 1
-  const visFrom = prev ? (hidesAroll(prev) ? 0 : 1) : visTo
+  const visFrom = prev ? (hidesAroll(prev) ? 0 : 1) : fromFull ? 1 : visTo
   const extTo = cur?.popout || 0
-  const extFrom = prev ? prev.popout || 0 : extTo
+  const extFrom = prev ? prev.popout || 0 : fromFull ? 0 : extTo
   return {
     left: r.x * W,
     top: r.y * H,

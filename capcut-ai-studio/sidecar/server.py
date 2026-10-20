@@ -2109,6 +2109,23 @@ def _remotion_autoplan(b):
             if _rep_hook is not None:
                 report = _rep_hook
             plan["_pipeline"]["luat_hook"] = _hook_notes or ["hook da du hieu ung hinh + am thanh"]
+            # THAN VIDEO (2026-10-20): hinh minh hoa co muc dich, khung chat canh chia doi, kiem duyet y nghia, nhip
+            try:
+                import body_pipeline
+                plan, spec2, _rep_body, _body_notes = body_pipeline.run(
+                    plan, spec,
+                    build=lambda pl: remotion_plan.build_spec(pl, log=lambda m: run_log.emit("note", m, step="build")),
+                    step=lambda n, pl, fn: _step(n, pl, fn, optional=True),
+                    moments=moments, story=story, style=style_phien, transcript=transcript_data, log=logger.info,
+                    emit=lambda m, lvl="info": run_log.emit("note", m, step="Than-video", level=lvl),
+                    canvas=canvas.size())
+                if spec2:
+                    spec = spec2
+                if _rep_body is not None:
+                    report = _rep_body
+                plan["_pipeline"]["than_video"] = _body_notes[:60]
+            except Exception as ex:          # than video loi khong duoc lam hong ke hoach
+                run_log.emit("note", "Thân video lỗi (bỏ qua): %s" % str(ex)[:200], step="Than-video", level="warn")
         if spec and (report or {}).get("tpl_lost"):
             # MAU KHO TEXT khong dat duoc (khoi mau to, khong con cho ngoai mat nguoi noi). Cum dung mau = cum chu anh AI
             # da KHONG tao duoc (chu anh AI chay truoc, 2026-10-17) -> khong tao lai, cum do dung chu ve bang code

@@ -168,7 +168,9 @@ try:
     # Hook-visual (2026-10-20): hinh minh hoa hook theo noi dung, chay TRUOC FX-plan (AI gia tra thieu truong -> hoi lai 1 lan)
     check("thu tu cac buoc dung (+ hinh minh hoa hook truoc FX + luat hook bo sung sau cung)", _dd(THU_TU) ==
           ["B1-select", "B2-timeline", "B3-hook", "R4-design", "R5-captions", "Hook-visual", "FX-plan", "B6-inserts",
-           "B7-audio", "Hook-FX-plan", "Hook-FX", "Hook-SFX"], THU_TU)
+           "B7-audio", "Hook-FX-plan", "Hook-FX", "Hook-SFX",
+           # than video (2026-10-20): hinh minh hoa co muc dich -> kiem duyet y nghia -> nhip than video
+           "Body-visual", "Kiem-duyet-y-nghia", "Nhip-than"], THU_TU)
     check("R4 thiet ke: khong khai hieu ung (buoc FX lam), khong con luat hook R4 cua luong cu",
           'KHONG khai "effects"' in SYS.get("R4-design", "") and "LUAT HOOK" not in SYS.get("R4-design", ""))
     _p0 = d.get("plan") or {}

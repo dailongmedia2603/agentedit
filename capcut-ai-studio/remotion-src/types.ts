@@ -179,12 +179,25 @@ export interface RSMotion {
   speed?: number
 }
 
+export interface RSChatMsg {
+  side: 'left' | 'right'
+  text: string
+  at: number
+}
+
+export interface RSChat {
+  title?: string
+  status?: string
+  messages: RSChatMsg[]
+  theme?: { card?: string; left?: string; leftText?: string; right?: string; rightText?: string; accent?: string }
+}
+
 export interface RSLayer {
   id: string
   start: number
   end: number
   track: number
-  type: 'text' | 'box' | 'circle' | 'ring' | 'line' | 'arrow' | 'image' | 'emoji' | 'badge' | 'counter' | 'progress' | 'speedlines' | 'video' | 'tpl' | 'compare'
+  type: 'text' | 'box' | 'circle' | 'ring' | 'line' | 'arrow' | 'image' | 'emoji' | 'badge' | 'counter' | 'progress' | 'speedlines' | 'video' | 'tpl' | 'compare' | 'chat'
   /** Lop dung TU LIEU cua nguoi dung (id): anh / video hien len video (sidecar user_media.py) */
   um?: string
   /** Lop 'video': giay bat dau trong file tu lieu */
@@ -271,6 +284,9 @@ export interface RSLayer {
   tplDur?: number
   /** Lop 'compare' (so sanh TRUOC / SAU): 2 anh (duong dan file) + nhan; wipe = thanh gat lo dan b, split = chia doi */
   compare?: { a: string; b: string; labels?: [string, string]; mode?: 'wipe' | 'split'; color?: string }
+  /** KHUNG CHAT duoc thiet ke (2026-10-20): y nam o NOI DUNG tin nhan -> app ve khung chat that (theo bang mau video),
+   *  tin hien DUNG LUC nguoi noi nhac toi (at = giay tu luc lop bat dau), truoc moi tin co dau "dang go". */
+  chat?: RSChat
 }
 
 export type CaptionRole = 'hero' | 'support' | 'micro'

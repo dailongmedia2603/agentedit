@@ -17,6 +17,39 @@ Module nay:
 import re
 
 # ---------------------------------------------------------------------------
+# 0. LUAT Y NGHIA — MOI HIEU UNG PHAI CO MUC DICH (user 2026-10-20: "hieu ung lam cho co, khong muc dich, khong phu hop;
+#    moi hieu ung chen tren video deu phai co muc dich va y nghia, phu hop boi canh + chu de, dam bao ngay khi lap plan")
+# ---------------------------------------------------------------------------
+LUAT_Y_NGHIA = """
+# ⛔ LUAT Y NGHIA — MOI HIEU UNG / HINH MINH HOA PHAI CO MUC DICH (bat buoc, ap dung moi luc)
+1. KHONG co chi tieu so luong. Hieu ung chi dat o cho nguoi xem CAN no; tha it ma dung. Khong dat de "cho co nhip" — nhip
+   giu bang cat canh / chu / am thanh, KHONG bang nhoi hinh vo nghia.
+2. Moi hieu ung phai tra loi duoc: (a) MUC DICH gi (lam ro thong tin kho hinh dung / nhan buoc ngoat cau chuyen / khuech dai
+   cam xuc o dinh / minh hoa hanh dong cu the); (b) nguoi xem HIEU / CAM THEM dieu gi cu the; (c) BO DI THI MAT GI.
+   "Khong mat gi" -> khong dat.
+3. PHU HOP CHU DE: vat / nhan vat / boi canh trong hinh phai thuoc THE GIOI CAU CHUYEN cua video (chu de, nhan vat, do vat,
+   boi canh nguoi noi dang ke). An du ngoai the gioi do (ly ca phe cho "met moi", thanh barie cho "rao can", bong den,
+   set...) CHI khi chinh nguoi noi dung an du do.
+4. DIEN NGHIA, KHONG DIEN CHU: minh hoa Y cua ca cau trong mach chuyen, khong bat 1 tu khoa roi ve dung chu do.
+5. DONG TAC / MAU / TIENG khop SAC THAI y (tich cuc: bung ra, tang vot, xanh; tieu cuc: roi, xe, vo, bay mat, do).
+6. KHONG THUA: khong lap hook, khong lap chu / do hoa dang hien, khong 2 hieu ung cung mot y, khong chen vao cau dem /
+   chao hoi / chuyen y nho.
+7. DOC DUOC TRONG 1 GIAY tren dien thoai: hinh tu noi Y bang HINH DANG vat quen + DONG TAC ro (to hop dong ky + xe doi =
+   hieu ngay). Y nam o NOI DUNG (tin nhan, con so, chu tren man hinh / giay to) -> noi dung do phai la CHU THAT ngan do app
+   ve (bong chat / nhan), KHONG trong vao chu trong anh AI (anh AI khong co chu doc duoc -> man hinh / giay trong rong, vo
+   nghia). Do that 2026-10-20: dien thoai co bong chat trong -> user "khong biet de lam gi, khong co gi ben trong".
+8. PHAN MANG Y PHAI NHIN THAY: khong dat hinh / chi tiet mang y sau dau / nguoi noi hay noi bi che (do that: khung anh "ghe
+   trong" dat sau dau -> nguoi che het). Khong du cho trong de thay ro -> KHONG chen.
+9. THAM MY — RA MOT THIET KE, KHONG PHAI CHU DAN LEN ANH: moi phan tu theo BANG MAU + FONT cua video; noi dung tin nhan /
+   man hinh -> dung thanh KHUNG CHAT / THE co thiet ke (app ve), khong dan bong chu troi tren anh; moi canh / thoi diem chi
+   1 khoi noi dung + toi da 1 diem nhan; can thang hang, khoang cach deu; khong de chu len chi tiet chinh cua anh nen; khong
+   chong len chu do hoa dang co (do that 10-20: bong chat + nhan do de len anh laptop -> user "xau qua").
+10. CHUYEN DONG MUOT: doi bo cuc (chia doi / the / B-roll) luon TRUOT / mo dan (>= 0.35s), phan tu vao / ra co chuyen dong —
+   khong bat / tat cat ngang (do that: vao chia doi khung nguoi noi nhay thang xuong nua duoi).
+"""
+
+
+# ---------------------------------------------------------------------------
 # 1. TU DIEN + LUAT (noi vao prompt qua hook_rule.luat)
 # ---------------------------------------------------------------------------
 GUIDE = """
@@ -35,7 +68,7 @@ tieng roi + dap; dau -> tieng dap manh; tien bay -> whoosh + leng keng; tang -> 
 Hieu ung phai LON, ro tren dien thoai (trai >= 1/3 khung, giu >= 0.2s); ne mat = dat canh / cat net qua mat, KHONG thu
 nho vao goc. KHONG che mat nguoi noi qua 0.3s (chop toan khung chi 2-4 khung). Mat do / "1 hieu ung manh moi 3s" / "zoom
 chi khi can" KHONG ap cho hook. Video "nhe" (tam su): van minh hoa noi dung nhung chuyen dong em, tieng mem.
-"""
+"""                                     # LUAT_Y_NGHIA: noi qua creative.luat (moi buoc thiet ke), khong lap o day
 
 FX_NOTE = """
 O BUOC NAY (hook): neu hook.minh_hoa CO (hinh minh hoa noi dung da dung bang anh that): CHI lam CAMERA — 1 transform dap /

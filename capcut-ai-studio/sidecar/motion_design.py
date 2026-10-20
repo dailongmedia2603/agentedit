@@ -34,7 +34,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 LAYOUTS = ("full", "split", "card", "circle", "broll", "graphic")
 LAYER_TYPES = ("text", "box", "circle", "ring", "line", "arrow", "image", "emoji", "badge", "counter", "progress", "speedlines",
-               "compare",
+               "compare", "chat",
                "video")   # video: CHI tu lieu video cua nguoi dung (user_media.py)
 ENTER = {"fade", "pop", "scale_in", "zoom_out", "blur_in", "slide", "slide_left", "slide_right", "slide_up", "slide_down",
          "rise", "drop", "expand_y", "stretch_x", "wipe", "write_on", "spin_in", "flip", "draw", "glitch_in",
@@ -46,6 +46,7 @@ KENBURNS = {"in", "out", "left", "right", "up", "none"}
 PATTERNS = {"curves", "grid", "dots", "rays", "none"}
 MAX_AI_IMAGES = 6
 MAX_LAYERS_PER_10S = 8
+MORPH_MIN = 0.35              # chuyen sang / ra bo cuc chia doi / the / tron / B-roll: truot toi thieu (giay)
 # LUAT CHU CO TIENG (user 2026-10-01): moi chu hien ra deu co tieng; KHONG con tran so SFX (tran 16 cu lam chu sau
 # giay ~56 mat tieng). Mot tieng bat dau trong [t - EARLY, t + LATE] cua luc chu hien = chu do da co tieng (hep: tieng
 # cua chu ke ben vao sau 0.3s khong duoc tinh cho chu nay — loi that 'TOÁN' an ke tieng cua 'THI ĐUA').
@@ -737,8 +738,12 @@ def scenes_to_spec(p, duration, kit, assets_by_id, changes):
             changes.append("scene%d(%s): con %.2fs -> bo" % (r["_n"], r["layout"], max(0, en - st)))
             continue
         lay = r["layout"]
-        sc = {"id": "scene%d" % r["_n"], "start": round(st, 3), "end": round(en, 3), "layout": lay,
-              "morph": round(_num(r.get("morph"), 0.25, 0, 0.6), 2)}
+        # chuyen bo cuc LUON truot muot (user 2026-10-20: "chia khung nguoi con 1 nua phai chuyen dong muot, khong cat ngang")
+        # -> bo cuc co khung A-roll / panel: morph >= MORPH_MIN (AI dat 0 / qua ngan van truot)
+        mo = _num(r.get("morph"), 0.4, 0, 0.6)
+        if lay in ("split", "card", "circle", "broll"):
+            mo = max(MORPH_MIN, mo)
+        sc = {"id": "scene%d" % r["_n"], "start": round(st, 3), "end": round(en, 3), "layout": lay, "morph": round(mo, 2)}
         if isinstance(r.get("shot"), dict):
             # KHO SHOT: kiem chu / anh / thuong hieu / do dai bang code; sai -> bo canh (graphic khong shot = nen trong)
             nxt = next((x["start"] for x in rows if x["start"] > r["start"] + 1e-3), duration)
@@ -1049,6 +1054,45 @@ def _text_height(L):
     return CV.fh(sum(lines) * float(L.get("lineHeight") or 1.1)) + pad
 
 
+def _hex_lum(hexc):
+    try:
+        h = hexc.lstrip("#")
+        r, g, b = (int(h[i:i + 2], 16) / 255.0 for i in (0, 2, 4))
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b
+    except Exception:
+        return 0.5
+
+
+def chat_spec(L0, it, kit, p):
+    """L0["chat"] = {title, status, messages: [{side: left|right, text, src_time}]} -> RSChat (at = giay tu luc lop bat
+    dau = gio nguon - src_start cua lop; tin trong 1 doan lien tuc). Mau theo bang mau video (style_kit.palette)."""
+    c = L0.get("chat") if isinstance(L0.get("chat"), dict) else {}
+    st = providers._f(L0.get("src_start"))
+    dur = max(0.5, providers._f(L0.get("src_end"), st + 3) - st)
+    msgs = []
+    for m in (c.get("messages") or [])[:5]:
+        if not isinstance(m, dict):
+            continue
+        t = strip_emoji(str(m.get("text") or "")).strip()[:80]
+        if not t:
+            continue
+        at = providers._f(m.get("src_time"), st + 0.4) - st
+        msgs.append({"side": "right" if m.get("side") == "right" else "left", "text": t,
+                     "at": round(min(max(0.45, at), dur - 0.3), 3)})
+    if not msgs:
+        return None
+    msgs.sort(key=lambda m: m["at"])
+    pal = ((kit or {}).get("palette") or {}) if isinstance(kit, dict) else {}
+    accent = _color(pal.get("accent")) or "#2F7CF6"
+    out = {"messages": msgs, "theme": {"accent": accent, "right": accent,
+                                       "rightText": "#0B1220" if _hex_lum(accent) > 0.55 else "#FFFFFF",
+                                       "card": "rgba(10,18,30,0.88)", "left": "#FFFFFF", "leftText": "#0B1220"}}
+    for k in ("title", "status"):
+        if str(c.get(k) or "").strip():
+            out[k] = strip_emoji(str(c[k])).strip()[:32]
+    return out
+
+
 def layers_to_spec(p, duration, scenes, assets_by_id, faces, changes, kit=None):
     fonts = _fonts()
     art_lookup = art_index(p)
@@ -1193,6 +1237,19 @@ def layers_to_spec(p, duration, scenes, assets_by_id, faces, changes, kit=None):
             L["path"] = path
             if is_cutout(assets_by_id, L0.get("asset"), path):
                 L["cutout"] = True
+        elif typ == "chat":
+            # KHUNG CHAT (split_visual / body): tin nhan gio NGUON -> giay tu luc lop bat dau; mau theo bang mau video
+            ch = chat_spec(L0, it, kit, p)
+            if not ch:
+                changes.append("layer%d: khung chat khong co tin nhan hop le -> bo" % i)
+                continue
+            L["chat"] = ch
+            L["anchor"] = "top"                  # the moc o dinh, tin moi hien thi dai xuong
+            L.setdefault("w", 0.84)
+            L["h"] = round(min(0.6, 0.12 + 0.082 * len(ch["messages"])), 3)   # uoc (luat che mat / chong lop)
+            fb = ((kit or {}).get("fonts") or {}).get("body") if isinstance(kit, dict) else None
+            if fb in fonts and not L.get("font"):
+                L["font"] = fb
         elif typ == "compare":
             # SO SANH TRUOC / SAU (y do TRUOC_SAU): 2 anh trong 1 khung, thanh gat / chia doi + nhan
             pa = _asset_path(assets_by_id, L0.get("a"), want_cutout=False)
@@ -2833,7 +2890,7 @@ FACE_BODY_MAX = 0.15        # than video: che toi da 15% khung mat (nhu tu lieu 
 FACE_TPL_MAX = 0.05         # mau Kho Text (khoi chu to + glow): che toi da 5% — thu nho / dat tren dau thay vi de len mat
 FACE_SAFE = (0.06, 0.82)    # vung dat duoc (tren 6% / duoi 82% bi giao dien TikTok che)
 FACE_FULL_AREA = 0.55       # lop phu > 55% khung = canh phu toan man hinh, khong phai vat de len mat
-_GUARD_TYPES = ("text", "counter", "badge", "image", "video", "box", "circle", "tpl", "compare")   # vong (ring) khoanh mat: co y
+_GUARD_TYPES = ("text", "counter", "badge", "image", "video", "box", "circle", "tpl", "compare", "chat")   # vong (ring) khoanh mat: co y
 
 
 def _img_ratio(path, _cache={}):
@@ -2870,7 +2927,7 @@ def _guard_box(L, W=None, H=None):
         w, h = float(L.get("w") or 0.5), float(L.get("h") or 0.2)
     elif typ == "badge" and L.get("art"):
         w, h = float(L["art"][0].get("w") or 0) / W, float(L["art"][0].get("h") or 0) / H
-    elif typ in ("badge", "box", "circle", "ring", "image", "video", "compare"):
+    elif typ in ("badge", "box", "circle", "ring", "image", "video", "compare", "chat"):
         w = float(L.get("w") or 0.3)
         if L.get("h") is not None:
             h = float(L["h"])

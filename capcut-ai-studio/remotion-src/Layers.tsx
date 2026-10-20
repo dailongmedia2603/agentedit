@@ -4,7 +4,7 @@
 // Tat ca la ham THUAN theo gio -> render nhieu khung song song van ra mot ket qua.
 import React, { useMemo } from 'react'
 import { AbsoluteFill, Easing, Img, OffthreadVideo, random, Sequence, useCurrentFrame, useVideoConfig } from 'remotion'
-import type { RSLayer, RSKeyframe, RSMotion, RSSpan, RSWord } from './types'
+import type { RSChatMsg, RSLayer, RSKeyframe, RSMotion, RSSpan, RSWord } from './types'
 import { fontCss } from './fonts'
 import { pxScale } from './look'
 import { TextTemplate } from './textTemplate/TextTemplate'
@@ -525,11 +525,92 @@ function fillOf(L: RSLayer): string | undefined {
   return L.fill
 }
 
+// KHUNG CHAT (2026-10-20): the bo goc kinh mo theo bang mau video, dau the (avatar + ten + trang thai), tin nhan hien
+// lan luot DUNG LUC noi (truoc moi tin: 3 cham "dang go" ~0.4s), tin vao bat nhe + truot len. Thay kieu dan bong chu len anh.
+const TYPING = 0.4
+const ChatCard: React.FC<{ L: RSLayer; w: number; W: number; local: number }> = ({ L, w, W, local }) => {
+  const c = L.chat
+  if (!c) return null
+  const k = W / 1080
+  const th = c.theme || {}
+  const accent = th.accent || th.right || '#2F7CF6'
+  const f = fontCss(L.font || 'montserrat', 700)
+  const shown = c.messages.filter((m) => local >= m.at - TYPING)
+  const bubble = (m: RSChatMsg, i: number) => {
+    const right = m.side === 'right'
+    const typing = local < m.at
+    const pa = typing ? 0 : Math.min(1, (local - m.at) / 0.22)
+    const e = 1 - Math.pow(1 - pa, 3)
+    const base: React.CSSProperties = {
+      alignSelf: right ? 'flex-end' : 'flex-start',
+      maxWidth: '80%',
+      padding: `${16 * k}px ${24 * k}px`,
+      borderRadius: 30 * k,
+      borderBottomRightRadius: right ? 8 * k : 30 * k,
+      borderBottomLeftRadius: right ? 30 * k : 8 * k,
+      background: right ? th.right || accent : th.left || '#FFFFFF',
+      color: right ? th.rightText || '#FFFFFF' : th.leftText || '#0B1220',
+      fontSize: 46 * k,
+      lineHeight: 1.25,
+      fontWeight: 600,
+      boxShadow: `0 ${6 * k}px ${16 * k}px rgba(0,0,0,0.25)`,
+      marginTop: i ? 14 * k : 0
+    }
+    if (typing) {
+      const dots = [0, 1, 2].map((j) => {
+        const b = 0.45 + 0.55 * Math.abs(Math.sin((local * 6 + j * 0.9) % Math.PI))
+        return <span key={j} style={{ display: 'inline-block', width: 12 * k, height: 12 * k, margin: `0 ${4 * k}px`, borderRadius: '50%', background: right ? th.rightText || '#FFFFFF' : '#8A93A3', opacity: b }} />
+      })
+      return (
+        <div key={i} style={{ ...base, padding: `${20 * k}px ${22 * k}px` }}>
+          {dots}
+        </div>
+      )
+    }
+    return (
+      <div key={i} style={{ ...base, opacity: e, transform: `translateY(${(1 - e) * 18 * k}px) scale(${0.94 + 0.06 * e})`, transformOrigin: right ? '100% 100%' : '0% 100%' }}>
+        {m.text}
+      </div>
+    )
+  }
+  return (
+    <div
+      style={{
+        width: w,
+        borderRadius: 36 * k,
+        background: th.card || 'rgba(12,20,32,0.86)',
+        backdropFilter: `blur(${16 * k}px)`,
+        border: `${1.5 * k}px solid rgba(255,255,255,0.14)`,
+        boxShadow: `0 ${24 * k}px ${60 * k}px rgba(0,0,0,0.45)`,
+        padding: `${22 * k}px ${24 * k}px ${26 * k}px`,
+        fontFamily: f.fontFamily,
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+    >
+      {(c.title || c.status) && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 * k, paddingBottom: 16 * k, marginBottom: 16 * k, borderBottom: `${1.5 * k}px solid rgba(255,255,255,0.12)` }}>
+          <div style={{ width: 58 * k, height: 58 * k, borderRadius: '50%', background: accent, color: '#0B1220', fontSize: 30 * k, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {(c.title || '?').trim().charAt(0).toUpperCase()}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ color: '#FFFFFF', fontSize: 38 * k, fontWeight: 800, lineHeight: 1.1 }}>{c.title}</div>
+            {c.status && <div style={{ color: accent, fontSize: 28 * k, fontWeight: 700, marginTop: 4 * k }}>{c.status}</div>}
+          </div>
+        </div>
+      )}
+      <div style={{ display: 'flex', flexDirection: 'column' }}>{shown.map(bubble)}</div>
+    </div>
+  )
+}
+
 const ShapeLayer: React.FC<{ L: RSLayer; fx: FxState; W: number; H: number; local: number; base?: string }> = ({ L, fx, W, H, local, base }) => {
   const { fps } = useVideoConfig()
   const w = (L.w ?? 0.3) * W
   const h = L.h !== undefined ? L.h * H : w
   switch (L.type) {
+    case 'chat':
+      return <ChatCard L={L} w={w} W={W} local={local} />
     case 'box':
       return (
         <div

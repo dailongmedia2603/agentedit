@@ -79,8 +79,9 @@ hoa dong — VAT THAT + DONG TAC + TIENG — de nguoi xem THAY NGAY dieu nguoi n
 
 
 def _p():
+    import hook_fx
     import prompt_store
-    return prompt_store.get_prompt("_HOOK_VISUAL_PROMPT", _PROMPT)
+    return prompt_store.get_prompt("_HOOK_VISUAL_PROMPT", _PROMPT) + hook_fx.LUAT_Y_NGHIA     # luat y nghia LUON noi vao
 
 
 def gen_catalog():
@@ -240,7 +241,13 @@ def _pieces(path, kind):
 CLOSEUP_FACE_W = 0.4        # mat rong >= 40% khung (quay can) -> hinh minh hoa dat SAU nguoi, to (khong con cho canh mat)
 
 
-def build_layers(spec, img, moment, canvas=(1080, 1920), face=None):
+def stamp_size(chu, max_size=160, width=0.6):
+    """Co chu con dau vua khung: chu dai (RỚT HỢP ĐỒNG) tu nho lai, khong tran (~0.6 rong khung, chu in hoa ~0.62 em)."""
+    n = max(1, len(str(chu or "")))
+    return int(max(70, min(max_size, 1080 * width / (n * 0.62))))
+
+
+def build_layers(spec, img, moment, canvas=(1080, 1920), face=None, prefix="hv", anchor="hook", place=None):
     """Tra (assets, layers, transform_hits_rel). keyframes t = giay tinh tu luc lop bat dau; x / y = phan so khung.
     face (plan['faces'][sid]: cx, cy, w, h): quay CAN (mat rong) -> vat dat SAU nguoi noi, to gan het khung, nguoi noi noi
     len truoc (lop "behind", tach nguoi) — do that 2026-10-20: hook can mat, to hop dong dat canh mat bi luat che mat doi
@@ -254,22 +261,31 @@ def build_layers(spec, img, moment, canvas=(1080, 1920), face=None):
     kind = spec["dong_tac"]
     side = 1 if spec["ben"] == "phai" else -1
     behind = float((face or {}).get("w") or 0) >= CLOSEUP_FACE_W
-    if behind:
+    if behind and iw < ih * 0.55:
+        w = 0.4                                        # vat cao, hep (the deo, chai...): sau VAI canh dau, khong bi dau che
+        x, y, rest_rot = 0.5 + side * 0.3, 0.46, -6 * side
+    elif behind:
         w = 0.82 if iw < ih else 0.92                  # sau nguoi: to, lo ra quanh dau / vai
         x, y, rest_rot = 0.5, 0.4, -4 * side
     else:
         w = 0.46 if iw >= ih else 0.36                 # be ngang (giay to nam ngang) to hon
         x, y, rest_rot = 0.5 + side * 0.24, 0.64, -7 * side
+    if place:                                          # vi tri da chon theo CHO TRONG that (body_visual.place_visible)
+        x, y, w = place
+        rest_rot = -5 * side
     hfrac = w * Wc * ih / float(iw) / Hc               # chieu cao vat theo phan so khung
     spread = 0.3 if behind else 0.06                   # manh / nua xe bay ra xa hon khi o sau nguoi (lo khoi dau)
     sid = moment["source_id"]
     shadow = [{"x": 0, "y": 22, "blur": 36, "color": "rgba(0,0,0,.55)"}]
-    assets = [{"id": "hv_obj", "kind": "ai_image", "path": img, "alpha": True, "prompt": spec["vat"]["prompt"][:200]}]
+    P = prefix + "_"
+    assets = [{"id": P + "obj", "kind": "ai_image", "path": img, "alpha": True, "prompt": spec["vat"]["prompt"][:200]}] if img else []
 
     def layer(lid, asset, st, en, kfs, ww, x0, y0, track=62):
-        L = {"id": lid, "type": "image", "asset": asset, "anchor": "hook", "source_id": sid,
+        L = {"id": lid, "type": "image", "asset": asset, "source_id": sid,
              "src_start": round(st, 3), "src_end": round(min(en, h1), 3), "x": round(x0, 4), "y": round(y0, 4),
              "w": round(ww, 4), "track": track, "shadow": shadow, "keyframes": kfs, "hook_visual": True}
+        if anchor:
+            L["anchor"] = anchor
         if behind:
             L["behind"] = True
         return L
@@ -285,7 +301,7 @@ def build_layers(spec, img, moment, canvas=(1080, 1920), face=None):
     if kind == "bay_vao":
         k = [{"t": 0, "x": x + side * 0.7, "y": y - 0.1, "rotation": 40 * side, "scale": 0.7, "blur": 8},
              {"t": 0.3, "x": x, "y": y, "rotation": rest_rot, "scale": 1.0, "blur": 0, "easing": "back_out"}] + hold
-        layers.append(layer("hv_obj", "hv_obj", xa, h1, k, w, x, y))
+        layers.append(layer(P + "obj", P + "obj", xa, h1, k, w, x, y))
         hits = [round(xa - h0 + 0.3, 3)]
     elif kind in ("roi", "bay_mat", "tang_vot", "bung_ra", "dong_dau"):
         if kind == "bung_ra":
@@ -310,11 +326,11 @@ def build_layers(spec, img, moment, canvas=(1080, 1920), face=None):
                 k += [{"t": B + 0.1, "y": y + 0.03, "scale": 0.95, "easing": "ease_out"},
                       {"t": B + 0.45, "y": -0.35, "scale": 1.1, "blur": 8, "easing": "ease_in"}]
                 end = hd + 0.5
-        layers.append(layer("hv_obj", "hv_obj", xa, end, k, w, x, y))
+        layers.append(layer(P + "obj", P + "obj", xa, end, k, w, x, y))
     else:                                       # xe_doi / vo_vun: vat nguyen -> manh tai luc bien co
-        layers.append(layer("hv_obj", "hv_obj", xa, hd + 0.02, list(enter) + hold, w, x, y))
+        layers.append(layer(P + "obj", P + "obj", xa, hd + 0.02, list(enter) + hold, w, x, y))
         for i, (f, cx, cy, fw) in enumerate(_pieces(img, kind)):
-            aid = "hv_p%d" % i
+            aid = P + "p%d" % i
             assets.append({"id": aid, "kind": "ai_image", "path": f, "alpha": True, "prompt": "manh %d" % i})
             px = x + (cx - 0.5) * w
             py = y + (cy - 0.5) * hfrac
@@ -330,19 +346,21 @@ def build_layers(spec, img, moment, canvas=(1080, 1920), face=None):
                      {"t": 0.12, "x": px + dx * (0.35 + spread * 2), "y": py + dy * 0.25 - 0.03,
                       "rotation": rest_rot + dx * 80, "easing": "expo_out"},
                      {"t": 0.7, "x": px + dx * 0.7, "y": 1.35, "rotation": rest_rot + dx * 260, "blur": 3, "easing": "ease_in"}]
-            layers.append(layer("hv_p%d" % i, aid, hd, hd + 0.8, k, w * fw, px, py, track=63))
+            layers.append(layer(P + "p%d" % i, aid, hd, hd + 0.8, k, w * fw, px, py, track=63))
     if spec.get("dau"):
         d = spec["dau"]
         st = hd + (0.12 if kind in ("xe_doi", "vo_vun", "roi") else 0.0)
         sx, sy = (0.5 + side * 0.3, 0.3) if behind else (x, min(0.78, y))
-        layers.append({"id": "hv_dau", "type": "text", "anchor": "hook", "source_id": sid, "src_start": round(st, 3),
+        layers.append({"id": P + "dau", "type": "text", "source_id": sid, "src_start": round(st, 3),
                        "src_end": round(h1, 3), "x": round(sx, 4), "y": round(sy, 4), "rotation": -14 * side,
                        "track": 64, "hook_visual": True, "uppercase": True,
-                       "spans": [{"text": d["chu"], "size": 150, "color": d["mau"], "stroke": {"color": "#FFFFFF", "width": 6}}],
+                       "spans": [{"text": d["chu"], "size": stamp_size(d["chu"]), "color": d["mau"], "stroke": {"color": "#FFFFFF", "width": 6}}],
                        "box": {"color": "rgba(255,255,255,0.0)", "radius": 0.02, "padX": 0.025, "padY": 0.008,
                                "border": "12px solid %s" % d["mau"]},
                        "keyframes": [{"t": 0, "scale": 2.6, "opacity": 0}, {"t": 0.12, "scale": 1.0, "opacity": 1, "easing": "ease_in"},
                                      {"t": 0.2, "scale": 1.08, "easing": "ease_out"}, {"t": 0.3, "scale": 1.0, "easing": "back_out"}]})
+        if anchor:
+            layers[-1]["anchor"] = anchor
         if behind:
             layers[-1]["behind"] = True                 # dau nam sau nguoi cung tang voi vat
         if kind in ("xe_doi", "vo_vun", "roi"):
@@ -360,15 +378,18 @@ def build_audio(spec, moment, layers):
     for i, s in enumerate(spec["tieng_bien_co"][:2]):
         rows.append((s, hd + 0.04 * i, "punch"))
     if spec.get("dau") and not any(r[0].startswith("impact/") for r in rows[1:]):
-        st = min(L["src_start"] for L in layers if L["id"] == "hv_dau")
+        st = min(L["src_start"] for L in layers if L["id"].endswith("_dau"))
         rows.append(("impact/punch", st + 0.12, "punch"))
     out = []
     for snd, t, purpose in rows:
         g = sfx_gen.clean_gen({"sound": snd})
         if not g:
             continue
-        out.append({"sfx_id": "es:" + g["sound"], "gen": g, "source_id": sid, "src_time": round(t, 3), "anchor": "hook",
-                    "purpose": purpose, "why": "hinh minh hoa hook: %s" % spec["y_tuong"][:120], "_hook_visual": True})
+        it = {"sfx_id": "es:" + g["sound"], "gen": g, "source_id": sid, "src_time": round(t, 3),
+              "purpose": purpose, "why": "hinh minh hoa: %s" % spec["y_tuong"][:120], "_hook_visual": True}
+        if moment.get("anchor") == "hook":
+            it["anchor"] = "hook"
+        out.append(it)
     return out
 
 
