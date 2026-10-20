@@ -11,6 +11,9 @@
 #   AGENT_EDIT_API, AGENT_EDIT_MIN_VERSION, AGENT_EDIT_USER_DATA_DIR, AGENT_EDIT_TEST_ANY_OS, AGENT_EDIT_DL_BUDGET (giay).
 # --background (1.7.0, AI agent): moi lan goi chi tai bo cai toi da AGENT_EDIT_DL_BUDGET giay (mac dinh 150) -> chua xong thi in
 #   JSON {"status":"running","step":"download","progress":...} + ma thoat 3; goi lai dung lenh do tai tiep (curl -C -).
+# CHE DO CONG CU GETTIME (`tool <viec>`, 2026-10-20 — tool.json canh SKILL.md): giong ban macOS — moi lenh tra 1 khoi JSON trong
+#   <= 25 giay, key qua bien AGENT_EDIT_KEY, viec dai tra ma viec ngay (r_/s_/l_ cua app, i_ tai + cai app, u_ cap nhat), GetTime
+#   tu hoi `tool job <ma>`. Viec nen cua script chay bang Start-Process (ShellExecute — khong ke thua ong stdout cua GetTime).
 # Chi dung Windows PowerShell 5.1 + curl.exe co san (Windows 10 1803+) — khong can Node / Python.
 
 $ErrorActionPreference = 'Stop'
@@ -24,6 +27,10 @@ if ($env:AGENT_EDIT_CHANNEL) { $Channel = $env:AGENT_EDIT_CHANNEL }
 $UserHome = $env:USERPROFILE
 if (-not $UserHome) { $UserHome = $HOME }
 $Work = Join-Path $UserHome '.capcut-studio\cli\download'
+# GetTime: moi thu tai ve nam o thu muc du lieu rieng cua cong cu (ngoai thu muc ky nang)
+if ($env:GETTIME_TOOL_DATA) { $Work = Join-Path $env:GETTIME_TOOL_DATA 'download' }
+# viec nen cua che do cong cu (i_ / u_) dang chay — Say / Die ghi vao do
+$script:BootDir = $null
 $DlBudget = 150
 if ($env:AGENT_EDIT_DL_BUDGET) { $DlBudget = [int]$env:AGENT_EDIT_DL_BUDGET }
 $Background = @($args | Where-Object { [string]$_ -eq '--background' }).Count -gt 0
@@ -32,10 +39,28 @@ try { [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false) } 
 $OutputEncoding = New-Object System.Text.UTF8Encoding($false)
 
 # thong bao ra stderr -> stdout cua lenh `--json` van la JSON sach
-function Say([string]$m) { [Console]::Error.WriteLine($m) }
+function Say([string]$m) {
+  [Console]::Error.WriteLine($m)
+  if ($script:BootDir) { try { [IO.File]::AppendAllText((Join-Path $script:BootDir 'log.txt'), "$m`r`n", (New-Object System.Text.UTF8Encoding($false))) } catch { } }
+}
 function Die([string]$m) {
-  [Console]::Error.WriteLine("Lỗi: $m")
+  Say "Lỗi: $m"
+  if ($script:BootDir) { BootState 'error' '' $null $m }
   exit 2
+}
+
+# BootState <status> <step> <progress 0..1 | $null> <message> [app_job] — trang thai viec nen i_ / u_ (ghi nguyen tu)
+function BootState([string]$st, [string]$step, $prog, [string]$msg, [string]$appJob = '') {
+  if (-not $script:BootDir) { return }
+  $o = [ordered]@{ id = (Split-Path -Leaf $script:BootDir); status = $st }
+  if ($step) { $o.step = $step }
+  if ($null -ne $prog) { $o.progress = $prog }
+  $o.message = $msg
+  if ($st -eq 'error') { $o.error = [ordered]@{ message = $msg } }
+  if ($appJob) { $o.app_job = $appJob }
+  $f = Join-Path $script:BootDir 'state.json'
+  [IO.File]::WriteAllText("$f.tmp", ($o | ConvertTo-Json -Compress -Depth 4), (New-Object System.Text.UTF8Encoding($false)))
+  Move-Item -LiteralPath "$f.tmp" -Destination $f -Force
 }
 
 $OnWindows = [Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT
@@ -171,9 +196,24 @@ function InstallApp([string]$key, [string]$existing) {
       }
       break
     }
+    if ($script:BootDir) {
+      # viec nen cua GetTime: tai mot mach, cu 2 giay ghi % vao state.json (GetTime hien tren the tien do)
+      $cargs = "-fL -sS -C - --retry 3 --retry-delay 3 -o `"$setup`" `"$([string]$o.url)`""
+      if ($OnWindows) { $cp = Start-Process -FilePath $curl -ArgumentList $cargs -PassThru -WindowStyle Hidden }
+      else { $cp = Start-Process -FilePath $curl -ArgumentList $cargs -PassThru }
+      while (-not $cp.HasExited) {
+        $got = 0
+        if (Test-Path -LiteralPath $setup) { $got = (Get-Item -LiteralPath $setup).Length }
+        $pct = [math]::Min(99, [math]::Floor($got * 100 / $size))
+        BootState 'running' 'download' ([math]::Round($pct / 100, 2)) "Đang tải Agent Edit $($o.version) — $pct% ($([math]::Floor($got / 1048576))/$([math]::Floor($size / 1048576)) MB)"
+        Start-Sleep -Seconds 2
+      }
+      continue
+    }
     & $curl -fL -sS -C - --retry 3 --retry-delay 3 -o $setup ([string]$o.url) 2>$null
     if ($LASTEXITCODE -ne 0) { Start-Sleep -Seconds 3 }
   }
+  BootState 'running' 'install' 0.99 "Đã tải xong, đang kiểm tra và cài Agent Edit $($o.version)…"
   if ((Sha512B64 $setup) -ne [string]$o.sha512) {
     Remove-Item -LiteralPath $setup -Force
     Die 'File tải về sai mã SHA-512 — đã xoá, chạy lại để tải lại.'
@@ -219,6 +259,411 @@ $app = FindApp
 $appv = '0'
 if ($app) { $appv = AppVersion $app }
 
+# dong lenh Windows: moi doi so 1 phan tu (quy tac CommandLineToArgvW)
+function QuoteArg([string]$a) {
+  if ($a -ne '' -and $a -notmatch '[\s"]') { return $a }
+  $sb = New-Object Text.StringBuilder
+  [void]$sb.Append('"')
+  $bs = 0
+  foreach ($ch in $a.ToCharArray()) {
+    if ($ch -eq [char]92) { $bs++; continue }
+    if ($ch -eq [char]34) { [void]$sb.Append(('\' * ($bs * 2 + 1)) + '"'); $bs = 0; continue }
+    if ($bs) { [void]$sb.Append('\' * $bs); $bs = 0 }
+    [void]$sb.Append($ch)
+  }
+  [void]$sb.Append(('\' * ($bs * 2)) + '"')
+  return $sb.ToString()
+}
+
+# =====================================================================================================================
+# CHE DO CONG CU GETTIME: `agent-edit.ps1 tool <viec> [tham so]` (tool.json). Moi lenh in DUNG 1 khoi JSON ra stdout.
+# Ma thoat: 0 = tra loi duoc (ke ca "dang chay") · 1 = loi that (GetTime danh dau loi cho AI). Giong het ban macOS.
+# =====================================================================================================================
+$ToolMin = '1.7.0' # can `setup --background` + `login --start`
+if ($env:AGENT_EDIT_TOOL_MIN_VERSION) { $ToolMin = $env:AGENT_EDIT_TOOL_MIN_VERSION }
+$KeyEnvVersion = '1.20.0' # `setup --key-env` (key qua bien moi truong)
+$ToolData = Join-Path $UserHome '.capcut-studio\cli'
+if ($env:GETTIME_TOOL_DATA) { $ToolData = $env:GETTIME_TOOL_DATA }
+$TJ = Join-Path $ToolData 'tool-jobs'
+$AppJobs = Join-Path $UserHome '.capcut-studio\cli\jobs'
+$Utf8 = New-Object System.Text.UTF8Encoding($false)
+$script:KeepKey = $false
+$script:RunOut = ''
+$script:RunRc = 0
+
+function ToolOutText([string]$text) {
+  [Console]::Out.WriteLine($text)
+  exit 0
+}
+function ToolOut($obj) { ToolOutText ($obj | ConvertTo-Json -Compress -Depth 6) }
+function ToolFail([string]$msg, [string]$hint = '') {
+  $e = [ordered]@{ message = $msg }
+  if ($hint) { $e.hint = $hint }
+  [Console]::Out.WriteLine(([ordered]@{ ok = $false; error = $e } | ConvertTo-Json -Compress -Depth 4))
+  exit 1
+}
+function ReadJsonText([string]$text) {
+  if (-not $text) { return $null }
+  try { return ($text | ConvertFrom-Json) } catch { return $null }
+}
+function ReadJsonFile([string]$f) {
+  try { return ReadJsonText ([IO.File]::ReadAllText($f, [Text.Encoding]::UTF8)) } catch { return $null }
+}
+function PidAlive($p) {
+  if (-not $p) { return $false }
+  return [bool](Get-Process -Id ([int]$p) -ErrorAction SilentlyContinue)
+}
+function ValidId([string]$id) { return $id -cmatch '^[irslu]_[a-z0-9]{6,24}$' }
+function NewId([string]$prefix) { return $prefix + '_' + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + (Get-Random -Minimum 100 -Maximum 999) }
+
+# AppRun <giay> <tham so...>: chay CLI cua app toi da <giay> (GetTime cat moi lenh o 25 giay) -> RunOut, RunRc (124 = het gio).
+# ShellExecute (khong ke thua handle) + ket qua qua FILE nhu luong CLI ben duoi. Key ban quyen CHI di theo khi kich hoat.
+function AppRun([int]$limit, [string[]]$cliArgs) {
+  $outFile = [IO.Path]::GetTempFileName()
+  $errFile = [IO.Path]::GetTempFileName()
+  $exeArgs = @('--agent-edit-cli') + $cliArgs
+  if ($env:AGENT_EDIT_USER_DATA_DIR) { $exeArgs = @("--user-data-dir=$($env:AGENT_EDIT_USER_DATA_DIR)") + $exeArgs }
+  $argLine = (@($exeArgs | ForEach-Object { QuoteArg ([string]$_) }) -join ' ')
+  $savedKey = $env:AGENT_EDIT_KEY
+  $env:AGENT_EDIT_OUT_FILE = $outFile
+  $env:AGENT_EDIT_ERR_FILE = $errFile
+  Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue
+  if (-not $script:KeepKey) { Remove-Item Env:AGENT_EDIT_KEY -ErrorAction SilentlyContinue }
+  $p = $null
+  try {
+    if ($OnWindows) { $p = Start-Process -FilePath $app -ArgumentList $argLine -PassThru -WindowStyle Hidden }
+    else { $p = Start-Process -FilePath $app -ArgumentList $argLine -PassThru }
+    $null = $p.Handle
+  } catch {
+    $p = $null
+  } finally {
+    Remove-Item Env:AGENT_EDIT_OUT_FILE, Env:AGENT_EDIT_ERR_FILE -ErrorAction SilentlyContinue
+    if ($savedKey) { $env:AGENT_EDIT_KEY = $savedKey }
+  }
+  $script:RunRc = 1
+  if ($p) {
+    if ($p.WaitForExit($limit * 1000)) {
+      $p.WaitForExit()
+      $script:RunRc = $p.ExitCode
+      if ($null -eq $script:RunRc) { $script:RunRc = 1 }
+    } else {
+      try { Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue } catch { }
+      $script:RunRc = 124
+    }
+  }
+  $script:RunOut = ''
+  try { $script:RunOut = [IO.File]::ReadAllText($outFile, [Text.Encoding]::UTF8).Trim() } catch { }
+  Remove-Item -LiteralPath $outFile, $errFile -Force -ErrorAction SilentlyContinue
+}
+
+# in ket qua AppRun. soft = moi cau tra loi JSON deu la "tra loi duoc" (vd login-check: chua dang nhap khong phai loi)
+function ToolRelay([switch]$Soft) {
+  if (-not $script:RunOut) { ToolFail "Agent Edit không trả lời (mã $($script:RunRc))." 'Gọi lại; vẫn lỗi thì mở app Agent Edit xem có thông báo gì không.' }
+  [Console]::Out.WriteLine($script:RunOut)
+  if ($Soft) { exit 0 }
+  if ($script:RunRc -eq 0 -or $script:RunRc -eq 3) { exit 0 }
+  if ($script:RunOut -match '"ok":\s*true') { exit 0 }
+  exit 1
+}
+
+function ToolNeedApp {
+  if (-not $app) { ToolFail 'Máy chưa cài Agent Edit.' 'Gọi hành động setup (cần key bản quyền).' }
+  if (-not (VerGe $appv $ToolMin)) { ToolFail "Agent Edit trên máy là bản $appv — quá cũ." 'Gọi hành động setup để cập nhật (hoặc mở app Agent Edit cho nó tự cập nhật).' }
+}
+
+# viec nen i_ (tai + cai app) con dang chay -> ma viec
+function BootRunning {
+  if (-not (Test-Path -LiteralPath $TJ)) { return $null }
+  foreach ($d in @(Get-ChildItem -LiteralPath $TJ -Directory -Filter 'i_*' -ErrorAction SilentlyContinue)) {
+    $st = ReadJsonFile (Join-Path $d.FullName 'state.json')
+    if (-not $st -or $st.status -ne 'running') { continue }
+    $p = $null
+    try { $p = ([IO.File]::ReadAllText((Join-Path $d.FullName 'pid'))).Trim() } catch { }
+    if (PidAlive $p) { return $d.Name }
+  }
+  return $null
+}
+
+# chay chinh script nay nen (ShellExecute, cua so an) cho viec i_ / u_
+function StartBg([string]$sub, [string]$id) {
+  $ps = (Get-Process -Id $PID).Path
+  $line = "-NoProfile -NonInteractive -ExecutionPolicy Bypass -File $(QuoteArg $PSCommandPath) $sub $id"
+  if ($OnWindows) { $bp = Start-Process -FilePath $ps -ArgumentList $line -PassThru -WindowStyle Hidden }
+  else { $bp = Start-Process -FilePath $ps -ArgumentList $line -PassThru }
+  [IO.File]::WriteAllText((Join-Path (Join-Path $TJ $id) 'pid'), [string]$bp.Id)
+}
+
+# ---- tool status: dieu `check` cua GetTime doc (ready) — ban gon ----
+function ToolStatus {
+  $boot = BootRunning
+  if (-not $app -or -not (VerGe $appv $ToolMin)) {
+    $o = [ordered]@{ ok = $true; ready = $false; installed = [bool]$app; version = $appv; message = 'Máy chưa cài Agent Edit.'; next = @('setup') }
+    if ($app) { $o.message = "Agent Edit trên máy là bản $appv — quá cũ, cần cập nhật." }
+    if ($boot) { $o.message = "Đang tải và cài Agent Edit (việc $boot)."; $o.installing = $boot }
+    ToolOut $o
+  }
+  AppRun 22 @('status', '--json')
+  if ($script:RunRc -eq 124) { ToolOut ([ordered]@{ ok = $true; ready = $false; installed = $true; message = 'Agent Edit chưa trả lời kịp (máy đang bận?) — kiểm tra lại sau ít giây.' }) }
+  $s = ReadJsonText $script:RunOut
+  if (-not $s -or $null -eq $s.ready) { ToolRelay }
+  $missing = @()
+  foreach ($c in @($s.checks)) { if ($c -and $c.status -eq 'fail') { $missing += "$($c.label) — $($c.detail)" } }
+  $next = @()
+  foreach ($n in @($s.next)) {
+    $t = [string]$n
+    if (-not $t) { continue }
+    if ($t -like '*activate*') { $next += 'setup (kích hoạt key bản quyền)' }
+    elseif ($t -like '*login gemini*') { $next += 'login gemini' }
+    elseif ($t -like '*login claude*') { $next += 'login claude' }
+    elseif ($t -like '*login codex*') { $next += 'login codex (tuỳ chọn: ảnh AI)' }
+    elseif ($t -like '*gemini-key*') { $next += 'API key Gemini: nhập trong app Agent Edit › Cài đặt API (hoặc đổi sang đăng nhập)' }
+    elseif ($t -like '*claude-key*') { $next += 'API key Claude: nhập trong app Agent Edit › Cài đặt API (hoặc đổi sang đăng nhập)' }
+    elseif ($t -like '*setup*') { $next += 'setup' }
+    else { $next += $t }
+  }
+  $o = [ordered]@{ ok = $true; ready = [bool]$s.ready; installed = $true; version = [string]$s.version
+    license = [ordered]@{ status = [string]$s.license.status; message = [string]$s.license.message }; missing = $missing; next = $next }
+  if ($boot) { $o.installing = $boot }
+  ToolOut $o
+}
+
+# `setup --background` cua app (kich hoat key truoc neu ban quyen chua OK) -> RunOut / RunRc
+function AppSetupBg {
+  $a = @('setup', '--background', '--json')
+  if ($Key) {
+    AppRun 8 @('license', '--json')
+    $l = ReadJsonText $script:RunOut
+    if (-not $l -or $l.status -ne 'ok') {
+      if (VerGe $appv $KeyEnvVersion) { $script:KeepKey = $true; $a += '--key-env' }
+      else { $a += @('--key', $Key) }
+    }
+  }
+  AppRun 15 $a
+  $script:KeepKey = $false
+}
+
+# ---- tool setup: cai app (neu chua co / qua cu) + kich hoat key + cai cong cu + dong bo kho — viec dai ----
+function ToolSetup {
+  $cur = BootRunning
+  if ($cur) { ToolOut ([ordered]@{ ok = $true; id = $cur; status = 'running'; message = 'Đang có lượt tải và cài Agent Edit chạy.' }) }
+  if (-not $app -or -not (VerGe $appv $ToolMin)) {
+    if (-not $Key) { ToolFail 'Cần key bản quyền Agent Edit để tải và cài app.' 'Gọi gettime_ask_field cho trường license-key, người trực lưu xong thì gọi lại setup.' }
+    $id = NewId 'i'
+    $dir = Join-Path $TJ $id
+    New-Item -ItemType Directory -Force -Path $dir | Out-Null
+    $script:BootDir = $dir
+    BootState 'running' 'download' 0 'Đang lấy bản Agent Edit mới nhất…'
+    $script:BootDir = $null
+    StartBg '__tool-boot' $id
+    ToolOut ([ordered]@{ ok = $true; id = $id; status = 'running'; message = 'Bắt đầu tải và cài Agent Edit (thường 5–20 phút).' })
+  }
+  AppSetupBg
+  if ($script:RunRc -eq 124) { ToolFail 'Agent Edit chưa trả lời kịp.' 'Gọi lại setup sau ít giây.' }
+  ToolRelay
+}
+
+# viec nen i_: tai + cai app -> `setup --background` cua app (ma s_ ghi vao state.json -> `tool job i_` doc tiep)
+function ToolBootRun([string]$id) {
+  $script:BootDir = Join-Path $TJ $id
+  if (-not (Test-Path -LiteralPath $script:BootDir)) { exit 2 }
+  $new = InstallApp $Key $app
+  if (-not $new) { Die 'Không cài được Agent Edit.' }
+  $script:app = [string]$new
+  $script:appv = AppVersion $script:app
+  BootState 'running' 'license' 0.99 "Đã cài Agent Edit $($script:appv), đang kích hoạt key và bắt đầu cài công cụ…"
+  AppSetupBg
+  $r = ReadJsonText $script:RunOut
+  if (-not $r -or -not $r.id) {
+    $m = 'Kích hoạt / cài công cụ không thành công.'
+    if ($r -and $r.error) { if ($r.error.message) { $m = [string]$r.error.message } else { $m = [string]$r.error } }
+    Die $m
+  }
+  BootState 'running' 'tools' 0 'Đã cài app, đang cài công cụ (5–20 phút)…' ([string]$r.id)
+  exit 0
+}
+
+# viec nen u_: cap nhat app (lenh `update` cua app chay mot mach, co the lau)
+function ToolUpdateRun([string]$id) {
+  $script:BootDir = Join-Path $TJ $id
+  if (-not (Test-Path -LiteralPath $script:BootDir)) { exit 2 }
+  AppRun 3600 @('update', '--json')
+  $r = ReadJsonText $script:RunOut
+  if ($r -and $r.ok) {
+    if ($r.updated) { BootState 'done' '' 1 "Đã tải bản $($r.to) — Agent Edit tự thay app trong khoảng 30 giây." }
+    else { BootState 'done' '' 1 "Agent Edit đang ở bản mới nhất ($($r.version))." }
+  } else {
+    $m = 'Cập nhật không thành công.'
+    if ($r -and $r.error) { $m = [string]$r.error }
+    BootState 'error' '' $null $m
+  }
+  exit 0
+}
+
+# trang thai 1 viec cua app: doc thang job.json (khong mo app moi 3 giay); tien trinh viec da chet -> hoi app (app danh dau loi)
+function ToolAppJob([string]$id) {
+  $f = Join-Path $AppJobs "$id\job.json"
+  if (Test-Path -LiteralPath $f) {
+    $text = ''
+    try { $text = [IO.File]::ReadAllText($f, [Text.Encoding]::UTF8) } catch { }
+    $j = ReadJsonText $text
+    if ($j) {
+      if (@('done', 'error', 'cancelled') -contains [string]$j.status) { ToolOutText $text }
+      if ($j.pid -and (PidAlive $j.pid)) { ToolOutText $text }
+      if ($j.status -eq 'queued' -and -not $j.pid) { ToolOutText $text }
+    }
+  }
+  ToolNeedApp
+  AppRun 15 @('job', $id, '--json')
+  if ($script:RunRc -eq 124) { ToolOut ([ordered]@{ ok = $true; status = 'running'; message = 'Đang chạy.' }) }
+  ToolRelay -Soft
+}
+
+function ToolJob([string]$id) {
+  if (-not (ValidId $id)) { ToolFail "Mã việc không hợp lệ: $id" }
+  if ($id -match '^[iu]_') {
+    $dir = Join-Path $TJ $id
+    $f = Join-Path $dir 'state.json'
+    $st = ReadJsonFile $f
+    if (-not $st) { ToolFail "Không có việc $id." }
+    if ($st.app_job -and (ValidId ([string]$st.app_job))) { ToolAppJob ([string]$st.app_job) }
+    $p = $null
+    try { $p = ([IO.File]::ReadAllText((Join-Path $dir 'pid'))).Trim() } catch { }
+    if ($st.status -eq 'running' -and -not (PidAlive $p)) {
+      $script:BootDir = $dir
+      if ($id.StartsWith('i')) { BootState 'error' '' $null "Tiến trình tải và cài đã dừng bất thường — gọi lại setup. Nhật ký: $dir\log.txt" }
+      else { BootState 'error' '' $null "Tiến trình cập nhật đã dừng bất thường — gọi lại update. Nhật ký: $dir\log.txt" }
+      $script:BootDir = $null
+    }
+    ToolOutText ([IO.File]::ReadAllText($f, [Text.Encoding]::UTF8).Trim())
+  }
+  ToolAppJob $id
+}
+
+function ToolCancel([string]$id) {
+  if (-not (ValidId $id)) { ToolFail "Mã việc không hợp lệ: $id" }
+  if ($id -match '^[iu]_') {
+    $dir = Join-Path $TJ $id
+    $st = ReadJsonFile (Join-Path $dir 'state.json')
+    if (-not $st) { ToolFail "Không có việc $id." }
+    if ($st.app_job -and (ValidId ([string]$st.app_job))) {
+      ToolNeedApp
+      AppRun 18 @('cancel', [string]$st.app_job, '--json')
+    }
+    $p = $null
+    try { $p = ([IO.File]::ReadAllText((Join-Path $dir 'pid'))).Trim() } catch { }
+    if (PidAlive $p) {
+      if ($OnWindows) { & taskkill.exe /PID $p /T /F 2>$null | Out-Null }
+      else { Stop-Process -Id ([int]$p) -Force -ErrorAction SilentlyContinue }
+    }
+    $script:BootDir = $dir
+    BootState 'cancelled' '' $null 'Đã dừng.'
+    $script:BootDir = $null
+    ToolOut ([ordered]@{ ok = $true; status = 'cancelled' })
+  }
+  ToolNeedApp
+  AppRun 18 @('cancel', $id, '--json')
+  if ($script:RunRc -eq 124) { ToolOut ([ordered]@{ ok = $true; status = 'cancelling'; message = 'Đã gửi lệnh dừng.' }) }
+  ToolRelay
+}
+
+function ToolUpdate {
+  ToolNeedApp
+  $id = NewId 'u'
+  $dir = Join-Path $TJ $id
+  New-Item -ItemType Directory -Force -Path $dir | Out-Null
+  $script:BootDir = $dir
+  BootState 'running' 'update' $null 'Đang kiểm tra và tải bản Agent Edit mới…'
+  $script:BootDir = $null
+  StartBg '__tool-update' $id
+  ToolOut ([ordered]@{ ok = $true; id = $id; status = 'running'; message = 'Đang cập nhật Agent Edit.' })
+}
+
+# tool login <tai khoan> [--device] / login-code <tai khoan> <ma> / login-check <tai khoan>
+function ToolLogin([string]$sub, [string[]]$rest) {
+  $acc = ''
+  if ($rest.Count -gt 0) { $acc = [string]$rest[0] }
+  if (@('gemini', 'claude', 'codex') -notcontains $acc) { ToolFail 'Tài khoản phải là gemini, claude hoặc codex.' }
+  ToolNeedApp
+  if ($sub -eq 'login') {
+    $a = @('login', $acc, '--start')
+    if ($rest -contains '--device') { $a += '--device' }
+    AppRun 20 ($a + '--json')
+    if ($script:RunRc -eq 124) { ToolOut ([ordered]@{ ok = $true; status = 'running'; account = $acc; message = 'Đang mở trang đăng nhập — gọi login-check sau vài giây để lấy link.' }) }
+    ToolRelay -Soft
+  }
+  if ($sub -eq 'login-code') {
+    if ($rest.Count -lt 2 -or -not [string]$rest[1]) { ToolFail 'Thiếu mã đăng nhập.' }
+    AppRun 20 @('login', $acc, '--code', [string]$rest[1], '--json')
+    if ($script:RunRc -eq 124) { ToolOut ([ordered]@{ ok = $true; status = 'running'; account = $acc; message = 'Đã gửi mã, đang chờ xác nhận — gọi login-check sau vài giây.' }) }
+    ToolRelay
+  }
+  AppRun 20 @('login', $acc, '--check', '--json')
+  if ($script:RunRc -eq 124) { ToolOut ([ordered]@{ ok = $true; status = 'running'; account = $acc; message = 'Chưa có kết quả — gọi lại login-check sau vài giây.' }) }
+  ToolRelay -Soft
+}
+
+# tool make <tham so cua make> — --insert-notes "<dong 1>`n<dong 2>" -> moi dong la ghi chu cua tu lieu cung thu tu
+function ToolMake([string[]]$rest) {
+  ToolNeedApp
+  $a = @('make')
+  for ($i = 0; $i -lt $rest.Count; $i++) {
+    if ([string]$rest[$i] -eq '--insert-notes' -and ($i + 1) -lt $rest.Count) {
+      foreach ($line in ([string]$rest[$i + 1] -split "`r?`n")) {
+        $t = $line.Trim()
+        if ($t) { $a += @('--insert-note', $t) }
+      }
+      $i++
+      continue
+    }
+    $a += [string]$rest[$i]
+  }
+  AppRun 22 ($a + '--json')
+  if ($script:RunRc -eq 124) { ToolFail 'Agent Edit chưa nhận việc kịp.' 'Gọi hành động jobs xem việc đã được tạo chưa trước khi gọi lại make.' }
+  ToolRelay
+}
+
+# tool jobs — danh sach gon 8 viec gan nhat
+function ToolJobs {
+  ToolNeedApp
+  AppRun 20 @('jobs', '--json')
+  if ($script:RunRc -eq 124) { ToolFail 'Agent Edit chưa trả lời kịp.' 'Gọi lại sau ít giây.' }
+  $r = ReadJsonText $script:RunOut
+  if (-not $r) { ToolRelay }
+  $rows = @()
+  foreach ($j in @($r.jobs | Select-Object -First 8)) {
+    if (-not $j) { continue }
+    $o = [ordered]@{ id = [string]$j.id; kind = [string]$j.kind; status = [string]$j.status; createdAt = [string]$j.createdAt; message = [string]$j.message }
+    $file = ''
+    if ($j.result) { $file = [string]$j.result.copy; if (-not $file) { $file = [string]$j.result.output } }
+    if ($file) { $o.file = $file }
+    if ($j.error -and $j.error.message) { $o.error = [string]$j.error.message }
+    $rows += New-Object PSObject -Property $o
+  }
+  ToolOut ([ordered]@{ ok = $true; jobs = $rows })
+}
+
+if ($cmd -eq 'tool' -or $cmd -eq '__tool-boot' -or $cmd -eq '__tool-update') {
+  # key ban quyen: CHI tu bien moi truong (GetTime cat trong Keychain / DPAPI) — khong bao gio tren dong lenh
+  $Key = ([string]$env:AGENT_EDIT_KEY -replace '[^A-Za-z0-9-]', '')
+  New-Item -ItemType Directory -Force -Path $TJ | Out-Null
+  if ($cmd -eq '__tool-boot') { ToolBootRun ([string]$args[1]) }
+  if ($cmd -eq '__tool-update') { ToolUpdateRun ([string]$args[1]) }
+  $sub = ''
+  if ($args.Count -gt 1) { $sub = [string]$args[1] }
+  $rest = @($args | Select-Object -Skip 2 | ForEach-Object { [string]$_ })
+  switch ($sub) {
+    'status' { ToolStatus }
+    'setup' { ToolSetup }
+    'job' { ToolJob ([string]($rest | Select-Object -First 1)) }
+    'cancel' { ToolCancel ([string]($rest | Select-Object -First 1)) }
+    { @('login', 'login-code', 'login-check') -contains $_ } { ToolLogin $sub $rest }
+    'make' { ToolMake $rest }
+    'jobs' { ToolJobs }
+    'update' { ToolUpdate }
+  }
+  ToolFail "Không có việc `"$sub`" (status | setup | job | cancel | login | login-code | login-check | make | jobs | update)."
+}
+
 if ($cmd -eq 'install') {
   if (-not $key) { Die 'Cần key bản quyền: agent-edit.ps1 install --key <KEY>' }
   $null = InstallApp $key $app
@@ -240,20 +685,6 @@ if (-not $app -or -not (VerGe $appv $MinVersion)) {
 # App Windows la app GIAO DIEN (chi in ra ong dan). KHONG chay qua ong dan: viec nen cua `make` co the KE THUA ong stdout ->
 # lenh goi (AI agent) treo toi khi video xong. Chay bang ShellExecute (Start-Process -WindowStyle Hidden: khong ke thua handle
 # nao), app ghi ket qua vao FILE (AGENT_EDIT_OUT_FILE / AGENT_EDIT_ERR_FILE) -> script doc dan va in lai (UTF-8).
-function QuoteArg([string]$a) {
-  if ($a -ne '' -and $a -notmatch '[\s"]') { return $a }
-  $sb = New-Object Text.StringBuilder
-  [void]$sb.Append('"')
-  $bs = 0
-  foreach ($ch in $a.ToCharArray()) {
-    if ($ch -eq [char]92) { $bs++; continue }
-    if ($ch -eq [char]34) { [void]$sb.Append(('\' * ($bs * 2 + 1)) + '"'); $bs = 0; continue }
-    if ($bs) { [void]$sb.Append('\' * $bs); $bs = 0 }
-    [void]$sb.Append($ch)
-  }
-  [void]$sb.Append(('\' * ($bs * 2)) + '"')
-  return $sb.ToString()
-}
 
 $outFile = [IO.Path]::GetTempFileName()
 $errFile = [IO.Path]::GetTempFileName()

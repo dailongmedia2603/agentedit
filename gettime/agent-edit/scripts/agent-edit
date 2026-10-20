@@ -15,22 +15,61 @@
 # --background (1.7.0, AI agent): moi lan goi chi tai toi da AGENT_EDIT_DL_BUDGET giay (mac dinh 150) -> chua xong thi in JSON
 #   {"status":"running","step":"download","progress":...} + ma thoat 3; goi lai dung lenh do tai tiep (curl -C -). Tai xong ->
 #   cai app -> `setup --background` cua app (tra ma viec cai cong cu + dong bo kho).
+# CHE DO CONG CU GETTIME (`tool <viec>`, 2026-10-20 — tool.json canh SKILL.md): GetTime goi thang (khong shell, khong can
+#   Toan quyen), moi lenh tra 1 khoi JSON trong <= 25 giay, key ban quyen qua bien AGENT_EDIT_KEY (GetTime cat trong Keychain).
+#   Viec dai tra MA VIEC ngay, GetTime tu hoi `tool job <ma>` vai giay 1 lan: r_/s_/l_ = viec cua app (doc thang job.json, khong
+#   mo app moi lan hoi) · i_ = tai + cai app (script chay nen) · u_ = cap nhat app. Du lieu tai ve: $GETTIME_TOOL_DATA.
 # Chi dung bash 3.2 + cong cu co san cua macOS (curl, plutil, shasum, ditto, codesign) — khong can Node / Python / jq.
 set -u
 
 MIN_VERSION="${AGENT_EDIT_MIN_VERSION:-1.5.0}"
+# che do cong cu can `setup --background` + `login --start` (1.7.0); `setup --key-env` (key qua bien moi truong) tu 1.20.0
+TOOL_MIN_VERSION="${AGENT_EDIT_TOOL_MIN_VERSION:-1.7.0}"
+KEY_ENV_VERSION="1.20.0"
 API="${AGENT_EDIT_API:-https://agent-edit-license.agent-edit-license-server.workers.dev}"
 # Chu ky ma cua MOI ban Agent Edit phat hanh (chung chi tu tao "Agent Edit Code Signing", scripts/gen-mac-cert.mjs)
 SIGN_REQ='identifier "app.autocapcut.desktop" and certificate root = H"9a7d7c51b4f600386062947f759b2247d42709d2"'
-WORK="$HOME/.capcut-studio/cli/download"
+# GetTime: moi thu tai ve nam o thu muc du lieu rieng cua cong cu (ngoai thu muc ky nang — dong bo co the thay ca thu muc do)
+if [ -n "${GETTIME_TOOL_DATA:-}" ]; then WORK="$GETTIME_TOOL_DATA/download"; else WORK="$HOME/.capcut-studio/cli/download"; fi
 DL_BUDGET="${AGENT_EDIT_DL_BUDGET:-150}"
 BACKGROUND=""
 for a in "$@"; do [ "$a" = "--background" ] && BACKGROUND=1; done
+SELF="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+# viec nen cua che do cong cu (tai + cai app = i_, cap nhat = u_) — dang chay trong viec nao (die ghi loi vao do)
+BOOT_DIR=""
 
 say() { printf '%s\n' "$*" >&2; } # thong bao ra stderr -> stdout cua lenh `--json` van la JSON sach
 die() {
   say "Lỗi: $*"
+  [ -n "$BOOT_DIR" ] && boot_state error "" "" "$*"
   exit 2
+}
+
+# chuoi JSON (bash 3.2, khong jq)
+jstr() {
+  local s="$1"
+  s=${s//\\/\\\\}
+  s=${s//\"/\\\"}
+  s=${s//$'\n'/\\n}
+  s=${s//$'\r'/}
+  s=${s//$'\t'/ }
+  printf '"%s"' "$s"
+}
+
+# boot_state <status> <step> <progress 0..1> <message> [app_job] — ghi trang thai viec nen i_ / u_ (ghi nguyen tu)
+boot_state() {
+  [ -n "$BOOT_DIR" ] || return 0
+  local st="$1" step="$2" prog="$3" msg="$4" appjob="${5:-}" body
+  body="{\"id\":$(jstr "$(basename "$BOOT_DIR")"),\"status\":$(jstr "$st")"
+  [ -n "$step" ] && body="$body,\"step\":$(jstr "$step")"
+  [ -n "$prog" ] && body="$body,\"progress\":$prog"
+  if [ "$st" = error ]; then
+    body="$body,\"message\":$(jstr "$msg"),\"error\":{\"message\":$(jstr "$msg")}"
+  else
+    body="$body,\"message\":$(jstr "$msg")"
+  fi
+  [ -n "$appjob" ] && body="$body,\"app_job\":$(jstr "$appjob")"
+  printf '%s}\n' "$body" >"$BOOT_DIR/state.json.tmp" && mv -f "$BOOT_DIR/state.json.tmp" "$BOOT_DIR/state.json"
 }
 
 [ "$(uname -s)" = "Darwin" ] || die "Agent Edit CLI chỉ chạy trên macOS."
@@ -118,8 +157,25 @@ install_app() {
       fi
       break
     fi
+    if [ -n "$BOOT_DIR" ]; then
+      # viec nen cua GetTime: tai mot mach, cu 2 giay ghi % vao state.json (GetTime hien tren the tien do)
+      /usr/bin/curl -fL -sS -C - --retry 3 --retry-delay 3 -o "$zip" "$url" 2>/dev/null &
+      cpid=$!
+      while kill -0 "$cpid" 2>/dev/null; do
+        got=0
+        [ -f "$zip" ] && got=$(stat -f %z "$zip")
+        pct=$((got * 100 / size))
+        [ "$pct" -gt 99 ] && pct=99
+        boot_state running download "0.$(printf '%02d' "$pct")" \
+          "Đang tải Agent Edit $ver — $pct% ($((got / 1048576))/$((size / 1048576)) MB)"
+        sleep 2
+      done
+      wait "$cpid" || sleep 3
+      continue
+    fi
     /usr/bin/curl -fL -sS -C - --retry 3 --retry-delay 3 -o "$zip" "$url" || sleep 3
   done
+  boot_state running install 0.99 "Đã tải xong, đang kiểm tra chữ ký và cài Agent Edit ${ver}…"
   got=$(/usr/bin/shasum -a 512 -b "$zip" | cut -d' ' -f1 | /usr/bin/xxd -r -p | /usr/bin/base64)
   if [ "$got" != "$sha" ]; then
     rm -f "$zip"
@@ -171,6 +227,423 @@ KEY=$(printf '%s' "$KEY" | tr -cd 'A-Za-z0-9-')
 
 APP=$(find_app)
 APPV=$([ -n "$APP" ] && app_version "$APP" || echo 0)
+
+# =====================================================================================================================
+# CHE DO CONG CU GETTIME: `agent-edit tool <viec> [tham so]` (tool.json). Moi lenh in DUNG 1 khoi JSON ra stdout.
+# Ma thoat: 0 = tra loi duoc (ke ca "dang chay") · 1 = loi that (GetTime danh dau loi cho AI).
+# =====================================================================================================================
+TJ="${GETTIME_TOOL_DATA:-$HOME/.capcut-studio/cli}/tool-jobs"
+APP_JOBS="$HOME/.capcut-studio/cli/jobs"
+KEEP_KEY=""
+RUN_OUT=""
+RUN_RC=0
+
+tool_out() {
+  printf '%s\n' "$1"
+  exit 0
+}
+# tool_fail <loi> [goi y]
+tool_fail() {
+  local hint=""
+  [ -n "${2:-}" ] && hint=",\"hint\":$(jstr "$2")"
+  printf '{"ok":false,"error":{"message":%s%s}}\n' "$(jstr "$1")" "$hint"
+  exit 1
+}
+
+# lenh chay app o che do CLI -> mang APP_CMD (key ban quyen CHI di theo khi kich hoat)
+app_cmd() {
+  APP_CMD=(/usr/bin/env -u ELECTRON_RUN_AS_NODE)
+  [ -n "$KEEP_KEY" ] || APP_CMD+=(-u AGENT_EDIT_KEY)
+  APP_CMD+=("$APP/Contents/MacOS/Agent Edit")
+  [ -n "${AGENT_EDIT_USER_DATA_DIR:-}" ] && APP_CMD+=("--user-data-dir=$AGENT_EDIT_USER_DATA_DIR")
+  APP_CMD+=(--agent-edit-cli)
+}
+
+# app_run <giay> <tham so...>: chay CLI cua app toi da <giay> (GetTime cat moi lenh o 25 giay) -> RUN_OUT, RUN_RC (124 = het gio).
+# Viec nen ma app tach ra (make / setup / login) la tien trinh rieng, khong bi dung theo.
+app_run() {
+  local limit=$(($1 * 5)) n=0 tmp pid
+  shift
+  app_cmd
+  mkdir -p "$TJ"
+  tmp="$TJ/.out.$$"
+  (exec "${APP_CMD[@]}" "$@") >"$tmp" 2>/dev/null </dev/null &
+  pid=$!
+  while kill -0 "$pid" 2>/dev/null; do
+    if [ "$n" -ge "$limit" ]; then
+      kill "$pid" 2>/dev/null
+      sleep 1
+      kill -9 "$pid" 2>/dev/null
+      RUN_OUT=$(cat "$tmp" 2>/dev/null)
+      rm -f "$tmp"
+      RUN_RC=124
+      return 0
+    fi
+    sleep 0.2
+    n=$((n + 1))
+  done
+  wait "$pid"
+  RUN_RC=$?
+  RUN_OUT=$(cat "$tmp" 2>/dev/null)
+  rm -f "$tmp"
+  return 0
+}
+
+# in ket qua app_run. soft = moi cau tra loi JSON deu la "tra loi duoc" (vd login-check: chua dang nhap khong phai loi)
+tool_relay() {
+  [ -n "$RUN_OUT" ] || tool_fail "Agent Edit không trả lời (mã $RUN_RC)." "Gọi lại; vẫn lỗi thì mở app Agent Edit xem có thông báo gì không."
+  printf '%s\n' "$RUN_OUT"
+  [ "${1:-}" = soft ] && exit 0
+  case "$RUN_RC" in 0 | 3) exit 0 ;; esac
+  case "$RUN_OUT" in *'"ok": true'* | *'"ok":true'*) exit 0 ;; esac
+  exit 1
+}
+
+# JSON cua RUN_OUT -> file tam de plutil doc tung truong
+run_json_file() {
+  mkdir -p "$TJ"
+  printf '%s' "$RUN_OUT" >"$TJ/.json.$$"
+  printf '%s\n' "$TJ/.json.$$"
+}
+
+tool_need_app() {
+  [ -n "$APP" ] || tool_fail "Máy chưa cài Agent Edit." "Gọi hành động setup (cần key bản quyền)."
+  ver_ge "$APPV" "$TOOL_MIN_VERSION" ||
+    tool_fail "Agent Edit trên máy là bản $APPV — quá cũ." "Gọi hành động setup để cập nhật (hoặc mở app Agent Edit cho nó tự cập nhật)."
+}
+
+valid_id() { [[ "$1" =~ ^[irslu]_[a-z0-9]{6,24}$ ]]; }
+
+# viec nen i_ (tai + cai app) con dang chay -> in ma viec
+boot_running() {
+  local d pid
+  for d in "$TJ"/i_*; do
+    [ -f "$d/state.json" ] && [ -f "$d/pid" ] || continue
+    [ "$(jget "$d/state.json" status)" = running ] || continue
+    pid=$(cat "$d/pid" 2>/dev/null)
+    [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null && { basename "$d"; return 0; }
+  done
+  return 1
+}
+
+# ---- tool status: dieu `check` cua GetTime doc (ready) — ban gon (khong dua 50 muc Doctor vao chat) ----
+tool_status() {
+  local boot=""
+  boot=$(boot_running) || boot=""
+  if [ -z "$APP" ] || ! ver_ge "$APPV" "$TOOL_MIN_VERSION"; then
+    local inst=false msg="Máy chưa cài Agent Edit."
+    if [ -n "$APP" ]; then inst=true; msg="Agent Edit trên máy là bản $APPV — quá cũ, cần cập nhật."; fi
+    [ -n "$boot" ] && msg="Đang tải và cài Agent Edit (việc $boot)."
+    tool_out "{\"ok\":true,\"ready\":false,\"installed\":$inst,\"version\":$(jstr "$APPV"),\"message\":$(jstr "$msg"),\"next\":[\"setup\"]$([ -n "$boot" ] && printf ',"installing":%s' "$(jstr "$boot")")}"
+  fi
+  app_run 22 status --json
+  [ "$RUN_RC" = 124 ] && tool_out '{"ok":true,"ready":false,"installed":true,"message":"Agent Edit chưa trả lời kịp (máy đang bận?) — kiểm tra lại sau ít giây."}'
+  local f ready lic licmsg n i st next="" fails="" item
+  f=$(run_json_file)
+  ready=$(jget "$f" ready)
+  if [ -z "$ready" ]; then
+    rm -f "$f"
+    tool_relay
+  fi
+  lic=$(jget "$f" license.status)
+  licmsg=$(jget "$f" license.message)
+  n=$(jget "$f" checks)
+  i=0
+  while [ "$i" -lt "${n:-0}" ]; do
+    st=$(jget "$f" "checks.$i.status")
+    if [ "$st" = fail ]; then
+      item="$(jget "$f" "checks.$i.label") — $(jget "$f" "checks.$i.detail")"
+      fails="$fails${fails:+,}$(jstr "$item")"
+    fi
+    i=$((i + 1))
+  done
+  # goi y cua app (lenh dong lenh) -> ten hanh dong cua ky nang
+  n=$(jget "$f" next)
+  i=0
+  while [ "$i" -lt "${n:-0}" ]; do
+    case "$(jget "$f" "next.$i")" in
+      *activate*) item="setup (kích hoạt key bản quyền)" ;;
+      *"login gemini"*) item="login gemini" ;;
+      *"login claude"*) item="login claude" ;;
+      *"login codex"*) item="login codex (tuỳ chọn: ảnh AI)" ;;
+      *gemini-key*) item="API key Gemini: nhập trong app Agent Edit › Cài đặt API (hoặc đổi sang đăng nhập)" ;;
+      *claude-key*) item="API key Claude: nhập trong app Agent Edit › Cài đặt API (hoặc đổi sang đăng nhập)" ;;
+      *setup*) item="setup" ;;
+      *) item="$(jget "$f" "next.$i")" ;;
+    esac
+    next="$next${next:+,}$(jstr "$item")"
+    i=$((i + 1))
+  done
+  tool_out "{\"ok\":true,\"ready\":$ready,\"installed\":true,\"version\":$(jstr "$(jget "$f" version)"),\"license\":{\"status\":$(jstr "$lic"),\"message\":$(jstr "$licmsg")},\"missing\":[$fails],\"next\":[$next]$([ -n "$boot" ] && printf ',"installing":%s' "$(jstr "$boot")")}"
+  rm -f "$f"
+}
+
+# `setup --background` cua app (kich hoat key truoc neu ban quyen chua OK) -> RUN_OUT / RUN_RC
+app_setup_bg() {
+  local args=(setup --background --json)
+  if [ -n "$KEY" ]; then
+    app_run 8 license --json
+    case "$RUN_OUT" in
+      *'"status": "ok"'* | *'"status":"ok"'*) ;;
+      *)
+        if ver_ge "$APPV" "$KEY_ENV_VERSION"; then
+          KEEP_KEY=1
+          args+=(--key-env)
+        else
+          args+=(--key "$KEY")
+        fi
+        ;;
+    esac
+  fi
+  app_run 15 "${args[@]}"
+  KEEP_KEY=""
+}
+
+# ---- tool setup: cai app (neu chua co / qua cu) + kich hoat key + cai cong cu + dong bo kho — viec dai ----
+tool_setup() {
+  local cur id dir
+  cur=$(boot_running) && tool_out "{\"ok\":true,\"id\":$(jstr "$cur"),\"status\":\"running\",\"message\":\"Đang có lượt tải và cài Agent Edit chạy.\"}"
+  if [ -z "$APP" ] || ! ver_ge "$APPV" "$TOOL_MIN_VERSION"; then
+    [ -n "$KEY" ] || tool_fail "Cần key bản quyền Agent Edit để tải và cài app." "Gọi gettime_ask_field cho trường license-key, người trực lưu xong thì gọi lại setup."
+    id="i_$(date +%s)$((RANDOM % 900 + 100))"
+    dir="$TJ/$id"
+    mkdir -p "$dir"
+    BOOT_DIR="$dir"
+    boot_state running download 0 "Đang lấy bản Agent Edit mới nhất…"
+    BOOT_DIR=""
+    # tach han khoi lenh nay: khong giu stdout / stderr (GetTime cho dong ong ra), khong doc stdin
+    nohup /bin/bash "$SELF" __tool-boot "$id" </dev/null >"$dir/log.txt" 2>&1 &
+    printf '%s\n' "$!" >"$dir/pid"
+    tool_out "{\"ok\":true,\"id\":$(jstr "$id"),\"status\":\"running\",\"message\":\"Bắt đầu tải và cài Agent Edit (thường 5–20 phút).\"}"
+  fi
+  app_setup_bg
+  [ "$RUN_RC" = 124 ] && tool_fail "Agent Edit chưa trả lời kịp." "Gọi lại setup sau ít giây."
+  tool_relay
+}
+
+# viec nen i_: tai + kiem chu ky + cai app -> `setup --background` cua app (ma s_ ghi vao state.json -> `tool job i_` doc tiep)
+tool_boot_run() {
+  BOOT_DIR="$TJ/$1"
+  [ -d "$BOOT_DIR" ] || exit 2
+  local new sid
+  new=$(install_app "$KEY" "$APP") || exit 2
+  APP="$new"
+  APPV=$(app_version "$APP")
+  boot_state running license 0.99 "Đã cài Agent Edit $APPV, đang kích hoạt key và bắt đầu cài công cụ…"
+  app_setup_bg
+  sid=""
+  if [ -n "$RUN_OUT" ]; then
+    local f
+    f=$(run_json_file)
+    sid=$(jget "$f" id)
+    if [ -z "$sid" ]; then
+      boot_state error "" "" "$(jget "$f" error || jget "$f" error.message || echo "Kích hoạt / cài công cụ không thành công.")"
+      rm -f "$f"
+      exit 1
+    fi
+    rm -f "$f"
+  fi
+  [ -n "$sid" ] || die "Agent Edit đã cài nhưng chưa khởi động được bước cài công cụ — gọi lại setup."
+  boot_state running tools 0 "Đã cài app, đang cài công cụ (5–20 phút)…" "$sid"
+}
+
+# viec nen u_: cap nhat app (lenh `update` cua app chay mot mach, co the lau)
+tool_update_run() {
+  BOOT_DIR="$TJ/$1"
+  [ -d "$BOOT_DIR" ] || exit 2
+  local f="$BOOT_DIR/out.json" to
+  app_cmd
+  "${APP_CMD[@]}" update --json >"$f" 2>>"$BOOT_DIR/log.txt" </dev/null
+  if [ "$(jget "$f" ok)" = true ]; then
+    if [ "$(jget "$f" updated)" = true ]; then
+      to=$(jget "$f" to)
+      boot_state done "" 1 "Đã tải bản ${to:-mới} — Agent Edit tự thay app trong khoảng 30 giây."
+    else
+      boot_state done "" 1 "Agent Edit đang ở bản mới nhất ($(jget "$f" version || echo "$APPV"))."
+    fi
+  else
+    boot_state error "" "" "$(jget "$f" error || echo "Cập nhật không thành công.")"
+  fi
+}
+
+# trang thai 1 viec cua app: doc thang job.json (khong mo app moi 3 giay); tien trinh viec da chet -> hoi app (app danh dau loi)
+tool_app_job() {
+  local id="$1" f="$APP_JOBS/$1/job.json" st pid
+  if [ -f "$f" ]; then
+    st=$(jget "$f" status)
+    pid=$(jget "$f" pid)
+    case "$st" in done | error | cancelled) tool_out "$(cat "$f")" ;; esac
+    [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null && tool_out "$(cat "$f")"
+    [ "$st" = queued ] && [ -z "$pid" ] && tool_out "$(cat "$f")"
+  fi
+  tool_need_app
+  app_run 15 job "$id" --json
+  [ "$RUN_RC" = 124 ] && tool_out '{"ok":true,"status":"running","message":"Đang chạy."}'
+  tool_relay soft
+}
+
+tool_job() {
+  local id="${1:-}" dir pid st appjob
+  valid_id "$id" || tool_fail "Mã việc không hợp lệ: $id"
+  case "$id" in
+    i_* | u_*)
+      dir="$TJ/$id"
+      [ -f "$dir/state.json" ] || tool_fail "Không có việc $id."
+      appjob=$(jget "$dir/state.json" app_job)
+      [ -n "$appjob" ] && valid_id "$appjob" && tool_app_job "$appjob"
+      st=$(jget "$dir/state.json" status)
+      pid=$(cat "$dir/pid" 2>/dev/null)
+      if [ "$st" = running ] && ! { [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; }; then
+        BOOT_DIR="$dir"
+        boot_state error "" "" "Tiến trình $([ "${id:0:1}" = i ] && echo 'tải và cài' || echo 'cập nhật') đã dừng bất thường — gọi lại $([ "${id:0:1}" = i ] && echo setup || echo update). Nhật ký: $dir/log.txt"
+        BOOT_DIR=""
+      fi
+      tool_out "$(cat "$dir/state.json")"
+      ;;
+    *) tool_app_job "$id" ;;
+  esac
+}
+
+tool_cancel() {
+  local id="${1:-}" dir pid appjob
+  valid_id "$id" || tool_fail "Mã việc không hợp lệ: $id"
+  case "$id" in
+    i_* | u_*)
+      dir="$TJ/$id"
+      [ -f "$dir/state.json" ] || tool_fail "Không có việc $id."
+      appjob=$(jget "$dir/state.json" app_job)
+      if [ -n "$appjob" ] && valid_id "$appjob"; then
+        tool_need_app
+        app_run 18 cancel "$appjob" --json
+      fi
+      pid=$(cat "$dir/pid" 2>/dev/null)
+      if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+        /usr/bin/pkill -P "$pid" 2>/dev/null
+        kill "$pid" 2>/dev/null
+      fi
+      BOOT_DIR="$dir"
+      boot_state cancelled "" "" "Đã dừng."
+      BOOT_DIR=""
+      tool_out '{"ok":true,"status":"cancelled"}'
+      ;;
+  esac
+  tool_need_app
+  app_run 18 cancel "$id" --json
+  [ "$RUN_RC" = 124 ] && tool_out '{"ok":true,"status":"cancelling","message":"Đã gửi lệnh dừng."}'
+  tool_relay
+}
+
+tool_update() {
+  local id dir
+  tool_need_app
+  id="u_$(date +%s)$((RANDOM % 900 + 100))"
+  dir="$TJ/$id"
+  mkdir -p "$dir"
+  BOOT_DIR="$dir"
+  boot_state running update "" "Đang kiểm tra và tải bản Agent Edit mới…"
+  BOOT_DIR=""
+  nohup /bin/bash "$SELF" __tool-update "$id" </dev/null >"$dir/log.txt" 2>&1 &
+  printf '%s\n' "$!" >"$dir/pid"
+  tool_out "{\"ok\":true,\"id\":$(jstr "$id"),\"status\":\"running\",\"message\":\"Đang cập nhật Agent Edit.\"}"
+}
+
+# tool login <tai khoan> [--device] / login-code <tai khoan> <ma> / login-check <tai khoan>
+tool_login() {
+  local sub="$1" acc="${2:-}"
+  case "$acc" in gemini | claude | codex) ;; *) tool_fail "Tài khoản phải là gemini, claude hoặc codex." ;; esac
+  tool_need_app
+  case "$sub" in
+    login)
+      if [ "${3:-}" = "--device" ]; then app_run 20 login "$acc" --start --device --json; else app_run 20 login "$acc" --start --json; fi
+      [ "$RUN_RC" = 124 ] && tool_out "{\"ok\":true,\"status\":\"running\",\"account\":\"$acc\",\"message\":\"Đang mở trang đăng nhập — gọi login-check sau vài giây để lấy link.\"}"
+      tool_relay soft
+      ;;
+    login-code)
+      [ -n "${3:-}" ] || tool_fail "Thiếu mã đăng nhập."
+      app_run 20 login "$acc" --code "$3" --json
+      [ "$RUN_RC" = 124 ] && tool_out "{\"ok\":true,\"status\":\"running\",\"account\":\"$acc\",\"message\":\"Đã gửi mã, đang chờ xác nhận — gọi login-check sau vài giây.\"}"
+      tool_relay
+      ;;
+    login-check)
+      app_run 20 login "$acc" --check --json
+      [ "$RUN_RC" = 124 ] && tool_out "{\"ok\":true,\"status\":\"running\",\"account\":\"$acc\",\"message\":\"Chưa có kết quả — gọi lại login-check sau vài giây.\"}"
+      tool_relay soft
+      ;;
+  esac
+}
+
+# tool make <tham so cua make> — --insert-notes "<dong 1>\n<dong 2>" -> moi dong la ghi chu cua tu lieu cung thu tu
+tool_make() {
+  local args=() prev="" line
+  tool_need_app
+  for a in "$@"; do
+    if [ "$prev" = "--insert-notes" ]; then
+      while IFS= read -r line; do
+        line="${line#"${line%%[![:space:]]*}"}"
+        [ -n "$line" ] && args+=(--insert-note "$line")
+      done <<<"$a"
+      prev=""
+      continue
+    fi
+    if [ "$a" = "--insert-notes" ]; then
+      prev="$a"
+      continue
+    fi
+    args+=("$a")
+  done
+  app_run 22 make "${args[@]}" --json
+  [ "$RUN_RC" = 124 ] && tool_fail "Agent Edit chưa nhận việc kịp." "Gọi hành động jobs xem việc đã được tạo chưa trước khi gọi lại make."
+  tool_relay
+}
+
+# tool jobs — danh sach gon 8 viec gan nhat
+tool_jobs() {
+  local f n i rows="" id st msg file err
+  tool_need_app
+  app_run 20 jobs --json
+  [ "$RUN_RC" = 124 ] && tool_fail "Agent Edit chưa trả lời kịp." "Gọi lại sau ít giây."
+  f=$(run_json_file)
+  n=$(jget "$f" jobs)
+  [ "${n:-0}" -gt 8 ] && n=8
+  i=0
+  while [ "$i" -lt "${n:-0}" ]; do
+    id=$(jget "$f" "jobs.$i.id")
+    st=$(jget "$f" "jobs.$i.status")
+    msg=$(jget "$f" "jobs.$i.message")
+    file=$(jget "$f" "jobs.$i.result.copy" || jget "$f" "jobs.$i.result.output")
+    err=$(jget "$f" "jobs.$i.error.message")
+    rows="$rows${rows:+,}{\"id\":$(jstr "$id"),\"kind\":$(jstr "$(jget "$f" "jobs.$i.kind")"),\"status\":$(jstr "$st"),\"createdAt\":$(jstr "$(jget "$f" "jobs.$i.createdAt")"),\"message\":$(jstr "$msg")"
+    [ -n "$file" ] && rows="$rows,\"file\":$(jstr "$file")"
+    [ -n "$err" ] && rows="$rows,\"error\":$(jstr "$err")"
+    rows="$rows}"
+    i=$((i + 1))
+  done
+  rm -f "$f"
+  tool_out "{\"ok\":true,\"jobs\":[$rows]}"
+}
+
+if [ "$cmd" = "tool" ] || [ "$cmd" = "__tool-boot" ] || [ "$cmd" = "__tool-update" ]; then
+  # key ban quyen: CHI tu bien moi truong (GetTime cat trong Keychain) — khong bao gio tren dong lenh
+  KEY=$(printf '%s' "${AGENT_EDIT_KEY:-}" | tr -cd 'A-Za-z0-9-')
+  case "$cmd" in
+    __tool-boot) tool_boot_run "${2:-}"; exit 0 ;;
+    __tool-update) tool_update_run "${2:-}"; exit 0 ;;
+  esac
+  sub="${2:-}"
+  shift 2 2>/dev/null || shift $#
+  case "$sub" in
+    status) tool_status ;;
+    setup) tool_setup ;;
+    job) tool_job "${1:-}" ;;
+    cancel) tool_cancel "${1:-}" ;;
+    login | login-code | login-check) tool_login "$sub" "$@" ;;
+    make) tool_make "$@" ;;
+    jobs) tool_jobs ;;
+    update) tool_update ;;
+    *) tool_fail "Không có việc \"$sub\" (status | setup | job | cancel | login | login-code | login-check | make | jobs | update)." ;;
+  esac
+  exit 0
+fi
 
 # install_app chay trong subshell: ma 3 = tai chua xong (--background) -> in JSON tien do, thoat 3
 dl_partial() {

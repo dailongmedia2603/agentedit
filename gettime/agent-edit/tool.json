@@ -1,0 +1,138 @@
+{
+  "schema": 1,
+  "run": {
+    "default": ["bash", "{skill}/scripts/agent-edit"],
+    "win32": ["powershell", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", "{skill}/scripts/agent-edit.ps1"]
+  },
+  "check": { "argv": ["{run}", "tool", "status"], "ready": "ready" },
+  "fields": [
+    {
+      "id": "license-key",
+      "label": "Key bản quyền Agent Edit",
+      "secret": true,
+      "env": "AGENT_EDIT_KEY",
+      "hint": "Dạng XXXXX-XXXXX-XXXXX-XXXXX-XXXXX — mỗi key dùng cho 1 máy (dùng chung với app Agent Edit trên máy này)"
+    }
+  ],
+  "actions": [
+    {
+      "id": "setup",
+      "title": "Cài đặt Agent Edit",
+      "description": "Tải + cài app Agent Edit nếu máy chưa có hoặc bản quá cũ (cần trường license-key), kích hoạt key, tự cài công cụ còn thiếu và đồng bộ kho âm thanh / hiệu ứng. Cũng dùng để sửa khi kiểm tra báo thiếu công cụ hoặc chưa kích hoạt key. 5–20 phút.",
+      "argv": ["{run}", "tool", "setup"],
+      "job": {
+        "id": "id",
+        "poll": ["{run}", "tool", "job", "{job}"],
+        "status": "status",
+        "done": ["done"],
+        "failed": ["error", "cancelled"],
+        "progress": "progress",
+        "message": "message",
+        "error": "error.message",
+        "cancel": ["{run}", "tool", "cancel", "{job}"]
+      }
+    },
+    {
+      "id": "login",
+      "title": "Đăng nhập tài khoản AI",
+      "description": "Mở đăng nhập một tài khoản AI mà Agent Edit dùng (gemini, claude; codex tuỳ chọn cho ảnh AI). Trả link đăng nhập (url) / các dòng hướng dẫn (lines) để chuyển cho người trực.",
+      "input": {
+        "account": { "type": "string", "required": true, "enum": ["gemini", "claude", "codex"] },
+        "device": { "type": "boolean", "description": "Chỉ cho codex: đăng nhập bằng mã thiết bị (người trực không ngồi ở máy cài Agent Edit)." }
+      },
+      "argv": ["{run}", "tool", "login", "{account}", { "if": "device", "args": ["--device"] }]
+    },
+    {
+      "id": "login-code",
+      "title": "Gửi mã đăng nhập",
+      "description": "Gửi mã mà trang đăng nhập hiện ra (người trực dán mã vào chat) cho lượt đăng nhập đang chờ.",
+      "input": {
+        "account": { "type": "string", "required": true, "enum": ["gemini", "claude", "codex"] },
+        "code": { "type": "string", "required": true, "description": "Mã người trực gửi, giữ nguyên." }
+      },
+      "argv": ["{run}", "tool", "login-code", "{account}", "{code}"]
+    },
+    {
+      "id": "login-check",
+      "title": "Kiểm tra đăng nhập",
+      "description": "Tài khoản AI đã đăng nhập chưa, hoặc lượt đăng nhập đang chờ ở đâu (có thể kèm link).",
+      "input": {
+        "account": { "type": "string", "required": true, "enum": ["gemini", "claude", "codex"] }
+      },
+      "argv": ["{run}", "tool", "login-check", "{account}"]
+    },
+    {
+      "id": "make",
+      "title": "Dựng video",
+      "description": "Dựng và edit video bằng AI từ video có sẵn (cắt khoảng lặng, hook, phụ đề, chữ hiệu ứng, ảnh AI, SFX, nhạc nền), xuất MP4 dọc 9:16 hoặc ngang 16:9. 10–40 phút; video xong hiện thành thẻ trong chat.",
+      "input": {
+        "videos": { "type": "files", "required": true, "description": "Video nguồn (.mp4 .mov .m4v .avi .mkv .webm) — nhiều video thì ghép theo nội dung." },
+        "request": { "type": "string", "description": "Mục đích / nội dung / yêu cầu edit (quan trọng nhất)." },
+        "style": { "type": "string", "description": "Phong cách." },
+        "audience": { "type": "string", "description": "Người xem." },
+        "duration": { "type": "string", "description": "Độ dài mong muốn, vd \"45-60 giây\"." },
+        "reference": { "type": "file", "description": "Video mẫu để bắt chước nhịp cắt, chữ, hiệu ứng." },
+        "inserts": { "type": "files", "description": "Ảnh / video chèn lên (sản phẩm, logo, bảng giá…)." },
+        "insert_notes": { "type": "string", "description": "Ghi chú cho từng tư liệu chèn, MỖI DÒNG một tệp theo đúng thứ tự inserts: là gì, chèn lúc nói tới gì." },
+        "landscape": { "type": "boolean", "description": "Video ngang 16:9 (mặc định dọc 9:16)." },
+        "brand_colors": { "type": "string", "description": "Màu thương hiệu, vd \"#FF6A00 #1A1A1A\"." },
+        "brand_typography": { "type": "string", "description": "Font / kiểu chữ thương hiệu." },
+        "name": { "type": "string", "description": "Tên file video xong (không có thì theo chủ đề + ngày giờ)." },
+        "new_plan": { "type": "boolean", "description": "Lập kế hoạch dựng mới — chỉ khi người trực chê bản trước, muốn bản khác." },
+        "fresh": { "type": "boolean", "description": "Phân tích lại video từ đầu — chỉ khi người trực yêu cầu rõ." }
+      },
+      "argv": [
+        "{run}", "tool", "make",
+        { "each": "videos", "args": ["--video", "{item}"] },
+        { "if": "request", "args": ["--request", "{request}"] },
+        { "if": "style", "args": ["--style", "{style}"] },
+        { "if": "audience", "args": ["--audience", "{audience}"] },
+        { "if": "duration", "args": ["--duration", "{duration}"] },
+        { "if": "reference", "args": ["--reference", "{reference}"] },
+        { "each": "inserts", "args": ["--insert", "{item}"] },
+        { "if": "insert_notes", "args": ["--insert-notes", "{insert_notes}"] },
+        { "if": "landscape", "args": ["--landscape"] },
+        { "if": "brand_colors", "args": ["--brand-colors", "{brand_colors}"] },
+        { "if": "brand_typography", "args": ["--brand-typography", "{brand_typography}"] },
+        { "if": "name", "args": ["--name", "{name}"] },
+        { "if": "new_plan", "args": ["--new-plan"] },
+        { "if": "fresh", "args": ["--fresh"] },
+        "--out", "{out}"
+      ],
+      "job": {
+        "id": "id",
+        "poll": ["{run}", "tool", "job", "{job}"],
+        "status": "status",
+        "done": ["done"],
+        "failed": ["error", "cancelled"],
+        "progress": "progress",
+        "message": "message",
+        "result": "result.copy",
+        "error": "error.message",
+        "cancel": ["{run}", "tool", "cancel", "{job}"]
+      },
+      "output": "video"
+    },
+    {
+      "id": "jobs",
+      "title": "Việc gần đây",
+      "description": "Liệt kê 8 việc gần nhất của Agent Edit (mã, trạng thái, file video, lỗi) — kể cả video tạo từ app hoặc chat khác.",
+      "argv": ["{run}", "tool", "jobs"]
+    },
+    {
+      "id": "update",
+      "title": "Cập nhật Agent Edit",
+      "description": "Cập nhật app Agent Edit lên bản mới nhất (app phải đang đóng, không có video đang dựng).",
+      "argv": ["{run}", "tool", "update"],
+      "job": {
+        "id": "id",
+        "poll": ["{run}", "tool", "job", "{job}"],
+        "status": "status",
+        "done": ["done"],
+        "failed": ["error", "cancelled"],
+        "message": "message",
+        "error": "error.message"
+      }
+    }
+  ]
+}

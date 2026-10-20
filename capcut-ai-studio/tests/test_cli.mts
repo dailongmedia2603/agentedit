@@ -45,6 +45,8 @@ a = U.parseArgs(['wait', 'r_abc123', '--timeout', '0'])
 check('wait --timeout 0', a.cmd === 'wait' && a.pos[0] === 'r_abc123' && U.opt(a, 'timeout') === '0', a)
 a = U.parseArgs(['wait', '--until-change', 'r_abc123', '--json'])
 check('--until-change la co, khong nuot ma viec', a.flags.has('until-change') && a.pos[0] === 'r_abc123' && a.flags.has('json'), a)
+a = U.parseArgs(['setup', '--background', '--key-env', 'thua'])
+check('--key-env la co (key GetTime qua bien moi truong), khong nuot doi so', a.flags.has('key-env') && a.pos[0] === 'thua' && !U.opt(a, 'key-env'), a)
 
 console.log('[1b] moc tien do (wait --until-change)')
 {

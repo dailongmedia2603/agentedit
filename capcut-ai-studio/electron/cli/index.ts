@@ -37,8 +37,9 @@ const EXIT = { ok: 0, error: 1, usage: 2, running: 3, cancelled: 130 }
 const HELP = `Agent Edit CLI — dựng video bằng AI, không cần mở giao diện (cùng bộ máy với app Agent Edit).
 
 CÀI ĐẶT / KIỂM TRA
-  agent-edit setup [--key <KEY>] [--background]
+  agent-edit setup [--key <KEY> | --key-env] [--background]
                                        Kích hoạt key (nếu có) + tự cài toàn bộ công cụ còn thiếu + đồng bộ kho
+                                       --key-env: lấy key từ biến môi trường AGENT_EDIT_KEY (không lộ trên dòng lệnh)
                                        --background: chạy nền, trả mã việc ngay (theo dõi: wait <mã> --until-change)
   agent-edit status                    Bản quyền, công cụ, đăng nhập AI, việc đang chạy
   agent-edit doctor [--fix]            Kiểm tra từng công cụ (--fix: tự cài mục còn thiếu)
@@ -179,7 +180,9 @@ const NO_INPUT: JobInput = { videos: [], inserts: [], orientation: 'portrait', f
 
 async function cmdSetup(a: Args): Promise<number> {
   const say = (m: string) => !json(a) && out(m)
-  const key = opt(a, 'key')
+  // --key-env (1.20.0, ky nang GetTime): key lay tu bien AGENT_EDIT_KEY — khong nam tren dong lenh (`ps` thay duoc)
+  const key = opt(a, 'key') || (a.flags.has('key-env') ? (process.env.AGENT_EDIT_KEY || '').trim() || undefined : undefined)
+  delete process.env.AGENT_EDIT_KEY
   let lic: LicenseState
   if (key) {
     say('Kích hoạt key...')

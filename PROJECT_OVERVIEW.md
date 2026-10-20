@@ -1765,7 +1765,7 @@ ban quyen (license.enc + khoa thiet bi trong Keychain cua app — CLI tu tao kho
   `arch -x86_64 node scripts/dist.mjs --mac`.
 
 **KY NANG GETTIME** `gettime/agent-edit/` (SKILL.md + icon.png 128px + `scripts/agent-edit`): SKILL.md theo chuan Agent Skills
-+ luat GetTime (YAML 1 tang, description boc '...', `metadata.loai: cong-cu`, moi chi dan nam trong SKILL.md).
++ luat GetTime (YAML 1 tang, description boc '...', moi chi dan nam trong SKILL.md; tu 2.0.0: `metadata.kind: tool` + tool.json — xem cuoi muc).
 `scripts/agent-edit` (bash 3.2 + cong cu co san cua macOS, khong can Node / jq): tim app MOI nhat (AGENT_EDIT_APP,
 /Applications, ~/Applications); chua co / cu hon `MIN_VERSION` (1.5.0 — ban dau tien co CLI) + co `--key` -> `POST
 /v1/download` (license-server, key hop le, KHONG gan may) -> tai zip (curl -C - tai tiep) -> kiem SHA-512 + `codesign -R`
@@ -1802,6 +1802,31 @@ Chrome x64 + dong bo kho, Whisper x64 khop 87% chu, luat hook dat, anh AI + chu 
 Do tren ban x64 (Rosetta): h264_videotoolbox loi o khau ghep (ffmpeg 187) -> Mac Intel mac dinh render CPU (STUDIO_REMOTION_ACCEL=1
 ep bat); lan dau mo Chrome x64 qua 25s -> remotion-worker thu lai selectComposition khi loi "connect to the browser".
 CHUA kiem tren may Intel THAT (khong co may): GPU / VideoToolbox, toc do.
+
+**KY NANG CONG CU `tool.json` (2.0.0, 2026-10-20 — theo `docs/huong-dan-viet-ky-nang.md` cua gettime-desktop, doi chieu ma
+nguon `src/core/tool-manifest*.ts`, `composition/tool-station-*.ts`, `tool-jobs.ts`):** GetTime mo "tram cong cu" (MCP
+`gettime`) -> AI goi `agent-edit__<hanh dong>` o MUC CHAT THUONG (khong can Toan quyen, khong shell); app GetTime chay lenh, cat
+key, theo doi viec dai, dua video vao chat. `gettime/agent-edit/tool.json`: run = `bash {skill}/scripts/agent-edit` / win32
+`powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File {skill}/scripts/agent-edit.ps1`; check `tool status`
+(`ready`); truong bi mat `license-key` -> bien `AGENT_EDIT_KEY`; hanh dong setup (viec) · login · login-code · login-check ·
+make (viec, `--out {out}` = thu muc dinh kem cua workspace -> the video trong chat) · jobs · update (viec). SKILL.md metadata
+`title / kind: tool / author / version` (code GetTime doc `title`, KHONG phai `ten` nhu vi du trong tai lieu cua ho).
+- Luat GetTime (do tu code): moi lenh <= 25 giay (hoi viec 20 giay, 3 giay / lan); stdout = 1 khoi JSON (hoac dong JSON cuoi);
+  ma thoat != 0 -> AI thay "loi"; viec dai = tra `id` ngay; tien trinh nen KHONG duoc giu stdout (GetTime cho dong ong, qua 2s
+  thi giet ca nhom tien trinh); cau tra loi cat o 4000 ky tu; `{field:..}` bi mat cam tren dong lenh; tep `file/files` phai nam
+  trong thu muc cua chat. Che do cu (Toan quyen, AI tu chay script) van giu cho Claude Code / Codex ngoai GetTime.
+- Script `tool <viec>` (bash + PowerShell giong nhau): `app_run`/`AppRun` chay CLI cua app co HAN (8–22s; het han -> JSON "goi
+  lai sau"), chuan hoa ma thoat (0 / 3 -> 0); `tool status` = ban GON (missing + next da doi sang ten hanh dong, khong 50 muc
+  Doctor); `tool job r_/s_/l_` doc THANG `~/.capcut-studio/cli/jobs/<id>/job.json` (khong mo Electron moi 3 giay — chi hoi app
+  khi tien trinh viec da chet); may chua co app / qua cu (< 1.7.0) + co key -> viec nen `i_` (nohup / Start-Process an): tai
+  (bao % vao state.json) -> kiem -> cai -> `setup --background` cua app (ma `s_` ghi vao state, `tool job i_` doc tiep); `u_` =
+  `update` chay nen. Du lieu tai + trang thai viec o `$GETTIME_TOOL_DATA` (ngoai thu muc ky nang). `--insert-notes` nhieu dong ->
+  moi dong 1 `--insert-note` theo thu tu tu lieu. Key CHI di vao app khi kich hoat: app >= 1.20.0 `setup --key-env` (doc
+  `AGENT_EDIT_KEY`, xoa khoi env truoc khi tach viec nen), app cu `--key` (vai giay).
+- Kiem: `selftest-gettime.mjs` them 7 muc tool (status chua app, setup khong key / key sai / key dung qua viec nen i_ tai + cai
+  that, status gon, make + job < 25s, jobs) — macOS 13/13 PASS; `.ps1` chay thu bang PowerShell 7 tren macOS
+  (AGENT_EDIT_TEST_ANY_OS=1: status / jobs / job / login-check / make + ghi chu nhieu dong / viec nen i_ tai + SHA-512);
+  tool.json qua dung `readToolManifest` + `toolArgv` cua GetTime. Windows THAT: chi CI (selftest-gettime tren release.yml).
 
 ## 17. TAO VIDEO BANG AI (skill motionmaxxing) + AUTOMATION VIDEO + SAYDIVOICE (2026-10-14)
 

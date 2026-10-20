@@ -119,13 +119,13 @@ const baseEnv = { ...process.env, AGENT_EDIT_API: API, AGENT_EDIT_USER_DATA_DIR:
 delete baseEnv.ELECTRON_RUN_AS_NODE
 if (IS_MAC) Object.assign(baseEnv, { HOME: home, AGENT_EDIT_ARCH: info.arch, AGENT_EDIT_NO_SYSTEM_APP: '1', PYTHONPYCACHEPREFIX: join(work, 'pycache') })
 
-function skill(args, timeoutMs = 10 * 60000) {
+function skill(args, timeoutMs = 10 * 60000, extraEnv = {}) {
   const [cmd, pre] = IS_MAC
     ? ['/bin/bash', [join(skillDir, 'agent-edit')]]
     : ['powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', join(skillDir, 'agent-edit.ps1')]]
   return new Promise((res) => {
     const t0 = Date.now()
-    const p = spawn(cmd, [...pre, ...args], { env: baseEnv, windowsHide: true })
+    const p = spawn(cmd, [...pre, ...args], { env: { ...baseEnv, ...extraEnv }, windowsHide: true })
     let so = ''
     let se = ''
     p.stdout.on('data', (d) => (so += d.toString('utf-8')))
@@ -154,12 +154,57 @@ const parse = (t) => {
 }
 const both = (r) => (r.so + ' | ' + r.se).trim()
 
+// ---- che do cong cu GetTime (tool.json): moi lenh <= 25 giay (GetTime cat o 25s), key qua bien AGENT_EDIT_KEY ----
+const TOOL_LIMIT_MS = 25000
+const toolEnv = { GETTIME_TOOL_DATA: join(work, 'tool-data') }
+const tool = (args, extra = {}) => skill(['tool', ...args], 60000, { ...toolEnv, ...extra })
+/** hoi `tool job <ma>` nhu GetTime (3 giay / lan) toi khi xong / loi — tra cau tra loi cuoi + lan hoi lau nhat */
+async function pollTool(id, ms, extra = {}) {
+  const t0 = Date.now()
+  let last = null
+  let slowest = 0
+  while (Date.now() - t0 < ms) {
+    const r = await tool(['job', id], extra)
+    slowest = Math.max(slowest, r.ms)
+    last = parse(r.so)
+    if (last && ['done', 'error', 'cancelled'].includes(last.status)) break
+    await sleep(3000)
+  }
+  return { last, slowest }
+}
+
 let installedExe = ''
 let installDir = ''
 try {
   console.log(`[selftest-gettime] ${IS_MAC ? 'bash agent-edit' : 'agent-edit.ps1'} · ban ${info.version} (${info.build}) · may chu gia ${API}`)
 
-  let r = await skill(['install', '--key', 'AAAAA-BBBBB-CCCCC-DDDDD-EEEEE'], 120000)
+  // [tool] may chua co app: status -> chua san sang; setup khong key -> loi doi key; key sai / dung -> viec nen i_
+  let r = await tool(['status'])
+  let j = parse(r.so)
+  record('tool status (chua co app): JSON, ready=false, next=setup, < 25s', r.code === 0 && j?.ready === false && j?.installed === false &&
+    j?.next?.[0] === 'setup' && r.ms < TOOL_LIMIT_MS, `${r.ms}ms ${both(r).slice(0, 200)}`)
+  r = await tool(['setup'])
+  j = parse(r.so)
+  record('tool setup khong key -> loi (ma 1) bao can key', r.code === 1 && /key/i.test(j?.error?.message || '') && r.ms < TOOL_LIMIT_MS, both(r).slice(0, 200))
+  r = await tool(['setup'], { AGENT_EDIT_KEY: 'AAAAA-BBBBB-CCCCC-DDDDD-EEEEE' })
+  j = parse(r.so)
+  if (j?.id?.startsWith('i_')) {
+    const p = await pollTool(j.id, 3 * 60000)
+    record('tool setup key sai: tra ma i_ ngay, viec nen bao "Key không đúng"', r.ms < TOOL_LIMIT_MS && p.last?.status === 'error' &&
+      /Key không đúng/.test(p.last?.error?.message || '') && p.slowest < TOOL_LIMIT_MS, `setup ${r.ms}ms, hoi lau nhat ${p.slowest}ms ${JSON.stringify(p.last)}`)
+  } else record('tool setup key sai -> tra ma i_', false, both(r))
+  r = await tool(['setup'], { AGENT_EDIT_KEY: KEY })
+  j = parse(r.so)
+  if (j?.id?.startsWith('i_')) {
+    // tai + kiem + cai app that qua viec nen; kich hoat key test o may chu ban quyen THAT -> loi kich hoat (dung du kien)
+    const p = await pollTool(j.id, 8 * 60000, { AGENT_EDIT_KEY: KEY })
+    const exe = IS_MAC ? join(home, 'Applications', 'Agent Edit.app') : join(process.env.LOCALAPPDATA || '', 'Programs', 'Agent Edit', 'Agent Edit.exe')
+    record('tool setup key dung: viec nen i_ tai + cai app, roi toi buoc kich hoat key', r.ms < TOOL_LIMIT_MS && existsSync(exe) &&
+      !!p.last && (p.last.status === 'error' ? !/tải|SHA|chữ ký|cài được/i.test(p.last.error?.message || '') : !!p.last.status) && p.slowest < TOOL_LIMIT_MS,
+      `setup ${r.ms}ms, hoi lau nhat ${p.slowest}ms ${JSON.stringify(p.last).slice(0, 300)}`)
+  } else record('tool setup key dung -> tra ma i_', false, both(r))
+
+  r = await skill(['install', '--key', 'AAAAA-BBBBB-CCCCC-DDDDD-EEEEE'], 120000)
   record('key sai -> dung, bao "Key không đúng" (ma 2)', r.code === 2 && /Key không đúng/.test(r.se), both(r))
 
   r = await skill(['install', '--key', KEY.toLowerCase()])
@@ -201,6 +246,24 @@ try {
     record('make tra ma viec NGAY (viec nen khong giu ong stdout cua lenh goi)', !!fin && fin - returnedAt > 3000,
       `make xong ${r.ms}ms, tra truoc khi viec nen xong ${fin - returnedAt}ms (viec nen giu 8s)`)
   } else record('make -> tra ma viec', false, both(r))
+
+  // [tool] app da cai (chua kich hoat): status gon + make / job / jobs nhu GetTime goi
+  r = await tool(['status'])
+  j = parse(r.so)
+  record('tool status (co app, chua key): ban gon, next = setup (kich hoat key), < 25s', r.code === 0 && j?.ready === false &&
+    j?.installed === true && (j?.next || []).some((x) => /kích hoạt/.test(x)) && r.so.length < 4000 && r.ms < TOOL_LIMIT_MS, `${r.ms}ms ${r.so.slice(0, 300)}`)
+  const ins = join(work, 'logo.png')
+  writeFileSync(ins, Buffer.alloc(64))
+  const outDir = join(work, 'gettime-out')
+  r = await tool(['make', '--video', vid, '--request', 'tự kiểm: công cụ', '--insert', ins, '--insert-notes', 'logo, cuối video\n', '--out', outDir])
+  j = parse(r.so)
+  if (j?.id) {
+    const p = await pollTool(j.id, 3 * 60000)
+    record('tool make: tra ma viec < 25s, tool job doc trang thai (dung o ban quyen)', r.ms < TOOL_LIMIT_MS && p.last?.status === 'error' &&
+      p.last?.error?.step === 'prepare' && p.slowest < TOOL_LIMIT_MS, `make ${r.ms}ms, hoi lau nhat ${p.slowest}ms`)
+    const lj = parse((await tool(['jobs'])).so)
+    record('tool jobs: danh sach gon co viec vua tao', !!lj?.jobs?.some((x) => x.id === j.id), JSON.stringify(lj).slice(0, 300))
+  } else record('tool make -> tra ma viec', false, both(r))
 } finally {
   srv.close()
   if (IS_WIN && installDir) {
