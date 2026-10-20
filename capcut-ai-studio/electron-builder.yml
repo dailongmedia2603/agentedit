@@ -48,6 +48,16 @@ extraResources:
       - "!**/.DS_Store"
       - "!**/__pycache__/**"
 
+  # motion-video-director v3.5.2 — user xac nhan quyen phan phoi rieng 2026-10-20.
+  # Cap nhat app cung cap nhat skill; giu LICENSE.md va thong tin tac gia trong goi.
+  - from: skills/motion-video-director
+    to: skills/motion-video-director
+    filter:
+      - "**/*"
+      - "!**/.DS_Store"
+      - "!**/__pycache__/**"
+      - "!**/*.pyc"
+
 # Sau khi dong goi app (da nhet Python nhung + .so): ad-hoc ky SAU toan bo -> tranh loi "bi hong"
 # tren may tai ve (identity:null lam electron-builder bo qua ky -> seal khong khop Resources moi). Chi macOS
 # (hook tu bo qua tren Windows; afterAllArtifactBuild chi xu ly file .dmg).

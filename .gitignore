@@ -61,5 +61,5 @@ r2-publish.json
 capcut-ai-studio/remotion-src/shotcraft/.preview/
 capcut-ai-studio/remotion-src/shotcraft/.preview-public/
 
-# motion-video-director: skill THUONG MAI 1 nguoi (cam phan phoi lai) — khong bao gio dua vao repo (PROJECT_OVERVIEW 28)
-motion-video-director/
+# Ban thu nghiem goc o root; ban dong goi duoc cap quyen nam trong capcut-ai-studio/skills/ (PROJECT_OVERVIEW 28).
+/motion-video-director/

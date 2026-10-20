@@ -8,8 +8,8 @@ export const MOTION_HOME = join(ENGINE_HOME, 'motion')
 export const MOTION_JOBS_DIR = join(MOTION_HOME, 'jobs')
 
 /** Skill dong goi: prod <Resources>/skills/motionmaxxing ; dev <project>/skills/motionmaxxing */
-export function bundledSkillDir(): string {
-  if (app.isPackaged) return join(process.resourcesPath, 'skills', 'motionmaxxing')
-  const dev = join(app.getAppPath(), 'skills', 'motionmaxxing')
-  return existsSync(dev) ? dev : join(process.cwd(), 'skills', 'motionmaxxing')
+export function bundledSkillDir(name = 'motionmaxxing'): string {
+  if (app.isPackaged) return join(process.resourcesPath, 'skills', name)
+  const dev = join(app.getAppPath(), 'skills', name)
+  return existsSync(dev) ? dev : join(process.cwd(), 'skills', name)
 }

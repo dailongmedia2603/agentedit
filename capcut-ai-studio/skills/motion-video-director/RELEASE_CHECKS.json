@@ -1,0 +1,38 @@
+{
+  "version": "3.5.2",
+  "base": "published 3.5.1, pinned ea361ad3b4d004d856de3f358c4aa454fb95685a",
+  "tested_host": "Windows; Python 3.11.9",
+  "passed": [
+    "YAML parses; matching kebab-case name; description under 200 characters",
+    "Entrypoint under 500 lines",
+    "Node syntax: scripts\\preview.mjs",
+    "Node syntax: templates\\render\\data.js",
+    "Node syntax: templates\\render\\main.js",
+    "Node syntax: templates\\render\\render.js",
+    "Node syntax: templates\\render\\scenes\\example.js",
+    "All Python AST and JSON parsing checks passed",
+    "Entrypoint concrete resource links resolve",
+    "Original licence preserved byte-for-byte",
+    "No bytecode, dotenv files or absolute author paths packaged",
+    "Normalizer preserves existing nonempty values and comments",
+    "Normalizer does not print dummy secret values",
+    "Normalizer replacement requires explicit flag",
+    "Normalizer missing arguments produces usage, not traceback",
+    "Preview rejects invalid numeric settings before cache creation",
+    "Synthetic preview sheet and MP4 succeed with configured FFmpeg",
+    "Preview explicitly warns when audio is absent",
+    "Existing review is refused before cache changes",
+    "Repeated range gets a separate cache without deleting prior frames",
+    "MP4 encoding failure returns nonzero exit status",
+    "ElevenLabs helper help works without an API call"
+  ],
+  "not_tested": [
+    "Live Claude upload/activation",
+    "Live MCP authentication",
+    "Paid ElevenLabs generation",
+    "Optional model inference",
+    "macOS/Linux execution",
+    "Full customer video render"
+  ],
+  "original_zip_sha256": "8f27d60a563741db10ab3c8ed0be6d988849e3ef42138ab4c5aedd299a6b2c37"
+}

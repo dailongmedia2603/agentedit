@@ -82,8 +82,9 @@ Day la quy trinh CHUAN, user da dong y tu truoc — lam du cac buoc, khong hoi l
   `capcut-ai-studio/skills/motionmaxxing` (BAN CHINH — `~/.claude/skills/motionmaxxing` la lien ket toi day). Test:
   `cd capcut-ai-studio && node tests/test_motion.mts`; tu kiem that (ton han muc Claude + Saydi): `env -u ELECTRON_RUN_AS_NODE
   STUDIO_LICENSE=off STUDIO_MOTION_TEST=<brief.json> <app binary> . --user-data-dir=<tmp>`.
-- QUY TRINH motion-video-director (THU NGHIEM CA NHAN, PROJECT_OVERVIEW 28): skill THUONG MAI 1 NGUOI — KHONG chep vao repo /
-  ban dong goi; app chi symlink ban o `~/.claude/skills/motion-video-director` vao job (`electron/services/motion/mvd.ts`). Anh AI
+- QUY TRINH motion-video-director (PROJECT_OVERVIEW 28): user xac nhan da co quyen phan phoi rieng 2026-10-20;
+  ban chinh dong goi o `capcut-ai-studio/skills/motion-video-director`, giu LICENSE.md / thong tin tac gia. App cai theo hash
+  vao `~/.capcut-studio/motion/mvd/skill/` roi lien ket vao job (`electron/services/motion/mvd.ts`). Anh AI
   + tach nen: `skills/motionmaxxing/scripts/illustrate.py` (`--dry-run`, `--cut-only IN OUT --split`).
 - DAO DIEN Edit Video (director.py / director_guard.py) DA GO 2026-10-18 theo yeu cau user (lam video edit kem hon) —
   PROJECT_OVERVIEW 23. Bo tieng "the gioi" (`sfx_kit.WORLDS` + `sfx_kit.sound_catalog`) van giu cho luong Tao video.

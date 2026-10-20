@@ -9,7 +9,7 @@
 //  5. Runner (claude gia): co --setting-sources project + --tools + prompt qua stdin + SAYDI_API_KEY khi co loi doc;
 //     ra final.mp4 -> done + meta; khong ra -> error; huy; chay lai.
 //  6. Automation: lan dau chi ghi nhan; tin moi -> video (brief tu tin + anh bai); tran / lan + tran / ngay; loi nguon.
-//  7. Quy trinh motion-video-director (ca nhan, motion/mvd.ts): chi khi may co skill; LIEN KET (khong chep) vao job; prompt
+//  7. Quy trinh motion-video-director (motion/mvd.ts): skill dong goi cho HOME sach; cache theo hash + lien ket vao job; prompt
 //     MVD dao dien + motionmaxxing cong cu + illustrate.py; env MM / MVD / ELEVENLABS_API_KEY; buoc 'images' / 'sound'.
 import { register } from 'node:module'
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, readdirSync, rmSync, chmodSync, lstatSync, realpathSync, symlinkSync } from 'fs'
@@ -174,15 +174,39 @@ const MV = await import('../electron/services/motion/mvd.ts')
   check('buoc: TASTE.md -> idea', ST.stageOfTool('Write', { file_path: '/x/TASTE.md' }) === 'idea')
   const init = JSON.stringify({ type: 'system', subtype: 'init', model: 'm', skills: ['motionmaxxing'] })
   check('canh bao thieu skill mvd', ST.parseStreamLine(init, ['motionmaxxing', 'motion-video-director']).lines.some((l) => /motion-video-director/.test(l)))
-  // tim skill: chi may co SKILL.md dung ten
-  check('khong co skill -> khong co lua chon', MV.mvdSkillDir() === null && MV.mvdStatus().available === false)
+  // HOME sach: dung skill dong goi; thieu ca bundle va ban cai rieng thi bao khong kha dung.
+  const bundle = join(process.cwd(), 'skills', 'motion-video-director')
+  const missing = join(HOME, 'missing-mvd')
+  check('HOME sach van co MVD dong goi', MV.mvdSkillDir() === bundle && MV.mvdStatus().available && MV.mvdStatus().version === '3.5.2')
+  check('thieu bundle va skill rieng -> unavailable', MV.mvdSkillDir({}, missing) === null && MV.mvdStatus({}, missing).available === false)
+  const savedResources = process.resourcesPath
+  ;(globalThis as any).__PACKAGED = true
+  Object.defineProperty(process, 'resourcesPath', { value: join(HOME, 'app resources'), configurable: true })
+  const { bundledSkillDir } = await import('../electron/services/motion/paths.ts')
+  check('ban dong goi dung Resources thay vi cwd', bundledSkillDir(MV.MVD_NAME) === join(process.resourcesPath, 'skills', MV.MVD_NAME))
+  ;(globalThis as any).__PACKAGED = false
+  if (savedResources === undefined) delete (process as any).resourcesPath
+  else Object.defineProperty(process, 'resourcesPath', { value: savedResources, configurable: true })
   const fakeMvd = join(HOME, 'mvd-skill')
   mkdirSync(fakeMvd, { recursive: true })
   writeFileSync(join(fakeMvd, 'SKILL.md'), '---\nname: motion-video-director\n---\n# Motion Video Director — v3.5.2\n')
   check('AGENT_EDIT_MVD_DIR', MV.mvdSkillDir({ ...process.env, AGENT_EDIT_MVD_DIR: fakeMvd }) === fakeMvd && MV.mvdStatus({ ...process.env, AGENT_EDIT_MVD_DIR: fakeMvd }).version === '3.5.2')
+  const personal = join(HOME, '.claude', 'skills', MV.MVD_NAME)
+  mkdirSync(personal, { recursive: true })
+  writeFileSync(join(personal, 'SKILL.md'), readFileSync(join(fakeMvd, 'SKILL.md')))
+  check('ban dong goi uu tien hon skill rieng cu', MV.mvdSkillDir({}) === bundle)
+  check('thieu bundle -> fallback skill rieng', MV.mvdSkillDir({}, missing) === personal)
+  check('override hong -> van dung bundle', MV.mvdSkillDir({ AGENT_EDIT_MVD_DIR: missing }) === bundle)
+  rmSync(personal, { recursive: true })
   const jd = join(HOME, 'job-mvd')
   const link = MV.linkMvd(jd, fakeMvd)
   check('skill mvd LIEN KET (khong chep)', lstatSync(link).isSymbolicLink() && realpathSync(link) === realpathSync(fakeMvd))
+  const cache = join(HOME, 'mvd-cache')
+  const old = SK.installSkill(fakeMvd, cache, { cleanup: false })
+  const pinned = MV.linkMvd(join(HOME, 'old-mvd-job'), old.dir)
+  writeFileSync(join(fakeMvd, 'SKILL.md'), '---\nname: motion-video-director\n---\n# Motion Video Director — v3.5.3\n')
+  const updated = SK.installSkill(fakeMvd, cache, { cleanup: false })
+  check('cap nhat skill -> hash moi, job cu con nguyen', updated.version !== old.version && existsSync(join(old.dir, 'SKILL.md')) && readFileSync(join(pinned, 'SKILL.md'), 'utf-8').includes('3.5.2'))
   check('key ElevenLabs tu bien moi truong', MV.elevenLabsKey({ ELEVENLABS_API_KEY: ' sk_x ' } as any) === 'sk_x')
   writeFileSync(join(HOME, '.elevenlabs'), 'ELEVENLABS_API_KEY="sk_file"\n')
   check('key ElevenLabs tu ~/.elevenlabs', MV.elevenLabsKey({} as any) === 'sk_file')
@@ -350,22 +374,15 @@ const waitJob = async (id: string, ms = 60000) => {
   await waitJob(j2.id)
   check('khong loi doc -> khong truyen key Saydi', !readFileSync(join(j2.dir, 'env.txt'), 'utf-8').includes('SAYDI_API_KEY'))
 
-  // quy trinh motion-video-director: may chua co skill -> tu choi; co skill (~/.claude/skills) -> lien ket + prompt + env
-  let mvdErr = ''
-  try {
-    await RUN.createMotionJob({ ...baseBrief(), engine: 'mvd' } as any)
-  } catch (e) {
-    mvdErr = String((e as Error).message)
-  }
-  check('mvd: may chua cai skill -> loi ro', /motion-video-director/.test(mvdErr), mvdErr)
-  const mvdHome = join(HOME, '.claude', 'skills', 'motion-video-director')
-  mkdirSync(mvdHome, { recursive: true })
-  writeFileSync(join(mvdHome, 'SKILL.md'), '---\nname: motion-video-director\n---\n# Motion Video Director — v3.5.2\n')
+  // May khach HOME sach, khong cai skill thu cong: runner cai tu bundle vao cache rieng + prompt + env.
+  check('mvd: khong co ban cai rieng', !existsSync(join(HOME, '.claude', 'skills', 'motion-video-director')))
   writeFileSync(join(HOME, '.elevenlabs'), 'sk_eleven_test\n')
   const jm = await RUN.createMotionJob({ ...baseBrief(), engine: 'mvd' } as any)
   const rm = await waitJob(jm.id)
   check('mvd: xong', rm?.status === 'done', { status: rm?.status, error: rm?.error })
   check('mvd: skill lien ket vao job', lstatSync(join(jm.dir, '.claude', 'skills', 'motion-video-director')).isSymbolicLink())
+  const installedMvd = realpathSync(join(jm.dir, '.claude', 'skills', 'motion-video-director'))
+  check('mvd: job dung cache rieng, du giay phep + script', installedMvd.includes(join('motion', 'mvd', 'skill')) && ['LICENSE.md', 'scripts/preflight.py', 'scripts/mvd_paths.py', 'reference/visual-design.md', 'templates/TASTE.md'].every((f) => existsSync(join(installedMvd, f))))
   check('mvd: prompt MVD qua stdin', readFileSync(join(jm.dir, 'stdin.txt'), 'utf-8').includes('ONLY a toolbox'))
   const envm = readFileSync(join(jm.dir, 'env.txt'), 'utf-8')
   check('mvd: env MM / MVD / ElevenLabs', /^MM=.*motionmaxxing$/m.test(envm) && /^MVD=.*motion-video-director$/m.test(envm) && envm.includes('ELEVENLABS_API_KEY=sk_eleven_test'))

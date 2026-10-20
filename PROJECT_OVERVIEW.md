@@ -2294,19 +2294,21 @@ Soat UI that: chay app voi `--use-mock-keychain` (KHONG thi luu token = safeStor
 Storage" chan main process) + `--inspect` de goi `win.showInactive()` + `webContents.capturePage()` (cua so an -> CDP chup treo).
 CHUA thu voi tai khoan Phone Agent / iPhone that (can token cua user).
 
-## 28. QUY TRINH motion-video-director cho Tao video / Automation (THU NGHIEM CA NHAN, 2026-10-19, `motion/mvd.ts`)
+## 28. QUY TRINH motion-video-director cho Tao video / Automation (2026-10-19; dong goi 2026-10-20, `motion/mvd.ts`)
 
 User thu skill motion-video-director (MVD, Miftahul Islam, v3.5.2) o ~/Desktop/Test-tao-video (pipeline B: anh GPT 3D nhan vat
 + do vat tach nen ghep code, nhac 128 bpm co build/drop, cat theo phach, SFX theo tung su kien) -> hay hon Tao video
 (motionmaxxing). Them lua chon **"Quy trinh dung"** (form Tao video + thong tin chung du an Automation): motionmaxxing (mac dinh)
 | motion-video-director.
 
-- **BAN QUYEN — DOC TRUOC KHI SUA**: MVD la giay phep THUONG MAI 1 NGUOI (LICENSE.md cua skill): CAM phan phoi lai / dong goi
-  vao san pham cho nguoi khac, ke ca ban sua / viet lai bang AI. User chi dung CA NHAN tren may nay, se xin tac gia truoc khi
-  dua cho khach. Vi vay: KHONG chep skill vao repo / electron-builder / ~/.capcut-studio; app chi DOC ban cai o
-  `~/.claude/skills/motion-video-director` (hoac `$AGENT_EDIT_MVD_DIR`) va SYMLINK vao `<job>/.claude/skills/` (link loi -> bao
-  loi, khong chep). May khong co skill (may khach) -> `mvdStatus().available=false` -> form khong hien lua chon, brief
-  engine=mvd bi tu choi. Prompt chi NHAC ten skill + cong cu, khong chep noi dung skill.
+- **BAN QUYEN / DONG GOI**: 2026-10-20 user xac nhan **da co quyen phan phoi rieng** va yeu cau dua skill cho may khach.
+  Ban chinh `capcut-ai-studio/skills/motion-video-director/` (v3.5.2, chep tu ban da cai, giu nguyen LICENSE.md / tac gia).
+  `electron-builder.yml` -> `Resources/skills/motion-video-director` tren Mac arm64 + Intel + Windows: cap nhat app qua R2
+  la cap nhat skill. Khong dong goi cau hinh ca nhan / key / model / am thanh rieng.
+  `mvdSkillDir`: `$AGENT_EDIT_MVD_DIR` (override ro rang) -> ban dong goi -> ban cai rieng cu `~/.claude/skills/`.
+  Runner dung `installSkill` vao `~/.capcut-studio/motion/mvd/skill/<hash>` rieng voi motionmaxxing, giu ban cu cho job;
+  SYMLINK / junction vao `<job>/.claude/skills/`. Khong sua noi dung trong .app da ky, khong cai skill vao ~/.claude cua khach.
+  May khach sach van `mvdStatus().available=true` / hien lua chon. Thieu skill that su -> bao cai lai app.
 - **Brief** `engine?: 'motionmaxxing' | 'mvd'` (types.ts + global.d.ts; nho lua chon cuoi trong localStorage). `motion:check`
   tra them `mvd {available, version, elevenlabs}`.
 - **Prompt** `runPromptMvd` (prompt.ts): MVD = DAO DIEN (quy trinh, TASTE.md / PROGRESS.md / LOG.md, plan/beats.json la nguon
@@ -2325,7 +2327,9 @@ User thu skill motion-video-director (MVD, Miftahul Islam, v3.5.2) o ~/Desktop/T
 - **Runner**: engine mvd -> linkMvd + env `MM`, `MVD`, `ELEVENLABS_API_KEY` (chi engine nay), `MVD_AUDIO_PYTHON` = venv sidecar
   (scipy), `AE_IMAGE_MODEL`; motionmaxxing thi xoa link MVD cu. Buoc moi `images` (Tao anh AI) + `sound` (Nhac & am thanh) chi
   hien o job mvd (stages.ts + src/lib/motion.ts + JobView).
-- **Kiem**: `node tests/test_motion.mts` muc [2c] + runner claude gia (tu choi khi chua cai skill, link khong chep, env).
+- **Kiem**: `node tests/test_motion.mts` muc [2c] + runner claude gia (HOME sach dung skill dong goi, uu tien ban dong goi,
+  override / fallback, cache theo hash va giu job cu, link, env). `selftest-packaged.mjs` kiem tai nguyen MVD + chay preflight
+  bang Python nhung tren ca ba nen tang; khong goi API tra phi.
 
 ## 12. CodeGraph
 

@@ -1,23 +1,17 @@
-// QUY TRINH motion-video-director cho "Tao video" / "Automation Video" — THU NGHIEM CA NHAN (2026-10-19).
-//
-// motion-video-director (Miftahul Islam) la skill THUONG MAI 1 NGUOI DUNG: LICENSE.md cua tac gia CAM phan phoi lai / dong
-// goi vao san pham dua cho nguoi khac (ke ca ban sua / viet lai). Vi vay:
-//  - KHONG chep skill vao repo, KHONG dua vao electron-builder (extraResources), KHONG chep vao ~/.capcut-studio;
-//  - app chi DOC ban da cai tren CHINH MAY NAY (~/.claude/skills/motion-video-director hoac $AGENT_EDIT_MVD_DIR) va LIEN KET
-//    (symlink, khong chep) vao <job>/.claude/skills/motion-video-director;
-//  - may khong co skill (may khach) -> mvdStatus().available = false -> form khong hien lua chon, Tao video chay motionmaxxing.
-// Phan phoi cho khach chi khi da co giay phep bang van ban cua tac gia (user se xin sau khi thu xong).
-//
-// Module chi dung fs (khong electron) -> tests/test_motion.mts.
+// motion-video-director cho "Tao video" / "Automation Video".
+// User xac nhan da co quyen phan phoi rieng (2026-10-20): dong goi trong Resources/skills,
+// giu nguyen LICENSE.md / thong tin tac gia. Runner cai ban theo hash vao motion/mvd/skill
+// de job khong phu thuoc vao .app bi thay khi cap nhat. Khong cai vao ~/.claude/skills cua khach.
 import { existsSync, lstatSync, mkdirSync, readFileSync, rmSync, symlinkSync, unlinkSync } from 'fs'
 import { homedir } from 'os'
 import { dirname, join } from 'path'
+import { bundledSkillDir } from './paths'
 
 export const MVD_NAME = 'motion-video-director'
 
-/** Thu muc skill da cai tren may nay (co SKILL.md), else null. */
-export function mvdSkillDir(env: NodeJS.ProcessEnv = process.env): string | null {
-  const cands = [env.AGENT_EDIT_MVD_DIR, join(homedir(), '.claude', 'skills', MVD_NAME)].filter(Boolean) as string[]
+/** Uu tien override ro rang, roi ban dong goi, cuoi cung ban cai rieng cu. */
+export function mvdSkillDir(env: NodeJS.ProcessEnv = process.env, bundleDir = bundledSkillDir(MVD_NAME)): string | null {
+  const cands = [env.AGENT_EDIT_MVD_DIR, bundleDir, join(homedir(), '.claude', 'skills', MVD_NAME)].filter(Boolean) as string[]
   for (const d of cands) {
     try {
       if (existsSync(join(d, 'SKILL.md')) && /name:\s*motion-video-director/.test(readFileSync(join(d, 'SKILL.md'), 'utf-8').slice(0, 400))) return d
@@ -36,8 +30,8 @@ export interface MvdStatus {
   elevenlabs: boolean
 }
 
-export function mvdStatus(env: NodeJS.ProcessEnv = process.env): MvdStatus {
-  const dir = mvdSkillDir(env)
+export function mvdStatus(env: NodeJS.ProcessEnv = process.env, bundleDir = bundledSkillDir(MVD_NAME)): MvdStatus {
+  const dir = mvdSkillDir(env, bundleDir)
   const eleven = !!elevenLabsKey(env)
   if (!dir) return { available: false, elevenlabs: eleven }
   let version: string | undefined
@@ -49,7 +43,7 @@ export function mvdStatus(env: NodeJS.ProcessEnv = process.env): MvdStatus {
   return { available: true, version, dir, elevenlabs: eleven }
 }
 
-/** <jobDir>/.claude/skills/motion-video-director -> skill tren may (CHI symlink / junction — khong bao gio chep ban sao). */
+/** <jobDir>/.claude/skills/motion-video-director -> ban skill da cai (Windows: junction). */
 export function linkMvd(jobDir: string, skillDir: string): string {
   const link = join(jobDir, '.claude', 'skills', MVD_NAME)
   mkdirSync(dirname(link), { recursive: true })

@@ -1,0 +1,8 @@
+{
+  "models_dir": "~/.cache/motion-video-director/models",
+  "audio_python": null,
+  "toolkit_dir": null,
+  "sfx_library": null,
+  "ffmpeg": null,
+  "ffprobe": null
+}

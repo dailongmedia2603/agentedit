@@ -101,7 +101,7 @@ export function BriefForm({ value, onChange, mode = 'single' }: { value: MotionB
         .catch(() => undefined)
   }, [])
 
-  // Quy trinh motion-video-director: CHI hien khi may nay da cai skill (thu nghiem ca nhan — electron/services/motion/mvd.ts)
+  // Hien quy trinh motion-video-director khi app nap duoc skill dong goi.
   const [mvd, setMvd] = useState<MotionCheck['mvd'] | null>(mvdCache)
   useEffect(() => {
     if (!mvdCache)
@@ -179,7 +179,7 @@ export function BriefForm({ value, onChange, mode = 'single' }: { value: MotionB
               {
                 id: 'mvd' as const,
                 label: `motion-video-director${mvd.version ? ' v' + mvd.version : ''}`,
-                hint: `Thử nghiệm (skill trên máy này) — ảnh AI nhân vật + đạo cụ ghép code, cắt theo nhịp nhạc${mvd.elevenlabs ? ', nhạc + SFX ElevenLabs' : ''}`
+                hint: `Ảnh AI nhân vật + đạo cụ ghép code, cắt theo nhịp nhạc${mvd.elevenlabs ? ', nhạc + SFX ElevenLabs' : ''}`
               }
             ].map((o) => (
               <button

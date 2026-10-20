@@ -39,7 +39,7 @@ export function skillVersion(bundleDir: string): string {
 
 /** Chep skill vao <motionHome>/skill/<phien-ban>/ (neu chua co ban do), xoa cac ban cu khac. Tra thu muc skill. */
 export function installSkill(bundleDir: string, motionHome: string, opts: { cleanup?: boolean } = {}): { dir: string; version: string; fresh: boolean } {
-  if (!existsSync(join(bundleDir, 'SKILL.md'))) throw new Error('Thiếu skill motionmaxxing trong app: ' + bundleDir)
+  if (!existsSync(join(bundleDir, 'SKILL.md'))) throw new Error('Thiếu SKILL.md trong gói kỹ năng: ' + bundleDir)
   const version = skillVersion(bundleDir)
   const root = join(motionHome, 'skill')
   const dir = join(root, version)

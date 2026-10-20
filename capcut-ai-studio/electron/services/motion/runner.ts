@@ -25,7 +25,7 @@ import { getSaydiKey } from './saydi'
 import { assertLicensed, licenseDisabled, licenseState, onLicenseChange, requireLicense } from '../license'
 import type { MotionBrief, MotionJob } from './types'
 
-const MVD_MISSING = 'Máy này chưa cài skill motion-video-director (~/.claude/skills/motion-video-director) — chọn quy trình motionmaxxing.'
+const MVD_MISSING = 'Thiếu skill motion-video-director trong app — cài lại bản Agent Edit mới nhất hoặc chọn quy trình motionmaxxing.'
 
 /** Tran thoi gian 1 video (Claude dung + render + sua) */
 const MAX_RUN_MS = 2.5 * 3600 * 1000
@@ -342,16 +342,18 @@ async function runJob(job: MotionJob, r: Running): Promise<void> {
   const sk = skill()
   const mmLink = linkSkill(dir, sk.dir)
   log(`Skill motionmaxxing ${sk.version}`)
-  // Quy trinh motion-video-director (ca nhan, motion/mvd.ts): skill tren may nay lam dao dien, motionmaxxing = bo cong cu
+  // motion-video-director lam dao dien, motionmaxxing = bo cong cu.
   const mvd = job.brief.engine === 'mvd'
   const mvdLink = join(dir, '.claude', 'skills', MVD_NAME)
   let eleven: string | null = null
   if (mvd) {
     const mdir = mvdSkillDir()
     if (!mdir) throw new Error(MVD_MISSING)
-    linkMvd(dir, mdir)
+    // Giu cac ban cu cho job dang chay / chay lai; cache rieng de khong don nham motionmaxxing.
+    const installed = installSkill(mdir, join(MOTION_HOME, 'mvd'), { cleanup: false })
+    linkMvd(dir, installed.dir)
     eleven = elevenLabsKey()
-    log(`Quy trình motion-video-director (skill trên máy: ${mdir}) · nhạc / SFX: ${eleven ? 'ElevenLabs' : 'kho âm thanh của app'}`)
+    log(`Quy trình motion-video-director (${installed.version}) · nhạc / SFX: ${eleven ? 'ElevenLabs' : 'kho âm thanh của app'}`)
   } else rmSync(mvdLink, { recursive: true, force: true })
   const assets = readdirSync(join(dir, 'inputs')).filter((f) => !f.startsWith('.'))
   writeFileSync(join(dir, 'brief.md'), briefMarkdown(job.brief, assets))

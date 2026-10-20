@@ -402,6 +402,22 @@ async function main() {
   //     Node / Chrome: render.mjs chay bang CHINH exe app (Electron-as-Node + --experimental-websocket, nhu
   //     electron/services/motion/tools.ts) voi Chrome Headless cua Remotion (buoc [1] da tai), look.py bang Python nhung.
   {
+    console.log('\n[6c-MVD] Skill motion-video-director (máy khách sạch)...')
+    const mvd = join(resDir, 'skills', 'motion-video-director')
+    const required = ['SKILL.md', 'LICENSE.md', 'README.md', 'config.example.json', 'scripts/preflight.py', 'scripts/mvd_paths.py', 'scripts/procedural_sfx.py', 'scripts/gen_sfx_elevenlabs.py', 'reference/visual-design.md', 'reference/portability.md', 'templates/TASTE.md', 'templates/render/render.js']
+    const missing = required.filter((f) => !existsSync(join(mvd, f)))
+    record('Skill motion-video-director có đủ tài nguyên trong gói app', !missing.length, missing.join(', '))
+    if (!missing.length) {
+      const r = spawnSync(pyBin, [join(mvd, 'scripts', 'preflight.py')], {
+        cwd: home, env: { ...env, PATH: tools + (IS_WIN ? ';' : ':') + (env.PATH || '') },
+        encoding: 'utf-8', timeout: 120000, windowsHide: true
+      })
+      let report
+      try { report = JSON.parse(r.stdout) } catch { /* loi script duoc bao ben duoi */ }
+      record('MVD preflight chạy bằng Python nhúng, không cài hay tải gì', r.status === 0 && report?.network_used === false && report?.installed_anything === false && report?.checks?.python?.supported === true,
+        r.status === 0 ? '' : String(r.error || r.stderr).slice(0, 400))
+    }
+
     console.log('\n[6c] Skill motionmaxxing (Tạo video / Automation Video)...')
     const skill = join(resDir, 'skills', 'motionmaxxing')
     const need = ['SKILL.md', 'NOTICE', 'scripts/voice.py', 'scripts/render.mjs', 'scripts/look.py', 'runtime/motion.js', 'runtime/vendor/gsap.min.js', 'examples/demo/index.html']
