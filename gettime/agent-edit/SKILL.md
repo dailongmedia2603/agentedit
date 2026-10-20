@@ -1,111 +1,181 @@
 ---
 name: agent-edit
-description: 'Dựng và edit video bằng AI với Agent Edit (cắt khoảng lặng, hook mạnh, phụ đề karaoke, chữ hiệu ứng, ảnh AI, SFX, nhạc nền) rồi xuất MP4 dọc 9:16 hoặc ngang 16:9. Dùng khi người trực muốn làm video TikTok, Reels, Shorts hay video quảng cáo từ file video có sẵn, edit lại một video, thêm phụ đề hoặc hiệu ứng, làm theo phong cách một video mẫu, chèn ảnh sản phẩm hay logo lên video, cài đặt / đăng nhập Agent Edit, hoặc hỏi tiến độ và kết quả của video đang dựng.'
+description: 'Agent Edit — phần mềm làm video bằng AI trên máy này, dùng ĐẦY ĐỦ như trên app: Edit Video (dựng/edit video quay sẵn: cắt, hook, phụ đề, chữ hiệu ứng, ảnh AI, SFX, nhạc; làm lại/sửa video đã tạo), Tạo video (motion graphics từ ý tưởng, giọng đọc AI), Automation Video (nguồn tin website/Facebook tự thành video, tự đăng), đăng video lên kênh qua iPhone (Phone Agent, đăng ngay hoặc hẹn giờ), Video đã tạo, cài đặt (đăng nhập AI, model, key). Dùng khi người trực muốn làm/sửa/đăng video TikTok, Reels, Shorts, quảng cáo; hỏi tiến độ, video đã làm; tạo hoặc quản lý automation; cài đặt Agent Edit; hoặc hỏi Agent Edit làm được gì.'
 license: Proprietary
 compatibility: 'macOS 14 trở lên (Apple Silicon hoặc Intel) hoặc Windows 10 (1809+) / 11 64-bit. Cần key bản quyền Agent Edit. Chạy ở mức chat thường qua tool.json — không cần Toàn quyền.'
 metadata:
-  title: Dựng video AI (Agent Edit)
+  title: Agent Edit — làm video AI
   kind: tool
   author: Agent Edit
-  version: 2.0.0
+  version: 3.0.0
 ---
 
-# Dựng video AI — Agent Edit
+# Agent Edit — làm video bằng AI
 
-Bạn điều khiển **Agent Edit** (phần mềm dựng video bằng AI trên máy này) qua các công cụ `agent-edit__…` của app GetTime.
-AI của Agent Edit tự phân tích video, lên kịch bản dựng và xuất MP4. Việc của bạn: gom yêu cầu của người trực, gọi đúng
-công cụ, báo kết quả. Bạn không có shell — chỉ gọi các công cụ dưới đây.
+Bạn điều khiển **Agent Edit** trên máy này qua các công cụ `agent-edit__…` của GetTime. Mọi chức năng của app đều dùng
+được trong chat; app tự chạy nền nếu chưa mở, mở app lên vẫn thấy đúng những gì làm trong chat (và ngược lại).
 
-| Công cụ | Dùng khi |
+| Nhóm | Công cụ |
 |---|---|
-| `gettime_check_tool` (skill `agent-edit`) | Luôn gọi **đầu tiên**: máy đã sẵn sàng tạo video chưa |
-| `gettime_ask_field` (skill `agent-edit`, field `license-key`) | Cần key bản quyền mà chưa có — hiện ô nhập trong chat |
-| `agent-edit__setup` | Cài / cập nhật app, kích hoạt key, cài công cụ còn thiếu (việc dài 5–20 phút) |
-| `agent-edit__login` · `agent-edit__login-code` · `agent-edit__login-check` | Đăng nhập tài khoản AI (`gemini`, `claude`; `codex` tuỳ chọn) |
-| `agent-edit__make` | Dựng video (việc dài 10–40 phút; xong thì video hiện thành thẻ trong chat) |
-| `agent-edit__jobs` | Xem các việc gần đây (mã, trạng thái, file video, lỗi) |
-| `agent-edit__update` | Cập nhật Agent Edit lên bản mới nhất |
+| Kiểm tra / cài đặt | `gettime_check_tool`, `gettime_ask_field`, `agent-edit__setup`, `__login`, `__login-code`, `__login-check`, `__keys`, `__update`, `__settings` |
+| Hỏi app làm được gì | `agent-edit__capabilities` |
+| Edit Video | `agent-edit__make` (tạo mới / làm lại với `from`), `agent-edit__projects`, `agent-edit__jobs`, `agent-edit__fonts` |
+| Tạo video | `agent-edit__motion-create`, `__motion-redo`, `__motion-manage`, `__voices` |
+| Automation Video | `agent-edit__auto-save`, `__auto-manage` |
+| Đăng video (iPhone) | `agent-edit__post-create`, `__post-manage` |
 
-Việc dài (`setup`, `make`, `update`) trả lời ngay "đã nhận". App GetTime tự theo dõi, hiện thẻ tiến độ và báo kết quả vào
-chat. **Không gọi lại để chờ, không hỏi tiến độ liên tục.** Báo người trực một câu là đã bắt đầu, rồi kết thúc lượt.
+**Việc dài** (`setup`, `make`, `motion-create`, `motion-redo`, `post-create`, `update`) trả lời ngay "đã nhận"; GetTime tự
+hiện thẻ tiến độ và báo kết quả vào chat (video xong hiện thành thẻ). **Không gọi lại để chờ.** Báo người trực một câu là
+đã bắt đầu rồi kết thúc lượt.
+
+**Nguyên tắc:** hỏi đủ như form của app rồi mới làm (mục 4–7) · tệp (video, ảnh, font) phải được người trực **gửi vào chat
+này**, dùng đúng đường dẫn tệp đính kèm, không bịa · **không bao giờ** bảo dán key/token vào chat (dùng `gettime_ask_field`)
+· báo kết quả ngắn gọn tiếng Việt, không dán JSON · tên/mã nội bộ (id) chỉ nhắc khi cần.
 
 ## 1. Kiểm tra trước mọi việc
 
-Gọi `gettime_check_tool` (skill `agent-edit`). Trả lời "Sẵn sàng." → sang mục 3. Chưa sẵn sàng → đọc kết quả (`next`,
-`missing`, `message`) rồi xử lý theo thứ tự:
+Gọi `gettime_check_tool` (skill `agent-edit`). "Sẵn sàng." → làm việc được nhờ. Chưa sẵn sàng → đọc `next`, `missing`,
+`message` và xử lý theo thứ tự:
 
-1. **Máy chưa cài / bản quá cũ** (`installed: false` hoặc `next` chỉ có `setup`):
-   - Thiếu trường **license-key** ("Trường chưa nhập: Key bản quyền…") → gọi `gettime_ask_field` (skill `agent-edit`,
-     field `license-key`), nhắn "Anh/chị nhập key bản quyền Agent Edit vào ô bên dưới giúp em" rồi **kết thúc lượt**. Khi
-     app báo "Đã lưu …" → gọi `agent-edit__setup`.
-   - Đã có key → gọi `agent-edit__setup`.
-2. **Chưa kích hoạt key** (`next` có "setup (kích hoạt key bản quyền)") → như trên: thiếu key thì hỏi bằng
-   `gettime_ask_field`, có rồi thì `agent-edit__setup`.
-3. **Thiếu công cụ** (`next` có `setup`, `missing` liệt kê công cụ) → `agent-edit__setup`.
-4. **Chưa đăng nhập AI** (`next` có `login gemini`, `login claude`, `login codex`) → mục 2, lần lượt từng tài khoản.
-   `login codex` là tuỳ chọn (cho ảnh AI): hỏi người trực có muốn không, không thì bỏ qua.
-5. `next` nói **API key** Gemini / Claude → bảo người trực nhập API key trong app Agent Edit (Cài đặt API), hoặc đổi
-   sang đăng nhập tài khoản ở đó.
-6. `installing` có mã việc → đang cài dở, chỉ báo người trực là đang cài và chờ thẻ tiến độ.
+1. **Máy chưa cài / bản quá cũ** (`installed: false`, `next` = `setup`) hoặc **chưa kích hoạt key** ("setup (kích hoạt
+   key bản quyền)"): chưa có trường **license-key** → `gettime_ask_field` (field `license-key`), nhắn "Anh/chị nhập key bản
+   quyền Agent Edit vào ô bên dưới giúp em", **kết thúc lượt**; app báo "Đã lưu …" → `agent-edit__setup`. Có key rồi →
+   `agent-edit__setup`.
+2. **Thiếu công cụ** (`next` có `setup`) → `agent-edit__setup`.
+3. **Chưa đăng nhập AI** (`login gemini`, `login claude`, `login codex`) → mục 2. `codex` tuỳ chọn (ảnh AI) — hỏi trước.
+4. `next` nói **API key** Gemini / Claude → nhờ nhập API key trong app Agent Edit (Cài đặt API) hoặc đổi sang đăng nhập.
+5. `installing` có mã việc → đang cài, chờ thẻ tiến độ.
 
-`setup` xong, app tự gửi tiếp vào chat → gọi lại `gettime_check_tool` để làm bước kế (thường là đăng nhập).
-`setup` lỗi → báo ngắn lỗi, làm theo gợi ý (sai key → hỏi lại key bằng `gettime_ask_field`; app đang mở → nhờ người
-trực đóng app Agent Edit) rồi gọi lại `setup`.
-
-**Không bao giờ** bảo người trực dán key vào chat, không nhắc lại key. Mỗi key dùng cho **1 máy** (dùng chung với app
-Agent Edit trên máy này). Báo "đã kích hoạt trên máy khác" → người trực liên hệ người bán.
+Các trường `saydi-key`, `phoneagent-token`, `facebook-token` chỉ cần cho chức năng tương ứng — "Trường chưa nhập" của
+chúng **không** phải lý do chưa sẵn sàng, đừng hỏi khi chưa dùng tới. `setup` xong app tự nhắn tiếp → gọi lại
+`gettime_check_tool`. `setup` lỗi → báo ngắn, làm theo gợi ý (sai key → hỏi lại key; app đang mở → nhờ đóng app) rồi gọi
+lại. Mỗi key bản quyền dùng cho **1 máy**; "đã kích hoạt trên máy khác" → liên hệ người bán.
 
 ## 2. Đăng nhập tài khoản AI
 
-1. Gọi `agent-edit__login` với `account` (`gemini` | `claude` | `codex`). Kết quả:
-   - `status: "done"` hoặc `already: true` → đã đăng nhập, sang tài khoản kế.
-   - Có `url` / `lines` → nhắn người trực theo bảng dưới rồi **kết thúc lượt** để chờ họ:
+1. `agent-edit__login` (`account`). `done` / `already` → xong. Có `url` / `lines` → nhắn rồi **kết thúc lượt**:
+   - `claude`: "Trình duyệt đã mở trang đăng nhập Claude (hoặc mở link). Xong: trang hiện **mã** thì gửi em; báo thành
+     công thì nhắn "xong"."
+   - `gemini`: "Đăng nhập Google ngay trên máy cài Agent Edit (link không mở được ở máy khác) rồi nhắn "xong"." Windows: làm
+     theo `message` (Enter trong cửa sổ Antigravity).
+   - `codex`: người trực không ở cạnh máy → gọi lại với `device: true`, gửi link + mã trong `lines`.
+   - `running` chưa có link → `agent-edit__login-check` sau vài giây.
+2. Người trực gửi mã → `agent-edit__login-code` (nguyên văn). Nhắn "xong" → `agent-edit__login-check`: `done` → báo đã
+   đăng nhập · `running` → nhắc lại · `error`/`none` → báo lỗi, gọi lại `login`.
+3. Đăng xuất / đổi tài khoản → `agent-edit__settings` op `logout` rồi đăng nhập lại.
 
-     | Tài khoản | Nhắn người trực |
-     |---|---|
-     | `claude` | Trình duyệt đã mở trang đăng nhập Claude trên máy này (hoặc mở link `url`). Đăng nhập xong: trang hiện **mã** thì gửi mã cho em; trang báo thành công thì nhắn "xong". |
-     | `gemini` | Trình duyệt đã mở trang đăng nhập Google trên máy cài Agent Edit — đăng nhập ngay trên máy đó rồi nhắn "xong". Windows: làm đúng `message` (bấm Enter trong cửa sổ Antigravity). |
-     | `codex` | Nếu người trực không ngồi ở máy cài Agent Edit: gọi lại với `device: true`, gửi link + mã thiết bị trong `lines`. Đăng nhập xong nhắn "xong". |
+## 3. "Agent Edit làm được gì?"
 
-   - `status: "running"` mà chưa có link → gọi `agent-edit__login-check` sau vài giây để lấy link.
-2. Người trực gửi **mã** → `agent-edit__login-code` (`account`, `code` nguyên văn). Nhắn "xong" →
-   `agent-edit__login-check`. `done` → báo đã đăng nhập · `running` → còn chờ, nhắc lại bước trên · `error` / `none` →
-   báo lỗi rồi gọi lại `agent-edit__login`.
-3. Hết tài khoản cần đăng nhập → `gettime_check_tool` lần nữa → "Sẵn sàng." → báo "Sẵn sàng tạo video".
+Gọi `agent-edit__capabilities`, trả lời gọn theo nhóm: **Edit Video** (từ video quay sẵn), **Tạo video** (motion
+graphics từ ý tưởng, giọng đọc AI), **Automation Video**, **Đăng video qua iPhone**, **Video đã tạo**, **Cài đặt** — mỗi
+nhóm 1 dòng làm được gì + thời gian + cần gì (từ `features`, `readiness`). Hỏi chi tiết một chức năng → liệt kê lựa chọn
+(loại video, khung hình, quy trình dựng, giọng đọc…) từ cùng kết quả. Rồi hỏi người trực muốn làm gì.
 
-## 3. Dựng video
+## 4. Edit Video — dựng từ video quay sẵn
 
-1. **Gom yêu cầu** (hỏi lại phần thiếu quan trọng; phần không bắt buộc thì bỏ trống):
-   - **Video nguồn** (bắt buộc): tệp người trực **gửi vào chat này**. Công cụ chỉ nhận tệp nằm trong thư mục của chat — tệp
-     ở chỗ khác trên máy thì nhờ người trực kéo / đính kèm tệp vào chat. Dùng đúng đường dẫn tuyệt đối của tệp đính kèm,
-     không bịa đường dẫn.
-   - `request`: mục đích / nội dung / yêu cầu edit (quan trọng nhất). `style`, `audience`, `duration` (vd "45-60 giây").
-   - `reference`: video mẫu để bắt chước phong cách. `inserts`: ảnh / video chèn lên (sản phẩm, logo, bảng giá…) kèm
-     `insert_notes` — **mỗi dòng ghi chú cho một tệp, đúng thứ tự `inserts`** (là gì, chèn lúc nói tới gì), vd
-     `"logo, hiện cuối video\nchai serum, khi nói tới sản phẩm"`.
-   - `landscape: true` cho video ngang 16:9 (mặc định dọc 9:16). `brand_colors`, `brand_typography`, `name` tuỳ chọn.
-2. Gọi `agent-edit__make`. Báo người trực: **đã nhận video, bắt đầu dựng (thường 10–40 phút)** — thẻ tiến độ hiện trong
-   chat, xong thì video hiện ở đây. Kết thúc lượt.
-3. **Xong**: app tự đưa video vào chat. Nếu người trực hỏi chi tiết → `agent-edit__jobs` (thời lượng, file). Video cũng có
-   trong app Agent Edit → "Video đã tạo".
-4. **Lỗi**: báo ngắn lỗi và làm theo gợi ý: bản quyền / "activate" → mục 1 (`setup`); "login" / đăng nhập → mục 2; thiếu
-   công cụ → `setup`; tệp không đọc được → nhờ gửi lại tệp. Sửa xong gọi lại `make` y như cũ — phần phân tích đã xong được
-   dùng lại, không tốn lại AI.
-5. Người trực chê bản vừa dựng, muốn bản khác → gọi lại `make` với `new_plan: true`. Muốn phân tích lại video từ đầu →
-   `fresh: true`. **Không tự thêm** hai cờ này.
+**B1. Video nguồn** (bắt buộc, gửi vào chat). **B2. Gửi bảng hỏi** (một tin, mọi mục không bắt buộc, điền sẵn phần đã
+biết, "làm luôn" để bỏ qua), rồi **kết thúc lượt**:
 
-Nhiều video cùng lúc vẫn được: việc sau tự chờ lượt. Chỉ gọi `make` khi người trực thật sự muốn tạo video.
+> **1. Yêu cầu edit** — Mục đích (VD: chạy QC, bán trà sữa, đăng hàng ngày…) · Phong cách (nhanh, vui, bắt trend, sang,
+> tối giản, cinematic…) · Người xem (nữ 18-25, chủ shop…) · Độ dài (15s, 30-45s…) · Khổ dọc 9:16 hay ngang 16:9 · Video mẫu
+> muốn bắt chước (gửi file)
+> **2. Brand Guideline** — Font & chữ (VD: tiêu đề Montserrat in hoa đậm; có file .ttf/.otf/.woff thì gửi) · Màu (mã màu)
+> **3. Tư liệu của bạn** — ảnh / video chèn lên (sản phẩm, logo, bảng giá…), **mỗi tệp kèm mô tả** (là gì, chèn lúc nói tới
+> gì) · cách dùng: chèn vào video / chỉ làm mẫu ảnh AI / cả hai · vị trí: AI tự chọn / khung nổi / tách nền như sticker /
+> nửa trên / toàn màn hình
 
-## 4. Lưu ý
+**B3.** Tư liệu thiếu mô tả → hỏi lại từng tệp. Đủ rồi (hoặc "làm luôn") → tóm tắt 2–4 dòng, gọi `agent-edit__make`:
+`videos`, `request` (mục đích + yêu cầu), `style`, `audience`, `duration`, `orientation`, `reference`, `brand_typography`,
+`brand_colors`, `fonts` (file font; đầu = tiêu đề, cuối = nội dung), `inserts` + `insert_notes` / `insert_uses`
+(`show`·`ai_ref`·`both`) / `insert_placements` (`auto`·`overlay`·`cutout`·`split`·`fullscreen`) — **mỗi dòng một tệp
+đúng thứ tự `inserts`**, dòng trống = mặc định. Video thứ hai trong chat: hỏi "dùng lại như video trước?" thay vì cả bảng.
 
-- Hỏi "video đang tới đâu" → xem thẻ tiến độ trong chat, hoặc gọi `agent-edit__jobs` (gồm cả video tạo từ app / chat khác).
-- `agent-edit__update` khi người trực muốn cập nhật hoặc lỗi báo bản quá cũ (app Agent Edit phải đang đóng, không có video
-  đang dựng).
-- Báo kết quả ngắn gọn bằng tiếng Việt; không dán JSON thô cho người trực.
+**Làm lại / sửa video đã tạo** (kể cả video làm trên app): tìm id bằng `agent-edit__projects` op `list` (hoặc `show` để
+xem đã dùng gì), rồi `agent-edit__make` với `from` = id + **chỉ các ô muốn đổi** (video mới, yêu cầu, tư liệu — gửi
+`inserts` là thay cả bộ; `no_inserts` / `no_reference` để bỏ). Không gửi gì thêm = render lại / tiếp tục sau lỗi (dùng lại
+phân tích + kế hoạch). Chê bản dựng, muốn bản khác → `new_plan: true`. Phân tích lại từ đầu → `fresh: true` (chỉ khi được
+yêu cầu). Kết quả là một video mới trong "Video đã tạo"; video cũ giữ nguyên.
 
-## 5. Ngoài GetTime (Claude Code / Codex có shell)
+Lỗi: bản quyền / "activate" → mục 1 · đăng nhập → mục 2 · thiếu công cụ → `setup` · "cần cập nhật" → `update` · tệp không
+đọc được → nhờ gửi lại. Sửa xong gọi lại y như cũ (không tốn lại AI phần đã xong).
 
-Không có công cụ `agent-edit__…` nhưng chạy được lệnh: dùng script trong thư mục `scripts/` của kỹ năng này — macOS
-`bash scripts/agent-edit <lệnh>`, Windows `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\agent-edit.ps1 <lệnh>`.
-Cùng các việc trên: `tool status | setup | login <tk> | login-code <tk> <mã> | login-check <tk> | make … | job <mã> |
-jobs | update` (key bản quyền qua biến môi trường `AGENT_EDIT_KEY`), hoặc lệnh đầy đủ của Agent Edit: `help` để xem.
+## 5. Tạo video — motion graphics từ ý tưởng
+
+Không cần video quay. Gọi `agent-edit__capabilities` (nếu chưa) để biết lựa chọn + máy có quy trình `mvd` / key giọng đọc
+chưa. **Gửi bảng hỏi** (điền sẵn phần đã biết), **kết thúc lượt**:
+
+> **Bắt buộc:** Tên sản phẩm / thương hiệu · Nội dung chính muốn nói
+> **Tuỳ chọn:** Loại video (quảng cáo / giới thiệu sản phẩm · ra mắt · một tính năng · quảng cáo mạng xã hội · giải thích ·
+> chữ động · nhận diện thương hiệu · tin tức ngắn) · Khung hình (dọc 9:16 · ngang 16:9 · vuông 1:1) · Thời lượng (6–90
+> giây, mặc định 20) · Ngôn ngữ (Việt/Anh) · Người xem · Mục tiêu · Lời kêu gọi (CTA) · Giọng điệu · Website · Màu · Font ·
+> Logo / ảnh sản phẩm / ảnh chụp màn hình (gửi ảnh) · Ghi chú
+> **Lời đọc:** có hay không · giọng (nam/nữ, vùng miền, phong cách — em tìm giúp) · tốc độ · kịch bản lời đọc (để trống
+> AI tự viết)
+> **Quy trình dựng** (chỉ hỏi khi máy có `mvd`): motionmaxxing (mặc định, 15–40 phút) hoặc motion-video-director (ảnh AI
+> nhân vật + đạo cụ, cắt theo nhịp nhạc, 60–90 phút)
+
+- **Giọng đọc:** `agent-edit__voices` (`q` = mô tả người trực muốn, `gender`, `language`) → giới thiệu 3–5 giọng (tên + mô
+  tả) để chọn → dùng `voice_id`. Không nghe thử được trong chat — nghe ở voice.saydi.ai nếu cần.
+- **Chưa có key SaydiVoice** (lỗi "Chưa có key SaydiVoice" hoặc `capabilities` báo chưa có) mà muốn lời đọc →
+  `gettime_ask_field` field `saydi-key`, kết thúc lượt; "Đã lưu" → `agent-edit__keys` → làm tiếp. Không có key → đề nghị
+  video không lời (`no_voice`).
+- Đủ thông tin → tóm tắt, gọi `agent-edit__motion-create` (`name`, `message`, `video_type`, `aspect`, `duration`,
+  `language`, `audience`, `goal`, `cta`, `tone`, `website`, `colors`, `fonts`, `assets`, `notes`, `engine`, `voice_id`,
+  `speed`, `script` | `no_voice`). Báo "đã nhận, đang tạo (15–40 phút)".
+- Lỗi / bị gián đoạn → `agent-edit__motion-redo` op `rerun` + `id`. **Muốn bản khác** (đổi nội dung, giọng, thời lượng…)
+  → op `again` + `id` + chỉ các ô muốn đổi. Xem danh sách / báo cáo của AI / huỷ / xoá → `agent-edit__motion-manage`.
+
+## 6. Automation Video — nguồn tin tự thành video
+
+Mỗi tin mới của nguồn (website / RSS / trang Facebook) tự thành 1 video Tạo video, có thể tự đăng qua iPhone. App phải
+chạy (tự chạy nền; máy tắt thì dừng). **Bảng hỏi:**
+
+> Tên dự án · **Nguồn tin** (link trang tin / chuyên mục / RSS, hoặc trang Facebook) · Tên kênh / thương hiệu · Kiểm tin
+> mấy phút một lần (mặc định 30) · Tối đa video mỗi lần (2) / mỗi ngày (10) · Chỉ làm tin MỚI từ giờ (mặc định) hay làm
+> luôn tin đang có · Video: loại (mặc định tin tức), khung, thời lượng (30s), lời đọc + giọng, hướng dẫn cách làm video từ
+> tin · **Tự đăng?** iPhone + kịch bản + caption (mẫu `{title}` `{summary}` `{link}` `{source}` `{channel}` `{date}`), đăng
+> ngay / sau X phút / theo khung giờ (VD 08:00, 12:00, 19:00)
+
+1. Thử nguồn trước: `agent-edit__auto-manage` op `test-source` (`source` = `web|<link>` / `facebook|<link>`) → báo vài
+   tin lấy được. Facebook cần `facebook-token` (hỏi bằng `gettime_ask_field`).
+2. Tự đăng → làm mục 7 bước 1–3 để có iPhone / kịch bản / biến.
+3. `agent-edit__auto-save`: `project_name`, `sources` (mỗi dòng một nguồn), `name` (kênh), các ô video như Tạo video,
+   `interval`, `max_per_check`, `max_per_day`, `skip_existing`, `enabled`, `post` / `post_device` / `post_script` /
+   `post_vars` (mỗi dòng `ten=giá trị`) / `post_timing` / `post_delay` / `post_slots`. Sửa: `id` + chỉ ô muốn đổi.
+4. Quản lý: `agent-edit__auto-manage` op `list` / `show` / `on` / `off` / `check` (kiểm tin ngay) / `delete`. Video của dự
+   án: `agent-edit__motion-manage` op `list` + `automation`; bài đăng: `agent-edit__post-manage` op `list` + `automation`.
+
+## 7. Đăng video lên kênh qua iPhone (Phone Agent)
+
+1. Chưa có token (lỗi "Chưa nhập API token Phone Agent") → `gettime_ask_field` field `phoneagent-token`, kết thúc lượt;
+   "Đã lưu" → `agent-edit__keys`.
+2. `agent-edit__post-manage` op `devices` (iPhone online/offline) và `scripts` (kịch bản đăng: TikTok, Facebook…) → hỏi
+   người trực chọn.
+3. op `fields` + `script` → các biến cần điền (caption, hashtag…) → hỏi người trực (gợi ý caption từ nội dung video).
+4. `agent-edit__post-create`: `video` (tệp trong chat) **hoặc** `ref` (id video đã tạo: `mv-…` của Tạo video / Automation,
+   `r_…` của Edit Video), `device`, `script`, `vars` (mỗi dòng `ten=giá trị`), `at` ("YYYY-MM-DD HH:MM", trống = ngay).
+   App theo dõi tới khi đăng xong. iPhone phải bật app Phone Agent; máy tính phải bật lúc tới giờ đăng.
+5. Xem / huỷ / đăng lại / đổi giờ / xoá → `agent-edit__post-manage` op `list` / `show` / `cancel` / `retry` /
+   `reschedule` / `delete`.
+
+## 8. Video đã tạo, việc đang chạy
+
+- Edit Video: `agent-edit__projects` op `list` (cả video làm trên app), `show`, `delete` (`with_files` = cả thư mục vào
+  Thùng rác — hỏi lại trước khi xoá). Việc dựng gần đây (kể cả đang chạy): `agent-edit__jobs`.
+- Tạo video / Automation: `agent-edit__motion-manage` op `list` / `show` (báo cáo của AI) / `cancel` / `delete`.
+- Gửi lại file video cho người trực: đường dẫn trong kết quả (`video` / `result.output`).
+
+## 9. Cài đặt
+
+`agent-edit__settings`: op `show` (chế độ tài khoản/API key, model, mức suy nghĩ, số video chạy cùng lúc, đã có key
+SaydiVoice / Phone Agent chưa) · `models` + `account` (model + mức suy nghĩ chọn được) · `set` + `account` + `mode` /
+`model` / `effort` · `limits` (`analyze` phân tích Edit Video, `plan` lập kế hoạch, `motion` Tạo video — số video chạy cùng
+lúc) · `test` + `account` (kiểm kết nối) · `logout`. API key AI nhập trong app (Cài đặt API). Cập nhật app →
+`agent-edit__update` (app phải đóng, không có video đang tạo). Key SaydiVoice / token Phone Agent mới → `gettime_ask_field`
+rồi `agent-edit__keys`.
+
+## 10. Ngoài GetTime (Claude Code / Codex có shell)
+
+Dùng script `scripts/agent-edit` (macOS: `bash scripts/agent-edit …`; Windows: `powershell -NoProfile -ExecutionPolicy
+Bypass -File scripts\agent-edit.ps1 …`): `tool <việc>` như các công cụ trên (`tool cli <lệnh>` = lệnh đầy đủ của app; key
+qua biến `AGENT_EDIT_KEY`, `AGENT_EDIT_SAYDI_KEY`, `AGENT_EDIT_PA_TOKEN`, `AGENT_EDIT_FB_TOKEN`), hoặc `help` xem mọi lệnh.

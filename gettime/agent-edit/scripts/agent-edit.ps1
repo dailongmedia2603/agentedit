@@ -313,7 +313,38 @@ function PidAlive($p) {
   if (-not $p) { return $false }
   return [bool](Get-Process -Id ([int]$p) -ErrorAction SilentlyContinue)
 }
-function ValidId([string]$id) { return $id -cmatch '^[irslu]_[a-z0-9]{6,24}$' }
+# ma viec: r_/s_/l_ (app) · i_/u_ (script) · mv-YYYYMMDD-HHMMSS-xxxx (Tao video) · post_... (dang Phone Agent)
+function ValidId([string]$id) { return $id -cmatch '^([irslu]_[a-z0-9]{6,24}|mv-[0-9]{8}-[0-9]{6}-[a-z0-9]{2,8}|post_[a-z0-9]{6,30})$' }
+
+# dich vu nen cua app (Tao video / Automation / dang bai) dang song? (file svc-*.json do app ghi, pid con chay)
+function SvcAlive {
+  $d = Join-Path $UserHome '.capcut-studio\cli\svc'
+  if (-not (Test-Path -LiteralPath $d)) { return $false }
+  foreach ($f in @(Get-ChildItem -LiteralPath $d -Filter 'svc-*.json' -ErrorAction SilentlyContinue)) {
+    $i = ReadJsonFile $f.FullName
+    if ($i -and (PidAlive $i.pid)) { return $true }
+  }
+  return $false
+}
+
+# viec Tao video / bai dang: dich vu ghi file trang thai moi khi doi buoc -> doc thang; dich vu da tat giua chung -> hoi app
+function ToolSvcJob([string]$id) {
+  if ($id.StartsWith('mv-')) { $f = Join-Path $UserHome ".capcut-studio\cli\motion\$id.json" }
+  else { $f = Join-Path $UserHome ".capcut-studio\cli\posts\$id.json" }
+  if (Test-Path -LiteralPath $f) {
+    $text = ''
+    try { $text = [IO.File]::ReadAllText($f, [Text.Encoding]::UTF8).Trim() } catch { }
+    $j = ReadJsonText $text
+    if ($j) {
+      if (@('done', 'error', 'cancelled') -contains [string]$j.status) { ToolOutText $text }
+      if (SvcAlive) { ToolOutText $text }
+    }
+  }
+  ToolNeedApp
+  if ($id.StartsWith('mv-')) { AppRun 20 @('motion', 'status', $id, '--json') } else { AppRun 20 @('post', 'status', $id, '--json') }
+  if ($script:RunRc -eq 124) { ToolOut ([ordered]@{ ok = $true; status = 'running'; message = 'Đang chạy.' }) }
+  ToolRelay -Soft
+}
 function NewId([string]$prefix) { return $prefix + '_' + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + (Get-Random -Minimum 100 -Maximum 999) }
 
 # AppRun <giay> <tham so...>: chay CLI cua app toi da <giay> (GetTime cat moi lenh o 25 giay) -> RunOut, RunRc (124 = het gio).
@@ -536,6 +567,7 @@ function ToolJob([string]$id) {
     }
     ToolOutText ([IO.File]::ReadAllText($f, [Text.Encoding]::UTF8).Trim())
   }
+  if ($id -match '^(mv-|post_)') { ToolSvcJob $id }
   ToolAppJob $id
 }
 
@@ -561,7 +593,9 @@ function ToolCancel([string]$id) {
     ToolOut ([ordered]@{ ok = $true; status = 'cancelled' })
   }
   ToolNeedApp
-  AppRun 18 @('cancel', $id, '--json')
+  if ($id.StartsWith('mv-')) { AppRun 18 @('motion', 'cancel', $id, '--json') }
+  elseif ($id.StartsWith('post_')) { AppRun 18 @('post', 'cancel', $id, '--json') }
+  else { AppRun 18 @('cancel', $id, '--json') }
   if ($script:RunRc -eq 124) { ToolOut ([ordered]@{ ok = $true; status = 'cancelling'; message = 'Đã gửi lệnh dừng.' }) }
   ToolRelay
 }
@@ -602,24 +636,88 @@ function ToolLogin([string]$sub, [string[]]$rest) {
   ToolRelay -Soft
 }
 
-# tool make <tham so cua make> — --insert-notes "<dong 1>`n<dong 2>" -> moi dong la ghi chu cua tu lieu cung thu tu
+# tool make <tham so cua make>. Tu lieu chen: --insert-notes / --insert-uses / --insert-placements "<dong 1>`n<dong 2>" — DONG i
+# la cua tu lieu thu i (dong trong = mac dinh: khong ghi chu / show / auto). --brand-font-file can app >= $FontFileVersion.
+$FontFileVersion = '1.21.0'
+if ($env:AGENT_EDIT_FEATURE_MIN_VERSION) { $FontFileVersion = $env:AGENT_EDIT_FEATURE_MIN_VERSION }
 function ToolMake([string[]]$rest) {
   ToolNeedApp
   $a = @('make')
+  $hasFont = $false
+  $perLine = @{ '--insert-notes' = @('--insert-note', ''); '--insert-uses' = @('--insert-use', 'show'); '--insert-placements' = @('--insert-placement', 'auto') }
   for ($i = 0; $i -lt $rest.Count; $i++) {
-    if ([string]$rest[$i] -eq '--insert-notes' -and ($i + 1) -lt $rest.Count) {
-      foreach ($line in ([string]$rest[$i + 1] -split "`r?`n")) {
-        $t = $line.Trim()
-        if ($t) { $a += @('--insert-note', $t) }
+    $arg = [string]$rest[$i]
+    if ($perLine.ContainsKey($arg) -and ($i + 1) -lt $rest.Count) {
+      $flag = $perLine[$arg][0]
+      $dflt = $perLine[$arg][1]
+      $lines = @(([string]$rest[$i + 1]) -split "`r?`n" | ForEach-Object { $_.Trim() })
+      $n = $lines.Count
+      while ($n -gt 0 -and -not $lines[$n - 1]) { $n-- }
+      for ($k = 0; $k -lt $n; $k++) {
+        $v = $lines[$k]
+        if (-not $v) { $v = $dflt }
+        $a += @($flag, $v)
       }
       $i++
       continue
     }
-    $a += [string]$rest[$i]
+    if (@('--brand-font-file', '--from', '--no-inserts', '--no-reference') -contains $arg) { $hasFont = $true }
+    $a += $arg
+  }
+  if ($hasFont -and -not (VerGe $appv $FontFileVersion)) {
+    ToolFail "Agent Edit trên máy (bản $appv) chưa hỗ trợ file font gửi qua chat / làm lại video đã tạo (from)." 'Gọi hành động update (cập nhật Agent Edit) rồi gọi lại make.'
   }
   AppRun 22 ($a + '--json')
   if ($script:RunRc -eq 124) { ToolFail 'Agent Edit chưa nhận việc kịp.' 'Gọi hành động jobs xem việc đã được tạo chưa trước khi gọi lại make.' }
   ToolRelay
+}
+
+# tool cli <lenh cua app...>: chay 1 lenh CLI cua app (Tao video, Automation, dang bai, Video da tao, cai dat...) va tra JSON.
+# O nhieu dong cua GetTime -> lap lai tham so: --vars / --post-vars / --sources (moi dong 1 --var / --post-var / --source).
+$CliSvcMinVersion = '1.21.0'
+if ($env:AGENT_EDIT_FEATURE_MIN_VERSION) { $CliSvcMinVersion = $env:AGENT_EDIT_FEATURE_MIN_VERSION }
+function ToolCli([string[]]$rest) {
+  ToolNeedApp
+  if (-not (VerGe $appv $CliSvcMinVersion)) { ToolFail "Agent Edit trên máy (bản $appv) chưa có chức năng này qua chat." 'Gọi hành động update để cập nhật Agent Edit rồi thử lại.' }
+  $map = @{ '--vars' = '--var'; '--post-vars' = '--post-var'; '--sources' = '--source' }
+  $a = @()
+  for ($i = 0; $i -lt $rest.Count; $i++) {
+    $arg = [string]$rest[$i]
+    if ($map.ContainsKey($arg) -and ($i + 1) -lt $rest.Count) {
+      foreach ($line in ([string]$rest[$i + 1] -split "`r?`n")) {
+        $t = $line.Trim()
+        if ($t) { $a += @($map[$arg], $t) }
+      }
+      $i++
+      continue
+    }
+    $a += $arg
+  }
+  AppRun 22 ($a + '--json')
+  if ($script:RunRc -eq 124) { ToolFail 'Agent Edit chưa trả lời kịp (lần đầu bật chạy nền có thể lâu hơn).' 'Gọi lại sau vài giây.' }
+  ToolRelay
+}
+
+# tool keys: dua key SaydiVoice / token Phone Agent nguoi truc nhap trong GetTime vao app (luu ma hoa nhu o Cai dat API).
+# Chi gui muc da nhap — khong xoa key dang co cua app.
+function ToolKeys {
+  ToolNeedApp
+  if (-not (VerGe $appv $CliSvcMinVersion)) { ToolFail "Agent Edit trên máy (bản $appv) chưa nhận key qua chat." 'Gọi hành động update rồi thử lại.' }
+  $o = [ordered]@{ ok = $true }
+  if ($env:AGENT_EDIT_SAYDI_KEY) {
+    AppRun 20 @('settings', 'saydi-key', '--json')
+    $o.saydi = ReadJsonText $script:RunOut
+    if ($script:RunRc -ne 0) { $o.ok = $false }
+  }
+  if ($env:AGENT_EDIT_PA_TOKEN) {
+    AppRun 20 @('settings', 'phoneagent-token', '--json')
+    $o.phoneAgent = ReadJsonText $script:RunOut
+    if ($script:RunRc -ne 0) { $o.ok = $false }
+  }
+  if ($o.Count -eq 1) { ToolFail 'Chưa có key nào được nhập trong GetTime.' 'Gọi gettime_ask_field cho trường saydi-key hoặc phoneagent-token trước.' }
+  [Console]::Out.WriteLine(($o | ConvertTo-Json -Compress -Depth 6))
+  if ($o.ok) { exit 0 }
+  exit 1
 }
 
 # tool jobs — danh sach gon 8 viec gan nhat
@@ -660,8 +758,10 @@ if ($cmd -eq 'tool' -or $cmd -eq '__tool-boot' -or $cmd -eq '__tool-update') {
     'make' { ToolMake $rest }
     'jobs' { ToolJobs }
     'update' { ToolUpdate }
+    'cli' { ToolCli $rest }
+    'keys' { ToolKeys }
   }
-  ToolFail "Không có việc `"$sub`" (status | setup | job | cancel | login | login-code | login-check | make | jobs | update)."
+  ToolFail "Không có việc `"$sub`" (status | setup | job | cancel | login | login-code | login-check | make | jobs | update | cli | keys)."
 }
 
 if ($cmd -eq 'install') {

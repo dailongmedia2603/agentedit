@@ -19,16 +19,20 @@ import { startAgyLogin, startClaudeLogin, startCodexLogin, sendCliInput, agyFail
 import { applyUpdate, checkForUpdateNow, initUpdater, updateState, updaterEnabled } from '../services/updater'
 import { killTree } from '../services/env'
 import { powershell } from '../services/toolchain'
+import { getProject } from '../services/projects'
 import { activeJobs, cancelFile, codeFile, Job, JobInput, JobInsert, jobLog, jobMilestone, listJobs, loadJob, newJobId, saveJob, TERMINAL, waitJobUntil } from './jobs'
 import { accountArg, accountOf, activeLogin, cliStatusOf, loginView, runLoginJob } from './login'
 import { aiHints, doctorSummary, ensureTools, runJob, runSetup, syncLibrary } from './pipeline'
 import { Args, CLI_FLAG, errLine, opt, optAll, out, outJson, parseArgs, pidAlive, sleep } from './util'
+import { cmdAuto, cmdCapabilities, cmdFonts, cmdMotion, cmdPost, cmdProjects, cmdSettings, cmdVoices, HELP_MORE } from './commands'
+import { svcPing, svcQuit } from './service-client'
 
 declare const __APP_BUILD__: string
 const APP_BUILD = typeof __APP_BUILD__ !== 'undefined' ? __APP_BUILD__ : ''
 
 const VIDEO_EXT = /\.(mp4|mov|m4v|avi|mkv|webm)$/i
 const MEDIA_EXT = /\.(png|jpe?g|webp|gif|heic|heif|tiff?|bmp|avif|mp4|mov|m4v|webm|mkv|avi)$/i
+const FONT_EXT = /\.(ttf|otf|woff)$/i // khop sidecar font_lib.EXTS
 const DEFAULT_WAIT_S = 540
 
 /** Ma thoat: 0 xong · 1 loi · 2 sai lenh / thieu dieu kien · 3 con dang chay (het thoi gian cho) · 130 da huy */
@@ -63,14 +67,21 @@ TẠO VIDEO (chạy nền, mỗi video 10–40 phút)
                 [--insert-placement auto|overlay|cutout|split|fullscreen]   (lặp lại theo thứ tự cho nhiều tư liệu)
       --landscape                    video ngang 16:9 (mặc định dọc 9:16)
       --brand-typography "<mô tả/tên font>"  --brand-colors "<mã màu #hex...>"  --brand-font <id font đã tải lên>
+      --brand-font-file <file .ttf/.otf/.woff>   tải font lên kho font máy này rồi dùng (lặp lại: đầu = tiêu đề, cuối = nội dung)
       --out <thư mục>                chép video xong ra thư mục này     --name "<tên file>"
       --fresh                        phân tích lại video (bỏ kết quả đã lưu)   --new-plan  lập kế hoạch mới
+      --from <id dự án>              LÀM LẠI / SỬA video đã tạo (projects list): lấy lại video, video mẫu, tư liệu, yêu cầu,
+                                     brand, khổ của dự án; tham số gửi kèm thay phần tương ứng (--insert thay cả bộ tư liệu,
+                                     --no-inserts bỏ tư liệu, --no-reference bỏ video mẫu). Không --new-plan = dùng lại phân
+                                     tích + kế hoạch đã lưu (render lại / tiếp tục sau lỗi); --new-plan = bản dựng khác
       --wait                         chờ tới khi xong (in tiến độ) thay vì trả mã việc ngay
   agent-edit wait <mã> [--timeout <giây>] [--until-change]
                                             Chờ việc (mặc định tối đa ${DEFAULT_WAIT_S}s, 0 = không giới hạn)
                                             --until-change: trả về ngay khi sang bước mới / xuất thêm 25%
   agent-edit job <mã>                       Trạng thái 1 việc       agent-edit jobs [--all]   Danh sách việc
   agent-edit cancel <mã>                    Huỷ việc đang chạy
+
+${HELP_MORE}
 
 Thêm --json vào mọi lệnh để nhận kết quả dạng JSON.
 Mã thoát: 0 xong · 1 lỗi · 2 sai lệnh / máy chưa đủ điều kiện · 3 việc còn đang chạy (hết thời gian chờ) · 130 đã huỷ.`
@@ -417,15 +428,49 @@ async function cmdSync(a: Args): Promise<number> {
 // ---------------------------------------------------------------------------
 // Tao video
 // ---------------------------------------------------------------------------
+/** Dau vao cua 1 du an Edit Video da tao (giao dien hoac CLI) -> lam lai / sua (`make --from <id>`). File trong thu muc du an
+ *  (ban da chep) truoc, file goc sau. */
+function projectBase(id: string): { base?: Partial<JobInput> & { videos: string[] }; error?: string } {
+  const p = getProject(id)
+  if (!p) return { error: `Không thấy dự án ${id} trong "Video đã tạo".` }
+  const pick = (x?: { path?: string; origPath?: string } | null) => [x?.path, x?.origPath].find((f) => !!f && existsSync(f as string)) as string | undefined
+  const srcs = (p.videos?.length ? p.videos : p.video ? [p.video] : []) as { path?: string; origPath?: string }[]
+  const videos = srcs.map(pick).filter((f): f is string => !!f)
+  if (!videos.length) return { error: `Dự án ${id} không còn file video nguồn trên máy.` }
+  const um = (Array.isArray(p.userMedia) ? p.userMedia : []) as { path?: string; origPath?: string; use?: string; placement?: string; note?: string }[]
+  const bg = (p.brandGuide || {}) as { typography?: string; colors?: string; fonts?: string[] }
+  return {
+    base: {
+      videos,
+      reference: pick(p.referenceVideo as never) || null,
+      inserts: um
+        .map((m) => ({ path: pick(m) || '', use: (m.use || 'show') as JobInsert['use'], placement: (m.placement || 'auto') as JobInsert['placement'], note: String(m.note || '') }))
+        .filter((m) => m.path),
+      editRequest: p.editRequest || undefined,
+      brandGuide: { typography: bg.typography, colors: bg.colors, fonts: Array.isArray(bg.fonts) ? bg.fonts : [] },
+      orientation: p.orientation === 'landscape' ? 'landscape' : 'portrait'
+    }
+  }
+}
+
 function buildInput(a: Args): { input?: Job['input']; error?: string } {
-  const videos = [...optAll(a, 'video'), ...a.pos].map(absFile)
+  // --from <id du an>: lay lai dau vao cua du an; tham so gui kem thay phan tuong ung
+  const fromId = opt(a, 'from')
+  let base: (Partial<JobInput> & { videos: string[] }) | undefined
+  if (fromId) {
+    const r = projectBase(fromId.trim())
+    if (!r.base) return { error: r.error }
+    base = r.base
+  }
+  const given = [...optAll(a, 'video'), ...a.pos].map(absFile)
+  const videos = given.length ? given : base?.videos || []
   if (!videos.length) return { error: 'Thiếu video nguồn: --video <đường dẫn file>' }
   for (const v of videos) {
     if (!existsSync(v) || !statSync(v).isFile()) return { error: `Không thấy file video: ${v}` }
     if (!VIDEO_EXT.test(v)) return { error: `Không phải file video (.mp4 .mov .m4v .avi .mkv .webm): ${v}` }
   }
   const refRaw = opt(a, 'reference') || opt(a, 'ref')
-  const reference = refRaw ? absFile(refRaw) : null
+  const reference = a.flags.has('no-reference') ? null : refRaw ? absFile(refRaw) : base?.reference || null
   if (reference && (!existsSync(reference) || !VIDEO_EXT.test(reference))) return { error: `Không thấy video mẫu: ${reference}` }
   const ins = optAll(a, 'insert').map(absFile)
   const notes = optAll(a, 'insert-note')
@@ -443,19 +488,31 @@ function buildInput(a: Args): { input?: Job['input']; error?: string } {
     }
     inserts.push({ path: p, use, placement, note: (notes[i] || '').trim().slice(0, 500) })
   }
+  if (!ins.length && base?.inserts?.length && !a.flags.has('no-inserts')) inserts.push(...base.inserts)
   const ori = (opt(a, 'orientation') || '').toLowerCase()
-  const orientation = a.flags.has('landscape') || ['landscape', 'ngang', '16:9', 'horizontal'].includes(ori) ? 'landscape' : 'portrait'
+  const orientation =
+    a.flags.has('landscape') || ['landscape', 'ngang', '16:9', 'horizontal'].includes(ori) ? 'landscape'
+      : a.flags.has('portrait') || ['portrait', 'doc', 'dọc', '9:16', 'vertical'].includes(ori) ? 'portrait'
+        : base?.orientation || 'portrait'
   const trim = (v?: string) => (v || '').trim()
+  const er = base?.editRequest || {}
   const editRequest = {
-    purpose: trim(opt(a, 'request') || opt(a, 'purpose')),
-    style: trim(opt(a, 'style')),
-    audience: trim(opt(a, 'audience')),
-    duration: trim(opt(a, 'duration'))
+    purpose: trim(opt(a, 'request') ?? opt(a, 'purpose') ?? er.purpose),
+    style: trim(opt(a, 'style') ?? er.style),
+    audience: trim(opt(a, 'audience') ?? er.audience),
+    duration: trim(opt(a, 'duration') ?? er.duration)
   }
+  const bg = base?.brandGuide || {}
+  const fontIds = optAll(a, 'brand-font').map((x) => x.trim()).filter(Boolean)
   const brandGuide = {
-    typography: trim(opt(a, 'brand-typography')),
-    colors: trim(opt(a, 'brand-colors')),
-    fonts: optAll(a, 'brand-font').map((x) => x.trim()).filter(Boolean).slice(0, 3)
+    typography: trim(opt(a, 'brand-typography') ?? bg.typography),
+    colors: trim(opt(a, 'brand-colors') ?? bg.colors),
+    fonts: (fontIds.length ? fontIds : bg.fonts || []).slice(0, 3)
+  }
+  const fontFiles = optAll(a, 'brand-font-file').map(absFile)
+  for (const f of fontFiles) {
+    if (!existsSync(f) || !statSync(f).isFile()) return { error: `Không thấy file font: ${f}` }
+    if (!FONT_EXT.test(f)) return { error: `Không phải file font (.ttf .otf .woff): ${f}` }
   }
   const outDir = opt(a, 'out') ? absFile(opt(a, 'out') as string) : null
   const clean = <T extends Record<string, unknown>>(o: T): T | undefined => {
@@ -469,6 +526,7 @@ function buildInput(a: Args): { input?: Job['input']; error?: string } {
       inserts,
       editRequest: clean(editRequest),
       brandGuide: clean(brandGuide),
+      ...(fontFiles.length ? { fontFiles } : {}),
       orientation,
       outDir,
       name: opt(a, 'name') || null,
@@ -714,6 +772,12 @@ function guiRunning(): boolean {
 async function cmdUpdate(a: Args): Promise<number> {
   initUpdater()
   if (!updaterEnabled()) return fail(a, 'Bản này không tự cập nhật (bản phát triển / bản đầy đủ / chưa đóng gói).', EXIT.usage)
+  // Agent Edit dang CHAY NEN cho CLI / GetTime (khong cua so) -> bao no thoat truoc khi thay app (dang tao video thi tu choi)
+  const svc = await svcPing()
+  if (svc?.ok && svc.mode === 'service' && !svc.windows) {
+    const q = await svcQuit()
+    if (!q?.ok) return fail(a, String(q?.error || 'Agent Edit đang chạy nền và chưa dừng được.'), EXIT.usage)
+  }
   if (guiRunning()) {
     return fail(a, 'App Agent Edit đang mở — đóng app (hoặc cập nhật ngay trong app) rồi chạy lại.', EXIT.usage)
   }
@@ -808,6 +872,24 @@ export async function runCli(argv: string[]): Promise<number> {
         return cmdJobs(a)
       case 'cancel':
         return await cmdCancel(a)
+      // ---- day du chuc nang app qua dich vu nen (commands.ts) ----
+      case 'motion':
+        return await cmdMotion(a)
+      case 'voices':
+        return await cmdVoices(a)
+      case 'auto':
+      case 'automation':
+        return await cmdAuto(a)
+      case 'post':
+        return await cmdPost(a)
+      case 'projects':
+        return await cmdProjects(a)
+      case 'settings':
+        return await cmdSettings(a)
+      case 'capabilities':
+        return await cmdCapabilities(a)
+      case 'fonts':
+        return await cmdFonts(a)
       case '__run-job':
         return await runJob(a.pos[0] || '')
       case '__run-setup':

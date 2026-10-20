@@ -35,6 +35,9 @@ export interface JobInput {
   inserts: JobInsert[]
   editRequest?: { purpose?: string; style?: string; audience?: string; duration?: string }
   brandGuide?: { typography?: string; colors?: string; fonts?: string[] }
+  /** file font (.ttf / .otf / .woff) gui kem lenh (ky nang GetTime) -> nhap vao kho font MAY NAY luc chay, id them vao
+   *  brandGuide.fonts theo thu tu (dau = tieu de, cuoi = noi dung) */
+  fontFiles?: string[]
   orientation: 'portrait' | 'landscape'
   /** thu muc chep them video xong (ngoai thu muc du an) */
   outDir?: string | null

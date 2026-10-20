@@ -1,10 +1,28 @@
 {
   "schema": 1,
   "run": {
-    "default": ["bash", "{skill}/scripts/agent-edit"],
-    "win32": ["powershell", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", "{skill}/scripts/agent-edit.ps1"]
+    "default": [
+      "bash",
+      "{skill}/scripts/agent-edit"
+    ],
+    "win32": [
+      "powershell",
+      "-NoProfile",
+      "-NonInteractive",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-File",
+      "{skill}/scripts/agent-edit.ps1"
+    ]
   },
-  "check": { "argv": ["{run}", "tool", "status"], "ready": "ready" },
+  "check": {
+    "argv": [
+      "{run}",
+      "tool",
+      "status"
+    ],
+    "ready": "ready"
+  },
   "fields": [
     {
       "id": "license-key",
@@ -12,6 +30,27 @@
       "secret": true,
       "env": "AGENT_EDIT_KEY",
       "hint": "Dạng XXXXX-XXXXX-XXXXX-XXXXX-XXXXX — mỗi key dùng cho 1 máy (dùng chung với app Agent Edit trên máy này)"
+    },
+    {
+      "id": "saydi-key",
+      "label": "API key SaydiVoice (giọng đọc AI cho Tạo video)",
+      "secret": true,
+      "env": "AGENT_EDIT_SAYDI_KEY",
+      "hint": "Lấy ở voice.saydi.ai — chỉ cần khi Tạo video có lời đọc"
+    },
+    {
+      "id": "phoneagent-token",
+      "label": "API token Phone Agent (đăng video qua iPhone)",
+      "secret": true,
+      "env": "AGENT_EDIT_PA_TOKEN",
+      "hint": "Bắt đầu bằng pa_live_ — Phone Agent > Cài đặt > Profile > API Token"
+    },
+    {
+      "id": "facebook-token",
+      "label": "Facebook Page Access Token (nguồn tin Facebook của Automation)",
+      "secret": true,
+      "env": "AGENT_EDIT_FB_TOKEN",
+      "hint": "Chỉ cần khi Automation lấy tin từ trang Facebook"
     }
   ],
   "actions": [
@@ -19,17 +58,36 @@
       "id": "setup",
       "title": "Cài đặt Agent Edit",
       "description": "Tải + cài app Agent Edit nếu máy chưa có hoặc bản quá cũ (cần trường license-key), kích hoạt key, tự cài công cụ còn thiếu và đồng bộ kho âm thanh / hiệu ứng. Cũng dùng để sửa khi kiểm tra báo thiếu công cụ hoặc chưa kích hoạt key. 5–20 phút.",
-      "argv": ["{run}", "tool", "setup"],
+      "argv": [
+        "{run}",
+        "tool",
+        "setup"
+      ],
       "job": {
         "id": "id",
-        "poll": ["{run}", "tool", "job", "{job}"],
+        "poll": [
+          "{run}",
+          "tool",
+          "job",
+          "{job}"
+        ],
         "status": "status",
-        "done": ["done"],
-        "failed": ["error", "cancelled"],
+        "done": [
+          "done"
+        ],
+        "failed": [
+          "error",
+          "cancelled"
+        ],
         "progress": "progress",
         "message": "message",
         "error": "error.message",
-        "cancel": ["{run}", "tool", "cancel", "{job}"]
+        "cancel": [
+          "{run}",
+          "tool",
+          "cancel",
+          "{job}"
+        ]
       }
     },
     {
@@ -37,99 +95,1998 @@
       "title": "Đăng nhập tài khoản AI",
       "description": "Mở đăng nhập một tài khoản AI mà Agent Edit dùng (gemini, claude; codex tuỳ chọn cho ảnh AI). Trả link đăng nhập (url) / các dòng hướng dẫn (lines) để chuyển cho người trực.",
       "input": {
-        "account": { "type": "string", "required": true, "enum": ["gemini", "claude", "codex"] },
-        "device": { "type": "boolean", "description": "Chỉ cho codex: đăng nhập bằng mã thiết bị (người trực không ngồi ở máy cài Agent Edit)." }
+        "account": {
+          "type": "string",
+          "required": true,
+          "enum": [
+            "gemini",
+            "claude",
+            "codex"
+          ]
+        },
+        "device": {
+          "type": "boolean",
+          "description": "Chỉ cho codex: đăng nhập bằng mã thiết bị (người trực không ngồi ở máy cài Agent Edit)."
+        }
       },
-      "argv": ["{run}", "tool", "login", "{account}", { "if": "device", "args": ["--device"] }]
+      "argv": [
+        "{run}",
+        "tool",
+        "login",
+        "{account}",
+        {
+          "if": "device",
+          "args": [
+            "--device"
+          ]
+        }
+      ]
     },
     {
       "id": "login-code",
       "title": "Gửi mã đăng nhập",
       "description": "Gửi mã mà trang đăng nhập hiện ra (người trực dán mã vào chat) cho lượt đăng nhập đang chờ.",
       "input": {
-        "account": { "type": "string", "required": true, "enum": ["gemini", "claude", "codex"] },
-        "code": { "type": "string", "required": true, "description": "Mã người trực gửi, giữ nguyên." }
+        "account": {
+          "type": "string",
+          "required": true,
+          "enum": [
+            "gemini",
+            "claude",
+            "codex"
+          ]
+        },
+        "code": {
+          "type": "string",
+          "required": true,
+          "description": "Mã người trực gửi, giữ nguyên."
+        }
       },
-      "argv": ["{run}", "tool", "login-code", "{account}", "{code}"]
+      "argv": [
+        "{run}",
+        "tool",
+        "login-code",
+        "{account}",
+        "{code}"
+      ]
     },
     {
       "id": "login-check",
       "title": "Kiểm tra đăng nhập",
       "description": "Tài khoản AI đã đăng nhập chưa, hoặc lượt đăng nhập đang chờ ở đâu (có thể kèm link).",
       "input": {
-        "account": { "type": "string", "required": true, "enum": ["gemini", "claude", "codex"] }
+        "account": {
+          "type": "string",
+          "required": true,
+          "enum": [
+            "gemini",
+            "claude",
+            "codex"
+          ]
+        }
       },
-      "argv": ["{run}", "tool", "login-check", "{account}"]
+      "argv": [
+        "{run}",
+        "tool",
+        "login-check",
+        "{account}"
+      ]
     },
     {
       "id": "make",
       "title": "Dựng video",
-      "description": "Dựng và edit video bằng AI từ video có sẵn (cắt khoảng lặng, hook, phụ đề, chữ hiệu ứng, ảnh AI, SFX, nhạc nền), xuất MP4 dọc 9:16 hoặc ngang 16:9. 10–40 phút; video xong hiện thành thẻ trong chat.",
+      "description": "Edit Video: dựng / edit video bằng AI từ video quay sẵn (cắt khoảng lặng, hook, phụ đề, chữ hiệu ứng, ảnh AI, SFX, nhạc), xuất MP4 dọc 9:16 hoặc ngang 16:9. Làm lại / sửa video đã tạo: from = id dự án (projects) + chỉ gửi phần muốn đổi. 10–40 phút; video xong hiện thành thẻ trong chat.",
       "input": {
-        "videos": { "type": "files", "required": true, "description": "Video nguồn (.mp4 .mov .m4v .avi .mkv .webm) — nhiều video thì ghép theo nội dung." },
-        "request": { "type": "string", "description": "Mục đích / nội dung / yêu cầu edit (quan trọng nhất)." },
-        "style": { "type": "string", "description": "Phong cách." },
-        "audience": { "type": "string", "description": "Người xem." },
-        "duration": { "type": "string", "description": "Độ dài mong muốn, vd \"45-60 giây\"." },
-        "reference": { "type": "file", "description": "Video mẫu để bắt chước nhịp cắt, chữ, hiệu ứng." },
-        "inserts": { "type": "files", "description": "Ảnh / video chèn lên (sản phẩm, logo, bảng giá…)." },
-        "insert_notes": { "type": "string", "description": "Ghi chú cho từng tư liệu chèn, MỖI DÒNG một tệp theo đúng thứ tự inserts: là gì, chèn lúc nói tới gì." },
-        "landscape": { "type": "boolean", "description": "Video ngang 16:9 (mặc định dọc 9:16)." },
-        "brand_colors": { "type": "string", "description": "Màu thương hiệu, vd \"#FF6A00 #1A1A1A\"." },
-        "brand_typography": { "type": "string", "description": "Font / kiểu chữ thương hiệu." },
-        "name": { "type": "string", "description": "Tên file video xong (không có thì theo chủ đề + ngày giờ)." },
-        "new_plan": { "type": "boolean", "description": "Lập kế hoạch dựng mới — chỉ khi người trực chê bản trước, muốn bản khác." },
-        "fresh": { "type": "boolean", "description": "Phân tích lại video từ đầu — chỉ khi người trực yêu cầu rõ." }
+        "from": {
+          "type": "string",
+          "description": "Id dự án Edit Video đã tạo (projects list) để làm lại / sửa: lấy lại video, video mẫu, tư liệu, yêu cầu, brand, khổ; các ô gửi kèm thay phần tương ứng."
+        },
+        "videos": {
+          "type": "files",
+          "description": "Video nguồn (.mp4 .mov .m4v .avi .mkv .webm) — nhiều video thì ghép theo nội dung. Bỏ trống khi dùng from."
+        },
+        "request": {
+          "type": "string",
+          "description": "Mục đích / nội dung / yêu cầu edit (quan trọng nhất)."
+        },
+        "style": {
+          "type": "string",
+          "description": "Phong cách."
+        },
+        "audience": {
+          "type": "string",
+          "description": "Người xem."
+        },
+        "duration": {
+          "type": "string",
+          "description": "Độ dài mong muốn, vd \"45-60 giây\"."
+        },
+        "reference": {
+          "type": "file",
+          "description": "Video mẫu để bắt chước nhịp cắt, chữ, hiệu ứng."
+        },
+        "inserts": {
+          "type": "files",
+          "description": "Ảnh / video chèn lên (sản phẩm, logo, bảng giá…)."
+        },
+        "insert_notes": {
+          "type": "string",
+          "description": "Mô tả từng tư liệu, MỖI DÒNG một tệp đúng thứ tự inserts: là gì, chèn lúc nói tới gì (dòng trống = không mô tả)."
+        },
+        "insert_uses": {
+          "type": "string",
+          "description": "Cách dùng từng tư liệu, mỗi dòng một tệp đúng thứ tự inserts: show (chèn vào video) | ai_ref (chỉ làm mẫu cho ảnh AI) | both. Dòng trống = show."
+        },
+        "insert_placements": {
+          "type": "string",
+          "description": "Vị trí từng tư liệu, mỗi dòng một tệp đúng thứ tự inserts: auto (AI tự chọn) | overlay (khung nổi, người nói vẫn hiện) | cutout (tách nền như sticker, chỉ ảnh) | split (nửa trên màn hình) | fullscreen. Dòng trống = auto."
+        },
+        "orientation": {
+          "type": "string",
+          "description": "Khổ video: portrait = dọc 9:16 (mặc định), landscape = ngang 16:9.",
+          "enum": [
+            "portrait",
+            "landscape"
+          ]
+        },
+        "brand_colors": {
+          "type": "string",
+          "description": "Màu thương hiệu, vd \"#FF6A00 #1A1A1A\"."
+        },
+        "brand_typography": {
+          "type": "string",
+          "description": "Font / kiểu chữ thương hiệu."
+        },
+        "fonts": {
+          "type": "files",
+          "description": "File font thương hiệu (.ttf .otf .woff) người trực gửi — tự tải lên kho font của máy này; nhiều bộ font: đầu = tiêu đề, cuối = nội dung (tối đa 3)."
+        },
+        "name": {
+          "type": "string",
+          "description": "Tên file video xong (không có thì theo chủ đề + ngày giờ)."
+        },
+        "new_plan": {
+          "type": "boolean",
+          "description": "Lập kế hoạch dựng mới — chỉ khi người trực chê bản trước, muốn bản khác."
+        },
+        "fresh": {
+          "type": "boolean",
+          "description": "Phân tích lại video từ đầu — chỉ khi người trực yêu cầu rõ."
+        },
+        "no_inserts": {
+          "type": "boolean",
+          "description": "Chỉ khi dùng from: bỏ hết tư liệu chèn của dự án cũ."
+        },
+        "no_reference": {
+          "type": "boolean",
+          "description": "Chỉ khi dùng from: bỏ video mẫu của dự án cũ."
+        }
       },
       "argv": [
-        "{run}", "tool", "make",
-        { "each": "videos", "args": ["--video", "{item}"] },
-        { "if": "request", "args": ["--request", "{request}"] },
-        { "if": "style", "args": ["--style", "{style}"] },
-        { "if": "audience", "args": ["--audience", "{audience}"] },
-        { "if": "duration", "args": ["--duration", "{duration}"] },
-        { "if": "reference", "args": ["--reference", "{reference}"] },
-        { "each": "inserts", "args": ["--insert", "{item}"] },
-        { "if": "insert_notes", "args": ["--insert-notes", "{insert_notes}"] },
-        { "if": "landscape", "args": ["--landscape"] },
-        { "if": "brand_colors", "args": ["--brand-colors", "{brand_colors}"] },
-        { "if": "brand_typography", "args": ["--brand-typography", "{brand_typography}"] },
-        { "if": "name", "args": ["--name", "{name}"] },
-        { "if": "new_plan", "args": ["--new-plan"] },
-        { "if": "fresh", "args": ["--fresh"] },
-        "--out", "{out}"
+        "{run}",
+        "tool",
+        "make",
+        {
+          "if": "from",
+          "args": [
+            "--from",
+            "{from}"
+          ]
+        },
+        {
+          "each": "videos",
+          "args": [
+            "--video",
+            "{item}"
+          ]
+        },
+        {
+          "if": "request",
+          "args": [
+            "--request",
+            "{request}"
+          ]
+        },
+        {
+          "if": "style",
+          "args": [
+            "--style",
+            "{style}"
+          ]
+        },
+        {
+          "if": "audience",
+          "args": [
+            "--audience",
+            "{audience}"
+          ]
+        },
+        {
+          "if": "duration",
+          "args": [
+            "--duration",
+            "{duration}"
+          ]
+        },
+        {
+          "if": "reference",
+          "args": [
+            "--reference",
+            "{reference}"
+          ]
+        },
+        {
+          "each": "inserts",
+          "args": [
+            "--insert",
+            "{item}"
+          ]
+        },
+        {
+          "if": "insert_notes",
+          "args": [
+            "--insert-notes",
+            "{insert_notes}"
+          ]
+        },
+        {
+          "if": "insert_uses",
+          "args": [
+            "--insert-uses",
+            "{insert_uses}"
+          ]
+        },
+        {
+          "if": "insert_placements",
+          "args": [
+            "--insert-placements",
+            "{insert_placements}"
+          ]
+        },
+        {
+          "if": "brand_colors",
+          "args": [
+            "--brand-colors",
+            "{brand_colors}"
+          ]
+        },
+        {
+          "if": "brand_typography",
+          "args": [
+            "--brand-typography",
+            "{brand_typography}"
+          ]
+        },
+        {
+          "each": "fonts",
+          "args": [
+            "--brand-font-file",
+            "{item}"
+          ]
+        },
+        {
+          "if": "name",
+          "args": [
+            "--name",
+            "{name}"
+          ]
+        },
+        {
+          "if": "new_plan",
+          "args": [
+            "--new-plan"
+          ]
+        },
+        {
+          "if": "fresh",
+          "args": [
+            "--fresh"
+          ]
+        },
+        {
+          "if": "orientation",
+          "args": [
+            "--orientation",
+            "{orientation}"
+          ]
+        },
+        {
+          "if": "no_inserts",
+          "args": [
+            "--no-inserts"
+          ]
+        },
+        {
+          "if": "no_reference",
+          "args": [
+            "--no-reference"
+          ]
+        },
+        "--out",
+        "{out}"
       ],
       "job": {
         "id": "id",
-        "poll": ["{run}", "tool", "job", "{job}"],
+        "poll": [
+          "{run}",
+          "tool",
+          "job",
+          "{job}"
+        ],
         "status": "status",
-        "done": ["done"],
-        "failed": ["error", "cancelled"],
+        "done": [
+          "done"
+        ],
+        "failed": [
+          "error",
+          "cancelled"
+        ],
         "progress": "progress",
         "message": "message",
         "result": "result.copy",
         "error": "error.message",
-        "cancel": ["{run}", "tool", "cancel", "{job}"]
+        "cancel": [
+          "{run}",
+          "tool",
+          "cancel",
+          "{job}"
+        ]
       },
       "output": "video"
+    },
+    {
+      "id": "capabilities",
+      "title": "Agent Edit làm được gì",
+      "description": "Danh sách chức năng của Agent Edit (Edit Video, Tạo video, Automation Video, Video đã tạo, đăng video qua iPhone, cài đặt), lựa chọn của từng chức năng (loại video, khung hình, quy trình dựng, giọng đọc...) và tình trạng máy (đã có key / đăng nhập gì). Gọi khi người trực hỏi app làm được gì, hoặc trước khi hỏi form Tạo video.",
+      "argv": [
+        "{run}",
+        "tool",
+        "cli",
+        "capabilities"
+      ]
+    },
+    {
+      "id": "motion-create",
+      "title": "Tạo video",
+      "description": "Tạo video motion graphics từ ý tưởng (không cần video quay) — như menu Tạo video của app: giới thiệu sản phẩm, quảng cáo, chữ động, tin tức… có giọng đọc AI, nhạc/SFX. 15–40 phút (mvd 60–90 phút); video xong hiện thành thẻ trong chat.",
+      "input": {
+        "name": {
+          "type": "string",
+          "description": "Tên sản phẩm / thương hiệu (bắt buộc khi tạo mới).",
+          "required": true
+        },
+        "message": {
+          "type": "string",
+          "description": "Nội dung chính muốn nói trong video (bắt buộc khi tạo mới).",
+          "required": true
+        },
+        "video_type": {
+          "type": "string",
+          "description": "Loại video: promo (quảng cáo / giới thiệu sản phẩm, mặc định) · launch (ra mắt) · feature (một tính năng) · social_ad (quảng cáo mạng xã hội) · explainer (giải thích) · kinetic (chữ động) · brand (nhận diện thương hiệu) · news (tin tức ngắn).",
+          "enum": [
+            "promo",
+            "launch",
+            "feature",
+            "social_ad",
+            "explainer",
+            "kinetic",
+            "brand",
+            "news"
+          ]
+        },
+        "aspect": {
+          "type": "string",
+          "description": "Khung hình: 9:16 dọc (mặc định), 16:9 ngang, 1:1 vuông.",
+          "enum": [
+            "9:16",
+            "16:9",
+            "1:1"
+          ]
+        },
+        "duration": {
+          "type": "number",
+          "description": "Thời lượng 6–90 giây (mặc định 20)."
+        },
+        "language": {
+          "type": "string",
+          "description": "Ngôn ngữ video.",
+          "enum": [
+            "vi",
+            "en"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "description": "Người xem."
+        },
+        "goal": {
+          "type": "string",
+          "description": "Mục tiêu video."
+        },
+        "cta": {
+          "type": "string",
+          "description": "Lời kêu gọi hành động (CTA)."
+        },
+        "tone": {
+          "type": "string",
+          "description": "Giọng điệu / cảm xúc."
+        },
+        "website": {
+          "type": "string",
+          "description": "Website thương hiệu (http/https) — AI lấy màu, font, logo, nội dung."
+        },
+        "colors": {
+          "type": "string",
+          "description": "Màu thương hiệu (mã màu)."
+        },
+        "fonts": {
+          "type": "string",
+          "description": "Font chữ thương hiệu (tên / mô tả)."
+        },
+        "assets": {
+          "type": "files",
+          "description": "Logo, ảnh sản phẩm, ảnh chụp màn hình (ảnh)."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Ghi chú thêm cho AI."
+        },
+        "engine": {
+          "type": "string",
+          "description": "Quy trình dựng: motionmaxxing (mặc định — motion graphics thương hiệu, chữ động, UI) hoặc mvd (motion-video-director — ảnh AI nhân vật + đạo cụ, cắt theo nhịp nhạc; lâu hơn, nếu máy có).",
+          "enum": [
+            "motionmaxxing",
+            "mvd"
+          ]
+        },
+        "voice_id": {
+          "type": "string",
+          "description": "Id giọng đọc SaydiVoice (tìm bằng voices). Bắt buộc nếu có lời đọc."
+        },
+        "speed": {
+          "type": "number",
+          "description": "Tốc độ đọc 0.7–1.3 (mặc định 1)."
+        },
+        "script": {
+          "type": "string",
+          "description": "Kịch bản lời đọc — điền thì đọc đúng nguyên văn; bỏ trống thì AI tự viết."
+        },
+        "no_voice": {
+          "type": "boolean",
+          "description": "Video không lời đọc."
+        }
+      },
+      "argv": [
+        "{run}",
+        "tool",
+        "cli",
+        "motion",
+        "create",
+        {
+          "if": "name",
+          "args": [
+            "--name",
+            "{name}"
+          ]
+        },
+        {
+          "if": "message",
+          "args": [
+            "--message",
+            "{message}"
+          ]
+        },
+        {
+          "if": "video_type",
+          "args": [
+            "--type",
+            "{video_type}"
+          ]
+        },
+        {
+          "if": "aspect",
+          "args": [
+            "--aspect",
+            "{aspect}"
+          ]
+        },
+        {
+          "if": "duration",
+          "args": [
+            "--duration",
+            "{duration}"
+          ]
+        },
+        {
+          "if": "language",
+          "args": [
+            "--language",
+            "{language}"
+          ]
+        },
+        {
+          "if": "audience",
+          "args": [
+            "--audience",
+            "{audience}"
+          ]
+        },
+        {
+          "if": "goal",
+          "args": [
+            "--goal",
+            "{goal}"
+          ]
+        },
+        {
+          "if": "cta",
+          "args": [
+            "--cta",
+            "{cta}"
+          ]
+        },
+        {
+          "if": "tone",
+          "args": [
+            "--tone",
+            "{tone}"
+          ]
+        },
+        {
+          "if": "website",
+          "args": [
+            "--website",
+            "{website}"
+          ]
+        },
+        {
+          "if": "colors",
+          "args": [
+            "--colors",
+            "{colors}"
+          ]
+        },
+        {
+          "if": "fonts",
+          "args": [
+            "--fonts",
+            "{fonts}"
+          ]
+        },
+        {
+          "if": "notes",
+          "args": [
+            "--notes",
+            "{notes}"
+          ]
+        },
+        {
+          "if": "engine",
+          "args": [
+            "--engine",
+            "{engine}"
+          ]
+        },
+        {
+          "if": "voice_id",
+          "args": [
+            "--voice-id",
+            "{voice_id}"
+          ]
+        },
+        {
+          "if": "speed",
+          "args": [
+            "--speed",
+            "{speed}"
+          ]
+        },
+        {
+          "if": "script",
+          "args": [
+            "--script",
+            "{script}"
+          ]
+        },
+        {
+          "each": "assets",
+          "args": [
+            "--asset",
+            "{item}"
+          ]
+        },
+        {
+          "if": "no_voice",
+          "args": [
+            "--no-voice"
+          ]
+        },
+        "--out",
+        "{out}"
+      ],
+      "job": {
+        "id": "id",
+        "poll": [
+          "{run}",
+          "tool",
+          "job",
+          "{job}"
+        ],
+        "status": "status",
+        "done": [
+          "done"
+        ],
+        "failed": [
+          "error",
+          "cancelled"
+        ],
+        "progress": "progress",
+        "message": "message",
+        "result": "result.copy",
+        "error": "error.message",
+        "cancel": [
+          "{run}",
+          "tool",
+          "cancel",
+          "{job}"
+        ]
+      },
+      "output": "video"
+    },
+    {
+      "id": "motion-redo",
+      "title": "Làm lại Tạo video",
+      "description": "rerun = chạy lại video Tạo video bị lỗi / gián đoạn / đã huỷ (cùng nội dung); again = tạo BẢN KHÁC từ video đã có, chỉ gửi các ô muốn đổi (giống nút Tạo bản khác).",
+      "input": {
+        "op": {
+          "type": "string",
+          "description": "rerun hoặc again.",
+          "enum": [
+            "rerun",
+            "again"
+          ],
+          "required": true
+        },
+        "id": {
+          "type": "string",
+          "description": "Id video Tạo video (mv-…).",
+          "required": true
+        },
+        "name": {
+          "type": "string",
+          "description": "Tên sản phẩm / thương hiệu (bắt buộc khi tạo mới)."
+        },
+        "message": {
+          "type": "string",
+          "description": "Nội dung chính muốn nói trong video (bắt buộc khi tạo mới)."
+        },
+        "video_type": {
+          "type": "string",
+          "description": "Loại video: promo (quảng cáo / giới thiệu sản phẩm, mặc định) · launch (ra mắt) · feature (một tính năng) · social_ad (quảng cáo mạng xã hội) · explainer (giải thích) · kinetic (chữ động) · brand (nhận diện thương hiệu) · news (tin tức ngắn).",
+          "enum": [
+            "promo",
+            "launch",
+            "feature",
+            "social_ad",
+            "explainer",
+            "kinetic",
+            "brand",
+            "news"
+          ]
+        },
+        "aspect": {
+          "type": "string",
+          "description": "Khung hình: 9:16 dọc (mặc định), 16:9 ngang, 1:1 vuông.",
+          "enum": [
+            "9:16",
+            "16:9",
+            "1:1"
+          ]
+        },
+        "duration": {
+          "type": "number",
+          "description": "Thời lượng 6–90 giây (mặc định 20)."
+        },
+        "language": {
+          "type": "string",
+          "description": "Ngôn ngữ video.",
+          "enum": [
+            "vi",
+            "en"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "description": "Người xem."
+        },
+        "goal": {
+          "type": "string",
+          "description": "Mục tiêu video."
+        },
+        "cta": {
+          "type": "string",
+          "description": "Lời kêu gọi hành động (CTA)."
+        },
+        "tone": {
+          "type": "string",
+          "description": "Giọng điệu / cảm xúc."
+        },
+        "website": {
+          "type": "string",
+          "description": "Website thương hiệu (http/https) — AI lấy màu, font, logo, nội dung."
+        },
+        "colors": {
+          "type": "string",
+          "description": "Màu thương hiệu (mã màu)."
+        },
+        "fonts": {
+          "type": "string",
+          "description": "Font chữ thương hiệu (tên / mô tả)."
+        },
+        "assets": {
+          "type": "files",
+          "description": "Logo, ảnh sản phẩm, ảnh chụp màn hình (ảnh)."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Ghi chú thêm cho AI."
+        },
+        "engine": {
+          "type": "string",
+          "description": "Quy trình dựng: motionmaxxing (mặc định — motion graphics thương hiệu, chữ động, UI) hoặc mvd (motion-video-director — ảnh AI nhân vật + đạo cụ, cắt theo nhịp nhạc; lâu hơn, nếu máy có).",
+          "enum": [
+            "motionmaxxing",
+            "mvd"
+          ]
+        },
+        "voice_id": {
+          "type": "string",
+          "description": "Id giọng đọc SaydiVoice (tìm bằng voices). Bắt buộc nếu có lời đọc."
+        },
+        "speed": {
+          "type": "number",
+          "description": "Tốc độ đọc 0.7–1.3 (mặc định 1)."
+        },
+        "script": {
+          "type": "string",
+          "description": "Kịch bản lời đọc — điền thì đọc đúng nguyên văn; bỏ trống thì AI tự viết."
+        },
+        "no_voice": {
+          "type": "boolean",
+          "description": "Video không lời đọc."
+        }
+      },
+      "argv": [
+        "{run}",
+        "tool",
+        "cli",
+        "motion",
+        "{op}",
+        "--id",
+        "{id}",
+        {
+          "if": "name",
+          "args": [
+            "--name",
+            "{name}"
+          ]
+        },
+        {
+          "if": "message",
+          "args": [
+            "--message",
+            "{message}"
+          ]
+        },
+        {
+          "if": "video_type",
+          "args": [
+            "--type",
+            "{video_type}"
+          ]
+        },
+        {
+          "if": "aspect",
+          "args": [
+            "--aspect",
+            "{aspect}"
+          ]
+        },
+        {
+          "if": "duration",
+          "args": [
+            "--duration",
+            "{duration}"
+          ]
+        },
+        {
+          "if": "language",
+          "args": [
+            "--language",
+            "{language}"
+          ]
+        },
+        {
+          "if": "audience",
+          "args": [
+            "--audience",
+            "{audience}"
+          ]
+        },
+        {
+          "if": "goal",
+          "args": [
+            "--goal",
+            "{goal}"
+          ]
+        },
+        {
+          "if": "cta",
+          "args": [
+            "--cta",
+            "{cta}"
+          ]
+        },
+        {
+          "if": "tone",
+          "args": [
+            "--tone",
+            "{tone}"
+          ]
+        },
+        {
+          "if": "website",
+          "args": [
+            "--website",
+            "{website}"
+          ]
+        },
+        {
+          "if": "colors",
+          "args": [
+            "--colors",
+            "{colors}"
+          ]
+        },
+        {
+          "if": "fonts",
+          "args": [
+            "--fonts",
+            "{fonts}"
+          ]
+        },
+        {
+          "if": "notes",
+          "args": [
+            "--notes",
+            "{notes}"
+          ]
+        },
+        {
+          "if": "engine",
+          "args": [
+            "--engine",
+            "{engine}"
+          ]
+        },
+        {
+          "if": "voice_id",
+          "args": [
+            "--voice-id",
+            "{voice_id}"
+          ]
+        },
+        {
+          "if": "speed",
+          "args": [
+            "--speed",
+            "{speed}"
+          ]
+        },
+        {
+          "if": "script",
+          "args": [
+            "--script",
+            "{script}"
+          ]
+        },
+        {
+          "each": "assets",
+          "args": [
+            "--asset",
+            "{item}"
+          ]
+        },
+        {
+          "if": "no_voice",
+          "args": [
+            "--no-voice"
+          ]
+        },
+        "--out",
+        "{out}"
+      ],
+      "job": {
+        "id": "id",
+        "poll": [
+          "{run}",
+          "tool",
+          "job",
+          "{job}"
+        ],
+        "status": "status",
+        "done": [
+          "done"
+        ],
+        "failed": [
+          "error",
+          "cancelled"
+        ],
+        "progress": "progress",
+        "message": "message",
+        "result": "result.copy",
+        "error": "error.message",
+        "cancel": [
+          "{run}",
+          "tool",
+          "cancel",
+          "{job}"
+        ]
+      },
+      "output": "video"
+    },
+    {
+      "id": "motion-manage",
+      "title": "Video Tạo video",
+      "description": "list = các video Tạo video / Automation gần đây (kind single|auto, automation = id dự án); show = chi tiết + báo cáo của AI; brief = nội dung đã nhập; cancel = huỷ video đang tạo / đang chờ; delete = xoá video (cả file).",
+      "input": {
+        "op": {
+          "type": "string",
+          "enum": [
+            "list",
+            "show",
+            "brief",
+            "cancel",
+            "delete"
+          ],
+          "required": true
+        },
+        "id": {
+          "type": "string",
+          "description": "Id video (mv-…) cho show / brief / cancel / delete."
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "single",
+            "auto"
+          ]
+        },
+        "automation": {
+          "type": "string",
+          "description": "Id dự án Automation (lọc list)."
+        },
+        "limit": {
+          "type": "number",
+          "description": "Số video (mặc định 10)."
+        }
+      },
+      "argv": [
+        "{run}",
+        "tool",
+        "cli",
+        "motion",
+        "{op}",
+        {
+          "if": "id",
+          "args": [
+            "--id",
+            "{id}"
+          ]
+        },
+        {
+          "if": "kind",
+          "args": [
+            "--kind",
+            "{kind}"
+          ]
+        },
+        {
+          "if": "automation",
+          "args": [
+            "--automation",
+            "{automation}"
+          ]
+        },
+        {
+          "if": "limit",
+          "args": [
+            "--limit",
+            "{limit}"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "voices",
+      "title": "Tìm giọng đọc",
+      "description": "Tìm giọng đọc SaydiVoice cho Tạo video (q = từ khoá như 'nữ miền Nam', 'tin tức', 'trầm ấm'; custom = giọng riêng của tài khoản). Trả id để dùng ở voice_id.",
+      "input": {
+        "q": {
+          "type": "string",
+          "description": "Từ khoá."
+        },
+        "language": {
+          "type": "string",
+          "description": "vi, en…"
+        },
+        "gender": {
+          "type": "string",
+          "enum": [
+            "female",
+            "male"
+          ]
+        },
+        "custom": {
+          "type": "boolean",
+          "description": "Chỉ giọng riêng của tài khoản."
+        },
+        "limit": {
+          "type": "number",
+          "description": "Số giọng (mặc định 15)."
+        }
+      },
+      "argv": [
+        "{run}",
+        "tool",
+        "cli",
+        "voices",
+        {
+          "if": "q",
+          "args": [
+            "--q",
+            "{q}"
+          ]
+        },
+        {
+          "if": "language",
+          "args": [
+            "--language",
+            "{language}"
+          ]
+        },
+        {
+          "if": "gender",
+          "args": [
+            "--gender",
+            "{gender}"
+          ]
+        },
+        {
+          "if": "custom",
+          "args": [
+            "--custom"
+          ]
+        },
+        {
+          "if": "limit",
+          "args": [
+            "--limit",
+            "{limit}"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fonts",
+      "title": "Font đã có",
+      "description": "Các font đã có trong kho font của máy (id dùng cho Brand Guideline; font tải lên qua chat cũng nằm ở đây).",
+      "argv": [
+        "{run}",
+        "tool",
+        "cli",
+        "fonts"
+      ]
+    },
+    {
+      "id": "projects",
+      "title": "Video đã tạo",
+      "description": "Video Edit Video đã tạo (cả từ app lẫn chat): list = danh sách (id, chủ đề, file video); show = chi tiết (video nguồn, tư liệu, yêu cầu, brand, file video); delete = xoá khỏi danh sách (with_files = đưa cả thư mục dự án vào Thùng rác).",
+      "input": {
+        "op": {
+          "type": "string",
+          "enum": [
+            "list",
+            "show",
+            "delete"
+          ],
+          "required": true
+        },
+        "id": {
+          "type": "string",
+          "description": "Id dự án (r_…) cho show / delete."
+        },
+        "with_files": {
+          "type": "boolean",
+          "description": "delete: xoá cả thư mục dự án (vào Thùng rác)."
+        },
+        "limit": {
+          "type": "number",
+          "description": "Số dự án (mặc định 10)."
+        }
+      },
+      "argv": [
+        "{run}",
+        "tool",
+        "cli",
+        "projects",
+        "{op}",
+        {
+          "if": "id",
+          "args": [
+            "--id",
+            "{id}"
+          ]
+        },
+        {
+          "if": "with_files",
+          "args": [
+            "--with-files"
+          ]
+        },
+        {
+          "if": "limit",
+          "args": [
+            "--limit",
+            "{limit}"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "auto-save",
+      "title": "Lưu dự án Automation",
+      "description": "Tạo (không id) hoặc sửa (có id, chỉ gửi ô muốn đổi) dự án Automation Video: theo dõi nguồn tin, mỗi tin mới tự thành 1 video Tạo video, có thể tự đăng qua iPhone. Nguồn Facebook cần trường facebook-token.",
+      "input": {
+        "id": {
+          "type": "string",
+          "description": "Id dự án khi sửa (auto_…)."
+        },
+        "project_name": {
+          "type": "string",
+          "description": "Tên dự án (bắt buộc khi tạo)."
+        },
+        "sources": {
+          "type": "string",
+          "description": "Nguồn tin, MỖI DÒNG một nguồn dạng web|<link trang tin / RSS> hoặc facebook|<link trang Facebook>. Gửi = thay toàn bộ danh sách nguồn."
+        },
+        "interval": {
+          "type": "number",
+          "description": "Phút giữa 2 lần kiểm tin (5–1440, mặc định 30)."
+        },
+        "max_per_check": {
+          "type": "number",
+          "description": "Tối đa video mỗi lần kiểm (1–10, mặc định 2)."
+        },
+        "max_per_day": {
+          "type": "number",
+          "description": "Tối đa video / ngày (1–100, mặc định 10)."
+        },
+        "skip_existing": {
+          "type": "string",
+          "description": "yes (mặc định) = lần đầu chỉ ghi nhận tin đang có, chỉ làm video tin MỚI sau đó; no = làm luôn tin đang có.",
+          "enum": [
+            "yes",
+            "no"
+          ]
+        },
+        "enabled": {
+          "type": "string",
+          "description": "Bật / tắt dự án.",
+          "enum": [
+            "yes",
+            "no"
+          ]
+        },
+        "post": {
+          "type": "string",
+          "description": "Tự động đăng video xong qua iPhone (Phone Agent).",
+          "enum": [
+            "yes",
+            "no"
+          ]
+        },
+        "post_device": {
+          "type": "string",
+          "description": "iPhone (id hoặc tên, xem post-manage devices)."
+        },
+        "post_script": {
+          "type": "string",
+          "description": "Kịch bản đăng (id hoặc tên, xem post-manage scripts)."
+        },
+        "post_vars": {
+          "type": "string",
+          "description": "Biến của kịch bản, MỖI DÒNG ten=giá trị; dùng được mẫu {title} {summary} {link} {source} {channel} {date}."
+        },
+        "post_timing": {
+          "type": "string",
+          "description": "now = đăng ngay khi xong; delay = sau post_delay phút; slots = theo khung giờ post_slots.",
+          "enum": [
+            "now",
+            "delay",
+            "slots"
+          ]
+        },
+        "post_delay": {
+          "type": "number",
+          "description": "Phút chờ trước khi đăng (timing delay)."
+        },
+        "post_slots": {
+          "type": "string",
+          "description": "Khung giờ, vd 08:00,12:00,19:00 (timing slots)."
+        },
+        "name": {
+          "type": "string",
+          "description": "Tên sản phẩm / thương hiệu (bắt buộc khi tạo mới)."
+        },
+        "video_type": {
+          "type": "string",
+          "description": "Loại video: promo (quảng cáo / giới thiệu sản phẩm, mặc định) · launch (ra mắt) · feature (một tính năng) · social_ad (quảng cáo mạng xã hội) · explainer (giải thích) · kinetic (chữ động) · brand (nhận diện thương hiệu) · news (tin tức ngắn).",
+          "enum": [
+            "promo",
+            "launch",
+            "feature",
+            "social_ad",
+            "explainer",
+            "kinetic",
+            "brand",
+            "news"
+          ]
+        },
+        "aspect": {
+          "type": "string",
+          "description": "Khung hình: 9:16 dọc (mặc định), 16:9 ngang, 1:1 vuông.",
+          "enum": [
+            "9:16",
+            "16:9",
+            "1:1"
+          ]
+        },
+        "duration": {
+          "type": "number",
+          "description": "Thời lượng 6–90 giây (mặc định 20)."
+        },
+        "language": {
+          "type": "string",
+          "description": "Ngôn ngữ video.",
+          "enum": [
+            "vi",
+            "en"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "description": "Người xem."
+        },
+        "goal": {
+          "type": "string",
+          "description": "Mục tiêu video."
+        },
+        "cta": {
+          "type": "string",
+          "description": "Lời kêu gọi hành động (CTA)."
+        },
+        "tone": {
+          "type": "string",
+          "description": "Giọng điệu / cảm xúc."
+        },
+        "website": {
+          "type": "string",
+          "description": "Website thương hiệu (http/https) — AI lấy màu, font, logo, nội dung."
+        },
+        "colors": {
+          "type": "string",
+          "description": "Màu thương hiệu (mã màu)."
+        },
+        "fonts": {
+          "type": "string",
+          "description": "Font chữ thương hiệu (tên / mô tả)."
+        },
+        "assets": {
+          "type": "files",
+          "description": "Logo, ảnh sản phẩm, ảnh chụp màn hình (ảnh)."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Ghi chú thêm cho AI."
+        },
+        "engine": {
+          "type": "string",
+          "description": "Quy trình dựng: motionmaxxing (mặc định — motion graphics thương hiệu, chữ động, UI) hoặc mvd (motion-video-director — ảnh AI nhân vật + đạo cụ, cắt theo nhịp nhạc; lâu hơn, nếu máy có).",
+          "enum": [
+            "motionmaxxing",
+            "mvd"
+          ]
+        },
+        "voice_id": {
+          "type": "string",
+          "description": "Id giọng đọc SaydiVoice (tìm bằng voices). Bắt buộc nếu có lời đọc."
+        },
+        "speed": {
+          "type": "number",
+          "description": "Tốc độ đọc 0.7–1.3 (mặc định 1)."
+        },
+        "script": {
+          "type": "string",
+          "description": "Kịch bản lời đọc — điền thì đọc đúng nguyên văn; bỏ trống thì AI tự viết."
+        },
+        "no_voice": {
+          "type": "boolean",
+          "description": "Video không lời đọc."
+        },
+        "message": {
+          "type": "string",
+          "description": "Hướng dẫn cách làm video từ tin (tuỳ chọn)."
+        }
+      },
+      "argv": [
+        "{run}",
+        "tool",
+        "cli",
+        "auto",
+        "save",
+        {
+          "if": "id",
+          "args": [
+            "--id",
+            "{id}"
+          ]
+        },
+        {
+          "if": "project_name",
+          "args": [
+            "--project-name",
+            "{project_name}"
+          ]
+        },
+        {
+          "if": "sources",
+          "args": [
+            "--sources",
+            "{sources}"
+          ]
+        },
+        {
+          "if": "interval",
+          "args": [
+            "--interval",
+            "{interval}"
+          ]
+        },
+        {
+          "if": "max_per_check",
+          "args": [
+            "--max-per-check",
+            "{max_per_check}"
+          ]
+        },
+        {
+          "if": "max_per_day",
+          "args": [
+            "--max-per-day",
+            "{max_per_day}"
+          ]
+        },
+        {
+          "if": "skip_existing",
+          "args": [
+            "--skip-existing",
+            "{skip_existing}"
+          ]
+        },
+        {
+          "if": "enabled",
+          "args": [
+            "--enabled",
+            "{enabled}"
+          ]
+        },
+        {
+          "if": "post",
+          "args": [
+            "--post",
+            "{post}"
+          ]
+        },
+        {
+          "if": "post_device",
+          "args": [
+            "--post-device",
+            "{post_device}"
+          ]
+        },
+        {
+          "if": "post_script",
+          "args": [
+            "--post-script",
+            "{post_script}"
+          ]
+        },
+        {
+          "if": "post_vars",
+          "args": [
+            "--post-vars",
+            "{post_vars}"
+          ]
+        },
+        {
+          "if": "post_timing",
+          "args": [
+            "--post-timing",
+            "{post_timing}"
+          ]
+        },
+        {
+          "if": "post_delay",
+          "args": [
+            "--post-delay",
+            "{post_delay}"
+          ]
+        },
+        {
+          "if": "post_slots",
+          "args": [
+            "--post-slots",
+            "{post_slots}"
+          ]
+        },
+        {
+          "if": "name",
+          "args": [
+            "--name",
+            "{name}"
+          ]
+        },
+        {
+          "if": "message",
+          "args": [
+            "--message",
+            "{message}"
+          ]
+        },
+        {
+          "if": "video_type",
+          "args": [
+            "--type",
+            "{video_type}"
+          ]
+        },
+        {
+          "if": "aspect",
+          "args": [
+            "--aspect",
+            "{aspect}"
+          ]
+        },
+        {
+          "if": "duration",
+          "args": [
+            "--duration",
+            "{duration}"
+          ]
+        },
+        {
+          "if": "language",
+          "args": [
+            "--language",
+            "{language}"
+          ]
+        },
+        {
+          "if": "audience",
+          "args": [
+            "--audience",
+            "{audience}"
+          ]
+        },
+        {
+          "if": "goal",
+          "args": [
+            "--goal",
+            "{goal}"
+          ]
+        },
+        {
+          "if": "cta",
+          "args": [
+            "--cta",
+            "{cta}"
+          ]
+        },
+        {
+          "if": "tone",
+          "args": [
+            "--tone",
+            "{tone}"
+          ]
+        },
+        {
+          "if": "website",
+          "args": [
+            "--website",
+            "{website}"
+          ]
+        },
+        {
+          "if": "colors",
+          "args": [
+            "--colors",
+            "{colors}"
+          ]
+        },
+        {
+          "if": "fonts",
+          "args": [
+            "--fonts",
+            "{fonts}"
+          ]
+        },
+        {
+          "if": "notes",
+          "args": [
+            "--notes",
+            "{notes}"
+          ]
+        },
+        {
+          "if": "engine",
+          "args": [
+            "--engine",
+            "{engine}"
+          ]
+        },
+        {
+          "if": "voice_id",
+          "args": [
+            "--voice-id",
+            "{voice_id}"
+          ]
+        },
+        {
+          "if": "speed",
+          "args": [
+            "--speed",
+            "{speed}"
+          ]
+        },
+        {
+          "if": "script",
+          "args": [
+            "--script",
+            "{script}"
+          ]
+        },
+        {
+          "each": "assets",
+          "args": [
+            "--asset",
+            "{item}"
+          ]
+        },
+        {
+          "if": "no_voice",
+          "args": [
+            "--no-voice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "auto-manage",
+      "title": "Dự án Automation",
+      "description": "list = các dự án Automation (nguồn, lịch kiểm, số video, lỗi gần nhất); show = chi tiết; on / off = bật / tắt; check = kiểm tin mới NGAY (tạo video cho tin mới); delete = xoá dự án (video đã tạo giữ nguyên); test-source = thử lấy tin của 1 nguồn (source dạng web|<link> / facebook|<link>) trước khi lưu.",
+      "input": {
+        "op": {
+          "type": "string",
+          "enum": [
+            "list",
+            "show",
+            "on",
+            "off",
+            "check",
+            "delete",
+            "test-source"
+          ],
+          "required": true
+        },
+        "id": {
+          "type": "string",
+          "description": "Id dự án (auto_…)."
+        },
+        "source": {
+          "type": "string",
+          "description": "test-source: web|<link> hoặc facebook|<link>."
+        }
+      },
+      "argv": [
+        "{run}",
+        "tool",
+        "cli",
+        "auto",
+        "{op}",
+        {
+          "if": "id",
+          "args": [
+            "--id",
+            "{id}"
+          ]
+        },
+        {
+          "if": "source",
+          "args": [
+            "--source",
+            "{source}"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "post-create",
+      "title": "Đăng video",
+      "description": "Đăng 1 video lên kênh qua iPhone chạy kịch bản Phone Agent — ngay hoặc hẹn giờ. Video: tệp trong chat (video) hoặc video đã tạo (ref = id mv-… / r_…). App theo dõi tới khi đăng xong.",
+      "input": {
+        "video": {
+          "type": "file",
+          "description": "Tệp video MP4 trong chat."
+        },
+        "ref": {
+          "type": "string",
+          "description": "Hoặc id video đã tạo: Tạo video mv-… / Automation / Edit Video r_…."
+        },
+        "device": {
+          "type": "string",
+          "description": "iPhone (id hoặc tên — post-manage devices).",
+          "required": true
+        },
+        "script": {
+          "type": "string",
+          "description": "Kịch bản đăng (id hoặc tên — post-manage scripts).",
+          "required": true
+        },
+        "vars": {
+          "type": "string",
+          "description": "Biến của kịch bản (caption, hashtag…), MỖI DÒNG ten=giá trị — xem post-manage fields."
+        },
+        "at": {
+          "type": "string",
+          "description": "Giờ đăng YYYY-MM-DD HH:MM (giờ máy); bỏ trống = đăng ngay."
+        },
+        "title": {
+          "type": "string",
+          "description": "Tên bài đăng (để nhận ra)."
+        }
+      },
+      "argv": [
+        "{run}",
+        "tool",
+        "cli",
+        "post",
+        "create",
+        {
+          "if": "video",
+          "args": [
+            "--video",
+            "{video}"
+          ]
+        },
+        {
+          "if": "ref",
+          "args": [
+            "--ref",
+            "{ref}"
+          ]
+        },
+        "--device",
+        "{device}",
+        "--script",
+        "{script}",
+        {
+          "if": "vars",
+          "args": [
+            "--vars",
+            "{vars}"
+          ]
+        },
+        {
+          "if": "at",
+          "args": [
+            "--at",
+            "{at}"
+          ]
+        },
+        {
+          "if": "title",
+          "args": [
+            "--title",
+            "{title}"
+          ]
+        }
+      ],
+      "job": {
+        "id": "id",
+        "poll": [
+          "{run}",
+          "tool",
+          "job",
+          "{job}"
+        ],
+        "status": "status",
+        "done": [
+          "done"
+        ],
+        "failed": [
+          "error",
+          "cancelled"
+        ],
+        "progress": "progress",
+        "message": "message",
+        "error": "error.message",
+        "cancel": [
+          "{run}",
+          "tool",
+          "cancel",
+          "{job}"
+        ]
+      }
+    },
+    {
+      "id": "post-manage",
+      "title": "Phone Agent",
+      "description": "devices = các iPhone (online/offline); scripts = kịch bản đăng; fields = các biến cần điền của 1 kịch bản (script); list = bài đăng (lọc ref / automation); show = chi tiết 1 bài; retry = đăng lại bài lỗi (at tuỳ chọn); reschedule = đổi giờ (at); cancel = huỷ; delete = xoá khỏi danh sách; test = kiểm token.",
+      "input": {
+        "op": {
+          "type": "string",
+          "enum": [
+            "devices",
+            "scripts",
+            "fields",
+            "list",
+            "show",
+            "retry",
+            "reschedule",
+            "cancel",
+            "delete",
+            "test"
+          ],
+          "required": true
+        },
+        "id": {
+          "type": "string",
+          "description": "Id bài đăng (post_…)."
+        },
+        "script": {
+          "type": "string",
+          "description": "fields: id kịch bản."
+        },
+        "ref": {
+          "type": "string",
+          "description": "list: lọc theo id video."
+        },
+        "automation": {
+          "type": "string",
+          "description": "list: lọc theo dự án Automation."
+        },
+        "at": {
+          "type": "string",
+          "description": "retry / reschedule: YYYY-MM-DD HH:MM."
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "argv": [
+        "{run}",
+        "tool",
+        "cli",
+        "post",
+        "{op}",
+        {
+          "if": "id",
+          "args": [
+            "--id",
+            "{id}"
+          ]
+        },
+        {
+          "if": "script",
+          "args": [
+            "--script",
+            "{script}"
+          ]
+        },
+        {
+          "if": "ref",
+          "args": [
+            "--ref",
+            "{ref}"
+          ]
+        },
+        {
+          "if": "automation",
+          "args": [
+            "--automation",
+            "{automation}"
+          ]
+        },
+        {
+          "if": "at",
+          "args": [
+            "--at",
+            "{at}"
+          ]
+        },
+        {
+          "if": "limit",
+          "args": [
+            "--limit",
+            "{limit}"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "settings",
+      "title": "Cài đặt Agent Edit",
+      "description": "show = cài đặt hiện tại (chế độ tài khoản/API key, model, mức suy nghĩ, số video chạy cùng lúc, đã có key SaydiVoice / Phone Agent chưa); models = model + mức suy nghĩ chọn được của 1 tài khoản; set = đổi chế độ / model / mức suy nghĩ; limits = số video chạy cùng lúc (analyze = phân tích Edit Video, plan = lập kế hoạch, motion = Tạo video); test = kiểm kết nối AI; logout = đăng xuất tài khoản AI.",
+      "input": {
+        "op": {
+          "type": "string",
+          "enum": [
+            "show",
+            "models",
+            "set",
+            "limits",
+            "test",
+            "logout"
+          ],
+          "required": true
+        },
+        "account": {
+          "type": "string",
+          "enum": [
+            "gemini",
+            "claude",
+            "codex"
+          ]
+        },
+        "mode": {
+          "type": "string",
+          "description": "subscription = đăng nhập tài khoản; api_key = dùng API key (nhập trong app).",
+          "enum": [
+            "subscription",
+            "api_key"
+          ]
+        },
+        "model": {
+          "type": "string",
+          "description": "Id model (xem models)."
+        },
+        "effort": {
+          "type": "string",
+          "description": "Mức suy nghĩ (xem models)."
+        },
+        "analyze": {
+          "type": "number"
+        },
+        "plan": {
+          "type": "number"
+        },
+        "motion": {
+          "type": "number"
+        }
+      },
+      "argv": [
+        "{run}",
+        "tool",
+        "cli",
+        "settings",
+        "{op}",
+        {
+          "if": "account",
+          "args": [
+            "--account",
+            "{account}"
+          ]
+        },
+        {
+          "if": "mode",
+          "args": [
+            "--mode",
+            "{mode}"
+          ]
+        },
+        {
+          "if": "model",
+          "args": [
+            "--model",
+            "{model}"
+          ]
+        },
+        {
+          "if": "effort",
+          "args": [
+            "--effort",
+            "{effort}"
+          ]
+        },
+        {
+          "if": "analyze",
+          "args": [
+            "--analyze",
+            "{analyze}"
+          ]
+        },
+        {
+          "if": "plan",
+          "args": [
+            "--plan",
+            "{plan}"
+          ]
+        },
+        {
+          "if": "motion",
+          "args": [
+            "--motion",
+            "{motion}"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "keys",
+      "title": "Lưu key vào Agent Edit",
+      "description": "Đưa key SaydiVoice / token Phone Agent người trực vừa nhập (trường saydi-key / phoneagent-token) vào app Agent Edit (lưu mã hoá như ở Cài đặt API). Gọi ngay sau khi app báo đã lưu trường đó.",
+      "argv": [
+        "{run}",
+        "tool",
+        "keys"
+      ]
     },
     {
       "id": "jobs",
       "title": "Việc gần đây",
       "description": "Liệt kê 8 việc gần nhất của Agent Edit (mã, trạng thái, file video, lỗi) — kể cả video tạo từ app hoặc chat khác.",
-      "argv": ["{run}", "tool", "jobs"]
+      "argv": [
+        "{run}",
+        "tool",
+        "jobs"
+      ]
     },
     {
       "id": "update",
       "title": "Cập nhật Agent Edit",
       "description": "Cập nhật app Agent Edit lên bản mới nhất (app phải đang đóng, không có video đang dựng).",
-      "argv": ["{run}", "tool", "update"],
+      "argv": [
+        "{run}",
+        "tool",
+        "update"
+      ],
       "job": {
         "id": "id",
-        "poll": ["{run}", "tool", "job", "{job}"],
+        "poll": [
+          "{run}",
+          "tool",
+          "job",
+          "{job}"
+        ],
         "status": "status",
-        "done": ["done"],
-        "failed": ["error", "cancelled"],
+        "done": [
+          "done"
+        ],
+        "failed": [
+          "error",
+          "cancelled"
+        ],
         "message": "message",
         "error": "error.message"
       }

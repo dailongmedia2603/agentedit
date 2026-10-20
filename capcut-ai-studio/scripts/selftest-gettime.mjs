@@ -264,6 +264,45 @@ try {
     const lj = parse((await tool(['jobs'])).so)
     record('tool jobs: danh sach gon co viec vua tao', !!lj?.jobs?.some((x) => x.id === j.id), JSON.stringify(lj).slice(0, 300))
   } else record('tool make -> tra ma viec', false, both(r))
+
+  // [tool cli] DAY DU CHUC NANG APP qua dich vu nen (app tu chay nen khong cua so — electron/service/)
+  const feat = { AGENT_EDIT_FEATURE_MIN_VERSION: info.version }
+  r = await tool(['cli', 'capabilities'], feat)
+  j = parse(r.so)
+  record('tool cli capabilities: tu bat dich vu nen, liet ke 6 nhom chuc nang, < 25s', r.code === 0 && j?.features?.length === 6 &&
+    j?.motion?.videoTypes?.length >= 8 && r.ms < TOOL_LIMIT_MS, `${r.ms}ms ${r.so.slice(0, 200)}`)
+  r = await tool(['cli', 'settings', 'show'], feat)
+  j = parse(r.so)
+  record('tool cli settings show (lan 2: dich vu dang chay, nhanh)', r.code === 0 && !!j?.providers?.claude && r.ms < 10000, `${r.ms}ms`)
+  r = await tool(['cli', 'auto', 'save', '--project-name', 'Tự kiểm', '--sources', 'web|https://example.com/rss\r\nweb|https://example.org/feed\n',
+    '--name', 'Kênh tự kiểm', '--no-voice', '--enabled', 'no', '--interval', '45'], feat)
+  j = parse(r.so)
+  const autoId = j?.project?.id
+  record('tool cli auto save: nguon nhieu dong -> 2 nguon, tat, chu ky 45', r.code === 0 && j?.project?.sources?.length === 2 &&
+    j?.project?.enabled === false && j?.project?.intervalMin === 45, r.so.slice(0, 300))
+  if (autoId) {
+    const l = parse((await tool(['cli', 'auto', 'list'], feat)).so)
+    const d = await tool(['cli', 'auto', 'delete', '--id', autoId], feat)
+    const l2 = parse((await tool(['cli', 'auto', 'list'], feat)).so)
+    record('tool cli auto list / delete', !!l?.projects?.some((p) => p.id === autoId) && d.code === 0 && !l2?.projects?.some((p) => p.id === autoId), d.so.slice(0, 200))
+  }
+  r = await tool(['cli', 'motion', 'create', '--name', 'Tự kiểm', '--message', 'Thử tạo video', '--no-voice', '--duration', '6'], feat)
+  j = parse(r.so)
+  record('tool cli motion create: chua kich hoat key -> loi ban quyen ro rang (ma 1), < 25s', r.code === 1 && /quyền|key/i.test(String(j?.error || '')) &&
+    r.ms < TOOL_LIMIT_MS, `${r.ms}ms ${r.so.slice(0, 200)}`)
+  r = await tool(['cli', 'projects', 'list'], feat)
+  record('tool cli projects list', r.code === 0 && Array.isArray(parse(r.so)?.projects), r.so.slice(0, 200))
+  r = await tool(['keys'], feat)
+  record('tool keys khong co key nao -> loi goi y gettime_ask_field (ma 1)', r.code === 1 && /gettime_ask_field/.test(r.so), r.so.slice(0, 200))
+  // dong dich vu nen tu kiem (thu muc HOME tam)
+  try {
+    const svcDir = join(home, '.capcut-studio', 'cli', 'svc')
+    for (const f of (await import('node:fs')).readdirSync(svcDir).filter((x) => x.startsWith('svc-'))) {
+      process.kill(JSON.parse(readFileSync(join(svcDir, f), 'utf-8')).pid)
+    }
+  } catch {
+    /* khong co dich vu */
+  }
 } finally {
   srv.close()
   if (IS_WIN && installDir) {

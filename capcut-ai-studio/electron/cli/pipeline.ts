@@ -157,6 +157,8 @@ export async function runJob(id: string): Promise<number> {
   }
 
   const input = job.input
+  /** canh bao font gui kem (--brand-font-file): khong doc duoc / thieu dau — bao trong ket qua */
+  const fontWarn: string[] = []
   let workDir = ''
   let videos: { id: string; path: string; name: string; duration: number; thumb?: string; origPath?: string }[] = []
   let referenceVideo: { path: string; name: string; duration: number; thumb?: string; origPath?: string } | null = null
@@ -192,6 +194,26 @@ export async function runJob(id: string): Promise<number> {
     const sc = await startSidecar((l) => fileLog('[sidecar] ' + l))
     if (!sc.ok) throw new CliError('prepare', 'Không khởi động được bộ xử lý: ' + (sc.error || ''), `Xem nhật ký: ${jobLog(id)}`)
     const syncP = syncLibrary(fileLog)
+
+    // ---- 2b. Font gui kem lenh (--brand-font-file) -> kho font may nay (giong "Tai font len" o Brand Guideline) ----
+    if (input.fontFiles?.length) {
+      set('import', 'Đang nhập font thương hiệu…')
+      const fr = await sidecarRequest('/fonts/import', { paths: input.fontFiles, scope: 'local' }, 300000)
+      const got = ((fr?.fonts || []) as { id?: string; label?: string; vi_missing?: string }[]).filter((f) => f?.id)
+      for (const f of (fr?.failed || []) as { path?: string; error?: string }[]) {
+        fontWarn.push(`Font ${basename(String(f.path || ''))} không dùng được: ${f.error || 'không đọc được'}`)
+      }
+      for (const f of got) {
+        if (f.vi_missing) fontWarn.push(`Font ${f.label || f.id} thiếu dấu tiếng Việt (${f.vi_missing.slice(0, 20)}) — chữ đó hiện bằng font dự phòng.`)
+      }
+      if (fr?.ok === false) fontWarn.push('Không nhập được font: ' + String(fr.error || ''))
+      if (got.length) {
+        const ids = [...(input.brandGuide?.fonts || []), ...got.map((f) => String(f.id))]
+        input.brandGuide = { ...(input.brandGuide || {}), fonts: [...new Set(ids)].slice(0, 3) }
+        saveJob(job)
+      }
+      fileLog(`Font: ${got.map((f) => f.id).join(', ') || '(không có)'}${fontWarn.length ? ' | ' + fontWarn.join(' | ') : ''}`)
+    }
 
     // ---- 3. Thu muc du an + chep video vao (giong them video tren app) ----
     set('import', 'Đang chép video vào thư mục dự án…')
@@ -435,6 +457,7 @@ export async function runJob(id: string): Promise<number> {
     const warnings = (planRes!.warnings as string[] | undefined) || []
     const userWarn = warnings.filter((w) => w.startsWith('Tư liệu'))
     if (warnings.some((w) => !w.startsWith('Tư liệu'))) userWarn.push('Một vài chi tiết trang trí không tạo được — chạy lại với --new-plan để thử lại.')
+    userWarn.push(...fontWarn)
     job.result = {
       output: render.output,
       ...(copy ? { copy } : {}),

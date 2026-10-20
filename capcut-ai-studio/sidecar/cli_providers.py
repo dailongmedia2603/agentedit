@@ -995,6 +995,9 @@ def _codex_chat(path, model, system, user, req_timeout, step_label, images=None,
 #   - Moi luot luu HAI ban sao video: conversations/<id>.db va brain/<id>/.tempmediaStorage/*.mp4
 #     -> sau moi luot xoa theo conversation_id. So file trong .tempmediaStorage = so video model DA XEM
 #     -> dung de kiem tra model co that xem video khong (khong thi ket qua la bia).
+#   - agy 1.3.x (do that 1.3.5, 2026-10-20): cong cu doi ten `read_file`, KHONG con .tempmediaStorage — ban sao o
+#     brain/<id>/.system_generated/logs/media/ + nhat ky transcript_full.jsonl (buoc goi read_file {"Path"} roi buoc
+#     "media" mime video/*). Thieu dem kieu moi -> moi lan phan tich bao "chi mo xem 0/1 video" du model DA xem.
 #   - Dang nhap: agy luu phien qua go-keyring — macOS Keychain (service "gemini", account "antigravity"),
 #     Windows Credential Manager; agy ban cu de file ~/.gemini/antigravity-cli/antigravity-oauth-token
 #     (app chi kiem tra CO phien, khong doc — xem agy_logged_in).
@@ -1169,7 +1172,44 @@ def gemini_last_meta():
     return getattr(_agy_tl, "meta", None) or {}
 
 
-def _agy_cleanup(job_dir, conv_id):
+def _agy_viewed_from_transcript(brain, paths):
+    """agy 1.3.x: so video (trong paths) model da mo, doc tu brain/<id>/.system_generated/logs/transcript_full.jsonl —
+    file duoc goi qua read_file / view_file VA co buoc tra ve media video/* (tep that da den model). None = khong co nhat ky."""
+    logs = os.path.join(brain, ".system_generated", "logs")
+    tr = os.path.join(logs, "transcript_full.jsonl")
+    if not os.path.isfile(tr):
+        tr = os.path.join(logs, "transcript.jsonl")
+    if not os.path.isfile(tr):
+        return None
+    want = {os.path.normcase(os.path.normpath(p)): p for p in paths or []}
+    opened = set()
+    videos = 0
+    try:
+        with open(tr, encoding="utf-8", errors="replace") as fh:
+            for line in fh:
+                try:
+                    step = json.loads(line)
+                except ValueError:
+                    continue
+                if not isinstance(step, dict):
+                    continue
+                for call in step.get("tool_calls") or []:
+                    if not isinstance(call, dict) or call.get("name") not in ("read_file", "view_file"):
+                        continue
+                    args = call.get("args") or {}
+                    raw = str(args.get("Path") or args.get("AbsolutePath") or args.get("path") or "").strip().strip('"')
+                    key = os.path.normcase(os.path.normpath(raw)) if raw else ""
+                    if key in want:
+                        opened.add(key)
+                for m in step.get("media") or []:
+                    if isinstance(m, dict) and str(m.get("mime_type") or "").startswith(("video/", "audio/")):
+                        videos += 1
+    except OSError:
+        return None
+    return min(len(opened), videos)
+
+
+def _agy_cleanup(job_dir, conv_id, paths=None):
     """Xoa thu muc job + hoi thoai cua lan goi (2 ban sao video). Tra so video model da xem."""
     shutil.rmtree(job_dir, ignore_errors=True)
     if not conv_id or any(c in conv_id for c in "/\\:") or conv_id.startswith("."):
@@ -1180,6 +1220,8 @@ def _agy_cleanup(job_dir, conv_id):
         viewed = len([n for n in os.listdir(media) if not n.startswith(".")])
     except OSError:
         viewed = 0
+    if not viewed and paths:
+        viewed = _agy_viewed_from_transcript(brain, paths) or 0
     shutil.rmtree(brain, ignore_errors=True)
     for ext in ("", "-wal", "-shm", "-journal"):
         try:
@@ -1263,7 +1305,7 @@ def _agy_call_once(path, model, prompt, files, req_timeout, step_label):
             paths.append(dst)
         full = prompt
         if paths:
-            full += ("\n\n# CACH XEM VIDEO\nDung cong cu view_file mo TUNG file duoi day (dung thu tu, xem ca "
+            full += ("\n\n# CACH XEM VIDEO\nDung cong cu doc file (view_file / read_file) mo TUNG file duoi day (dung thu tu, xem ca "
                      "HINH va nghe TIENG) roi moi tra loi. KHONG chay lenh, KHONG ghi file, KHONG tim tren web.\n"
                      + "\n".join("%d. %s" % (i + 1, p) for i, p in enumerate(paths)))
         argv, stdin_text = _agy_argv(path, full, model, req_timeout)
@@ -1274,7 +1316,7 @@ def _agy_call_once(path, model, prompt, files, req_timeout, step_label):
         shutil.rmtree(job_dir, ignore_errors=True)
         raise
     conv = data.get("conversation_id") if isinstance(data, dict) else None
-    viewed = _agy_cleanup(job_dir, conv)
+    viewed = _agy_cleanup(job_dir, conv, paths)
     _agy_tl.meta = {"models": [model] if model else [], "viewed": viewed, "conversation_id": conv}
 
     def unknown_model(blob):

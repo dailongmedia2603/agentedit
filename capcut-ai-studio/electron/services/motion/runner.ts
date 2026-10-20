@@ -12,7 +12,7 @@ import { cmdQuote, killTree, needsShell, IS_WIN } from '../env'
 import { readState, writeState, motionJobsOf, MOTION_JOB_MAX } from '../state'
 import { loadProviders } from '../secrets'
 import { ENGINE_HOME, TOOLS_BIN } from '../paths'
-import { sidecarRequest } from '../sidecar'
+import { sidecarInfo, sidecarRequest, startSidecar } from '../sidecar'
 import { bundledSkillDir, MOTION_HOME, MOTION_JOBS_DIR } from './paths'
 import { installSkill, linkSkill } from './skill'
 import { briefMarkdown, briefTitle, runPrompt, runPromptMvd, validateBrief } from './prompt'
@@ -360,6 +360,8 @@ async function runJob(job: MotionJob, r: Running): Promise<void> {
   // Am thanh: bo tieng the gioi + SFX kho + nhac nen (sidecar) -> <job>/sound/ (khong co -> video chi co loi doc / cam)
   let sound: SoundSummary | null = null
   try {
+    // bo xu ly chua chay (dich vu nen vua bat / da dong cua so app) -> bat truoc khi lay kho am thanh
+    if (!sidecarInfo().ready) await startSidecar()
     const cat = await sidecarRequest('/sound/catalog', {}, 120000)
     sound = cat?.ok ? prepareSound(dir, cat, join(ENGINE_HOME, 'sfx'), join(ENGINE_HOME, 'music')) : null
     log(sound ? `Âm thanh: ${sound.worlds} bộ tiếng, ${sound.library} SFX trong kho, ${sound.music} bài nhạc nền`

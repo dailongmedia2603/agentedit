@@ -1827,6 +1827,14 @@ make (viec, `--out {out}` = thu muc dinh kem cua workspace -> the video trong ch
   that, status gon, make + job < 25s, jobs) — macOS 13/13 PASS; `.ps1` chay thu bang PowerShell 7 tren macOS
   (AGENT_EDIT_TEST_ANY_OS=1: status / jobs / job / login-check / make + ghi chu nhieu dong / viec nen i_ tai + SHA-512);
   tool.json qua dung `readToolManifest` + `toolArgv` cua GetTime. Windows THAT: chi CI (selftest-gettime tren release.yml).
+- 2.1.0 (2026-10-20, user: "trai nghiem nhu dung tren app"): SKILL.md muc 3 bat AI gui BANG HOI dung 3 nhom cua form app
+  (Yeu cau edit · Brand Guideline · Tu lieu cua ban, moi muc khong bat buoc, "lam luon" de bo qua) va CHO tra loi roi moi
+  `make`; tu lieu thieu mo ta -> hoi lai tung tep. GetTime KHONG co form theo tin nhan: o nhap duy nhat la truong cua
+  tool.json (1 dong, luu co dinh cho cong cu, AI khong doc lai gia tri) -> chi hop cho key, khong dung cho yeu cau tung video.
+  make them `fonts` (files -> `--brand-font-file`, CLI >= 1.20.1: pipeline nhap vao kho font MAY NAY qua sidecar
+  `/fonts/import` sau khi khoi dong sidecar, id them vao brandGuide.fonts, canh bao font loi / thieu dau vao result.warnings)
+  + `insert_uses` / `insert_placements` (moi dong 1 tep nhu insert_notes; script giu dong trong o giua = mac dinh, bo dong
+  trong cuoi). Script chan `fonts` khi app < 1.20.1 (bao goi update).
 
 ## 17. TAO VIDEO BANG AI (skill motionmaxxing) + AUTOMATION VIDEO + SAYDIVOICE (2026-10-14)
 
@@ -2364,6 +2372,56 @@ User thu skill motion-video-director (MVD, Miftahul Islam, v3.5.2) o ~/Desktop/T
 - **Kiem**: `node tests/test_motion.mts` muc [2c] + runner claude gia (HOME sach dung skill dong goi, uu tien ban dong goi,
   override / fallback, cache theo hash va giu job cu, link, env). `selftest-packaged.mjs` kiem tai nguyen MVD + chay preflight
   bang Python nhung tren ca ba nen tang; khong goi API tra phi.
+
+## 29. DICH VU NEN + CLI DAY DU CHUC NANG APP cho GetTime (2026-10-20, `electron/service/`, `electron/cli/commands.ts`)
+
+Muc tieu (user): "dung skill tren GetTime phai nhu dung tren app — day du chuc nang, hoi duoc lam duoc gi". Truoc do CLI
+chi co Edit Video + cai dat / dang nhap. Kiem ke (3 nhanh): Tao video, Automation Video, Phone Agent, Video da tao, cai
+dat (model, muc suy nghi, so video cung luc, Saydi, Phone Agent, dang xuat) deu CHUA co; app KHONG co "gop y de AI sua".
+
+**Vi sao can DICH VU NEN:** Tao video (hang doi `runner.ts`), Automation (`setInterval` 60s) va lich dang Phone Agent
+(15s) SONG trong tien trinh app + giu automation.json / motion/jobs.json / phoneagent/posts.json trong bo nho -> CLI ghi
+thang = 2 ben ghi de nhau, va CLI thoat xong la khong con gi chay. User chon (2026-10-20): dich vu nen.
+- `electron/service/protocol.ts`: cong = Unix socket `~/.capcut-studio/cli/svc/<sha1(userData)>.sock` (thu muc 0700,
+  socket 0600; HOME dai -> tmpdir) / Windows named pipe theo user; file `svc-<key>.json` (0600) {pid, version, socket,
+  token, mode}. 1 ket noi = 1 dong JSON {token, cmd, args} -> 1 dong JSON. Token so bang timingSafeEqual.
+- `server.ts` chay trong MOI tien trinh app (giao dien mo -> CLI dung chinh no, khong bat dich vu thu 2). `main.ts`
+  `--agent-edit-service` = app KHONG cua so (an Dock som), giu khoa "1 phien"; nguoi dung mo app luc dich vu chay ->
+  `second-instance` mo cua so trong CHINH dich vu (dock.show). Dong cua so cua dich vu -> van chay nen. Dich vu ranh
+  (khong video, khong Automation bat, khong bai cho dang, khong lenh 20 phut) -> tu thoat. Dich vu tu `checkLicense('open')`.
+- `handlers.ts`: goi DUNG ham cua IPC (createMotionJob, saveAutoProject, createPost, deleteProject, saveProviders...)
+  -> ket qua nhu bam tren app. Lenh: capabilities · motion.create/list/get/brief/status/cancel/rerun/again/delete/check ·
+  saydi.status/setKey/test/voices · auto.list/get/save/delete/toggle/check/testSource · post.config/setToken/test/devices/
+  scripts/fields/create/list/get/status/cancel/retry/reschedule/delete · projects.list/get/delete · settings.get/models/
+  set/limits/test/logout · fonts.list · license.check · ping/quit. post.create tu tra ten iPhone / kich ban / bien video
+  (enrichPost, nhu form dang), bao bien bat buoc con thieu; auto.save nhan nguon "web|link" / "facebook|link".
+- `motion-status.ts`: moi lan video Tao video doi trang thai -> `~/.capcut-studio/cli/motion/<id>.json` (dang job:
+  status/progress/message/result.copy/error.message; interrupted -> error) + chep video xong ra thu muc `--out`
+  (`cli/motion-out.json`); bai dang -> `cli/posts/<id>.json` (success -> done). Script ky nang doc thang file (khong mo
+  Electron moi 3 giay), dich vu chet -> hoi app.
+- `runner.ts`: bat bo xu ly (sidecar) TRUOC khi lay kho am thanh (dich vu vua bat / cua so da dong -> truoc day video
+  thieu nhac) -> `motion.create` khong phai cho sidecar (tra ma viec ~2s thay vi 10s).
+- CLI (`service-client.ts`): doc svc-*.json -> goi; khong co -> spawn `process.execPath [tham so truoc co CLI] 
+  --agent-edit-service` (detached, bo bien key) roi doi <= 20s; dich vu ban CU (app vua cap nhat) + ranh -> quit roi bat
+  ban moi. `update` bao dich vu nen thoat truoc khi thay app.
+- Lenh CLI moi (`commands.ts`, help day du): `motion`, `voices`, `auto`, `post`, `projects`, `settings`, `capabilities`,
+  `fonts`. Key / token CHI qua bien moi truong (AGENT_EDIT_SAYDI_KEY, AGENT_EDIT_PA_TOKEN, AGENT_EDIT_FB_TOKEN,
+  AGENT_EDIT_API_KEY). `make --from <id du an>`: lay lai video / video mau / tu lieu (use, placement, note) / yeu cau /
+  brand (ca font) / kho cua du an (Edit Video tren app hoac CLI), tham so gui kem thay phan tuong ung (--insert thay ca bo,
+  --no-inserts, --no-reference, --orientation) -> video MOI; khong --new-plan = dung lai phan tich + ke hoach (render lai /
+  tiep tuc sau loi).
+- Ky nang GetTime 3.0.0: tool.json 20 hanh dong (tao rieng tung viec co form day du; xem / sua / xoa gop theo `op`) + 3
+  truong bi mat moi (saydi-key, phoneagent-token, facebook-token) -> hanh dong `keys` dua vao app. Script: `tool cli <lenh>`
+  (o nhieu dong --vars / --post-vars / --sources -> lap tham so), `tool job` cho `mv-…` / `post_…`, chan khi app < 1.21.0
+  (AGENT_EDIT_FEATURE_MIN_VERSION de tu kiem). SKILL.md: bang hoi giong form tung chuc nang (Edit Video, Tao video, Automation,
+  dang bai), tra loi "lam duoc gi" qua `capabilities`.
+- Kiem: gia lap GetTime (toolArgv / readJobState / jobIdIn cua GetTime) chay bash + PowerShell 7 voi app dev qua "app gia"
+  (HOME tam): capabilities, settings, voices, fonts, projects, auto test-source / save (nguon \r\n) / list, keys, motion create
+  -> job loi Claude (HOME tam) doc qua file trang thai 33ms, motion list, settings limits / models, make --from (khong co du
+  an -> loi; du an that -> dau vao dung). selftest-gettime them 8 muc dich vu nen. Video Tao video THAT qua dich vu + chep ra
+  thu muc ket qua: xem muc kiem chung khi phat hanh.
+- LUU Y khi tu kiem tren may that: `--user-data-dir` tam CHI tach userData (khoa API, Keychain); ~/.capcut-studio (automation,
+  motion, projects) van la that -> dung HOME tam (2026-10-20 lo tao 1 du an Automation thu vao du lieu that, da xoa ngay).
 
 ## 12. CodeGraph
 

@@ -77,7 +77,9 @@ Day la quy trinh CHUAN, user da dong y tu truoc — lam du cac buoc, khong hoi l
   <lenh>` (ban dev: `env -u ELECTRON_RUN_AS_NODE STUDIO_LICENSE=off node_modules/electron/dist/Electron.app/Contents/MacOS/Electron .
   --user-data-dir=<tmp> --agent-edit-cli status`). Ky nang GetTime: `gettime/agent-edit/` (SKILL.md + tool.json + scripts/agent-edit[.ps1],
   cai tang He thong; GetTime goi `agent-edit tool <viec>` o muc chat thuong — PROJECT_OVERVIEW 16 "tool.json"; sua ky nang ->
-  tang `metadata.version` trong SKILL.md). Job CLI: `~/.capcut-studio/cli/jobs/<id>/`. Ban dong goi: selftest-packaged muc [6b] + `node scripts/selftest-gettime.mjs`
+  tang `metadata.version` trong SKILL.md).
+  DICH VU NEN (`--agent-edit-service`, electron/service/, PROJECT_OVERVIEW 29): CLI lam MOI chuc nang app (Tao video, Automation,
+  dang Phone Agent, Video da tao, cai dat) qua cong dieu khien trong tien trinh app. Tu kiem tren may that: HOME tam (khong chi --user-data-dir). Job CLI: `~/.capcut-studio/cli/jobs/<id>/`. Ban dong goi: selftest-packaged muc [6b] + `node scripts/selftest-gettime.mjs`
   (script ky nang bash / agent-edit.ps1 cai qua may chu gia + goi CLI; Windows chi tren CI).
 - TAO VIDEO bang skill motionmaxxing + AUTOMATION VIDEO + SaydiVoice (PROJECT_OVERVIEW 17): skill dong goi o
   `capcut-ai-studio/skills/motionmaxxing` (BAN CHINH — `~/.claude/skills/motionmaxxing` la lien ket toi day). Test:

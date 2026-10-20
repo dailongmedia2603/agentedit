@@ -90,8 +90,21 @@ if model in os.environ.get("FAKE_AGY_GONE", "").split(","):
 os.makedirs(os.path.join(home, "conversations"), exist_ok=True)
 open(os.path.join(home, "conversations", conv + ".db"), "w").write("x" * 3000)
 media = os.path.join(home, "brain", conv, ".tempmediaStorage")
-os.makedirs(media, exist_ok=True)
-if mode not in ("noview",):
+if mode.startswith("v13"):
+    # agy 1.3.x (do that 1.3.5): read_file + transcript_full.jsonl + logs/media, KHONG co .tempmediaStorage
+    logs = os.path.join(home, "brain", conv, ".system_generated", "logs")
+    os.makedirs(os.path.join(logs, "media"), exist_ok=True)
+    steps = [{"step_index": 0, "type": "USER_INPUT", "content": prompt}]
+    for i, p in enumerate(paths):
+        steps.append({"type": "PLANNER_RESPONSE", "tool_calls": [{"name": "read_file", "args": {"Path": p}}]})
+        if mode != "v13noview":
+            steps.append({"type": "GENERIC", "content": "Showing binary file of type video/mp4",
+                          "media": [{"mime_type": "video/mp4", "uri": "file://" + os.path.join(logs, "media", "m%d.img" % i)}]})
+    with open(os.path.join(logs, "transcript_full.jsonl"), "w") as f:
+        f.write("\n".join(json.dumps(x) for x in steps) + "\n")
+else:
+    os.makedirs(media, exist_ok=True)
+if mode not in ("noview",) and not mode.startswith("v13"):
     for i, p in enumerate(paths):
         if os.path.isfile(p):
             shutil.copyfile(p, os.path.join(media, "media_%d.mp4" % i))
@@ -196,6 +209,24 @@ try:
 except cli_providers.CliError as e:
     check("khong xem -> CliError noi ro 0/1", "0/1" in str(e), e)
 check("van don hoi thoai", convs() == ["user-own.db"] and brains() == ["user-own"], (convs(), brains()))
+os.environ["FAKE_AGY_MODE"] = "ok"
+
+# ---------------------------------------------------------------------------
+section("[3b] agy 1.3.x: dem video da xem tu transcript (khong con .tempmediaStorage)")
+os.environ["FAKE_AGY_MODE"] = "v13"
+try:
+    cli_providers.gemini_video("gemini-3.8-flash-high", "P", [v1, v2], step_label="t3b")
+    check("read_file + media video -> dem 2/2, khong loi", cli_providers.gemini_last_meta().get("viewed") == 2,
+          cli_providers.gemini_last_meta())
+except cli_providers.CliError as e:
+    check("read_file + media video -> khong loi", False, e)
+check("van don brain cua lan goi", brains() == ["user-own"], brains())
+os.environ["FAKE_AGY_MODE"] = "v13noview"
+try:
+    cli_providers.gemini_video("gemini-3.8-flash-high", "P", [v1], step_label="t3b")
+    check("goi read_file nhung khong co media -> nem loi", False, "khong nem")
+except cli_providers.CliError as e:
+    check("goi read_file nhung khong co media -> CliError 0/1", "0/1" in str(e), e)
 os.environ["FAKE_AGY_MODE"] = "ok"
 
 # ---------------------------------------------------------------------------

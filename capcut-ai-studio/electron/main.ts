@@ -16,8 +16,24 @@ import { cancelCliTask } from './services/cli-login'
 import { initUpdater, markLaunchedIfUpdated, runUpdateSelftest, selftestConfigPath } from './services/updater'
 import { CLI_FLAG } from './cli/util'
 import { cleanAgentEnv, runCli } from './cli/index'
+import { SERVICE_FLAG } from './service/protocol'
+import { lastServiceRequest, startControlServer, stopControlServer } from './service/server'
+import { serviceHandlers } from './service/handlers'
+import { recordMotionJob, recordPosts } from './service/motion-status'
+import { busyMotionIds, onMotionJob } from './services/motion/runner'
+import { publicProjects } from './services/motion/automation'
+import { listPosts, onPostsChange } from './services/phoneagent/posts'
+import { checkLicense } from './services/license'
 
 let mainWindow: BrowserWindow | null = null
+
+// DICH VU NEN (2026-10-20, electron/service/): `<app> --agent-edit-service` — app chay KHONG cua so (an Dock) de CLI /
+// ky nang GetTime dung Tao video, Automation Video, dang Phone Agent khi nguoi dung khong mo app. Van giu khoa "1 phien":
+// nguoi dung mo app luc dich vu dang chay -> dich vu mo cua so (second-instance), 1 tien trinh, chung du lieu.
+const SERVICE_MODE = process.argv.includes(SERVICE_FLAG)
+/** Dich vu khong viec gi (khong video dang tao, khong Automation bat, khong bai cho dang, khong lenh) qua lau -> tu thoat */
+const SERVICE_IDLE_MS = 20 * 60 * 1000
+if (SERVICE_MODE) app.dock?.hide()
 
 // CHE DO CLI (2026-10-12, electron/cli/): `<app> --agent-edit-cli <lenh>` — khong cua so, khong icon Dock, khong khoa
 // "1 phien" (chay song song voi giao dien + nhieu viec nen), chay lenh xong thi thoat voi ma thoat cua lenh.
@@ -185,10 +201,15 @@ if (!SELF_TEST && !CLI_MODE && !app.requestSingleInstanceLock()) {
   bootLog('da co 1 phien dang chay -> bao phien do mo cua so, thoat')
   app.quit()
 } else {
-  app.on('second-instance', () => {
-    // Phien dang chay MAT cua so (vd dong cua so nhung qua trinh tat bi ket) -> mo lai cua so thay vi im lang
+  app.on('second-instance', (_e, argv) => {
+    // CLI bat them 1 dich vu trong luc app dang chay (dua nhau) -> khong mo cua so
+    if (argv.includes(SERVICE_FLAG)) return
+    // Phien dang chay MAT cua so (vd dong cua so nhung qua trinh tat bi ket / dich vu nen) -> mo cua so thay vi im lang
     if (!mainWindow || mainWindow.isDestroyed()) {
-      if (app.isReady()) createWindow()
+      if (app.isReady()) {
+        app.dock?.show()
+        createWindow()
+      }
       return
     }
     if (mainWindow.isMinimized()) mainWindow.restore()
@@ -399,12 +420,33 @@ app.whenReady().then(async () => {
   }
 
   // Tao video (skill) + Automation Video: xep hang lai video dang cho tu lan truoc, bat chu ky kiem tin moi
+  onMotionJob(recordMotionJob) // trang thai tung video cho CLI / GetTime (service/motion-status.ts)
+  onPostsChange(recordPosts)
   startMotion()
   startAutomation()
   // Dang video qua Phone Agent: tiep tuc luot dang do dang + lich dang; video Automation xong -> tu len lich dang
   startPosts()
   startAutoPosting()
-  createWindow()
+  // Cong dieu khien cho CLI (ca khi app mo giao dien: CLI dung chinh tien trinh nay, khong bat dich vu thu 2)
+  startControlServer(serviceHandlers({ mode: SERVICE_MODE ? 'service' : 'gui', quit: () => app.quit() }), SERVICE_MODE ? 'service' : 'gui', bootLog)
+  if (SERVICE_MODE) {
+    app.dock?.hide()
+    bootLog('che do dich vu nen (khong cua so)')
+    // giao dien kiem ban quyen luc mo; dich vu tu kiem (Automation chi chay khi ban quyen OK)
+    void checkLicense('open').catch(() => undefined)
+    setInterval(() => {
+      if (BrowserWindow.getAllWindows().length) return
+      const busy =
+        busyMotionIds().length > 0 ||
+        publicProjects().some((p) => p.enabled) ||
+        listPosts({}).some((p) => !['success', 'error', 'cancelled'].includes(p.status)) ||
+        Date.now() - lastServiceRequest() < SERVICE_IDLE_MS
+      if (!busy) {
+        bootLog('dich vu nen ranh qua lau -> thoat')
+        app.quit()
+      }
+    }, 2 * 60 * 1000).unref()
+  } else createWindow()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
@@ -413,6 +455,8 @@ app.whenReady().then(async () => {
 
 app.on('window-all-closed', () => {
   stopSidecar()
+  // dich vu nen (CLI bat) dong cua so -> van chay nen (Automation, lich dang, video dang tao)
+  if (SERVICE_MODE) return
   if (process.platform !== 'darwin') {
     app.quit()
     // Windows: tat bi ket (tien trinh con / tai do dang) -> phien ma giu khoa "1 phien" -> lan mo sau khong len.
@@ -422,6 +466,7 @@ app.on('window-all-closed', () => {
 })
 
 app.on('before-quit', () => {
+  stopControlServer()
   stopAutomation()
   stopPosts()
   stopAllMotion()
