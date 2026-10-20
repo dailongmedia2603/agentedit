@@ -98,8 +98,10 @@ Day la quy trinh CHUAN, user da dong y tu truoc — lam du cac buoc, khong hoi l
   (luu tam MP4 tren R2 -> link cong khai cho iPhone tai). Test: `cd capcut-ai-studio && node tests/test_phoneagent.mts` (may chu
   Phone Agent gia); worker: license-server `npm test`; app tai len: `HOME=$(mktemp -d) node tests/test_license.mts`. Sua post.js ->
   `cd license-server && npm run deploy:api`. Soat UI that: them `--use-mock-keychain` (khong thi hop thoai Keychain chan app).
-- Mac INTEL (x64): CI `macos-15-intel`. Tren may Apple Silicon: Node x64 + `arch -x86_64 npm ci` (roi
-  `npm_config_arch=x64 node node_modules/electron/install.js` — electron tu tai ban ARM khi thay Rosetta) + `arch -x86_64 node
-  scripts/dist.mjs --mac` -> `release/mac/`. onnxruntime Intel ghim 1.22.0 trong requirements.lock (marker platform_machine).
+- Mac INTEL (x64): CI `macos-15-intel`. Tren may Apple Silicon: Node x64 + `npm_config_arch=x64 arch -x86_64 npm ci`
+  (Electron tu tai ban ARM neu khong dat arch khi thay Rosetta). Neu da tai nham ARM: xoa `node_modules/electron/dist`
+  trong checkout build Intel roi `npm_config_arch=x64 node node_modules/electron/install.js`; chi goi lai install.js se BO QUA
+  ban da cai. Kiem `lipo -archs node_modules/electron/dist/Electron.app/Contents/MacOS/Electron` phai la `x86_64` TRUOC khi
+  `arch -x86_64 node scripts/dist.mjs --mac` -> `release/mac/`. onnxruntime Intel ghim 1.22.0 trong requirements.lock (marker platform_machine).
 - Render self-test: `env -u ELECTRON_RUN_AS_NODE STUDIO_REMOTION_RENDER=<spec.json> STUDIO_REMOTION_OUT=<out.mp4> <app binary>`
   (VSCode terminals set `ELECTRON_RUN_AS_NODE=1`, which makes the app binary exit silently)
