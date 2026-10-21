@@ -460,7 +460,10 @@ tool_setup() {
 boot_exit() {
   local rc="$1" f="$BOOT_DIR/state.json" step tailmsg
   [ -n "$BOOT_DIR" ] && [ -f "$f" ] || return 0
+  [ -f "$BOOT_DIR/cancelled" ] && return 0 # tool cancel tu ghi "Đã dừng"
   [ "$(jget "$f" status)" = running ] || return 0
+  printf '[%s] viec nen thoat ma %s%s\n' "$(date +%H:%M:%S)" "$rc" "${BOOT_SIG:+ (tin hieu $BOOT_SIG)}" >>"$BOOT_DIR/log.txt"
+  [ -n "${BOOT_SIG:-}" ] && rc="$rc, tín hiệu $BOOT_SIG"
   [ -n "$(jget "$f" app_job)" ] && return 0
   step=$(jget "$f" step)
   tailmsg=$(tail -n 3 "$BOOT_DIR/log.txt" 2>/dev/null | tr '\n' ' ' | cut -c1-300)
@@ -471,7 +474,8 @@ tool_boot_run() {
   BOOT_DIR="$TJ/$1"
   [ -d "$BOOT_DIR" ] || exit 2
   trap 'boot_exit $?' EXIT
-  trap 'BOOT_DIR=""; exit 143' TERM # tool cancel tu ghi "Đã dừng"
+  local sg
+  for sg in TERM INT PIPE QUIT; do trap "BOOT_SIG=$sg; exit 1" "$sg"; done
   local new sid
   new=$(install_app "$KEY" "$APP") || exit 2
   APP="$new"
@@ -566,6 +570,7 @@ tool_cancel() {
       fi
       pid=$(cat "$dir/pid" 2>/dev/null)
       if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+        : >"$dir/cancelled"
         /usr/bin/pkill -P "$pid" 2>/dev/null
         kill "$pid" 2>/dev/null
       fi

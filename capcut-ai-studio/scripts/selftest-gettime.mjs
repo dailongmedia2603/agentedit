@@ -176,8 +176,10 @@ async function pollTool(id, ms, extra = {}) {
 /** duoi nhat ky viec nen i_ (in kem khi muc hong — may CI xoa thu muc tam sau khi chay) */
 const bootLog = (id) => {
   try {
-    const t = readFileSync(join(toolEnv.GETTIME_TOOL_DATA, 'tool-jobs', id, 'log.txt'), 'utf-8').trim().split('\n').slice(-12).join(' | ')
-    return t ? ` || log: ${t.slice(-1500)}` : ''
+    // record() cat chi tiet o 400 ky tu -> in RIENG ca nhat ky (toi 60 dong cuoi) truoc dong FAIL
+    const t = readFileSync(join(toolEnv.GETTIME_TOOL_DATA, 'tool-jobs', id, 'log.txt'), 'utf-8').trim().split('\n').slice(-60).join('\n')
+    if (t) console.log(`--- nhat ky viec ${id} ---\n${t}\n--- het nhat ky ---`)
+    return ''
   } catch {
     return ''
   }
@@ -209,9 +211,11 @@ try {
     // tai + kiem + cai app that qua viec nen; kich hoat key test o may chu ban quyen THAT -> loi kich hoat (dung du kien)
     const p = await pollTool(j.id, 8 * 60000, { AGENT_EDIT_KEY: KEY })
     const exe = IS_MAC ? join(home, 'Applications', 'Agent Edit.app') : join(process.env.LOCALAPPDATA || '', 'Programs', 'Agent Edit', 'Agent Edit.exe')
-    record('tool setup key dung: viec nen i_ tai + cai app, roi toi buoc kich hoat key', r.ms < TOOL_LIMIT_MS && existsSync(exe) &&
-      !!p.last && (p.last.status === 'error' ? !/tải|SHA|chữ ký|cài được/i.test(p.last.error?.message || '') : !!p.last.status) && p.slowest < TOOL_LIMIT_MS,
-      `setup ${r.ms}ms, hoi lau nhat ${p.slowest}ms ${JSON.stringify(p.last).slice(0, 300)}` + bootLog(j.id))
+    const okSetup = r.ms < TOOL_LIMIT_MS && existsSync(exe) &&
+      !!p.last && (p.last.status === 'error' ? !/tải|SHA|chữ ký|cài được|dừng giữa chừng/i.test(p.last.error?.message || '') : !!p.last.status) && p.slowest < TOOL_LIMIT_MS
+    if (!okSetup) bootLog(j.id)
+    record('tool setup key dung: viec nen i_ tai + cai app, roi toi buoc kich hoat key', okSetup,
+      `setup ${r.ms}ms, hoi lau nhat ${p.slowest}ms ${JSON.stringify(p.last).slice(0, 300)}`)
   } else record('tool setup key dung -> tra ma i_', false, both(r))
 
   r = await skill(['install', '--key', 'AAAAA-BBBBB-CCCCC-DDDDD-EEEEE'], 120000)
