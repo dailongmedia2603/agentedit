@@ -353,6 +353,9 @@ function AppRun([int]$limit, [string[]]$cliArgs) {
   $outFile = [IO.Path]::GetTempFileName()
   $errFile = [IO.Path]::GetTempFileName()
   $exeArgs = @('--agent-edit-cli') + $cliArgs
+  # Electron Windows: tham so giong URL (vd web|https://...) ma con tham so phia sau -> app tu choi chay (ma -1);
+  # '--' dung truoc tat ca = tat kiem tra nay (app doc lenh sau co --agent-edit-cli, khong bi anh huong)
+  if ($OnWindows) { $exeArgs = @('--') + $exeArgs }
   if ($env:AGENT_EDIT_USER_DATA_DIR) { $exeArgs = @("--user-data-dir=$($env:AGENT_EDIT_USER_DATA_DIR)") + $exeArgs }
   $argLine = (@($exeArgs | ForEach-Object { QuoteArg ([string]$_) }) -join ' ')
   $savedKey = $env:AGENT_EDIT_KEY
@@ -808,6 +811,7 @@ $env:AGENT_EDIT_OUT_FILE = $outFile
 $env:AGENT_EDIT_ERR_FILE = $errFile
 Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue
 $exeArgs = @('--agent-edit-cli') + @($args)
+if ($OnWindows) { $exeArgs = @('--') + $exeArgs } # nhu AppRun: tham so giong URL khong chan app
 if ($env:AGENT_EDIT_USER_DATA_DIR) { $exeArgs = @("--user-data-dir=$($env:AGENT_EDIT_USER_DATA_DIR)") + $exeArgs }
 $argLine = (@($exeArgs | ForEach-Object { QuoteArg ([string]$_) }) -join ' ')
 

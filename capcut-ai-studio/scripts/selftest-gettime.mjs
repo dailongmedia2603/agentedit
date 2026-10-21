@@ -173,6 +173,16 @@ async function pollTool(id, ms, extra = {}) {
   return { last, slowest }
 }
 
+/** duoi nhat ky viec nen i_ (in kem khi muc hong — may CI xoa thu muc tam sau khi chay) */
+const bootLog = (id) => {
+  try {
+    const t = readFileSync(join(toolEnv.GETTIME_TOOL_DATA, 'tool-jobs', id, 'log.txt'), 'utf-8').trim().split('\n').slice(-12).join(' | ')
+    return t ? ` || log: ${t.slice(-1500)}` : ''
+  } catch {
+    return ''
+  }
+}
+
 let installedExe = ''
 let installDir = ''
 try {
@@ -201,7 +211,7 @@ try {
     const exe = IS_MAC ? join(home, 'Applications', 'Agent Edit.app') : join(process.env.LOCALAPPDATA || '', 'Programs', 'Agent Edit', 'Agent Edit.exe')
     record('tool setup key dung: viec nen i_ tai + cai app, roi toi buoc kich hoat key', r.ms < TOOL_LIMIT_MS && existsSync(exe) &&
       !!p.last && (p.last.status === 'error' ? !/tải|SHA|chữ ký|cài được/i.test(p.last.error?.message || '') : !!p.last.status) && p.slowest < TOOL_LIMIT_MS,
-      `setup ${r.ms}ms, hoi lau nhat ${p.slowest}ms ${JSON.stringify(p.last).slice(0, 300)}`)
+      `setup ${r.ms}ms, hoi lau nhat ${p.slowest}ms ${JSON.stringify(p.last).slice(0, 300)}` + bootLog(j.id))
   } else record('tool setup key dung -> tra ma i_', false, both(r))
 
   r = await skill(['install', '--key', 'AAAAA-BBBBB-CCCCC-DDDDD-EEEEE'], 120000)

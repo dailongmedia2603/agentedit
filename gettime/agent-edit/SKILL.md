@@ -7,7 +7,7 @@ metadata:
   title: Agent Edit — làm video AI
   kind: tool
   author: Agent Edit
-  version: 3.1.0
+  version: 3.1.1
 ---
 
 # Agent Edit — làm video bằng AI
