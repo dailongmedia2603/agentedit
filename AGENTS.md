@@ -101,6 +101,9 @@ Day la quy trinh CHUAN, user da dong y tu truoc — lam du cac buoc, khong hoi l
   (luu tam MP4 tren R2 -> link cong khai cho iPhone tai). Test: `cd capcut-ai-studio && node tests/test_phoneagent.mts` (may chu
   Phone Agent gia); worker: license-server `npm test`; app tai len: `HOME=$(mktemp -d) node tests/test_license.mts`. Sua post.js ->
   `cd license-server && npm run deploy:api`. Soat UI that: them `--use-mock-keychain` (khong thi hop thoai Keychain chan app).
+- BOT TELEGRAM (PROJECT_OVERVIEW 30, `electron/services/telegram/`): Cai dat API > Bot Telegram; Edit video qua bot = viec nen CLI
+  (`cli/spawn.ts`), Tao video = createMotionJob. Test: `cd capcut-ai-studio && node tests/test_telegram.mts` (may chu Telegram gia).
+  App that voi may chu gia: bien chi ban dev STUDIO_TELEGRAM_API / STUDIO_TELEGRAM_TOKEN / STUDIO_TELEGRAM_DEV_KEY (+ STUDIO_LICENSE=off).
 - Mac INTEL (x64): CI `macos-15-intel`. Tren may Apple Silicon: Node x64 + `npm_config_arch=x64 arch -x86_64 npm ci`
   (Electron tu tai ban ARM neu khong dat arch khi thay Rosetta). Neu da tai nham ARM: xoa `node_modules/electron/dist`
   trong checkout build Intel roi `npm_config_arch=x64 node node_modules/electron/install.js`; chi goi lai install.js se BO QUA

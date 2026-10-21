@@ -253,6 +253,35 @@ export async function cmdSettings(a: Args): Promise<number> {
   }
 }
 
+const HELP_TELEGRAM = `agent-edit telegram status                        Bot Telegram: bật/tắt, đang chạy, @tên bot, số người dùng
+  agent-edit telegram token [--off]                 Đặt token bot (lấy ở @BotFather) từ biến AGENT_EDIT_TG_TOKEN -> tự bật bot; trống = xoá token
+  agent-edit telegram on | off                      Bật / tắt bot      agent-edit telegram test   Kiểm tra token (getMe)
+  agent-edit telegram users · remove-user <chatId>  Người đã gửi đúng key phần mềm / gỡ quyền
+  agent-edit telegram jobs [--limit N]              Video tạo qua bot (mã, trạng thái, file)`
+
+export async function cmdTelegram(a: Args): Promise<number> {
+  const sub = (a.pos[0] || 'status').toLowerCase()
+  switch (sub) {
+    case 'status':
+      return call(a, 'telegram.status')
+    case 'token':
+      return call(a, 'telegram.setToken', { token: process.env.AGENT_EDIT_TG_TOKEN || '', ...(a.flags.has('off') ? { enabled: false } : {}) }, undefined, 60000)
+    case 'on':
+    case 'off':
+      return call(a, 'telegram.toggle', { enabled: sub === 'on' }, undefined, 60000)
+    case 'test':
+      return call(a, 'telegram.test', { token: process.env.AGENT_EDIT_TG_TOKEN || '' }, undefined, 60000)
+    case 'users':
+      return call(a, 'telegram.users')
+    case 'remove-user':
+      return call(a, 'telegram.removeUser', { chatId: a.pos[1] || opt(a, 'chat') })
+    case 'jobs':
+      return call(a, 'telegram.jobs', { limit: opt(a, 'limit') })
+    default:
+      return usage(a, HELP_TELEGRAM)
+  }
+}
+
 export const cmdCapabilities = (a: Args) => call(a, 'capabilities')
 export const cmdFonts = (a: Args) => call(a, 'fonts.list', {}, undefined, 90000)
 
@@ -266,6 +295,9 @@ AUTOMATION VIDEO (nguồn tin -> video tự động -> tự đăng)
 
 ĐĂNG VIDEO QUA IPHONE (Phone Agent)
   ${HELP_POST}
+
+BOT TELEGRAM (ra lệnh Edit video / Tạo video qua Telegram — chỉ người gửi đúng key phần mềm)
+  ${HELP_TELEGRAM}
 
 VIDEO ĐÃ TẠO (Edit Video): agent-edit projects list · show <id> · delete <id> [--with-files]
 CÀI ĐẶT: ${HELP_SETTINGS}

@@ -575,11 +575,16 @@ tool_cancel() {
 # tool cli <lenh cua app...>: chay 1 lenh CLI cua app (Tao video, Automation, dang bai, Video da tao, cai dat...) va tra JSON.
 # O nhieu dong cua GetTime -> lap lai tham so: --vars / --post-vars / --sources (moi dong 1 --var / --post-var / --source).
 CLI_SVC_MIN_VERSION="${AGENT_EDIT_FEATURE_MIN_VERSION:-1.21.0}"
+# Bot Telegram (lenh `telegram`, token qua `tool keys`) co tu app 1.22.0
+TELEGRAM_MIN_VERSION="${AGENT_EDIT_FEATURE_MIN_VERSION:-1.22.0}"
 tool_cli() {
   local args=() prev="" line flag
   tool_need_app
   ver_ge "$APPV" "$CLI_SVC_MIN_VERSION" ||
     tool_fail "Agent Edit trên máy (bản $APPV) chưa có chức năng này qua chat." "Gọi hành động update để cập nhật Agent Edit rồi thử lại."
+  if [ "${1:-}" = telegram ] && ! ver_ge "$APPV" "$TELEGRAM_MIN_VERSION"; then
+    tool_fail "Agent Edit trên máy (bản $APPV) chưa có Bot Telegram." "Gọi hành động update để cập nhật Agent Edit rồi thử lại."
+  fi
   for a in "$@"; do
     if [ -n "$prev" ]; then
       case "$prev" in --vars) flag=--var ;; --post-vars) flag=--post-var ;; *) flag=--source ;; esac
@@ -616,8 +621,18 @@ tool_keys() {
     out="$out${out:+,}\"phoneAgent\":$(printf '%s' "${RUN_OUT:-null}" | tr -d '\n')"
     [ "$RUN_RC" = 0 ] || bad=1
   fi
+  if [ -n "${AGENT_EDIT_TG_TOKEN:-}" ]; then
+    if ver_ge "$APPV" "$TELEGRAM_MIN_VERSION"; then
+      app_run 20 telegram token --json
+      out="$out${out:+,}\"telegram\":$(printf '%s' "${RUN_OUT:-null}" | tr -d '\n')"
+      [ "$RUN_RC" = 0 ] || bad=1
+    else
+      out="$out${out:+,}\"telegram\":{\"ok\":false,\"error\":\"Agent Edit bản $APPV chưa có Bot Telegram — gọi update rồi gọi lại keys.\"}"
+      bad=1
+    fi
+  fi
   KEEP_KEY=""
-  [ -n "$out" ] || tool_fail "Chưa có key nào được nhập trong GetTime." "Gọi gettime_ask_field cho trường saydi-key hoặc phoneagent-token trước."
+  [ -n "$out" ] || tool_fail "Chưa có key nào được nhập trong GetTime." "Gọi gettime_ask_field cho trường saydi-key, phoneagent-token hoặc telegram-bot-token trước."
   if [ -n "$bad" ]; then
     printf '{"ok":false,%s}\n' "$out"
     exit 1

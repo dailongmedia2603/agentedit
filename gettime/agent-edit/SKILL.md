@@ -1,13 +1,13 @@
 ---
 name: agent-edit
-description: 'Agent Edit — phần mềm làm video bằng AI trên máy này, dùng ĐẦY ĐỦ như trên app: Edit Video (dựng/edit video quay sẵn: cắt, hook, phụ đề, chữ hiệu ứng, ảnh AI, SFX, nhạc; làm lại/sửa video đã tạo), Tạo video (motion graphics từ ý tưởng, giọng đọc AI), Automation Video (nguồn tin website/Facebook tự thành video, tự đăng), đăng video lên kênh qua iPhone (Phone Agent, đăng ngay hoặc hẹn giờ), Video đã tạo, cài đặt (đăng nhập AI, model, key). Dùng khi người trực muốn làm/sửa/đăng video TikTok, Reels, Shorts, quảng cáo; hỏi tiến độ, video đã làm; tạo hoặc quản lý automation; cài đặt Agent Edit; hoặc hỏi Agent Edit làm được gì.'
+description: 'Agent Edit — phần mềm làm video bằng AI trên máy này, dùng ĐẦY ĐỦ như trên app: Edit Video (dựng/edit video quay sẵn: cắt, hook, phụ đề, chữ hiệu ứng, ảnh AI, SFX, nhạc; làm lại/sửa video đã tạo), Tạo video (motion graphics từ ý tưởng, giọng đọc AI), Automation Video (nguồn tin website/Facebook tự thành video, tự đăng), đăng video lên kênh qua iPhone (Phone Agent, đăng ngay hoặc hẹn giờ), Video đã tạo, Bot Telegram (ra lệnh Edit video / Tạo video qua Telegram, chỉ người có key), cài đặt (đăng nhập AI, model, key). Dùng khi người trực muốn làm/sửa/đăng video TikTok, Reels, Shorts, quảng cáo; hỏi tiến độ, video đã làm; tạo hoặc quản lý automation; kết nối / quản lý bot Telegram; cài đặt Agent Edit; hoặc hỏi Agent Edit làm được gì.'
 license: Proprietary
 compatibility: 'macOS 14 trở lên (Apple Silicon hoặc Intel) hoặc Windows 10 (1809+) / 11 64-bit. Cần key bản quyền Agent Edit. Chạy ở mức chat thường qua tool.json — không cần Toàn quyền.'
 metadata:
   title: Agent Edit — làm video AI
   kind: tool
   author: Agent Edit
-  version: 3.0.0
+  version: 3.1.0
 ---
 
 # Agent Edit — làm video bằng AI
@@ -23,6 +23,7 @@ Bạn điều khiển **Agent Edit** trên máy này qua các công cụ `agent-
 | Tạo video | `agent-edit__motion-create`, `__motion-redo`, `__motion-manage`, `__voices` |
 | Automation Video | `agent-edit__auto-save`, `__auto-manage` |
 | Đăng video (iPhone) | `agent-edit__post-create`, `__post-manage` |
+| Bot Telegram | `agent-edit__telegram` (+ `gettime_ask_field` trường `telegram-bot-token` → `agent-edit__keys`) |
 
 **Việc dài** (`setup`, `make`, `motion-create`, `motion-redo`, `post-create`, `update`) trả lời ngay "đã nhận"; GetTime tự
 hiện thẻ tiến độ và báo kết quả vào chat (video xong hiện thành thẻ). **Không gọi lại để chờ.** Báo người trực một câu là
@@ -46,7 +47,7 @@ Gọi `gettime_check_tool` (skill `agent-edit`). "Sẵn sàng." → làm việc 
 4. `next` nói **API key** Gemini / Claude → nhờ nhập API key trong app Agent Edit (Cài đặt API) hoặc đổi sang đăng nhập.
 5. `installing` có mã việc → đang cài, chờ thẻ tiến độ.
 
-Các trường `saydi-key`, `phoneagent-token`, `facebook-token` chỉ cần cho chức năng tương ứng — "Trường chưa nhập" của
+Các trường `saydi-key`, `phoneagent-token`, `facebook-token`, `telegram-bot-token` chỉ cần cho chức năng tương ứng — "Trường chưa nhập" của
 chúng **không** phải lý do chưa sẵn sàng, đừng hỏi khi chưa dùng tới. `setup` xong app tự nhắn tiếp → gọi lại
 `gettime_check_tool`. `setup` lỗi → báo ngắn, làm theo gợi ý (sai key → hỏi lại key; app đang mở → nhờ đóng app) rồi gọi
 lại. Mỗi key bản quyền dùng cho **1 máy**; "đã kích hoạt trên máy khác" → liên hệ người bán.
@@ -174,8 +175,27 @@ lúc) · `test` + `account` (kiểm kết nối) · `logout`. API key AI nhập 
 `agent-edit__update` (app phải đóng, không có video đang tạo). Key SaydiVoice / token Phone Agent mới → `gettime_ask_field`
 rồi `agent-edit__keys`.
 
-## 10. Ngoài GetTime (Claude Code / Codex có shell)
+## 10. Bot Telegram — ra lệnh làm video qua Telegram
+
+Người trực muốn nhắn Telegram để làm video (không cần mở app / GetTime): app chạy một **bot Telegram riêng** của họ. Ai nhắn
+bot phải gửi **đúng key phần mềm Agent Edit** của máy này mới dùng được (sai 5 lần → khoá 1 giờ; tin chứa key bị xoá). Bot có
+menu **Edit video · Tạo video · Video của tôi · Huỷ thao tác**, hỏi từng bước (video nguồn / chọn từ thư viện → video mẫu →
+mục đích → phong cách → khách hàng → độ dài → font → màu → tư liệu + mô tả), xong gửi video hoàn chỉnh vào Telegram; mỗi
+video một mã, làm nhiều video cùng lúc.
+
+1. **Kết nối:** hướng dẫn tạo bot: mở **@BotFather** trên Telegram → `/newbot` → đặt tên → nhận token. Rồi
+   `gettime_ask_field` field `telegram-bot-token` ("Anh/chị dán token bot vào ô bên dưới giúp em"), **kết thúc lượt**; "Đã
+   lưu" → `agent-edit__keys` (token đúng → bot tự bật, kết quả có `bot.username`). Báo: "Mở t.me/<username>, bấm Start rồi
+   gửi key phần mềm Agent Edit." **Không** gửi key bản quyền vào chat GetTime.
+2. **Xem / quản lý:** `agent-edit__telegram` op `status` (đang chạy / lỗi + `status.error`) · `on` / `off` · `test` · `users`
+   (người đã xác thực) · `remove-user` + `chat_id` (hỏi lại trước) · `jobs` (video tạo qua bot: mã, trạng thái, file).
+3. Bot chỉ trả lời khi app (hoặc dịch vụ nền) đang chạy — gọi bất kỳ công cụ nào là app tự chạy nền; máy tắt thì bot dừng.
+   Telegram chỉ cho bot nhận file ≤ 20 MB (lớn hơn: người dùng gửi link Google Drive / Dropbox hoặc chọn từ thư viện) và gửi
+   ≤ 50 MB (lớn hơn: bot gửi bản nén + link bản gốc 48 giờ). `status.error` có "nơi khác dùng" → token đang chạy ở máy khác.
+   Lỗi "chưa có Bot Telegram" → `agent-edit__update`.
+
+## 11. Ngoài GetTime (Claude Code / Codex có shell)
 
 Dùng script `scripts/agent-edit` (macOS: `bash scripts/agent-edit …`; Windows: `powershell -NoProfile -ExecutionPolicy
 Bypass -File scripts\agent-edit.ps1 …`): `tool <việc>` như các công cụ trên (`tool cli <lệnh>` = lệnh đầy đủ của app; key
-qua biến `AGENT_EDIT_KEY`, `AGENT_EDIT_SAYDI_KEY`, `AGENT_EDIT_PA_TOKEN`, `AGENT_EDIT_FB_TOKEN`), hoặc `help` xem mọi lệnh.
+qua biến `AGENT_EDIT_KEY`, `AGENT_EDIT_SAYDI_KEY`, `AGENT_EDIT_PA_TOKEN`, `AGENT_EDIT_FB_TOKEN`, `AGENT_EDIT_TG_TOKEN`), hoặc `help` xem mọi lệnh.

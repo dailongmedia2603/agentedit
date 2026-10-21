@@ -51,6 +51,13 @@
       "secret": true,
       "env": "AGENT_EDIT_FB_TOKEN",
       "hint": "Chỉ cần khi Automation lấy tin từ trang Facebook"
+    },
+    {
+      "id": "telegram-bot-token",
+      "label": "Token bot Telegram (ra lệnh Edit video / Tạo video qua Telegram)",
+      "secret": true,
+      "env": "AGENT_EDIT_TG_TOKEN",
+      "hint": "Lấy ở @BotFather trên Telegram (/newbot) — dạng 123456789:AAH…"
     }
   ],
   "actions": [
@@ -2043,9 +2050,58 @@
       ]
     },
     {
+      "id": "telegram",
+      "title": "Bot Telegram",
+      "description": "Bot Telegram riêng của người trực: ai nhắn bot và gửi ĐÚNG key phần mềm Agent Edit thì ra lệnh Edit video / Tạo video bằng menu, bot hỏi từng bước rồi gửi video hoàn chỉnh vào Telegram. status = bật/tắt, đang chạy, @tên bot, số người dùng; on / off = bật / tắt bot; test = kiểm token; users = người đã xác thực; remove-user = gỡ quyền (chat_id); jobs = video tạo qua bot (mã, trạng thái). Đặt / đổi token: gettime_ask_field trường telegram-bot-token rồi gọi agent-edit__keys.",
+      "input": {
+        "op": {
+          "type": "string",
+          "enum": [
+            "status",
+            "on",
+            "off",
+            "test",
+            "users",
+            "remove-user",
+            "jobs"
+          ],
+          "required": true
+        },
+        "chat_id": {
+          "type": "string",
+          "description": "remove-user: chatId của người dùng (xem users)."
+        },
+        "limit": {
+          "type": "number",
+          "description": "jobs: số video (mặc định 20)."
+        }
+      },
+      "argv": [
+        "{run}",
+        "tool",
+        "cli",
+        "telegram",
+        "{op}",
+        {
+          "if": "chat_id",
+          "args": [
+            "--chat",
+            "{chat_id}"
+          ]
+        },
+        {
+          "if": "limit",
+          "args": [
+            "--limit",
+            "{limit}"
+          ]
+        }
+      ]
+    },
+    {
       "id": "keys",
       "title": "Lưu key vào Agent Edit",
-      "description": "Đưa key SaydiVoice / token Phone Agent người trực vừa nhập (trường saydi-key / phoneagent-token) vào app Agent Edit (lưu mã hoá như ở Cài đặt API). Gọi ngay sau khi app báo đã lưu trường đó.",
+      "description": "Đưa key SaydiVoice / token Phone Agent / token bot Telegram người trực vừa nhập (trường saydi-key / phoneagent-token / telegram-bot-token) vào app Agent Edit (lưu mã hoá như ở Cài đặt API; token Telegram -> bot tự bật). Gọi ngay sau khi app báo đã lưu trường đó.",
       "argv": [
         "{run}",
         "tool",

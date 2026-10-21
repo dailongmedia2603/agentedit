@@ -269,6 +269,18 @@ const api = {
     const fn = (_e: unknown, list: unknown) => cb(list)
     ipcRenderer.on('phoneagent:posts', fn)
     return () => ipcRenderer.removeListener('phoneagent:posts', fn)
+  },
+  // ---- Bot Telegram: yeu cau Edit video / Tao video qua Telegram (electron/telegram-ipc.ts) ----
+  telegramGet: () => ipcRenderer.invoke('telegram:get'),
+  telegramSave: (cfg: { token?: string; enabled?: boolean }) => ipcRenderer.invoke('telegram:save', cfg),
+  telegramTest: (token?: string) => ipcRenderer.invoke('telegram:test', token),
+  telegramRemoveChat: (chatId: number) => ipcRenderer.invoke('telegram:removeChat', chatId),
+  telegramOpenBotFather: () => ipcRenderer.invoke('telegram:openBotFather'),
+  telegramOpenBot: (username: string) => ipcRenderer.invoke('telegram:openBot', username),
+  onTelegramStatus: (cb: (info: unknown) => void) => {
+    const fn = (_e: unknown, info: unknown) => cb(info)
+    ipcRenderer.on('telegram:status', fn)
+    return () => ipcRenderer.removeListener('telegram:status', fn)
   }
 }
 

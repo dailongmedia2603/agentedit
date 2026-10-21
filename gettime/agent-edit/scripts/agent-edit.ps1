@@ -676,9 +676,15 @@ function ToolMake([string[]]$rest) {
 # O nhieu dong cua GetTime -> lap lai tham so: --vars / --post-vars / --sources (moi dong 1 --var / --post-var / --source).
 $CliSvcMinVersion = '1.21.0'
 if ($env:AGENT_EDIT_FEATURE_MIN_VERSION) { $CliSvcMinVersion = $env:AGENT_EDIT_FEATURE_MIN_VERSION }
+# Bot Telegram (lenh `telegram`, token qua `tool keys`) co tu app 1.22.0
+$TelegramMinVersion = '1.22.0'
+if ($env:AGENT_EDIT_FEATURE_MIN_VERSION) { $TelegramMinVersion = $env:AGENT_EDIT_FEATURE_MIN_VERSION }
 function ToolCli([string[]]$rest) {
   ToolNeedApp
   if (-not (VerGe $appv $CliSvcMinVersion)) { ToolFail "Agent Edit trên máy (bản $appv) chưa có chức năng này qua chat." 'Gọi hành động update để cập nhật Agent Edit rồi thử lại.' }
+  if ($rest.Count -gt 0 -and [string]$rest[0] -eq 'telegram' -and -not (VerGe $appv $TelegramMinVersion)) {
+    ToolFail "Agent Edit trên máy (bản $appv) chưa có Bot Telegram." 'Gọi hành động update để cập nhật Agent Edit rồi thử lại.'
+  }
   $map = @{ '--vars' = '--var'; '--post-vars' = '--post-var'; '--sources' = '--source' }
   $a = @()
   for ($i = 0; $i -lt $rest.Count; $i++) {
@@ -714,7 +720,17 @@ function ToolKeys {
     $o.phoneAgent = ReadJsonText $script:RunOut
     if ($script:RunRc -ne 0) { $o.ok = $false }
   }
-  if ($o.Count -eq 1) { ToolFail 'Chưa có key nào được nhập trong GetTime.' 'Gọi gettime_ask_field cho trường saydi-key hoặc phoneagent-token trước.' }
+  if ($env:AGENT_EDIT_TG_TOKEN) {
+    if (VerGe $appv $TelegramMinVersion) {
+      AppRun 20 @('telegram', 'token', '--json')
+      $o.telegram = ReadJsonText $script:RunOut
+      if ($script:RunRc -ne 0) { $o.ok = $false }
+    } else {
+      $o.telegram = [ordered]@{ ok = $false; error = "Agent Edit bản $appv chưa có Bot Telegram — gọi update rồi gọi lại keys." }
+      $o.ok = $false
+    }
+  }
+  if ($o.Count -eq 1) { ToolFail 'Chưa có key nào được nhập trong GetTime.' 'Gọi gettime_ask_field cho trường saydi-key, phoneagent-token hoặc telegram-bot-token trước.' }
   [Console]::Out.WriteLine(($o | ConvertTo-Json -Compress -Depth 6))
   if ($o.ok) { exit 0 }
   exit 1

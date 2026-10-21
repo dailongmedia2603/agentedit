@@ -2423,6 +2423,57 @@ thang = 2 ben ghi de nhau, va CLI thoat xong la khong con gi chay. User chon (20
 - LUU Y khi tu kiem tren may that: `--user-data-dir` tam CHI tach userData (khoa API, Keychain); ~/.capcut-studio (automation,
   motion, projects) van la that -> dung HOME tam (2026-10-20 lo tao 1 du an Automation thu vao du lieu that, da xoa ngay).
 
+## 30. BOT TELEGRAM — yeu cau Edit video / Tao video qua Telegram (2026-10-21, `electron/services/telegram/`)
+
+User: "ket noi bot Telegram de yeu cau edit video / tao video qua Telegram; menu nhu bot ban hang; chon Edit video thi hoi
+tung muc; xong gui video hoan chinh; tao nhieu video cung luc (moi viec 1 ma); chi ai gui DUNG key phan mem moi dung duoc".
+
+- **Chay o dau:** trong tien trinh app (giao dien hoac dich vu nen `--agent-edit-service`, `main.ts startTelegram()`), KHONG o
+  viec nen CLI. Long-polling `getUpdates` (khong can webhook / dia chi cong khai) qua Electron `net.fetch` (theo proxy / VPN he
+  thong — Telegram bi chan o vai mang VN). 1 token = 1 noi goi (noi khac -> 409, bao loi o Cai dat). Dich vu nen khong tu thoat
+  khi bot bat (`telegramActive`). App phai dang mo (Windows dong cua so = thoat app = bot tat).
+- **Cai dat API > Bot Telegram** (`src/components/telegram/TelegramSettingsCard.tsx`, IPC `electron/telegram-ipc.ts`
+  telegram:*; su kien telegram:status): token BotFather (kiem getMe, ma hoa safeStorage `<userData>/telegram.enc`), Bat / Tat
+  bot, trang thai, danh sach nguoi da xac thuc (go quyen; "key da doi").
+- **Xac thuc** (`bot.ts handleUnauth`): chi chat RIENG (nhom -> tu choi). Chat moi: hoi key; tin dang key (20–30 ky tu) so voi
+  key dang kich hoat (`license.licenseKeyMatches`: chuan hoa nhu may chu O->0 I/L->1, sha256 'agent-edit-tg:' + timingSafeEqual);
+  bot XOA tin chua key; sai 5 lan / gio -> khoa chat 1 gio; chu thuong khong tinh la lan sai. Chat luu DAU VAN TAY key
+  (`licenseKeyFingerprint`) — doi key tren app -> moi chat phai gui lai key. /thoat = dang xuat.
+- **Menu** (ban phim co dinh): Edit video · Tao video · Video cua toi · Huy thao tac · Huong dan; lenh /start /edit /tao /viec
+  /huy /thoat. Gui MA video (r_... / mv-...) -> trang thai / nhan lai video.
+- **Bang hoi** (`wizard.ts`, phien luu `~/.capcut-studio/telegram/state.json`, het han 24h; nut = `<sid>|<buoc>|<viec>` -> nut
+  cu bao "da cu / da qua"):
+  - Edit video (DUNG thu tu user): video nguon (gui Video / File / link; nut "Chon tu thu vien" = thu vien phan tich
+    `/library/list`; album nhieu video gom xong `GATHER_MS` 1.5s roi moi hoi tiep; nut "Them video nguon" o buoc sau) -> video
+    mau (Bo qua / thu vien) -> video lam gi -> style -> khach hang -> do dai (nut nhanh / go / Bo qua) -> font (chon toi da 3
+    trong kho `/fonts/list`, gui file .ttf/.otf/.woff -> `fontFiles`, go ten -> `brandGuide.typography`, Bo qua) -> mau (Bo qua)
+    -> tu lieu (anh / video; tai xong HOI MO TA tung tep, tra loi vao tin chua tep, "Bo qua mo ta") -> tao. Khung mac dinh doc 9:16.
+  - Tao video: ten -> loai -> noi dung -> website -> nguoi xem -> khung hinh -> do dai (6–90) -> giong Saydi (giong rieng +
+    giong vi; khong key -> khong loi doc) -> mau -> font -> anh tu lieu (+ mo ta -> ghi vao notes) -> ghi chu -> tao.
+- **File gui len:** `~/.capcut-studio/telegram/uploads/<chat>/<phien>/<loai>-<n><duoi>` (khong dung ten nguoi dung lam duong
+  dan); video kiem bang ffprobe. Bot API CHI tai duoc file <= 20 MB -> lon hon: huong dan gui LINK (Google Drive doi sang link tai
+  thang, Dropbox dl=1, trang HTML -> bao "khong phai link tai"), toi da 4 GB. Xoa khi video xong (app da chep vao du an); viec loi
+  giu de "Chay lai"; don thu muc mo coi > 7 ngay luc bat bot.
+- **Tao viec:** Edit video = VIEC NEN CLI y het `agent-edit make` (`deps.startEdit`: saveJob + `cli/spawn.ts spawnCliJob` — tach
+  ra tu cli/index.ts, `appBaseArgs()` lay --user-data-dir / --use-mock-keychain + thu muc app ban dev khi goi tu giao dien) ->
+  lan cho luot, ban quyen, Doctor, du an hien o "Video da tao". Tao video = `createMotionJob` (hien o trang Tao video).
+- **Theo doi** (`watchJobs` 4s + onMotionJob): 1 tin trang thai / viec, SUA tai cho khi doi buoc / cho luot / render moi 10%
+  (nut "Huy video nay"); xong -> `sendVideo` multipart (<= 49 MB; Telegram tu choi kieu video -> sendDocument); > 49 MB -> ban nen
+  ffmpeg <= 45 MB (bitrate thap thi 720p) + link ban goc 48h (`postVideoUpload`, may chu ban quyen). Loi -> tin moi + nut
+  "Chay lai" (Edit: viec moi cung dau vao, dung lai phan tich; Tao video: rerunMotionJob). Gui hong vi mang -> lan sau gui lai.
+- **CLI + GetTime (app 1.22.0, ky nang 3.1.0):** dich vu nen `telegram.status / setToken / toggle / test / users / removeUser / jobs`
+  (handlers.ts, goi DUNG ham cua Cai dat) + `capabilities.telegram`; lenh `agent-edit telegram status | token [--off] | on | off |
+  test | users | remove-user <chatId> | jobs [--limit]` (token CHI qua bien AGENT_EDIT_TG_TOKEN; token moi -> tu bat bot). Bot bat
+  tu CLI chay trong dich vu nen (khong tu thoat khi bot bat). GetTime: truong bi mat `telegram-bot-token` -> `tool keys` (app <
+  1.22.0 -> bao update), hanh dong `telegram` (op ...) -> `tool cli telegram`, script chan khi app < 1.22.0; SKILL.md muc 10. Da
+  chay that tren app dev (HOME tam + may chu Telegram gia): token sai -> loi; dung -> running; off; users / jobs; capabilities.
+- **Kiem:** `node tests/test_telegram.mts` (may chu Telegram GIA, 70 muc: xac thuc / khoa / xoa tin key / nhom, thu tu tung
+  buoc + dau vao viec, album, thu vien, file > 20 MB, nut cu, font kho + file, mo ta tu lieu, 2 video song song, trang thai,
+  gui video, loi + chay lai, video > 49 MB, Tao video brief, huy, doi key). Tren APP ELECTRON THAT (ban dev, dich vu nen, HOME
+  tam) voi may chu gia: bien CHI ban dev `STUDIO_TELEGRAM_API` / `STUDIO_TELEGRAM_TOKEN` / `STUDIO_TELEGRAM_DEV_KEY` (khi
+  STUDIO_LICENSE=off) — 2026-10-21 PASS: getUpdates qua net.fetch, tai video + ffprobe, kho font qua sidecar, viec nen r_ tach tu
+  dich vu dung tham so, giet viec -> bot bao "dung bat thuong" + nut Chay lai. CHUA thu voi bot Telegram THAT (can token cua user).
+
 ## 12. CodeGraph
 
 CodeGraph `0.9.9` da duoc cai va index tai root workspace:

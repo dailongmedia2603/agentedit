@@ -363,6 +363,14 @@ interface StudioBridge {
   phoneagentShotUrl(file: string): Promise<string>
   phoneagentMotionContext(jobId: string): Promise<Record<string, string> | null>
   onPhoneagentPosts(cb: (list: PostJob[]) => void): () => void
+  // ---- Bot Telegram (electron/telegram-ipc.ts) ----
+  telegramGet(): Promise<TelegramInfo>
+  telegramSave(cfg: { token?: string; enabled?: boolean }): Promise<{ ok: boolean; error?: string; info: TelegramInfo }>
+  telegramTest(token?: string): Promise<{ ok: boolean; detail?: string; error?: string }>
+  telegramRemoveChat(chatId: number): Promise<TelegramInfo>
+  telegramOpenBotFather(): Promise<void>
+  telegramOpenBot(username: string): Promise<void>
+  onTelegramStatus(cb: (info: TelegramInfo) => void): () => void
 }
 
 declare global {
@@ -497,6 +505,18 @@ declare global {
   }
 
   // ---- Phone Agent — khop electron/services/phoneagent/{api,posts}.ts + motion/types.ts AutoPostConfig ----
+  // ---- Bot Telegram — khop electron/services/telegram/bot.ts telegramInfo() ----
+  interface TelegramInfo {
+    has_token: boolean
+    token_hint: string
+    enabled: boolean
+    bot: { id: number; username: string; name: string } | null
+    status: { state: 'off' | 'starting' | 'running' | 'error'; error?: string; since?: number }
+    chats: { chatId: number; name: string; username?: string; authorizedAt: number; lastSeenAt?: number; valid: boolean }[]
+    /** viec dang chay do bot tao */
+    jobs: number
+  }
+
   interface PaMasked {
     has_key: boolean
     key_hint: string

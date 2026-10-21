@@ -5,6 +5,8 @@ import { appendFileSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'fs
 import { registerIpc } from './ipc'
 import { registerMotionIpc } from './motion-ipc'
 import { registerPhoneAgentIpc } from './phoneagent-ipc'
+import { registerTelegramIpc } from './telegram-ipc'
+import { startTelegram, stopTelegram, telegramActive } from './services/telegram/bot'
 import { startPosts, stopPosts } from './services/phoneagent/posts'
 import { startAutoPosting } from './services/phoneagent/auto'
 import { startMotion, stopAllMotion } from './services/motion/runner'
@@ -249,6 +251,7 @@ app.whenReady().then(async () => {
   registerIpc(() => mainWindow)
   registerMotionIpc(() => mainWindow)
   registerPhoneAgentIpc(() => mainWindow)
+  registerTelegramIpc(() => mainWindow)
   initUpdater()
 
   // Tu kiem TU CAP NHAT (ban dong goi): --update-selftest=<json> — khong mo cua so (scripts/selftest-update.mjs)
@@ -427,6 +430,8 @@ app.whenReady().then(async () => {
   // Dang video qua Phone Agent: tiep tuc luot dang do dang + lich dang; video Automation xong -> tu len lich dang
   startPosts()
   startAutoPosting()
+  // Bot Telegram (Cai dat API > Bot Telegram): nhan yeu cau Edit video / Tao video qua Telegram
+  startTelegram()
   // Cong dieu khien cho CLI (ca khi app mo giao dien: CLI dung chinh tien trinh nay, khong bat dich vu thu 2)
   startControlServer(serviceHandlers({ mode: SERVICE_MODE ? 'service' : 'gui', quit: () => app.quit() }), SERVICE_MODE ? 'service' : 'gui', bootLog)
   if (SERVICE_MODE) {
@@ -439,6 +444,7 @@ app.whenReady().then(async () => {
       const busy =
         busyMotionIds().length > 0 ||
         publicProjects().some((p) => p.enabled) ||
+        telegramActive() ||
         listPosts({}).some((p) => !['success', 'error', 'cancelled'].includes(p.status)) ||
         Date.now() - lastServiceRequest() < SERVICE_IDLE_MS
       if (!busy) {
@@ -466,6 +472,7 @@ app.on('window-all-closed', () => {
 })
 
 app.on('before-quit', () => {
+  void stopTelegram()
   stopControlServer()
   stopAutomation()
   stopPosts()

@@ -8,8 +8,8 @@
 // Viec tao video chay NEN (1 tien trinh app khong cua so / video): `make` tra ma viec ngay, `wait` cho (mac dinh toi da
 // 9 phut / lan — vua gioi han 10 phut 1 lenh cua AI agent), `job` / `jobs` xem, `cancel` huy. Chi tiet: PROJECT_OVERVIEW 16.
 import { app } from 'electron'
-import { execFileSync, spawn } from 'child_process'
-import { existsSync, openSync, statSync, writeFileSync } from 'fs'
+import { execFileSync } from 'child_process'
+import { existsSync, statSync, writeFileSync } from 'fs'
 import { isAbsolute, resolve } from 'path'
 import { autoFix, DoctorCheck, fixCheck, runDoctor } from '../services/doctor'
 import { activateLicense, checkLicense, LicenseState } from '../services/license'
@@ -24,8 +24,9 @@ import { activeJobs, cancelFile, codeFile, Job, JobInput, JobInsert, jobLog, job
 import { accountArg, accountOf, activeLogin, cliStatusOf, loginView, runLoginJob } from './login'
 import { aiHints, doctorSummary, ensureTools, runJob, runSetup, syncLibrary } from './pipeline'
 import { Args, CLI_FLAG, errLine, opt, optAll, out, outJson, parseArgs, pidAlive, sleep } from './util'
-import { cmdAuto, cmdCapabilities, cmdFonts, cmdMotion, cmdPost, cmdProjects, cmdSettings, cmdVoices, HELP_MORE } from './commands'
+import { cmdAuto, cmdCapabilities, cmdFonts, cmdMotion, cmdPost, cmdProjects, cmdSettings, cmdTelegram, cmdVoices, HELP_MORE } from './commands'
 import { svcPing, svcQuit } from './service-client'
+import { spawnCliJob } from './spawn'
 
 declare const __APP_BUILD__: string
 const APP_BUILD = typeof __APP_BUILD__ !== 'undefined' ? __APP_BUILD__ : ''
@@ -536,24 +537,8 @@ function buildInput(a: Args): { input?: Job['input']; error?: string } {
   }
 }
 
-/** Tach 1 tien trinh app (khong cua so) chay job — ban dong goi: chinh binary app; dev: electron + thu muc app.
- *  cmd: __run-job (tao video) · __run-setup (cai dat) · __run-login (dang nhap). */
-function spawnJob(id: string, cmd = '__run-job'): number | undefined {
-  const fd = openSync(jobLog(id), 'a')
-  // giu nguyen tham so dung TRUOC co CLI (vd --user-data-dir khi tu kiem) -> tien trinh job dung cung du lieu app;
-  // ban dev: tham so dau la thu muc app (`electron . ...`) -> doi sang duong dan tuyet doi
-  const pre = process.argv.slice(1, process.argv.indexOf(CLI_FLAG)).filter((x) => !/^--agent-edit-update/.test(x))
-  if (!app.isPackaged && pre.length && !pre[0].startsWith('-')) pre[0] = app.getAppPath()
-  const args = [...pre, CLI_FLAG, cmd, id]
-  const env = { ...process.env }
-  delete env.ELECTRON_RUN_AS_NODE
-  // file ket qua cua lenh `make` (script Windows) KHONG phai cua viec nen
-  delete env.AGENT_EDIT_OUT_FILE
-  delete env.AGENT_EDIT_ERR_FILE
-  const child = spawn(process.execPath, args, { detached: true, stdio: ['ignore', fd, fd], env, windowsHide: true })
-  child.unref()
-  return child.pid
-}
+/** Tach 1 tien trinh app (khong cua so) chay job — cmd: __run-job (tao video) · __run-setup (cai dat) · __run-login (dang nhap). */
+const spawnJob = (id: string, cmd = '__run-job'): number | undefined => spawnCliJob(id, cmd)
 
 function jobView(j: Job) {
   return {
@@ -888,6 +873,9 @@ export async function runCli(argv: string[]): Promise<number> {
         return await cmdSettings(a)
       case 'capabilities':
         return await cmdCapabilities(a)
+      case 'telegram':
+      case 'tg':
+        return await cmdTelegram(a)
       case 'fonts':
         return await cmdFonts(a)
       case '__run-job':

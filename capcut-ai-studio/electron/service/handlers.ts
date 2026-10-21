@@ -43,6 +43,7 @@ import { paDevices, paMe, paScriptFields, paScripts } from '../services/phoneage
 import { cancelPost, createPost, deletePost, listPosts, reschedulePost, retryPost, type PostJob } from '../services/phoneagent/posts'
 import { templateContext } from '../services/phoneagent/auto'
 import { readJson, writeJsonAtomic } from '../cli/util'
+import { configureTelegram, removeTelegramChat, telegramInfo, telegramJobs, testTelegram } from '../services/telegram/bot'
 import { MOTION_OUT_FILE, motionStatusFile, motionView, postStatusView } from './motion-status'
 import type { SvcHandler } from './server'
 import type { SvcResponse } from './protocol'
@@ -144,6 +145,7 @@ function capabilities(): SvcResponse {
       { id: 'automation', name: 'Automation Video', what: 'Theo dõi nguồn tin (website/RSS hoặc trang Facebook) theo chu kỳ, mỗi tin mới tự thành 1 video Tạo video, có thể tự đăng qua iPhone (Phone Agent) ngay / sau X phút / theo khung giờ.', time: 'chạy liên tục', needs: 'như Tạo video; Phone Agent nếu tự đăng' },
       { id: 'projects', name: 'Video đã tạo', what: 'Xem / xoá video Edit Video và Tạo video đã làm; lấy file video.' },
       { id: 'post', name: 'Đăng video (Phone Agent)', what: 'Đăng video có sẵn lên TikTok/Facebook/… qua iPhone chạy kịch bản Phone Agent: chọn iPhone + kịch bản, điền caption/biến, đăng ngay hoặc hẹn giờ; xem / huỷ / thử lại / đổi giờ.', needs: 'token Phone Agent (pa_live_…)' },
+      { id: 'telegram', name: 'Bot Telegram', what: 'Bot Telegram riêng của người dùng: ai gửi đúng key phần mềm thì ra lệnh Edit video / Tạo video bằng menu + hỏi từng bước (gửi video nguồn, video mẫu, yêu cầu, font, màu, tư liệu); app tạo video rồi gửi video hoàn chỉnh vào chat; mỗi video 1 mã, nhiều video cùng lúc.', needs: 'token bot từ @BotFather; app (hoặc dịch vụ nền) đang chạy' },
       { id: 'settings', name: 'Cài đặt', what: 'Đăng nhập / đăng xuất tài khoản AI, API key, chọn model + mức suy nghĩ, số video chạy cùng lúc, key SaydiVoice, token Phone Agent, kiểm tra kết nối; Doctor tự cài công cụ.' }
     ],
     motion: {
@@ -164,6 +166,10 @@ function capabilities(): SvcResponse {
       fonts: 'Tải file .ttf/.otf/.woff hoặc chọn font đã có (fonts)'
     },
     phoneAgent: { tokenSet: !!getToken() },
+    telegram: (() => {
+      const t = telegramInfo()
+      return { tokenSet: t.has_token, enabled: t.enabled, state: t.status.state, bot: t.bot?.username || null, users: t.chats.length }
+    })(),
     readiness: ready
   }
 }
@@ -737,6 +743,29 @@ export function serviceHandlers(opts: { mode: 'service' | 'gui'; quit: () => voi
       const r = await sidecarRequest('/fonts/list', {}, 60000)
       return { ok: true, fonts: ((r?.fonts || []) as Record<string, any>[]).map((f) => ({ id: f.id, name: f.label || f.family, scope: f.scope === 'shared' ? 'kho chung' : 'máy này', weights: f.weights, viMissing: f.vi_missing || undefined })) }
     },
+
+    // ---- Bot Telegram (Cai dat API > Bot Telegram) ----
+    'telegram.status': () => ({ ok: true, ...telegramInfo() }),
+    'telegram.setToken': async (a) => {
+      // token moi -> bat bot luon (giong bam Luu lan dau tren app); token trong = xoa + tat
+      const token = str(a.token)
+      const r = await configureTelegram({ token, enabled: bool(a.enabled) ?? !!token })
+      return r.ok ? { ok: true, ...telegramInfo() } : fail(r.error || 'Lỗi', 'Lấy token ở @BotFather (/newbot) rồi gọi lại.')
+    },
+    'telegram.toggle': async (a) => {
+      if (!telegramInfo().has_token) return fail('Chưa có token bot Telegram.', 'Đặt token trước: agent-edit telegram token (biến AGENT_EDIT_TG_TOKEN).')
+      const r = await configureTelegram({ enabled: bool(a.enabled) === true })
+      return r.ok ? { ok: true, ...telegramInfo() } : fail(r.error || 'Lỗi')
+    },
+    'telegram.test': async (a) => testTelegram(str(a.token) || undefined),
+    'telegram.users': () => ({ ok: true, users: telegramInfo().chats }),
+    'telegram.removeUser': (a) => {
+      const id = Number(str(a.chatId))
+      if (!telegramInfo().chats.some((c) => c.chatId === id)) return fail('Không thấy người dùng ' + str(a.chatId) + ' (xem: agent-edit telegram users).')
+      removeTelegramChat(id)
+      return { ok: true, users: telegramInfo().chats }
+    },
+    'telegram.jobs': (a) => ({ ok: true, jobs: telegramJobs(num(a.limit) ?? 20) }),
 
     // ---- Ban quyen (kiem lai — app chay nen lau ngay) ----
     'license.check': async () => {

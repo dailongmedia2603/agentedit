@@ -8,7 +8,7 @@
 // - Server tra "ve" ky Ed25519 (khoa bi mat chi o Worker) -> main kiem chu ky truoc khi tin; sidecar Python
 //   tu kiem lai ve (server.py) va tu choi moi viec AI neu khong co ve hop le.
 import { app, net, safeStorage } from 'electron'
-import { createHash, createHmac, createPrivateKey, createPublicKey, generateKeyPairSync, sign, verify, KeyObject } from 'crypto'
+import { createHash, createHmac, createPrivateKey, createPublicKey, generateKeyPairSync, sign, timingSafeEqual, verify, KeyObject } from 'crypto'
 import { execFile } from 'child_process'
 import { closeSync, existsSync, openSync, readFileSync, readSync, statSync, unlinkSync, writeFileSync } from 'fs'
 import { hostname } from 'os'
@@ -385,6 +385,29 @@ export function forgetLicense(): LicenseState {
   }
   setSidecarTicket('')
   return setState({ status: 'need_key', message: '' })
+}
+
+// ---------------------------------------------------------------------------
+// BOT TELEGRAM (2026-10-21): nguoi nhan tin cho bot phai gui DUNG key dang kich hoat tren may nay. Bot chi giu DAU VAN TAY
+// cua key (sha256), khong giu key — doi key tren app -> moi chat da xac thuc phai gui lai key moi.
+// ---------------------------------------------------------------------------
+/** Chuan hoa nhu may chu (license-server normalizeKey): hoa, bo gach / khoang trang, O->0, I/L->1 */
+const keyNorm = (k: string) => String(k || '').toUpperCase().replace(/[^0-9A-Z]/g, '').replace(/O/g, '0').replace(/[IL]/g, '1')
+const keyPrint = (k: string) => createHash('sha256').update('agent-edit-tg:' + keyNorm(k)).digest('hex')
+
+/** Dau van tay key dang kich hoat (null = may chua co key). */
+export function licenseKeyFingerprint(): string | null {
+  // ban dev tat ban quyen (STUDIO_LICENSE=off): key thu cho bot (tu kiem tren app that)
+  if (licenseDisabled() && devEnv('STUDIO_TELEGRAM_DEV_KEY')) return keyPrint(devEnv('STUDIO_TELEGRAM_DEV_KEY'))
+  const s = loadStored()
+  return s?.key ? keyPrint(s.key) : null
+}
+
+/** Key nguoi dung gui (Telegram) co dung key dang kich hoat tren may nay khong — so bang timingSafeEqual. */
+export function licenseKeyMatches(raw: string): boolean {
+  const fp = licenseKeyFingerprint()
+  if (!fp || keyNorm(raw).length < 10) return false
+  return timingSafeEqual(Buffer.from(keyPrint(raw), 'hex'), Buffer.from(fp, 'hex'))
 }
 
 /** Truoc khi phan tich video: BAT BUOC hoi server (dung lai ket qua < 20s cho nhieu video bam cung luc). */
