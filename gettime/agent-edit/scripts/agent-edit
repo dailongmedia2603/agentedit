@@ -462,7 +462,7 @@ boot_exit() {
   [ -n "$BOOT_DIR" ] && [ -f "$f" ] || return 0
   [ -f "$BOOT_DIR/cancelled" ] && return 0 # tool cancel tu ghi "Đã dừng"
   [ "$(jget "$f" status)" = running ] || return 0
-  printf '[%s] viec nen thoat ma %s%s\n' "$(date +%H:%M:%S)" "$rc" "${BOOT_SIG:+ (tin hieu $BOOT_SIG)}" >>"$BOOT_DIR/log.txt"
+  printf '[%s] viec nen thoat ma %s%s — %s\n' "$(date +%H:%M:%S)" "$rc" "${BOOT_SIG:+ (tin hieu $BOOT_SIG)}" "$(cat "$f")" >>"$BOOT_DIR/log.txt"
   [ -n "${BOOT_SIG:-}" ] && rc="$rc, tín hiệu $BOOT_SIG"
   [ -n "$(jget "$f" app_job)" ] && return 0
   step=$(jget "$f" step)
@@ -482,6 +482,8 @@ tool_boot_run() {
   APPV=$(app_version "$APP")
   boot_state running license 0.99 "Đã cài Agent Edit $APPV, đang kích hoạt key và bắt đầu cài công cụ…"
   app_setup_bg
+  # nhat ky: app tra loi gi (khong co key trong dau ra) — de doc khi viec hong tren may khac
+  say "[$(date +%H:%M:%S)] app setup --background: ma $RUN_RC — $(printf '%s' "$RUN_OUT" | tr '\n' ' ' | cut -c1-500)"
   sid=""
   if [ -n "$RUN_OUT" ]; then
     local f

@@ -13,7 +13,7 @@
 // toi khi video xong), key sai -> loi ro rang.
 import { execFileSync, spawn } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { createReadStream, existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { createReadStream, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { homedir, tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
@@ -179,6 +179,18 @@ const bootLog = (id) => {
     // record() cat chi tiet o 400 ky tu -> in RIENG ca nhat ky (toi 60 dong cuoi) truoc dong FAIL
     const t = readFileSync(join(toolEnv.GETTIME_TOOL_DATA, 'tool-jobs', id, 'log.txt'), 'utf-8').trim().split('\n').slice(-60).join('\n')
     if (t) console.log(`--- nhat ky viec ${id} ---\n${t}\n--- het nhat ky ---`)
+    const st = join(toolEnv.GETTIME_TOOL_DATA, 'tool-jobs', id, 'state.json')
+    if (existsSync(st)) console.log(`--- state.json: ${readFileSync(st, 'utf-8').trim()}`)
+    // viec cai cong cu s_ cua app (neu viec i_ da giao)
+    const appJobs = join(home, '.capcut-studio', 'cli', 'jobs')
+    if (existsSync(appJobs)) {
+      for (const d of readdirSync(appJobs).filter((x) => x.startsWith('s_'))) {
+        const jf = join(appJobs, d, 'job.json')
+        const lf = join(appJobs, d, 'log.txt')
+        if (existsSync(jf)) console.log(`--- ${d}/job.json: ${readFileSync(jf, 'utf-8').replace(/\s+/g, ' ').slice(0, 1500)}`)
+        if (existsSync(lf)) console.log(`--- ${d}/log.txt (cuoi):\n${readFileSync(lf, 'utf-8').trim().split('\n').slice(-25).join('\n')}`)
+      }
+    }
     return ''
   } catch {
     return ''
