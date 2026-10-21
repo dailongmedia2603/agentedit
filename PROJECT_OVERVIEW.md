@@ -2474,6 +2474,12 @@ tung muc; xong gui video hoan chinh; tao nhieu video cung luc (moi viec 1 ma); c
   STUDIO_LICENSE=off) — 2026-10-21 PASS: getUpdates qua net.fetch, tai video + ffprobe, kho font qua sidecar, viec nen r_ tach tu
   dich vu dung tham so, giet viec -> bot bao "dung bat thuong" + nut Chay lai. CHUA thu voi bot Telegram THAT (can token cua user).
 
+**Phat hanh 1.22.0 (2026-10-21, Bot Telegram + lenh CLI telegram + ky nang GetTime 3.1.0):** GitHub Actions van bi chan
+(billing, run cua tag v1.22.0 do sau vai giay) -> build TAI MAY Mac **Apple Silicon** `20261021-1033`: selftest-packaged 33/33,
+selftest-update 9/9, selftest-gettime 21/21 (them muc `tool cli telegram status`; capabilities nay 7 nhom); `publish-update`
+stable darwin-arm64 (phieu R2 da doc lai dung ban + co chu ky); GitHub Release `v1.22.0` co DMG arm64. **CHUA co Mac Intel +
+Windows 1.22.0** — cho Actions mo lai (1/11) hoac build tay (Intel qua Rosetta nhu 1.19.0).
+
 ## 12. CodeGraph
 
 CodeGraph `0.9.9` da duoc cai va index tai root workspace:

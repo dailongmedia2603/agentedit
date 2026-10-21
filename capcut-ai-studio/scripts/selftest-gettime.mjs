@@ -269,8 +269,11 @@ try {
   const feat = { AGENT_EDIT_FEATURE_MIN_VERSION: info.version }
   r = await tool(['cli', 'capabilities'], feat)
   j = parse(r.so)
-  record('tool cli capabilities: tu bat dich vu nen, liet ke 6 nhom chuc nang, < 25s', r.code === 0 && j?.features?.length === 6 &&
+  record('tool cli capabilities: tu bat dich vu nen, liet ke 7 nhom chuc nang (co Bot Telegram), < 25s', r.code === 0 && j?.features?.length === 7 && j.features.some((f) => f.id === 'telegram') &&
     j?.motion?.videoTypes?.length >= 8 && r.ms < TOOL_LIMIT_MS, `${r.ms}ms ${r.so.slice(0, 200)}`)
+  r = await tool(['cli', 'telegram', 'status'], feat)
+  j = parse(r.so)
+  record('tool cli telegram status: Bot Telegram qua dich vu nen (chua co token -> tat)', r.code === 0 && j?.has_token === false && j?.status?.state === 'off' && r.ms < TOOL_LIMIT_MS, `${r.ms}ms ${r.so.slice(0, 200)}`)
   r = await tool(['cli', 'settings', 'show'], feat)
   j = parse(r.so)
   record('tool cli settings show (lan 2: dich vu dang chay, nhanh)', r.code === 0 && !!j?.providers?.claude && r.ms < 10000, `${r.ms}ms`)
