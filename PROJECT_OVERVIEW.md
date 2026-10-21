@@ -2488,6 +2488,16 @@ ngam (N)"** (buoc x/6, % render, cho luot, nut huy = ghi file cancel nhu `agent-
 3 giay, viec bien mat -> tai lai danh sach du an; menu "Video da tao" co so dem (App.tsx hoi 5 giay). Soat UI that (HOME tam,
 job gia pid song) 2026-10-21: the hien, huy ghi file cancel, tien trinh chet -> the + so dem bien mat.
 
+**Phat hanh 1.22.1 (2026-10-21, viec chay ngam hien o "Video da tao"):** Actions chay lai duoc (het chan billing). Lan dau
+chay tren may sach sau 1 tuan lo ra 3 loi cu (tag v1.22.1 do; sua tren main roi `gh workflow run release.yml --ref main -f
+channel=stable` cung so ban, run #40 xanh ca 3, R2 stable 1.22.1 build 20261021-1924; GitHub Release tao tay tu artifact):
+(1) selftest-packaged goi look.py khong co ffmpeg cua Doctor tren PATH (loi bai kiem, app that dung augmentedEnv);
+(2) **agent-edit.ps1: Electron Windows tu choi chay (ma -1) khi co tham so giong URL** (vd `--source web|https://...`) ma
+con tham so sau no (CheckCommandLineArguments) -> dat `--` truoc `--agent-edit-cli`; (3) **agent-edit (bash): plutil cua
+macOS 15 in loi "Could not extract value" ra STDOUT** -> jget tra chuoi loi lam gia tri (app_job hong -> "dung bat thuong")
+-> jget chi lay khi plutil thanh cong. Ky nang GetTime 3.1.1. Viec i_ gio ghi tra loi cua app + trang thai luc thoat vao
+log.txt; selftest-gettime in du nhat ky khi hong.
+
 **Windows tu build + day R2 (khi Actions bi chan):** tren may Windows can `%USERPROFILE%\.capcut-studio\update-signing.json`
 + `r2-publish.json` (chep tu may chu, KHONG qua git) roi `build-windows.ps1` -> `node scripts\publish-update.mjs --channel
 stable --notes "..."`. Phieu R2 win32-x64 truoc do: 1.7.0 (20261013-0056).
