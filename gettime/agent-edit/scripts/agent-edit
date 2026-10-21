@@ -88,7 +88,7 @@ ver_ge() {
   return 0
 }
 
-app_version() { /usr/bin/plutil -extract CFBundleShortVersionString raw "$1/Contents/Info.plist" 2>/dev/null || echo 0; }
+app_version() { jget "$1/Contents/Info.plist" CFBundleShortVersionString || echo 0; }
 
 # App Agent Edit MOI nhat tren may (khong lay ban tu kiem "Agent Edit Update Selftest.app")
 find_app() {
@@ -109,7 +109,12 @@ cpu_arch() {
   [ "$(/usr/sbin/sysctl -n hw.optional.arm64 2>/dev/null)" = "1" ] && echo arm64 || echo x64
 }
 
-jget() { /usr/bin/plutil -extract "$2" raw -o - "$1" 2>/dev/null; }
+# plutil cua macOS 15 in loi "Could not extract value..." ra STDOUT (khong phai stderr) -> chi lay gia tri khi thanh cong
+jget() {
+  local v
+  v=$(/usr/bin/plutil -extract "$2" raw -o - "$1" 2>/dev/null) || return 1
+  printf '%s\n' "$v"
+}
 
 # install_app <KEY> [duong dan .app can thay] -> in duong dan app da cai (stdout)
 install_app() {
