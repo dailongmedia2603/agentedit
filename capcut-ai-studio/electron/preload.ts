@@ -114,6 +114,8 @@ const api = {
 
   // Projects
   projectsList: () => ipcRenderer.invoke('projects:list'),
+  projectBgJobs: () => ipcRenderer.invoke('projects:bgJobs'),
+  projectBgCancel: (id: string) => ipcRenderer.invoke('projects:bgCancel', id),
   projectGet: (id: string) => ipcRenderer.invoke('projects:get', id),
   projectSave: (p: unknown) => ipcRenderer.invoke('projects:save', p),
   projectDelete: (id: string, withFiles?: boolean) => ipcRenderer.invoke('projects:delete', id, withFiles),

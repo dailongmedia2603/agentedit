@@ -2480,6 +2480,18 @@ selftest-update 9/9, selftest-gettime 21/21 (them muc `tool cli telegram status`
 stable darwin-arm64 (phieu R2 da doc lai dung ban + co chu ky); GitHub Release `v1.22.0` co DMG arm64. **CHUA co Mac Intel +
 Windows 1.22.0** — cho Actions mo lai (1/11) hoac build tay (Intel qua Rosetta nhu 1.19.0).
 
+**Viec Edit video CHAY NGAM hien tren app (2026-10-21):** viec r_ cua bot Telegram / `agent-edit make` la tien trinh CLI
+rieng, du an chi vao projects.json khi XONG / LOI (cli/pipeline.ts saveProject) -> truoc day app khong thay gi luc dang chay.
+`electron/services/bg-edit-jobs.ts` (IPC `projects:bgJobs` / `projects:bgCancel`) doc `activeJobs()` (job.json + pid con
+song, kind make, chua ket thuc; nguon "Telegram" neu id nam trong tgState().jobs) -> trang "Video da tao" co muc **"Dang tao
+ngam (N)"** (buoc x/6, % render, cho luot, nut huy = ghi file cancel nhu `agent-edit cancel`; bot tu bao "Da huy"), hoi lai
+3 giay, viec bien mat -> tai lai danh sach du an; menu "Video da tao" co so dem (App.tsx hoi 5 giay). Soat UI that (HOME tam,
+job gia pid song) 2026-10-21: the hien, huy ghi file cancel, tien trinh chet -> the + so dem bien mat.
+
+**Windows tu build + day R2 (khi Actions bi chan):** tren may Windows can `%USERPROFILE%\.capcut-studio\update-signing.json`
++ `r2-publish.json` (chep tu may chu, KHONG qua git) roi `build-windows.ps1` -> `node scripts\publish-update.mjs --channel
+stable --notes "..."`. Phieu R2 win32-x64 truoc do: 1.7.0 (20261013-0056).
+
 ## 12. CodeGraph
 
 CodeGraph `0.9.9` da duoc cai va index tai root workspace:

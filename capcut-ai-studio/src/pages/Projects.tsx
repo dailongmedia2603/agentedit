@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { RemotionPlanView, fmtBytes, planAiName } from '@/components/RemotionViews'
-import { Film, Trash2, FolderOpen, ArrowLeft, MonitorPlay, RefreshCw, ArrowRight, ScrollText, AlertTriangle } from 'lucide-react'
+import { Film, Trash2, FolderOpen, ArrowLeft, MonitorPlay, RefreshCw, ArrowRight, ScrollText, AlertTriangle, Send, Terminal, X } from 'lucide-react'
 import { Button, Card, CardBody, CardHeader, Badge, Collapsible, Spinner } from '@/components/ui/primitives'
 import { ReferenceAnalysisView, SourceBriefView } from '@/components/ResultViews'
 import { cn, fmtTime } from '@/lib/utils'
@@ -232,6 +232,68 @@ function DeleteDialog({
   )
 }
 
+/** Edit video dang chay ngam (bot Telegram / lenh agent-edit) — chi vao danh sach du an khi xong */
+function BgJobsSection({ jobs, onCancel }: { jobs: BgEditJob[]; onCancel: (id: string) => void }) {
+  const [asking, setAsking] = useState<string | null>(null)
+  if (!jobs.length) return null
+  return (
+    <div className="mb-5">
+      <div className="mb-2 flex items-center gap-2 text-[13px] font-semibold text-ink-900">
+        <Spinner /> Đang tạo ngầm ({jobs.length})
+        <span className="font-normal text-ink-800/45">— xong sẽ tự hiện trong danh sách bên dưới</span>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        {jobs.map((j) => {
+          const Icon = j.via === 'telegram' ? Send : Terminal
+          return (
+            <div key={j.id} className="card-surface flex items-center gap-3 rounded-2xl border border-brand-500/25 p-3">
+              <div className="flex h-16 w-12 shrink-0 items-center justify-center rounded-lg bg-brand-500/10">
+                <Icon className="h-5 w-5 text-brand-600" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-semibold text-ink-900">{j.title}</div>
+                <div className="truncate text-xs text-ink-800/45">
+                  {j.via === 'telegram' ? 'Từ Telegram' : 'Từ lệnh agent-edit'} · {j.videos.join(', ') || j.id}
+                </div>
+                <div className="mt-1 flex items-center gap-2">
+                  <Badge tone="brand">
+                    Bước {j.stepIndex}/{j.stepCount}: {j.stepLabel}
+                    {j.progress !== null ? ` · ${Math.round(j.progress * 100)}%` : ''}
+                  </Badge>
+                  <span className="truncate text-[11px] text-ink-800/40">
+                    {j.waiting ? 'Đang chờ lượt (có video khác đang chạy)' : `Bắt đầu ${fmtDate(j.createdAt)}`}
+                  </span>
+                </div>
+              </div>
+              {asking === j.id ? (
+                <div className="flex shrink-0 flex-col gap-1">
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => {
+                      setAsking(null)
+                      onCancel(j.id)
+                    }}
+                  >
+                    Huỷ video
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setAsking(null)}>
+                    Không
+                  </Button>
+                </div>
+              ) : (
+                <Button variant="ghost" size="sm" className="shrink-0" onClick={() => setAsking(j.id)} title="Huỷ video này">
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 export default function ProjectsPage({
   openProject,
   busyIds,
@@ -261,6 +323,27 @@ export default function ProjectsPage({
   useEffect(() => {
     load()
   }, [])
+
+  // Edit video chay ngam: hoi lai moi 3 giay; 1 viec vua xong (bien mat khoi danh sach) -> tai lai du an
+  const [bgJobs, setBgJobs] = useState<BgEditJob[]>([])
+  const bgIds = useRef<string[]>([])
+  const pollBg = async () => {
+    const list = await window.studio.projectBgJobs().catch(() => null)
+    if (!list) return
+    const ids = list.map((j) => j.id)
+    if (bgIds.current.some((id) => !ids.includes(id))) load()
+    bgIds.current = ids
+    setBgJobs(list)
+  }
+  useEffect(() => {
+    pollBg()
+    const t = setInterval(pollBg, 3000)
+    return () => clearInterval(t)
+  }, [])
+  const cancelBg = async (id: string) => {
+    await window.studio.projectBgCancel(id).catch(() => false)
+    pollBg()
+  }
   const [logOpen, setLogOpen] = useState(false)
   // ban cai cho may khac: an nhat ky + ket qua tung buoc (src/lib/clientUi.ts)
   const fullUi = useFullUi()
@@ -432,11 +515,15 @@ export default function ProjectsPage({
           </p>
           <PostList posts={allPosts} showTitle empty="Chưa có lượt đăng nào — mở một video đã xuất rồi bấm “Đăng video”." />
         </div>
-      ) : loading ? (
+      ) : (
+        <>
+        <BgJobsSection jobs={bgJobs} onCancel={cancelBg} />
+        {loading ? (
         <div className="flex justify-center py-16">
           <Spinner className="h-7 w-7" />
         </div>
       ) : items.length === 0 ? (
+        bgJobs.length ? null : (
         <Card>
           <CardBody className="flex flex-col items-center py-16 text-center">
             <MonitorPlay className="mb-3 h-9 w-9 text-ink-800/25" />
@@ -444,6 +531,7 @@ export default function ProjectsPage({
             <p className="mt-1 text-sm text-ink-800/45">Sang tab “Edit Video” để bắt đầu dự án đầu tiên.</p>
           </CardBody>
         </Card>
+        )
       ) : (
         <div className="grid grid-cols-2 gap-3">
           {items.map((p) => {
@@ -478,6 +566,8 @@ export default function ProjectsPage({
             )
           })}
         </div>
+        )}
+        </>
       )}
     </div>
   )

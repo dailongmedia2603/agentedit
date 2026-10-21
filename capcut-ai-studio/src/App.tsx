@@ -94,6 +94,14 @@ export default function App() {
   }, [tab])
   // Video dang tao bang AI (khong cho cap nhat app giua chung — giong Edit Video)
   const [motionBusy, setMotionBusy] = useState(false)
+  // Edit video chay ngam (bot Telegram / lenh agent-edit) -> cham bao o "Video da tao"
+  const [bgEdits, setBgEdits] = useState(0)
+  useEffect(() => {
+    const poll = () => window.studio.projectBgJobs().then((l) => setBgEdits(l.length)).catch(() => {})
+    poll()
+    const t = setInterval(poll, 5000)
+    return () => clearInterval(t)
+  }, [])
   useEffect(() => {
     const refresh = () => window.studio.motionBusy().then((ids) => setMotionBusy(ids.length > 0)).catch(() => undefined)
     refresh()
@@ -224,6 +232,14 @@ export default function App() {
                 <Icon className={cn('h-[18px] w-[18px]', active ? 'text-brand-500' : 'text-ink-800/45')} />
                 <span className="flex-1 text-left">{n.label}</span>
                 {n.id === 'remotion' && ready && <span className="h-2 w-2 rounded-full bg-brand-500" />}
+                {n.id === 'projects' && bgEdits > 0 && (
+                  <span
+                    className="rounded-full bg-brand-500 px-1.5 text-[10px] font-semibold leading-4 text-white"
+                    title={`${bgEdits} video đang tạo ngầm`}
+                  >
+                    {bgEdits}
+                  </span>
+                )}
               </button>
             )
           })}

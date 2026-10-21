@@ -43,6 +43,7 @@ import {
 import { updateState, onUpdateChange, checkForUpdateNow, applyUpdate, startDownload } from './services/updater'
 import { busyMotionIds } from './services/motion/runner'
 import { busyPosts } from './services/phoneagent/posts'
+import { bgEditJobs, cancelBgEditJob } from './services/bg-edit-jobs'
 import { readState, writeState, planProviderOf, PlanProvider, jobLimitsOf, saveJobLimits, JobLimits } from './services/state'
 import { mediaBase, mediaUrl } from './services/media-server'
 import { cancelRender, renderStatus, browserInstalled } from './services/remotion'
@@ -624,6 +625,9 @@ export function registerIpc(getWindow: () => BrowserWindow | null) {
 
   // ---- Projects (luu/khoi phuc du an) ----
   ipcMain.handle('projects:list', () => listProjects())
+  // Edit video dang chay ngam (bot Telegram / CLI) — chua vao projects.json toi khi xong
+  ipcMain.handle('projects:bgJobs', () => bgEditJobs())
+  ipcMain.handle('projects:bgCancel', (_e, id: string) => cancelBgEditJob(id))
   ipcMain.handle('projects:get', (_e, id: string) => getProject(id))
   ipcMain.handle('projects:save', (_e, p: Project) => saveProject(p))
   ipcMain.handle('projects:diskInfo', (_e, id: string) => projectDiskInfo(id))

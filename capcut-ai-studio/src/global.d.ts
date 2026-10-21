@@ -135,6 +135,10 @@ interface StudioBridge {
   onLibrarySyncState(cb: (s: LibrarySyncStatus) => void): () => void
 
   projectsList(): Promise<Project[]>
+  /** Edit video dang chay ngam (bot Telegram / lenh agent-edit) — vao danh sach du an khi xong */
+  projectBgJobs(): Promise<BgEditJob[]>
+  /** Huy viec chay ngam (giong `agent-edit cancel`) */
+  projectBgCancel(id: string): Promise<boolean>
   projectGet(id: string): Promise<Project | null>
   projectSave(p: Project): Promise<Project>
   /** withFiles = dua thu muc du an (~/.capcut-studio/projects/...) + nhat ky vao Thung rac */
@@ -744,6 +748,21 @@ declare global {
     /** Video nguon / mau nam ngoai thu muc du an — khong bi xoa */
     outside: string[]
     hasRunLog: boolean
+  }
+
+  /** Edit video chay ngam (electron/services/bg-edit-jobs.ts) */
+  interface BgEditJob {
+    id: string
+    createdAt: number
+    via: 'telegram' | 'cli'
+    title: string
+    videos: string[]
+    stepIndex: number
+    stepCount: number
+    stepLabel: string
+    message: string
+    waiting: boolean
+    progress: number | null
   }
 
   /** Trang thai CLI chinh chu dung cho che do goi subscription */
