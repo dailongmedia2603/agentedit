@@ -447,7 +447,10 @@ async function main() {
       })
       record('Skill: render.mjs chạy bằng Electron của app + Chrome Headless', r.status === 0 && existsSync(out), (r.stderr || r.stdout || '').trim().split('\n').slice(-3).join(' | '))
       if (existsSync(out)) {
-        const lk = spawnSync(pyBin, [join(skill, 'scripts', 'look.py'), out, '--out', join(home, 'motion-look')], { env, encoding: 'utf-8', timeout: 120000, windowsHide: true })
+        // ffmpeg cua Doctor dat dau PATH nhu app (augmentedEnv) — may build sach khong co ffmpeg he thong
+        const lk = spawnSync(pyBin, [join(skill, 'scripts', 'look.py'), out, '--out', join(home, 'motion-look')], {
+          env: { ...env, PATH: tools + (IS_WIN ? ';' : ':') + (env.PATH || '') }, encoding: 'utf-8', timeout: 120000, windowsHide: true
+        })
         record('Skill: look.py chạy bằng Python nhúng (numpy + PIL)', lk.status === 0 || /GATES/.test(lk.stdout || ''), (lk.stderr || lk.stdout || '').trim().split('\n').slice(-2).join(' | '))
       }
     } else if (!chrome) record('Skill: Chrome Headless để dựng video', false, 'bước [1] chưa tải được Chrome Headless')
