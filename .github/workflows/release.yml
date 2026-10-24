@@ -26,6 +26,10 @@ on:
         description: Day len R2 (bo chon = chi build + tu kiem)
         type: boolean
         default: true
+      intel:
+        description: Build ca Mac Intel (x64)
+        type: boolean
+        default: false
 
 concurrency:
   group: release-${{ github.ref }}
@@ -80,14 +84,12 @@ jobs:
     needs: meta
     # Mac Apple Silicon + Mac INTEL (2026-10-12: app + che do CLI chay tren may Intel). Khong build cheo: Python nhung,
     # .so Cython, bytecode V8 phai tao tren dung kien truc -> moi ban 1 may ao rieng (macos-15-intel = may Intel cua GitHub).
+    # 2026-10-24 (user): MAC INTEL KHONG phat hanh mac dinh — tag push chi build arm64; chay tay (workflow_dispatch) chon
+    # `intel` moi build them x64.
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - runner: macos-14
-            arch: arm64
-          - runner: macos-15-intel
-            arch: x64
+        include: ${{ fromJSON(inputs.intel && '[{"runner":"macos-14","arch":"arm64"},{"runner":"macos-15-intel","arch":"x64"}]' || '[{"runner":"macos-14","arch":"arm64"}]') }}
     name: mac (${{ matrix.arch }})
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 150

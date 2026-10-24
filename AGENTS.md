@@ -24,7 +24,8 @@ Day la quy trinh CHUAN, user da dong y tu truoc — lam du cac buoc, khong hoi l
    `agentedit`). User khong ghi so -> sua loi tang so cuoi, tinh nang moi tang so giua. Khong ghi ghi chu -> tu tom tat ngan
    gon tu cac commit tu ban truoc (khach doc trong hop thoai cap nhat). "Ban thu" -> `npm run release -- --test --notes "..."`.
 4. Theo doi GitHub Actions (`gh run list --repo dailongmedia2603/agentedit --workflow release.yml`) toi khi xong ca mac arm64 +
-   mac Intel (x64, may `macos-15-intel`) + windows (~40-70 phut). Buoc nao do -> doc log (`gh api repos/dailongmedia2603/agentedit/actions/jobs/<id>/logs`), sua, phat
+   windows (~40-70 phut). Mac Intel KHONG phat hanh mac dinh (user 2026-10-24) — chi khi chay tay `gh workflow run
+   release.yml -f intel=true ...`. Buoc nao do -> doc log (`gh api repos/dailongmedia2603/agentedit/actions/jobs/<id>/logs`), sua, phat
    hanh lai. KHONG bao "xong" khi chua xanh.
 5. Bao user: link GitHub Release (file .dmg / Setup .exe cho khach moi) + may da cai se thay nut "Cap nhat len X.Y.Z" o lan
    mo app ke tiep.
