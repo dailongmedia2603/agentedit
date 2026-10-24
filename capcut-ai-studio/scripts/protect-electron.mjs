@@ -67,8 +67,9 @@ for (const file of TARGETS) {
   const name = basename(file, '.js') // index / remotion-worker
   const src = readFileSync(file, 'utf-8')
 
-  // 1) ha cu phap moi (?. ?? ...) xuong ES2019 roi lam roi — obfuscator tung xu ly sai cu phap moi
-  const lowered = transformSync(src, { target: 'es2019', loader: 'js', format: 'cjs', platform: 'node' }).code
+  // 1) ha cu phap moi (?. ?? ...) xuong ES2019 roi lam roi — obfuscator tung xu ly sai cu phap moi. GIU so BigInt (`0n`,
+  //    ES2020 — GramJS cua bot Telegram, 2026-10-24): esbuild khong ha duoc, Electron chay thang.
+  const lowered = transformSync(src, { target: 'es2019', supported: { bigint: true }, loader: 'js', format: 'cjs', platform: 'node' }).code
   const obf = JavaScriptObfuscator.obfuscate(lowered, OBFUSCATE_OPTS).getObfuscatedCode()
   const obfPath = join(dir, name + '.obf.cjs')
   writeFileSync(obfPath, obf)
