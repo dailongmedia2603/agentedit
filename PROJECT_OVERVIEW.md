@@ -2510,6 +2510,12 @@ app Electron that (dich vu nen, Bot API gia, MTProto THAT, token gia) -> dang nh
 le" + huong dan link; api_id hop le (ACCESS_TOKEN_INVALID, khong phai API_ID_INVALID); ban dong goi mac dir: asar khong co
 telegram / bufferutil, CLI chay. CHUA tai that bang token that (can token cua user).
 
+**Phat hanh 1.23.0 (2026-10-24, sua loi key CLI Windows + bot nhan file > 20 MB qua MTProto):** user: KHONG phat hanh Mac
+Intel nua (release.yml: tag chi build arm64 + Windows; chay tay `-f intel=true` moi co x64). Lan dau do ca 2 may: protect-electron
+ha ve ES2019 khong ha duoc so BigInt cua GramJS (`0n`) -> `supported: { bigint: true }` (kiem tai may: ma lam roi + .jsc van dang
+nhap MTProto duoc). Run #40086948893 xanh: R2 stable 1.23.0 build 20261024-1742 darwin-arm64 + win32-x64; selftest Windows
+PASS muc "key ma hoa o 1 tien trinh CLI -> tien trinh khac giai ma duoc"; GitHub Release v1.23.0 (DMG arm64 + Setup .exe).
+
 **Loi Windows "Can nhap lai key tren may nay" o viec Edit video cua bot Telegram (2026-10-23):** viec nen CLI dat
 `sessionData` = thu muc tam (main.ts CLI_SESSION_DIR). Tren Windows safeStorage (DPAPI) giu khoa AES trong
 `<sessionData>/Local State` (Electron 33 `browser_process_impl.cc` doc DIR_SESSION_DATA) -> tien trinh CLI sinh khoa MOI ->
