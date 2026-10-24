@@ -136,7 +136,7 @@ export function TelegramSettingsCard() {
           <li>Chọn menu <b>Edit video</b> / <b>Tạo video</b>, trả lời từng câu hỏi; xong app tự tạo video (mỗi video một mã) và gửi lại vào chat.</li>
         </ol>
         <p className="mt-2 text-[11.5px] leading-relaxed text-ink-800/45">
-          App cần đang mở thì bot mới trả lời. Telegram chỉ cho bot tải file ≤ 20 MB — video lớn hơn gửi bằng link (Google Drive / Dropbox) hoặc chọn từ thư viện;
+          App cần đang mở thì bot mới trả lời. Bot nhận video tối đa 2 GB (gửi thẳng vào chat), hoặc link tải (Google Drive / Dropbox), hoặc chọn từ thư viện;
           video xong &gt; 50 MB được gửi bản nén kèm link tải bản gốc (48 giờ). Video tạo qua bot vẫn hiện ở “Video đã tạo” / “Tạo video”.
         </p>
 

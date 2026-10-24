@@ -18,6 +18,7 @@ import {
   downloadUrl, TG_DOWNLOAD_MAX, TG_UPLOAD_MAX, TgError, tgCall, tgDownload, tgUpload,
   type InlineKeyboard, type ReplyMarkup, type TgCallback, type TgFileRef, type TgMessage, type TgUpdate
 } from './api'
+import { closeMtproto, mtDownload, MT_DOWNLOAD_MAX } from './mtproto'
 import { getBotToken, saveTgState, setBotToken, tgState, TG_UPLOADS, tokenHint, tokenLooksValid, type TgJobRef } from './store'
 import {
   esc, fmtDur, fmtMb, MAX_ASSETS, MAX_FONTS, MAX_INSERTS, MAX_SOURCES, newSession, nextStep, parseCb, pendingNote, prompt,
@@ -60,6 +61,8 @@ export interface TgDeps {
   publicLink(file: string): Promise<string | null>
   /** nen video <= maxBytes; null = khong nen duoc */
   compress(file: string, maxBytes: number): Promise<string | null>
+  /** tai file > 20 MB qua MTProto (mtproto.ts) — tra so byte */
+  downloadBig(token: string, messageId: number, dest: string, size: number, onProgress?: (done: number, total: number) => void): Promise<number>
 }
 
 const ffbin = (n: 'ffmpeg' | 'ffprobe') => {
@@ -176,7 +179,8 @@ const realDeps: TgDeps = {
     }
     rmSync(out, { force: true })
     return null
-  }
+  },
+  downloadBig: mtDownload
 }
 
 let deps: TgDeps = realDeps
@@ -256,6 +260,7 @@ export async function stopTelegram(): Promise<void> {
   timers.clear()
   await loopP?.catch(() => undefined)
   loopP = null
+  await closeMtproto()
   setStatus({ state: 'off' })
 }
 
@@ -278,7 +283,10 @@ export async function configureTelegram(cfg: { token?: string; enabled?: boolean
         st.chats = {}
         st.sessions = {}
       }
-    } else st.bot = undefined
+    } else {
+      st.bot = undefined
+      await closeMtproto(true)
+    }
     setBotToken(t)
   }
   if (cfg.enabled !== undefined) st.enabled = !!cfg.enabled
@@ -744,21 +752,34 @@ async function onMedia(chatId: number, s: Session, m: TgMessage, f: InFile): Pro
   if (!f.kind || !kinds.includes(f.kind)) return void (await send(chatId, '⚠️ ' + wrongKind(s), undefined, { reply_to_message_id: m.message_id }))
   const cap = capacityError(s, f.kind)
   if (cap) return void (await send(chatId, '⚠️ ' + cap))
-  if ((f.ref.file_size || 0) > TG_DOWNLOAD_MAX) {
-    return void (await send(chatId,
-      `⚠️ File <b>${esc(f.name)}</b> nặng ${fmtMb(f.ref.file_size || 0)} — bot Telegram chỉ tải được file tối đa 20 MB.\n` +
-      'Hãy gửi <b>link tải</b> (Google Drive để "Bất kỳ ai có đường liên kết", Dropbox, link .mp4…)' +
-      (s.step === 'source' || s.step === 'reference' ? ', hoặc bấm <b>📚 Chọn từ thư viện</b> nếu video đã từng dùng trong app.' : '.'),
+  const total = f.ref.file_size || 0
+  const linkHint = 'Hãy gửi <b>link tải</b> (Google Drive để "Bất kỳ ai có đường liên kết", Dropbox, link .mp4…)' +
+    (s.step === 'source' || s.step === 'reference' ? ', hoặc bấm <b>📚 Chọn từ thư viện</b> nếu video đã từng dùng trong app.' : '.')
+  if (total > MT_DOWNLOAD_MAX) {
+    return void (await send(chatId, `⚠️ File <b>${esc(f.name)}</b> nặng ${fmtMb(total)} — Telegram chỉ cho tải file tối đa 4 GB.\n` + linkHint,
       undefined, { reply_to_message_id: m.message_id }))
   }
+  const big = total > TG_DOWNLOAD_MAX
   const dest = destFor(chatId, s, f.kind, f.name, f.ref.mime_type)
-  const wait = await send(chatId, `⏳ Đang tải ${KIND_LABEL[f.kind]} <b>${esc(f.name)}</b> lên app…`, undefined, { reply_to_message_id: m.message_id })
+  const head = `⏳ Đang tải ${KIND_LABEL[f.kind]} <b>${esc(f.name)}</b> lên app`
+  const wait = await send(chatId, big ? `${head} (${fmtMb(total)} — file lớn, có thể mất vài phút)…` : `${head}…`, undefined, { reply_to_message_id: m.message_id })
   let size = 0
   try {
-    size = await tgDownload(token, f.ref.file_id, dest)
+    if (big) {
+      // Bot API chi tai <= 20 MB -> MTProto (mtproto.ts); sua tin tien do moi ~10% (toi da 1 lan / 5 giay)
+      let shown = 0
+      let at = Date.now()
+      size = await deps.downloadBig(token, m.message_id, dest, total, (done, all) => {
+        const pct = all ? Math.floor((done / all) * 100) : 0
+        if (pct - shown < 10 || Date.now() - at < 5000 || pct >= 100) return
+        shown = pct
+        at = Date.now()
+        void edit(chatId, wait, `${head}: ${pct}% (${fmtMb(done)} / ${fmtMb(all)})…`).catch(() => undefined)
+      })
+    } else size = await tgDownload(token, f.ref.file_id, dest)
   } catch (e) {
     rmSync(dest, { force: true })
-    return void (await edit(chatId, wait, '❌ Không tải được file: ' + esc((e as Error).message)))
+    return void (await edit(chatId, wait, '❌ Không tải được file: ' + esc((e as Error).message) + (big ? '\n' + linkHint : '')))
   }
   await accept(chatId, s, { path: dest, name: f.name, size, kind: f.kind, msgId: m.message_id }, wait)
 }

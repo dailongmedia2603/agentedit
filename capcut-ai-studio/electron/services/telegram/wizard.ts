@@ -175,7 +175,7 @@ export function prompt(s: Session, opts: { hasSaydi?: boolean } = {}): { text: s
     case 'source':
       return {
         text: head + '📤 <b>Gửi video nguồn</b> cần edit (gửi dạng <i>Video</i> hoặc <i>File</i> để giữ chất lượng).\n' +
-          'Có thể gửi nhiều video. Video trên 20 MB: gửi <b>link tải</b> (Google Drive / Dropbox) hoặc chọn video đã dùng trong thư viện.',
+          'Có thể gửi nhiều video, mỗi video tối đa 2 GB; hoặc gửi <b>link tải</b> (Google Drive / Dropbox), hoặc chọn video đã dùng trong thư viện.',
         keyboard: [
           [{ text: '📚 Chọn từ thư viện', callback_data: cb(s, 'lib') }],
           ...(s.videos.length ? [[{ text: `➡️ Tiếp tục (đã có ${s.videos.length} video)`, callback_data: cb(s, 'done') }]] : [])

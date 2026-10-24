@@ -378,6 +378,17 @@ async function main() {
     let c = await cli(['version', '--json'])
     const v = parse(c.so)
     record('CLI: version --json', c.code === 0 && v?.version === pkgVersion && ['arm64', 'x64'].includes(v?.arch), (c.so + c.se).trim())
+    if (process.platform === 'win32') {
+      // Windows: khoa safeStorage (DPAPI) nam trong "Local State" cua thu muc phien; CLI dung thu muc phien tam -> truoc
+      // 2026-10-23 tien trinh CLI sau KHONG giai ma duoc license.enc / secrets.enc (bot Telegram: "Can nhap lai key").
+      c = await cli(['config', '--gemini-key', 'AIzaSelftestKey9731', '--json'])
+      const w1 = parse(c.so)
+      c = await cli(['config', '--json'])
+      const r1 = parse(c.so)
+      record('CLI: key mã hoá ở 1 tiến trình CLI -> tiến trình CLI khác giải mã được (Windows DPAPI / Local State)',
+        w1?.ok === true && r1?.providers?.gemini?.key === '••••9731', (c.so + c.se).trim().slice(0, 400))
+      await cli(['config', '--gemini-key', '', '--json'])
+    }
     c = await cli(['status', '--json'], 5 * 60 * 1000)
     const st = parse(c.so)
     record('CLI: status --json (Doctor qua CLI; chưa có key -> báo rõ, mã 2)',

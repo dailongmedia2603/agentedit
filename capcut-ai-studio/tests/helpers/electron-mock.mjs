@@ -45,4 +45,5 @@ export const safeStorage = {
   }
 }
 export const net = { fetch: (...a) => fetch(...a) }
-export default { shell, app, safeStorage, net, utilityProcess }
+export const session = { defaultSession: { resolveProxy: async () => 'DIRECT' } }
+export default { shell, app, safeStorage, net, utilityProcess, session }

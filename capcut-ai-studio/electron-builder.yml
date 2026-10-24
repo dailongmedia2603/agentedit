@@ -13,6 +13,13 @@ files:
   - out/**/*
   - "!out/remotion-bundle/**"
   - package.json
+  # GramJS (npm `telegram`, tai file > 20 MB cua bot Telegram, 2026-10-24) la devDependency DA GOI vao out/main; 2 goi native
+  # no keo theo (bufferutil / utf-8-validate) lot vao cay phu thuoc cua ws (peer tuy chon) -> loai, ws tu chay ban JS.
+  - "!node_modules/bufferutil/**"
+  - "!node_modules/utf-8-validate/**"
+
+# Khong co mo-dun native nao can bien dich lai cho Electron (2 goi tren da loai)
+npmRebuild: false
 
 # Sidecar Python DA BIEN DICH (Cython -> .so): scripts/compile-sidecar.mjs tao resources/sidecar-dist
 # (chi con .so + launcher + scripts wrapper + assets/references), ship thay cho source .py.

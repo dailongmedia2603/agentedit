@@ -2498,6 +2498,26 @@ macOS 15 in loi "Could not extract value" ra STDOUT** -> jget tra chuoi loi lam 
 -> jget chi lay khi plutil thanh cong. Ky nang GetTime 3.1.1. Viec i_ gio ghi tra loi cua app + trang thai luc thoat vao
 log.txt; selftest-gettime in du nhat ky khi hong.
 
+**Tai file > 20 MB qua MTProto (2026-10-24, `electron/services/telegram/mtproto.ts`):** Bot API chi tai <= 20 MB -> file lon hon
+(toi 4 GB; nguoi gui thuong 2 GB) bot dang nhap MTProto bang CHINH token (GramJS npm `telegram` 2.26.22 — devDependency DA GOI vao
+out/main; electron-builder.yml loai bufferutil / utf-8-validate no keo vao cay ws + `npmRebuild: false`). api_id 32202333 /
+api_hash cua chu app (my.telegram.org; ban dev doi bang STUDIO_TG_API_ID / STUDIO_TG_API_HASH). Phien StringSession ma hoa
+`<userData>/telegram-mt.enc` gan dau van tay token (khong importBotAuthorization moi lan); lay tin bang messages.getMessages
+theo message_id cua Bot API roi downloadMedia ghi tung manh qua FileHandle (writeStream cua GramJS khong doi flush). TCP
+obfuscated cong 443; proxy SOCKS he thong -> qua proxy (proxy HTTP / VPN kieu proxy KHONG theo). Ranh 10 phut -> ngat. Tin tien
+do sua moi 10% (>= 5 giay). Loi -> bao + huong dan gui link. `deps.downloadBig` (test gia). Da kiem: test_telegram 73/73;
+app Electron that (dich vu nen, Bot API gia, MTProto THAT, token gia) -> dang nhap toi Telegram, bao "Token bot khong con hop
+le" + huong dan link; api_id hop le (ACCESS_TOKEN_INVALID, khong phai API_ID_INVALID); ban dong goi mac dir: asar khong co
+telegram / bufferutil, CLI chay. CHUA tai that bang token that (can token cua user).
+
+**Loi Windows "Can nhap lai key tren may nay" o viec Edit video cua bot Telegram (2026-10-23):** viec nen CLI dat
+`sessionData` = thu muc tam (main.ts CLI_SESSION_DIR). Tren Windows safeStorage (DPAPI) giu khoa AES trong
+`<sessionData>/Local State` (Electron 33 `browser_process_impl.cc` doc DIR_SESSION_DATA) -> tien trinh CLI sinh khoa MOI ->
+khong giai ma duoc license.enc (va secrets.enc = key API) cua app. macOS dung Keychain nen khong bi. Sua: main.ts
+`cliSessionKeepsCryptoKey()` chep `<userData>/Local State` vao thu muc phien tam TRUOC khi Electron doc (JS chay truoc
+PostEarlyInitialization); chua co file -> CLI dung thang thu muc app. Anh huong MOI lenh CLI tren Windows (ca `agent-edit make`
+cua GetTime). selftest-packaged [6b] (chi Windows): `config --gemini-key` o 1 tien trinh, tien trinh khac doc lai dung key.
+
 **Windows tu build + day R2 (khi Actions bi chan):** tren may Windows can `%USERPROFILE%\.capcut-studio\update-signing.json`
 + `r2-publish.json` (chep tu may chu, KHONG qua git) roi `build-windows.ps1` -> `node scripts\publish-update.mjs --channel
 stable --notes "..."`. Phieu R2 win32-x64 truoc do: 1.7.0 (20261013-0056).

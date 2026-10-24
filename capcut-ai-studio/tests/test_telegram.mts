@@ -6,7 +6,8 @@
 //  1. Xac thuc: chat moi phai gui DUNG key; sai -> dem lan + khoa sau 5 lan; tin chua key bi xoa; nhom -> khong phuc vu.
 //  2. Edit video dung thu tu: video nguon (tai ve app) -> video mau (Bo qua) -> lam gi -> style -> khach hang -> do dai ->
 //     font (chon kho + tai file) -> mau (Bo qua) -> tu lieu (hoi mo ta tung tep) -> tao viec voi DUNG dau vao.
-//  3. Album 2 video gui cung luc -> 2 video nguon, chi hoi tiep 1 lan. Chon video tu thu vien. File > 20 MB -> huong dan link.
+//  3. Album 2 video gui cung luc -> 2 video nguon, chi hoi tiep 1 lan. Chon video tu thu vien. File > 20 MB -> tai
+//     qua MTProto (gia); > 4 GB / tai loi -> huong dan link.
 //  4. Theo doi viec: sua tin trang thai theo buoc; xong -> gui video (multipart) + don file tai len; loi -> nut Chay lai.
 //  5. Nhieu video cung luc: tao video thu 2 trong luc video 1 dang chay, moi video 1 ma.
 //  6. Tao video: du cau hoi -> createMotion voi brief hop le (giong, khung hinh, do dai, ghi chu tu mo ta anh).
@@ -233,8 +234,20 @@ bot.setTelegramDeps({
     compressed++
     writeFileSync(SMALL, Buffer.alloc(4000, 4))
     return SMALL
+  },
+  downloadBig: async (tok: string, messageId: number, dest: string, size: number, onProgress?: (d: number, t: number) => void) => {
+    bigCalls.push({ tok, messageId, dest, size })
+    if (bigFail) throw new Error('Không kết nối được máy chủ Telegram để tải file lớn (mạng chặn — thử bật VPN).')
+    onProgress?.(size / 2, size)
+    writeFileSync(dest, Buffer.alloc(5000, 9))
+    onProgress?.(size, size)
+    return size
   }
 })
+
+const bigCalls: { tok: string; messageId: number; dest: string; size: number }[] = []
+let bigFail = false
+const edits = () => calls.filter((c) => c.method === 'editMessageText').map((c) => String(c.params.text))
 
 const r0 = await bot.configureTelegram({ token: TOKEN, enabled: true })
 check('luu token + getMe', r0.ok && store.tgState().bot?.username === 'agentedit_test_bot', r0)
@@ -284,10 +297,23 @@ check('hien thu vien', (await expectMsg('Chọn video nguồn từ thư viện')
 press(btn('từ thư viện', 'lib.mp4'))
 check('chon tu thu vien -> sang video mau', (await expectMsg('Gửi video mẫu')) !== '')
 check('3 video nguon (1 tu thu vien)', store.tgState().sessions[String(USER)].videos.length === 3)
-// file > 20 MB
-sendFile('video', 'big.mov', 60 * 1048576)
-check('file > 20 MB -> huong dan gui link', (await expectMsg('chỉ tải được file tối đa 20 MB')) !== '')
-press(btn('Gửi video mẫu', 'Bỏ qua'))
+// file > 4 GB -> huong dan link; > 20 MB -> tai qua MTProto (Bot API chi tai <= 20 MB)
+sendFile('video', 'huge.mov', 5 * 1024 ** 3)
+check('file > 4 GB -> huong dan gui link', (await expectMsg('tối đa 4 GB')) !== '' && bigCalls.length === 0)
+bigFail = true
+const bigMsg0 = sendFile('video', 'big0.mov', 60 * 1048576)
+check('file > 20 MB tai loi -> bao loi + huong dan link',
+  await until(() => edits().some((t) => t.includes('Không tải được file') && t.includes('link tải'))) && bigCalls.at(-1)?.messageId === bigMsg0,
+  edits().slice(-3))
+check('tai loi -> khong giu file do dang', !existsSync(bigCalls.at(-1)?.dest || ''))
+bigFail = false
+const bigMsg = sendFile('video', 'big.mov', 60 * 1048576)
+check('file > 20 MB -> bao file lon dang tai', (await expectMsg('file lớn, có thể mất vài phút')) !== '')
+check('file > 20 MB -> tai qua MTProto dung tin + token, nhan lam video mau',
+  await until(() => edits().some((t) => t.includes('Đã nhận video mẫu') && t.includes('big.mov'))) &&
+    bigCalls.at(-1)?.messageId === bigMsg && bigCalls.at(-1)?.tok === TOKEN && bigCalls.at(-1)?.size === 60 * 1048576 &&
+    store.tgState().sessions[String(USER)]?.reference?.path === bigCalls.at(-1)?.dest,
+  { calls: bigCalls, ref: store.tgState().sessions[String(USER)]?.reference })
 check('hoi video lam gi', (await expectMsg('Video này để làm gì')) !== '')
 // nut cu
 press(btn('Gửi video mẫu', 'Bỏ qua'))
@@ -323,7 +349,7 @@ check('het mo ta -> hoi them / Xong', (await expectMsg('Đã có 2 tư liệu'))
 press(btn('Đã có 2 tư liệu', 'Xong'))
 check('bao da nhan + ma video', (await expectMsg('Đã nhận yêu cầu')) !== '' && lastText().includes('r_test') || texts().some((t) => t.includes('Mã video: <code>r_test0001')))
 const inp = editInputs[0]
-check('dau vao viec: 3 video nguon, khong video mau', inp?.videos.length === 3 && inp.videos[2] === LIB && inp.reference === null, inp)
+check('dau vao viec: 3 video nguon, video mau = file lon tai qua MTProto', inp?.videos.length === 3 && inp.videos[2] === LIB && inp.reference === bigCalls.at(-1)?.dest, inp)
 check('dau vao viec: yeu cau edit', inp?.editRequest?.purpose === 'Để chạy quảng cáo quán trà sữa' && inp.editRequest.style === 'Nhanh, vui, bắt trend' && inp.editRequest.audience === 'Nữ 18-25' && inp.editRequest.duration === '30 giây', inp?.editRequest)
 check('dau vao viec: font kho + file font, khong mau', JSON.stringify(inp?.brandGuide) === JSON.stringify({ fonts: ['f_be'] }) && inp.fontFiles?.length === 1 && inp.fontFiles[0].endsWith('.ttf'), [inp?.brandGuide, inp?.fontFiles])
 check('dau vao viec: 2 tu lieu + mo ta', inp?.inserts.length === 2 && inp.inserts[0].note === 'Logo quán, hiện ở cuối video' && inp.inserts[1].note === '' && inp.inserts[0].use === 'show', inp?.inserts)

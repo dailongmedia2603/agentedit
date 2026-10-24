@@ -7,7 +7,7 @@ metadata:
   title: Agent Edit — làm video AI
   kind: tool
   author: Agent Edit
-  version: 3.1.1
+  version: 3.1.2
 ---
 
 # Agent Edit — làm video bằng AI
@@ -190,8 +190,8 @@ video một mã, làm nhiều video cùng lúc.
 2. **Xem / quản lý:** `agent-edit__telegram` op `status` (đang chạy / lỗi + `status.error`) · `on` / `off` · `test` · `users`
    (người đã xác thực) · `remove-user` + `chat_id` (hỏi lại trước) · `jobs` (video tạo qua bot: mã, trạng thái, file).
 3. Bot chỉ trả lời khi app (hoặc dịch vụ nền) đang chạy — gọi bất kỳ công cụ nào là app tự chạy nền; máy tắt thì bot dừng.
-   Telegram chỉ cho bot nhận file ≤ 20 MB (lớn hơn: người dùng gửi link Google Drive / Dropbox hoặc chọn từ thư viện) và gửi
-   ≤ 50 MB (lớn hơn: bot gửi bản nén + link bản gốc 48 giờ). `status.error` có "nơi khác dùng" → token đang chạy ở máy khác.
+   Bot nhận file tối đa 2 GB gửi thẳng vào chat (app < 1.23.0: ≤ 20 MB — lớn hơn gửi link Google Drive / Dropbox, chọn từ
+   thư viện, hoặc `agent-edit__update`) và gửi ≤ 50 MB (lớn hơn: bot gửi bản nén + link bản gốc 48 giờ). `status.error` có "nơi khác dùng" → token đang chạy ở máy khác.
    Lỗi "chưa có Bot Telegram" → `agent-edit__update`.
 
 ## 11. Ngoài GetTime (Claude Code / Codex có shell)

@@ -1,7 +1,7 @@
 import { app, BrowserWindow, Menu, nativeTheme } from 'electron'
 import { join } from 'path'
 import { homedir, tmpdir } from 'os'
-import { appendFileSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'fs'
+import { appendFileSync, copyFileSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'fs'
 import { registerIpc } from './ipc'
 import { registerMotionIpc } from './motion-ipc'
 import { registerPhoneAgentIpc } from './phoneagent-ipc'
@@ -46,7 +46,25 @@ const CLI_SESSION_DIR = CLI_MODE ? join(tmpdir(), 'agent-edit-cli', String(proce
 if (CLI_MODE) {
   cleanAgentEnv() // AI agent goi CLI -> bo bien phien cua agent me truoc khi sidecar / claude / codex ke thua
   app.dock?.hide()
-  app.setPath('sessionData', CLI_SESSION_DIR)
+  if (cliSessionKeepsCryptoKey()) app.setPath('sessionData', CLI_SESSION_DIR)
+}
+
+/** WINDOWS: safeStorage (DPAPI) giu khoa AES trong `<sessionData>/Local State` (Electron 33 browser_process_impl.cc doc
+ *  DIR_SESSION_DATA) chu KHONG o Keychain nhu macOS -> thu muc phien tam = khoa MOI = khong giai ma duoc license.enc /
+ *  secrets.enc ("Can nhap lai key tren may nay" — viec Edit video cua bot Telegram tren Windows, 2026-10-23). Chep Local
+ *  State cua app vao thu muc phien tam (JS chay TRUOC luc Electron doc file nay). Chua co (app chua mo lan nao) -> dung chung
+ *  thu muc cua app de khoa sinh ra nam dung cho. macOS / Linux: khong anh huong. */
+function cliSessionKeepsCryptoKey(): boolean {
+  if (process.platform !== 'win32') return true
+  const src = join(app.getPath('userData'), 'Local State')
+  if (!existsSync(src)) return false
+  try {
+    mkdirSync(CLI_SESSION_DIR, { recursive: true })
+    copyFileSync(src, join(CLI_SESSION_DIR, 'Local State'))
+    return true
+  } catch {
+    return false
+  }
 }
 
 /** Ten hien thi. app.name van la "auto-capcut" (package.json) — Electron dung no cho thu muc du lieu
